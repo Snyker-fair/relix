@@ -1,0 +1,90 @@
+/* Solo los subconjuntos latinos: menos peso dentro de la app */
+@import '@fontsource/baloo-2/latin-600.css';
+@import '@fontsource/baloo-2/latin-700.css';
+@import '@fontsource/baloo-2/latin-800.css';
+@import '@fontsource/baloo-2/latin-ext-700.css';
+@import '@fontsource/nunito/latin-400.css';
+@import '@fontsource/nunito/latin-600.css';
+@import '@fontsource/nunito/latin-700.css';
+@import '@fontsource/nunito/latin-ext-400.css';
+
+:root {
+  /* Paleta "Repisa" */
+  --sky: #ddebf7;
+  --sky-deep: #c6dbef;
+  --ink: #23304a;
+  --ink-soft: #56647e;
+  --cloud: #ffffff;
+  --pop: #ff4f87;
+  --pop-soft: #ffd6e4;
+  --sun: #ffe08a;
+
+  /* Botones del control de Xbox */
+  --btn-a: #3fae49;
+  --btn-b: #e5413a;
+  --btn-x: #3b7ae0;
+  --btn-y: #f2b705;
+
+  --font-display: 'Baloo 2', 'Nunito', system-ui, sans-serif;
+  --font-body: 'Nunito', system-ui, sans-serif;
+
+  /* Rebote de "burbuja" para todo lo que responde al foco */
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--sky);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  height: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* Anillo de foco compartido: aro blanco + aro chicle + sombra del color propio */
+.focus-ring {
+  transition:
+    transform 260ms var(--spring),
+    box-shadow 200ms ease;
+}
+.focus-ring.focused {
+  transform: translateY(-10px) scale(1.08);
+  box-shadow:
+    0 0 0 6px var(--cloud),
+    0 0 0 13px var(--pop),
+    0 28px 40px -14px color-mix(in oklab, var(--tint, var(--ink)) 70%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+  }
+  .focus-ring.focused {
+    transform: none;
+  }
+}

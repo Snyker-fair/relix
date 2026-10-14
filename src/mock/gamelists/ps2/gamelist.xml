@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<gameList>
+	<game>
+		<path>./Okami (USA).chd</path>
+		<name>Ōkami</name>
+		<desc>Una diosa loba restaura el color de Japón con un pincel celestial.</desc>
+		<releasedate>20060919T000000</releasedate>
+		<developer>Clover Studio</developer>
+		<publisher>Capcom</publisher>
+		<genre>Aventura</genre>
+		<players>1</players>
+		<favorite>true</favorite>
+	</game>
+	<game>
+		<path>./Shadow of the Colossus (USA).chd</path>
+		<name>Shadow of the Colossus</name>
+		<desc>Una tierra vacía, un caballo y dieciséis gigantes a los que trepar.</desc>
+		<releasedate>20051018T000000</releasedate>
+		<developer>Team Ico</developer>
+		<publisher>Sony</publisher>
+		<genre>Aventura</genre>
+		<players>1</players>
+	</game>
+	<game>
+		<path>./Gran Turismo 4 (USA).chd</path>
+		<name>Gran Turismo 4</name>
+		<desc>El simulador más completo de su generación, con modo foto incluido.</desc>
+		<releasedate>20050222T000000</releasedate>
+		<developer>Polyphony Digital</developer>
+		<publisher>Sony</publisher>
+		<genre>Carreras</genre>
+		<players>1-2</players>
+	</game>
+	<game>
+		<path>./Kingdom Hearts (USA).chd</path>
+		<name>Kingdom Hearts</name>
+		<desc>Un chico con una llave gigante viaja por mundos de películas animadas.</desc>
+		<releasedate>20020917T000000</releasedate>
+		<developer>Square</developer>
+		<publisher>Square</publisher>
+		<genre>RPG de acción</genre>
+		<players>1</players>
+	</game>
+	<game>
+		<path>./Ratchet &amp; Clank (USA).chd</path>
+		<name>Ratchet &amp; Clank</name>
+		<desc>Un mecánico y su robot recorren planetas con un arsenal cada vez más absurdo.</desc>
+		<releasedate>20021104T000000</releasedate>
+		<developer>Insomniac Games</developer>
+		<publisher>Sony</publisher>
+		<genre>Plataformas / Disparos</genre>
+		<players>1</players>
+	</game>
+	<game>
+		<path>./Persona 4 (USA).chd</path>
+		<name>Persona 4</name>
+		<desc>Un año escolar en un pueblo tranquilo, con asesinatos que se investigan dentro de la tele.</desc>
+		<releasedate>20081209T000000</releasedate>
+		<developer>Atlus</developer>
+		<publisher>Atlus</publisher>
+		<genre>RPG</genre>
+		<players>1</players>
+		<favorite>true</favorite>
+	</game>
+	<game>
+		<path>./Jak and Daxter - The Precursor Legacy (USA).chd</path>
+		<name>Jak and Daxter</name>
+		<desc>Un mundo continuo sin pantallas de carga, lleno de orbes que juntar.</desc>
+		<releasedate>20011203T000000</releasedate>
+		<developer>Naughty Dog</developer>
+		<publisher>Sony</publisher>
+		<genre>Plataformas</genre>
+		<players>1</players>
+	</game>
+	<game>
+		<path>./Burnout 3 - Takedown (USA).chd</path>
+		<name>Burnout 3: Takedown</name>
+		<desc>Carreras donde chocar a los rivales es la mejor estrategia.</desc>
+		<releasedate>20040907T000000</releasedate>
+		<developer>Criterion Games</developer>
+		<publisher>EA</publisher>
+		<genre>Carreras</genre>
+		<players>1-2</players>
+	</game>
+	<game>
+		<path>./Sly Cooper and the Thievius Raccoonus (USA).chd</path>
+		<name>Sly Cooper</name>
+		<desc>Un mapache ladrón recupera el libro de su familia, robo a robo.</desc>
+		<releasedate>20020923T000000</releasedate>
+		<developer>Sucker Punch</developer>
+		<publisher>Sony</publisher>
+		<genre>Plataformas / Sigilo</genre>
+		<players>1</players>
+	</game>
+</gameList>
