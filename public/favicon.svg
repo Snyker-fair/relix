@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Relix">
+  <!-- Gema: una reliquia pulida. El borde se dibuja primero, con esquinas redondeadas. -->
+  <g class="gem">
+    <path d="M36 30H76L96 50L56 100L16 50Z" fill="#D93470" stroke="#D93470" stroke-width="9" stroke-linejoin="round"/>
+    <!-- corona -->
+    <path d="M36 30H76L72 50H40Z" fill="#FFA3C2"/>
+    <path d="M16 50L36 30L40 50Z" fill="#FF7FA8"/>
+    <path d="M76 30L96 50H72Z" fill="#EC4C80"/>
+    <!-- pabellón -->
+    <path d="M16 50H40L56 100Z" fill="#FF6696"/>
+    <path d="M40 50H72L56 100Z" fill="#FF4F87"/>
+    <path d="M72 50H96L56 100Z" fill="#DE3A73"/>
+    <!-- brillo -->
+    <path d="M43 37H55" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+    <circle cx="62" cy="37" r="2.5" fill="#FFFFFF" opacity="0.9"/>
+  </g>
+  <!-- Destello en forma de X: el brillo de la reliquia y la X del nombre -->
+  <g class="glint">
+    <path d="M98 2Q98 24 120 24Q98 24 98 46Q98 24 76 24Q98 24 98 2Z" fill="#FFC23D" stroke="#FFC23D" stroke-width="3" stroke-linejoin="round" transform="rotate(45 98 24)"/>
+  </g>
+</svg>

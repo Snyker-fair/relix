@@ -69,7 +69,7 @@
 
 <Stage>
   {#if library.status === 'loading'}
-    <p class="status">Ordenando la repisa…</p>
+    <p class="status">Desempolvando tus reliquias…</p>
   {:else if library.status === 'error'}
     <div class="status error">
       <h1>No pudimos leer tu biblioteca</h1>

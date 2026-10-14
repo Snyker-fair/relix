@@ -21,14 +21,14 @@ describe('buildLaunchUri', () => {
 
   it('arma la URI de un emulador standalone (XBSX2)', () => {
     expect(buildLaunchUri(getPlatform('ps2').launcher, rom)).toBe(
-      'xbsx2:?cmd=xbsx2.exe "E%3A%5Croms%5Cps2%5COkami%20%28USA%29.chd"&launchOnExit=repisa:',
+      'xbsx2:?cmd=xbsx2.exe "E%3A%5Croms%5Cps2%5COkami%20%28USA%29.chd"&launchOnExit=relix:',
     )
   })
 
   it('arma la URI de RetroArch con su núcleo', () => {
     const uri = buildLaunchUri(getPlatform('psx').launcher, 'E:\\roms\\psx\\Crash.chd')
     expect(uri).toBe(
-      'retroarch:?cmd=retroarch -L cores\\swanstation_libretro.dll "E%3A%5Croms%5Cpsx%5CCrash.chd"&launchOnExit=repisa:',
+      'retroarch:?cmd=retroarch -L cores\\swanstation_libretro.dll "E%3A%5Croms%5Cpsx%5CCrash.chd"&launchOnExit=relix:',
     )
   })
 

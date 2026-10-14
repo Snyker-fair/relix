@@ -9,7 +9,7 @@
 @import '@fontsource/nunito/latin-ext-400.css';
 
 :root {
-  /* Paleta "Repisa" */
+  /* Paleta de Relix: cielo de cuaderno, tinta azul noche y el rosa de la gema */
   --sky: #ddebf7;
   --sky-deep: #c6dbef;
   --ink: #23304a;
@@ -18,6 +18,7 @@
   --pop: #ff4f87;
   --pop-soft: #ffd6e4;
   --sun: #ffe08a;
+  --glint: #ffc23d; /* el destello en X del logo */
 
   /* Botones del control de Xbox */
   --btn-a: #3fae49;

@@ -1,36 +1,41 @@
-# Repisa
+![Relix](brand/relix-logo.png)
+
+# Relix
+
+**Tus reliquias, listas para jugar.**
 
 Frontend para lanzar juegos en una Xbox Series X|S en **Modo Desarrollador**.
 Lee tu biblioteca de **ES-DE** (gamelists y portadas) y abre cada juego en su
 emulador: RetroArch, XBSX2, PPSSPP, etc.
 
 Estilo visual lúdico y redondeado, pensado para verse en una TV a 3 metros y
-manejarse con el control.
+manejarse con el control. Logo, colores, tipografía y voz de la marca están en
+[`brand/`](brand/README.md).
 
 ## Cómo funciona
 
 ```
-┌────────────────────── App UWP "Repisa" (Xbox) ──────────────────────┐
+┌─────────────────────── App UWP "Relix" (Xbox) ──────────────────────┐
 │                                                                     │
 │   Shell en C# (Etapa 2)                 Interfaz en Svelte (esto)   │
 │   ─────────────────────                 ─────────────────────────   │
 │   · Lee el USB (gamelists, portadas)  ◄──  bridge.loadLibrary()     │
 │   · Abre emuladores por URI           ◄──  bridge.launch(uri)       │
-│   · Vuelve al frente con repisa:          (mensajes de WebView2)    │
+│   · Vuelve al frente con relix:           (mensajes de WebView2)    │
 │                                                                     │
 └─────────────────────────────────┬───────────────────────────────────┘
                                   │ Launcher.LaunchUriAsync(...)
                                   ▼
-     xbsx2:?cmd=xbsx2.exe "E:\roms\ps2\Okami.chd"&launchOnExit=repisa:
+     xbsx2:?cmd=xbsx2.exe "E:\roms\ps2\Okami.chd"&launchOnExit=relix:
                                   │
                                   ▼
-                 XBSX2 abre el juego; al salir, Xbox vuelve a Repisa
+                 XBSX2 abre el juego; al salir, Xbox vuelve a Relix
 ```
 
 - **Lanzar un juego** es abrir una URI con el protocolo del emulador. El formato
   es el mismo que usan otros frontends para Xbox (verificado en el código de
   RetroPass). Ver `src/lib/core/launchUri.js`.
-- **`launchOnExit=repisa:`** hace que la consola vuelva sola a Repisa al cerrar
+- **`launchOnExit=relix:`** hace que la consola vuelva sola a Relix al cerrar
   el emulador.
 - **La interfaz corre en WebView2** (Chromium), soportado en apps UWP de Xbox
   y depurable con las DevTools de Edge desde el PC.
@@ -45,9 +50,10 @@ src/
     esde.js          lee gamelist.xml de ES-DE y calcula rutas de ROMs/portadas
     bridge.js        habla con el shell en C# (o usa datos de prueba en el navegador)
   lib/ui/            piezas de interfaz: entrada del control, sonidos, portadas…
-  screens/           Home (repisa de canales), Library (grilla), LaunchOverlay
+  screens/           Home (fila de canales), Library (grilla), LaunchOverlay
   mock/gamelists/    gamelists de ejemplo con el formato real de ES-DE
 tests/               tests de launchUri y esde (vitest)
+brand/               logo, íconos de la app y guía de marca
 ```
 
 ## Comandos
@@ -99,8 +105,10 @@ roto el lanzamiento desde frontends en su última versión. Se cambia en
 
 - [x] **Etapa 1: interfaz.** Pantallas, navegación con control, favoritos,
       "seguir jugando", lector de ES-DE y generador de URIs con tests.
-- [ ] **Etapa 2: shell UWP en C#.** Proyecto en Visual Studio con WebView2.
-  - Declarar el protocolo `repisa` y la capacidad `removableStorage` en el
+- [x] **Identidad Relix.** Logo, íconos de la app y guía de marca en `brand/`.
+- [ ] **Etapa 2: shell UWP en C#.** Proyecto `RelixShell` en Visual Studio con WebView2.
+  - Copiar `brand/uwp/` a `Assets` y ajustar los recursos visuales del manifiesto.
+  - Declarar el protocolo `relix` y la capacidad `removableStorage` en el
     manifiesto, con las asociaciones de tipo de archivo que exige UWP para
     leer el USB (`.xml`, `.png`, `.jpg`…).
   - Servir `dist/` dentro de la app y responder los mensajes `loadLibrary`

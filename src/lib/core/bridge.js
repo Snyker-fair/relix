@@ -73,5 +73,5 @@ export async function loadLibrary() {
  */
 export async function launch(uri) {
   if (mode === 'xbox') return request('launch', { uri })
-  window.dispatchEvent(new CustomEvent('repisa:launch-preview', { detail: { uri } }))
+  window.dispatchEvent(new CustomEvent('relix:launch-preview', { detail: { uri } }))
 }

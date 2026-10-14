@@ -17,7 +17,7 @@ class Library {
   romRoot = $state('')
   /** @type {Record<string, LibraryGame[]>} */
   bySystem = $state({})
-  /** Favoritos marcados o desmarcados desde Repisa (pisan el valor de ES-DE) */
+  /** Favoritos marcados o desmarcados desde Relix (pisan el valor de ES-DE) */
   /** @type {Record<string, boolean>} */
   favoriteOverrides = $state(load('favorites', {}))
   /** @type {string[]} */

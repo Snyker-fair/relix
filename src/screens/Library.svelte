@@ -5,6 +5,7 @@
   import CoverArt from '../lib/ui/CoverArt.svelte'
   import HintBar from '../lib/ui/HintBar.svelte'
   import PadButton from '../lib/ui/PadButton.svelte'
+  import Logo from '../lib/ui/Logo.svelte'
   import { dispatch, pushHandler } from '../lib/ui/input.js'
   import { library } from '../lib/ui/library.svelte.js'
   import { sound } from '../lib/ui/sound.js'
@@ -91,7 +92,7 @@
 <header class="top">
   <button class="back" onclick={() => dispatch('b')}>
     <PadButton name="b" size={30} />
-    <span>Repisa</span>
+    <Logo size={34} />
   </button>
 
   <nav class="tabs" aria-label="Consolas">

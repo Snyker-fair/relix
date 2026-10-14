@@ -9,5 +9,5 @@ export const FAVORITES = {
   ink: '#4A0A20',
 }
 
-/** Orden de los canales en la repisa */
+/** Orden de los canales en la pantalla de inicio */
 export const CHANNELS = [FAVORITES, ...PLATFORMS]

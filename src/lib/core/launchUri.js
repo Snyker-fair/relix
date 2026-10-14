@@ -8,12 +8,12 @@
  *
  * - La ruta del juego va escapada (equivalente a Uri.EscapeDataString de .NET).
  * - `launchOnExit` es el protocolo de NUESTRA app: al cerrar el emulador,
- *   Xbox vuelve automáticamente a Repisa.
+ *   Xbox vuelve automáticamente a Relix.
  * - El resto de la cadena se deja tal cual; el shell en C# hace `new Uri(...)`
  *   y `Launcher.LaunchUriAsync`, que se encarga de los espacios.
  */
 
-export const APP_PROTOCOL = 'repisa'
+export const APP_PROTOCOL = 'relix'
 
 /**
  * Igual que Uri.EscapeDataString (RFC 3986): solo deja sin escapar

@@ -7,6 +7,7 @@
   import CoverArt from '../lib/ui/CoverArt.svelte'
   import HintBar from '../lib/ui/HintBar.svelte'
   import { pushHandler } from '../lib/ui/input.js'
+  import Logo from '../lib/ui/Logo.svelte'
   import { library } from '../lib/ui/library.svelte.js'
   import { sound } from '../lib/ui/sound.js'
 
@@ -77,10 +78,7 @@
 </script>
 
 <header class="top">
-  <div class="brand" class:boot>
-    <span class="bubble" aria-hidden="true"></span>
-    <span class="wordmark">Repisa</span>
-  </div>
+  <Logo size={64} {boot} />
   {#if mode === 'browser'}
     <p class="kbd-help">
       Sin control: flechas para moverte, Enter para elegir, Esc para volver, X favorito, Q y E
@@ -187,41 +185,6 @@
     color: var(--ink-soft);
     text-align: center;
   }
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  .bubble {
-    position: relative;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: var(--pop);
-    box-shadow: inset -6px -8px 0 rgb(0 0 0 / 0.12);
-  }
-  .bubble::after {
-    content: '';
-    position: absolute;
-    top: 12px;
-    left: 13px;
-    width: 14px;
-    height: 10px;
-    border-radius: 50%;
-    background: rgb(255 255 255 / 0.85);
-    transform: rotate(-30deg);
-  }
-  .wordmark {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 48px;
-    letter-spacing: -0.02em;
-    padding-top: 6px;
-  }
-  .brand.boot .bubble {
-    animation: pop-in 600ms var(--spring) both;
-  }
-
   /* ── Héroe ─────────────────────────────── */
   .hero {
     position: absolute;
@@ -295,7 +258,7 @@
     color: var(--ink-soft);
   }
 
-  /* ── Repisa de canales ─────────────────── */
+  /* ── Fila de canales ───────────────────── */
   .shelf {
     position: absolute;
     left: 112px;
@@ -362,11 +325,11 @@
   .recent {
     position: absolute;
     left: 112px;
-    top: 878px;
+    top: 862px;
     right: 700px;
   }
   .recent h2 {
-    margin: 0 0 14px;
+    margin: 0 0 30px;
     font-family: var(--font-display);
     font-weight: 700;
     font-size: 28px;
@@ -406,11 +369,6 @@
     color: var(--ink-soft);
   }
 
-  @keyframes pop-in {
-    from {
-      transform: scale(0);
-    }
-  }
   @keyframes rise {
     from {
       opacity: 0;

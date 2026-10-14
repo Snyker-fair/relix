@@ -20,7 +20,7 @@
     }),
   )
 
-  // En la Xbox, Repisa queda en segundo plano mientras corre el emulador y
+  // En la Xbox, Relix queda en segundo plano mientras corre el emulador y
   // vuelve sola gracias a launchOnExit. Al volver, cerramos el overlay.
   $effect(() => {
     const onVisible = () => document.visibilityState === 'visible' && mode === 'xbox' && onClose()
@@ -40,7 +40,7 @@
 
       {#if mode === 'browser'}
         <p class="explain">
-          Esto es una vista previa en el navegador. En la Xbox, Repisa abriría esta dirección y la
+          Esto es una vista previa en el navegador. En la Xbox, Relix abriría esta dirección y la
           consola volvería aquí al cerrar el emulador:
         </p>
         <code>{uri}</code>
