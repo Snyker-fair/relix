@@ -8,10 +8,13 @@
  *   Pedidos (web -> shell, con respuesta):
  *     { id, type: 'loadLibrary', payload: { systems: [{ id: 'psx', folders: ['psx', 'ps1'] }, ...] } }
  *        -> { id, ok: true, result: {
- *             romRoot, mediaBase,
+ *             romRoot, driveId, mediaBase,
  *             gamelists: { psx: '<xml>' },                          (los que existan)
- *             roms: { psx: { folder: 'ps1', files: ['Crash (USA).chd', 'FF7/FF7.m3u'] } }
  *           } }
+ *     { id, type: 'scanRoms', payload: { systems: [{ id: 'ps2', folders: ['ps2', 'playstation2'] }] } }
+ *        -> { id, ok: true, result: {
+ *             roms: { ps2: { folder: 'ps2', files: ['Okami (USA).chd', 'Sub/Juego.iso'] } }
+ *           } }                                                   (solo las consolas pedidas)
  *     { id, type: 'launch', payload: { uri, romPath } }
  *        -> { id, ok: true, result: true }
  *     Error: { id, ok: false, error: 'mensaje para el jugador', code: 'rom-missing' | ... }
@@ -100,22 +103,48 @@ export function notifyReady() {
 }
 
 /**
+ * @typedef {{folder: string, files: string[]}} RomScan
+ *
  * @typedef {Object} RawLibrary
  * @property {string} romRoot                  Carpeta de ROMs en la consola
+ * @property {string} driveId                  Identifica el disco (si cambia, se vuelve a escanear)
  * @property {string|null} mediaBase           URL base de las imágenes de ES-DE (null = sin portadas)
  * @property {Record<string, string>} gamelists  XML de ES-DE por sistema
- * @property {Record<string, {folder: string, files: string[]}>} [roms]
- *   Archivos encontrados en roms\<carpeta>\ por sistema (solo en la Xbox)
  */
+
+/** @param {import('./platforms.js').Platform} p */
+const systemRequest = (p) => ({ id: p.id, folders: p.folders })
 
 /** @returns {Promise<RawLibrary>} */
 export async function loadLibrary() {
   if (mode === 'xbox') {
-    return request('loadLibrary', {
-      systems: PLATFORMS.map((p) => ({ id: p.id, folders: p.folders })),
-    })
+    return request('loadLibrary', { systems: PLATFORMS.map(systemRequest) })
   }
-  return { romRoot: 'E:\\roms', mediaBase: null, gamelists: MOCK_GAMELISTS }
+  return { romRoot: 'E:\\roms', driveId: 'demo', mediaBase: null, gamelists: MOCK_GAMELISTS }
+}
+
+/**
+ * Recorre las carpetas de roms de las consolas indicadas.
+ * @param {string[]} systemIds
+ * @returns {Promise<Record<string, RomScan>>}
+ */
+export async function scanRoms(systemIds) {
+  const platforms = PLATFORMS.filter((p) => systemIds.includes(p.id))
+  if (mode === 'xbox') {
+    const result = await request('scanRoms', { systems: platforms.map(systemRequest) })
+    return result.roms
+  }
+  // Navegador: "encuentra" los juegos de los gamelists de prueba, con una pausa
+  // para que se vea el estado de escaneo en la demo.
+  await new Promise((resolve) => setTimeout(resolve, 600))
+  /** @type {Record<string, RomScan>} */
+  const roms = {}
+  for (const p of platforms) {
+    const xml = /** @type {Record<string, string>} */ (MOCK_GAMELISTS)[p.id] ?? ''
+    const files = [...xml.matchAll(/<path>\.\/(.*?)<\/path>/g)].map((m) => m[1].replace(/&amp;/g, '&'))
+    roms[p.id] = { folder: p.id, files }
+  }
+  return roms
 }
 
 /**

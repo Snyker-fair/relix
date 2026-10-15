@@ -10,8 +10,10 @@
   import Home from './screens/Home.svelte'
   import LaunchOverlay from './screens/LaunchOverlay.svelte'
   import Library from './screens/Library.svelte'
+  import Options from './screens/Options.svelte'
 
-  /** @type {{ name: 'home' } | { name: 'library', systemId: string }} */
+  /** @typedef {{ name: 'home' } | { name: 'library', systemId: string }} MainScreen */
+  /** @type {MainScreen | { name: 'options', from: MainScreen }} */
   let screen = $state({ name: 'home' })
   let channelIndex = $state(1) // empieza en la primera consola, no en Favoritos
   let boot = $state(true)
@@ -44,6 +46,10 @@
     toast = message
     clearTimeout(toastTimer)
     toastTimer = setTimeout(() => (toast = ''), 3500)
+  }
+
+  function openOptions() {
+    if (screen.name !== 'options') screen = { name: 'options', from: screen }
   }
 
   /** @param {string} systemId */
@@ -102,14 +108,19 @@
       onChannelChange={(i) => (channelIndex = i)}
       onOpen={openLibrary}
       onLaunch={startGame}
+      onOptions={openOptions}
     />
-  {:else}
+  {:else if screen.name === 'library'}
     <Library
       systemId={screen.systemId}
       onBack={() => (screen = { name: 'home' })}
       onSwitch={openLibrary}
       onLaunch={startGame}
+      onOptions={openOptions}
     />
+  {:else}
+    {@const from = screen.from}
+    <Options onBack={() => (screen = from)} onToast={showToast} />
   {/if}
 
   {#if launching}

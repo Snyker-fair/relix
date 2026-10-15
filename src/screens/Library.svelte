@@ -16,9 +16,10 @@
    *   onBack: () => void,
    *   onSwitch: (systemId: string) => void,
    *   onLaunch: (game: any) => void,
+   *   onOptions: () => void,
    * }}
    */
-  let { systemId, onBack, onSwitch, onLaunch } = $props()
+  let { systemId, onBack, onSwitch, onLaunch, onOptions } = $props()
 
   const COLUMNS = 5
   const COVER_W = 184
@@ -90,7 +91,8 @@
       else if (action === 'rb') switchChannel(1)
       else if (action === 'b') (sound.back(), onBack())
       else if (action === 'x' && game) (library.toggleFavorite(game), sound.favorite())
-      else if ((action === 'a' || action === 'start') && game) onLaunch(game)
+      else if (action === 'a' && game) onLaunch(game)
+      else if (action === 'start') (sound.select(), onOptions())
     }),
   )
 </script>

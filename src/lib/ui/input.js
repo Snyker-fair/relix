@@ -42,6 +42,8 @@ const KEYS = {
   y: 'y',
   q: 'lb',
   e: 'rb',
+  m: 'start', // botón Menú: abre Opciones
+  o: 'start',
   PageUp: 'lb',
   PageDown: 'rb',
 }

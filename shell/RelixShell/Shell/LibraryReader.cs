@@ -16,15 +16,19 @@ namespace RelixShell
     /// </summary>
     internal sealed class LibraryPaths
     {
-        public LibraryPaths(string driveRoot)
+        public LibraryPaths(string driveRoot, string driveName)
         {
             DriveRoot = driveRoot;
+            DriveName = driveName ?? "";
             RomRoot = Path.Combine(driveRoot, "roms");
             EsdeRoot = Path.Combine(driveRoot, "ES-DE");
             MediaRoot = Path.Combine(EsdeRoot, "downloaded_media");
         }
 
         public string DriveRoot { get; }
+
+        /// <summary>Nombre del disco, p. ej. "RELIX (E:)". Sirve para notar si cambiaste de USB.</summary>
+        public string DriveName { get; }
         public string RomRoot { get; }
         public string EsdeRoot { get; }
         public string MediaRoot { get; }
@@ -75,7 +79,7 @@ namespace RelixShell
                     if (await drive.TryGetItemAsync("roms") is StorageFolder
                         || await drive.TryGetItemAsync("ES-DE") is StorageFolder)
                     {
-                        return new LibraryPaths(drive.Path);
+                        return new LibraryPaths(drive.Path, drive.DisplayName);
                     }
                 }
             }
@@ -91,7 +95,8 @@ namespace RelixShell
                 if (await TryGetFolderAsync(Path.Combine(root, "roms")) != null
                     || await TryGetFolderAsync(Path.Combine(root, "ES-DE")) != null)
                 {
-                    return new LibraryPaths(root);
+                    StorageFolder drive = await TryGetFolderAsync(root);
+                    return new LibraryPaths(root, drive?.DisplayName);
                 }
             }
 

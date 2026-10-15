@@ -9,6 +9,7 @@
   import { pushHandler } from '../lib/ui/input.js'
   import Logo from '../lib/ui/Logo.svelte'
   import { library } from '../lib/ui/library.svelte.js'
+  import { plural } from '../lib/ui/format.js'
   import { sound } from '../lib/ui/sound.js'
 
   /**
@@ -18,16 +19,23 @@
    *   onOpen: (systemId: string) => void,
    *   onLaunch: (game: any) => void,
    *   onChannelChange: (index: number) => void,
+   *   onOptions: () => void,
    * }}
    */
-  let { channelIndex, boot, onOpen, onLaunch, onChannelChange } = $props()
+  let { channelIndex, boot, onOpen, onLaunch, onChannelChange, onOptions } = $props()
+
+  // Después de las consolas va el ícono de Opciones (índice CHANNELS.length)
+  const OPTIONS_INDEX = CHANNELS.length
+  const OPTIONS = { id: 'options', name: 'Opciones', shortName: 'Opciones' }
 
   /** @type {'channels'|'recent'} */
   let zone = $state('channels')
   let recentIndex = $state(0)
 
-  const channel = $derived(CHANNELS[channelIndex])
-  const games = $derived(library.gamesFor(channel.id))
+  const onOptionsTile = $derived(channelIndex === OPTIONS_INDEX)
+  const channel = $derived(onOptionsTile ? OPTIONS : CHANNELS[channelIndex])
+  const games = $derived(onOptionsTile ? [] : library.gamesFor(channel.id))
+  const optionsFocused = $derived(zone === 'channels' && onOptionsTile)
   const recent = $derived(library.recent.slice(0, 4))
 
   // Tres portadas en abanico para el canal enfocado: favoritos primero
@@ -36,6 +44,10 @@
   )
 
   const meta = $derived.by(() => {
+    if (onOptionsTile) {
+      const consoles = Object.keys(library.scans).length
+      return [plural(library.all.length, 'juego', 'juegos'), plural(consoles, 'consola escaneada', 'consolas escaneadas'), 'Escaneo por consola']
+    }
     if (channel.id === 'favorites') {
       const systems = new Set(games.map((g) => g.system)).size
       return [plural(games.length, 'juego', 'juegos'), plural(systems, 'consola', 'consolas')]
@@ -43,9 +55,6 @@
     return [channel.maker, String(channel.year), plural(games.length, 'juego', 'juegos'), channel.emulatorName]
   })
 
-  function plural(n, one, many) {
-    return `${n} ${n === 1 ? one : many}`
-  }
 
   /** @param {number} i */
   function focusChannel(i) {
@@ -58,20 +67,25 @@
     pushHandler((action) => {
       if (zone === 'channels') {
         if (action === 'left' && channelIndex > 0) focusChannel(channelIndex - 1)
-        else if (action === 'right' && channelIndex < CHANNELS.length - 1) focusChannel(channelIndex + 1)
+        else if (action === 'right' && channelIndex < OPTIONS_INDEX) focusChannel(channelIndex + 1)
         else if (action === 'down' && recent.length > 0) {
           zone = 'recent'
           recentIndex = Math.min(recentIndex, recent.length - 1)
           sound.move()
         } else if (action === 'a') {
           sound.select()
-          onOpen(channel.id)
+          if (onOptionsTile) onOptions()
+          else onOpen(channel.id)
+        } else if (action === 'start') {
+          sound.select()
+          onOptions()
         }
       } else {
         if (action === 'left' && recentIndex > 0) (recentIndex--, sound.move())
         else if (action === 'right' && recentIndex < recent.length - 1) (recentIndex++, sound.move())
         else if (action === 'up' || action === 'b') ((zone = 'channels'), sound.move())
         else if (action === 'a') onLaunch(recent[recentIndex])
+        else if (action === 'start') (sound.select(), onOptions())
       }
     }),
   )
@@ -82,7 +96,7 @@
   {#if mode === 'browser'}
     <p class="kbd-help">
       Sin control: flechas para moverte, Enter para elegir, Esc para volver, X favorito, Q y E
-      cambian de consola. También puedes usar el mouse.
+      cambian de consola, M abre Opciones. También puedes usar el mouse.
     </p>
   {/if}
   <Clock />
@@ -98,7 +112,7 @@
         {/each}
       </ul>
     </div>
-    <div class="fan">
+    <div class="fan" class:hidden={onOptionsTile}>
       {#each fan as game, i (game.id)}
         <div class="fan-card" style:--i={i - (fan.length - 1) / 2}>
           <CoverArt {game} platform={getPlatform(game.system)} width={210} />
@@ -124,11 +138,25 @@
       onclick={() => (sound.select(), onOpen(ch.id))}
     >
       <span class="tile focus-ring" class:focused style:background={ch.color}>
-        <ChannelIcon id={ch.id} color={ch.ink} size={92} />
+        <ChannelIcon id={ch.id} color={ch.ink} size={86} />
       </span>
       <span class="label">{ch.shortName}</span>
     </button>
   {/each}
+  <button
+    class="channel options"
+    class:focused={optionsFocused}
+    class:boot
+    style:--tint="#8FA3BF"
+    style:--delay="{CHANNELS.length * 70}ms"
+    onmouseenter={() => ((zone = 'channels'), focusChannel(OPTIONS_INDEX))}
+    onclick={() => (sound.select(), onOptions())}
+  >
+    <span class="tile round focus-ring" class:focused={optionsFocused}>
+      <ChannelIcon id="options" color="#23304A" size={78} />
+    </span>
+    <span class="label">Opciones</span>
+  </button>
 </section>
 
 {#if recent.length > 0}
@@ -157,7 +185,10 @@
 
 <HintBar
   hints={zone === 'channels'
-    ? [{ button: 'a', label: 'Abrir' }]
+    ? [
+        { button: 'a', label: 'Abrir' },
+        { button: 'start', label: 'Opciones' },
+      ]
     : [
         { button: 'a', label: 'Jugar' },
         { button: 'b', label: 'Volver' },
@@ -226,6 +257,9 @@
   }
   .chips li:first-child {
     color: var(--ink);
+  }
+  .fan.hidden {
+    display: none;
   }
   .fan {
     position: absolute;
@@ -305,10 +339,19 @@
   .tile {
     display: grid;
     place-items: center;
-    width: 200px;
-    height: 200px;
-    border-radius: 60px;
+    width: 184px;
+    height: 184px;
+    border-radius: 56px;
     box-shadow: inset 0 -10px 0 rgb(0 0 0 / 0.1);
+  }
+  /* Opciones: redondo y blanco, para que se lea como herramienta y no como consola */
+  .tile.round {
+    width: 156px;
+    height: 156px;
+    margin: 14px 0;
+    border-radius: 50%;
+    background: var(--cloud);
+    box-shadow: inset 0 -8px 0 rgb(35 48 74 / 0.08);
   }
   .label {
     font-family: var(--font-display);

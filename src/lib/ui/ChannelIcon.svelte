@@ -49,5 +49,16 @@
       d="M48 80S14 60 14 36a17 17 0 0 1 34-4 17 17 0 0 1 34 4c0 24-34 44-34 44Z"
       fill={color}
     />
+  {:else if id === 'options'}
+    <!-- engranaje -->
+    {#each [0, 45, 90, 135, 180, 225, 270, 315] as angle (angle)}
+      <path d="M48 26V15" transform="rotate({angle} 48 48)" stroke-width="15" stroke-linecap="butt" />
+    {/each}
+    <circle cx="48" cy="48" r="23" fill={color} stroke="none" />
+    <circle cx="48" cy="48" r="9" fill="#FFFFFF" stroke="none" />
+  {:else if id === 'refresh'}
+    <!-- flecha circular -->
+    <path d="M74 52a26 26 0 1 1-8-22" />
+    <path d="M70 14v18H52" />
   {/if}
 </svg>

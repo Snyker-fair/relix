@@ -44,6 +44,9 @@ manejarse con el control. Logo, colores, tipografía y voz de la marca están en
 - **El control se lee en C#** (`Windows.Gaming.Input`) y llega a la interfaz
   como mensajes. Así se evita el cursor del "modo mouse" y un bug conocido de
   WebView2 en Xbox con el foco y el botón B.
+- **La biblioteca se guarda.** El primer inicio (o un disco nuevo) escanea todas
+  las consolas; después Relix abre al instante con la lista guardada. Desde
+  **Opciones** (ícono de engranaje o botón Menú ≡) se re-escanea consola por consola.
 - **La interfaz y las portadas se sirven desde `https://relix.example`**, una
   dirección interna que responde el shell sin salir a internet.
 
@@ -58,7 +61,7 @@ src/
     scan.js          convierte los archivos de roms en juegos (nombres, multidisco, Wii U)
     bridge.js        habla con el shell en C# (o usa datos de prueba en el navegador)
   lib/ui/            piezas de interfaz: entrada del control, sonidos, portadas…
-  screens/           Home (fila de canales), Library (grilla), LaunchOverlay
+  screens/           Home (fila de canales), Library (grilla), Options, LaunchOverlay
   mock/gamelists/    gamelists de ejemplo con el formato real de ES-DE
 tests/               tests de launchUri y esde (vitest)
 brand/               logo, íconos de la app y guía de marca

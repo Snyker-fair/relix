@@ -48,6 +48,14 @@ describe('bridge con el shell de Xbox', () => {
     await expect(pending).resolves.toMatchObject({ romRoot: 'F:\\roms' })
   })
 
+  it('escanea solo las consolas pedidas, con sus nombres de carpeta', async () => {
+    const pending = bridge.scanRoms(['ps2'])
+    const msg = shell.sent.at(-1)
+    expect(msg).toMatchObject({ type: 'scanRoms', payload: { systems: [{ id: 'ps2', folders: ['ps2', 'playstation2'] }] } })
+    shell.emit({ id: msg.id, ok: true, result: { roms: { ps2: { folder: 'ps2', files: ['Okami (USA).chd'] } } } })
+    await expect(pending).resolves.toEqual({ ps2: { folder: 'ps2', files: ['Okami (USA).chd'] } })
+  })
+
   it('envía la URI y la ruta del juego al lanzar', async () => {
     const pending = bridge.launch('xbsx2:?cmd=xbsx2.exe "x"&launchOnExit=relix:', 'F:\\roms\\ps2\\x.chd')
     const msg = shell.sent.at(-1)

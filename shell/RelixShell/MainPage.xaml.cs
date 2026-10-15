@@ -134,6 +134,10 @@ namespace RelixShell
                         Reply(id, await LoadLibraryAsync(payload));
                         break;
 
+                    case "scanRoms":
+                        Reply(id, await ScanRomsAsync(payload));
+                        break;
+
                     case "launch":
                         await LaunchAsync(payload);
                         Reply(id, JsonValue.CreateBooleanValue(true));
@@ -150,33 +154,49 @@ namespace RelixShell
             }
         }
 
+        /// <summary>
+        /// Encuentra el USB y lee los datos de ES-DE. No recorre las carpetas de
+        /// roms: eso lo hace ScanRomsAsync, solo para las consolas que se pidan.
+        /// </summary>
         private async Task<IJsonValue> LoadLibraryAsync(JsonObject payload)
         {
-            paths = await LibraryReader.FindAsync();
-            if (paths == null)
-            {
-                throw new UserFacingException(
-                    "no-library",
-                    "No encontré la carpeta roms en ningún disco USB. Conecta el disco y revisa que tenga la carpeta roms en la raíz.");
-            }
+            await EnsurePathsAsync(refresh: true);
 
             var gamelists = new JsonObject();
-            var roms = new JsonObject();
-
             // Cada consola llega como { id: "psx", folders: ["psx", "ps1", "playstation"] }
             foreach (IJsonValue value in payload.GetNamedArray("systems", new JsonArray()))
             {
-                JsonObject system = value.GetObject();
-                string id = system.GetNamedString("id");
-
-                // Datos de ES-DE (opcionales)
+                string id = value.GetObject().GetNamedString("id");
                 string xml = await LibraryReader.ReadGamelistAsync(paths, id);
                 if (xml != null)
                 {
                     gamelists.SetNamedValue(id, JsonValue.CreateStringValue(xml));
                 }
+            }
 
-                // Juegos que están de verdad en el USB
+            var result = new JsonObject();
+            result.SetNamedValue("romRoot", JsonValue.CreateStringValue(paths.RomRoot));
+            // Identifica el disco: si cambia, la interfaz descarta la lista guardada.
+            result.SetNamedValue("driveId", JsonValue.CreateStringValue(paths.DriveRoot + "|" + paths.DriveName));
+            result.SetNamedValue("mediaBase", JsonValue.CreateStringValue(Origin + "/media"));
+            result.SetNamedValue("gamelists", gamelists);
+            return result;
+        }
+
+        /// <summary>
+        /// Recorre roms\&lt;consola&gt;\ solo para las consolas pedidas. La interfaz
+        /// lo usa la primera vez y desde Opciones, consola por consola.
+        /// </summary>
+        private async Task<IJsonValue> ScanRomsAsync(JsonObject payload)
+        {
+            await EnsurePathsAsync(refresh: false);
+
+            var roms = new JsonObject();
+            foreach (IJsonValue value in payload.GetNamedArray("systems", new JsonArray()))
+            {
+                JsonObject system = value.GetObject();
+                string id = system.GetNamedString("id");
+
                 var folderNames = new List<string>();
                 foreach (IJsonValue name in system.GetNamedArray("folders", new JsonArray()))
                 {
@@ -187,27 +207,39 @@ namespace RelixShell
                     folderNames.Add(id);
                 }
 
-                RomFolder scan = await LibraryReader.ScanRomsAsync(paths, folderNames);
-                if (scan != null)
+                // Sin carpeta para esa consola: se informa vacía, con el primer nombre aceptado
+                RomFolder scan = await LibraryReader.ScanRomsAsync(paths, folderNames)
+                    ?? new RomFolder(folderNames[0], new List<string>());
+
+                var files = new JsonArray();
+                foreach (string file in scan.Files)
                 {
-                    var files = new JsonArray();
-                    foreach (string file in scan.Files)
-                    {
-                        files.Add(JsonValue.CreateStringValue(file));
-                    }
-                    var entry = new JsonObject();
-                    entry.SetNamedValue("folder", JsonValue.CreateStringValue(scan.Folder));
-                    entry.SetNamedValue("files", files);
-                    roms.SetNamedValue(id, entry);
+                    files.Add(JsonValue.CreateStringValue(file));
                 }
+                var entry = new JsonObject();
+                entry.SetNamedValue("folder", JsonValue.CreateStringValue(scan.Folder));
+                entry.SetNamedValue("files", files);
+                roms.SetNamedValue(id, entry);
             }
 
             var result = new JsonObject();
-            result.SetNamedValue("romRoot", JsonValue.CreateStringValue(paths.RomRoot));
-            result.SetNamedValue("mediaBase", JsonValue.CreateStringValue(Origin + "/media"));
-            result.SetNamedValue("gamelists", gamelists);
             result.SetNamedValue("roms", roms);
             return result;
+        }
+
+        /// <summary>Busca el USB (siempre si refresh es true; si no, solo la primera vez).</summary>
+        private async Task EnsurePathsAsync(bool refresh)
+        {
+            if (paths == null || refresh)
+            {
+                paths = await LibraryReader.FindAsync();
+            }
+            if (paths == null)
+            {
+                throw new UserFacingException(
+                    "no-library",
+                    "No encontré la carpeta roms en ningún disco USB. Conecta el disco y revisa que tenga la carpeta roms en la raíz.");
+            }
         }
 
         private static async Task LaunchAsync(JsonObject payload)
