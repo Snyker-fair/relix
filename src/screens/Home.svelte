@@ -2,40 +2,48 @@
   import { mode } from '../lib/core/bridge.js'
   import { getPlatform } from '../lib/core/platforms.js'
   import ChannelIcon from '../lib/ui/ChannelIcon.svelte'
-  import { CHANNELS } from '../lib/ui/channels.js'
   import Clock from '../lib/ui/Clock.svelte'
   import CoverArt from '../lib/ui/CoverArt.svelte'
+  import { plural } from '../lib/ui/format.js'
   import HintBar from '../lib/ui/HintBar.svelte'
   import { pushHandler } from '../lib/ui/input.js'
-  import Logo from '../lib/ui/Logo.svelte'
   import { library } from '../lib/ui/library.svelte.js'
-  import { plural } from '../lib/ui/format.js'
+  import Logo from '../lib/ui/Logo.svelte'
+  import { shelf } from '../lib/ui/shelf.svelte.js'
   import { sound } from '../lib/ui/sound.js'
 
   /**
    * @type {{
-   *   channelIndex: number,
+   *   focusedId: string | null,
    *   boot: boolean,
    *   onOpen: (systemId: string) => void,
    *   onLaunch: (game: any) => void,
-   *   onChannelChange: (index: number) => void,
+   *   onFocusChange: (id: string) => void,
    *   onOptions: () => void,
    * }}
    */
-  let { channelIndex, boot, onOpen, onLaunch, onChannelChange, onOptions } = $props()
+  let { focusedId, boot, onOpen, onLaunch, onFocusChange, onOptions } = $props()
 
-  // Después de las consolas va el ícono de Opciones (índice CHANNELS.length)
-  const OPTIONS_INDEX = CHANNELS.length
   const OPTIONS = { id: 'options', name: 'Opciones', shortName: 'Opciones' }
 
   /** @type {'channels'|'recent'} */
   let zone = $state('channels')
   let recentIndex = $state(0)
 
-  const onOptionsTile = $derived(channelIndex === OPTIONS_INDEX)
-  const channel = $derived(onOptionsTile ? OPTIONS : CHANNELS[channelIndex])
+  // Canales visibles y, al final, el ícono de Opciones
+  const ids = $derived([...shelf.channels.map((c) => c.id), 'options'])
+  const index = $derived.by(() => {
+    const found = focusedId ? ids.indexOf(focusedId) : -1
+    if (found >= 0) return found
+    // Por defecto, la primera consola (no Favoritos)
+    const firstConsole = shelf.channels.findIndex((c) => c.id !== 'favorites')
+    return firstConsole >= 0 ? firstConsole : 0
+  })
+  const onOptionsTile = $derived(ids[index] === 'options')
+  const channel = $derived(onOptionsTile ? OPTIONS : shelf.channels[index])
   const games = $derived(onOptionsTile ? [] : library.gamesFor(channel.id))
   const optionsFocused = $derived(zone === 'channels' && onOptionsTile)
+  const emptyLibrary = $derived(library.all.length === 0)
   const recent = $derived(library.recent.slice(0, 4))
 
   // Tres portadas en abanico para el canal enfocado: favoritos primero
@@ -45,8 +53,8 @@
 
   const meta = $derived.by(() => {
     if (onOptionsTile) {
-      const consoles = Object.keys(library.scans).length
-      return [plural(library.all.length, 'juego', 'juegos'), plural(consoles, 'consola escaneada', 'consolas escaneadas'), 'Escaneo por consola']
+      const consoles = shelf.channels.filter((c) => c.id !== 'favorites').length
+      return [plural(library.all.length, 'juego', 'juegos'), plural(consoles, 'consola', 'consolas'), 'Escaneo y preferencias']
     }
     if (channel.id === 'favorites') {
       const systems = new Set(games.map((g) => g.system)).size
@@ -55,19 +63,18 @@
     return [channel.maker, String(channel.year), plural(games.length, 'juego', 'juegos'), channel.emulatorName]
   })
 
-
   /** @param {number} i */
   function focusChannel(i) {
-    if (i === channelIndex) return
-    onChannelChange(i)
+    if (i === index || i < 0 || i >= ids.length) return
+    onFocusChange(ids[i])
     sound.move()
   }
 
   $effect(() =>
     pushHandler((action) => {
       if (zone === 'channels') {
-        if (action === 'left' && channelIndex > 0) focusChannel(channelIndex - 1)
-        else if (action === 'right' && channelIndex < OPTIONS_INDEX) focusChannel(channelIndex + 1)
+        if (action === 'left') focusChannel(index - 1)
+        else if (action === 'right') focusChannel(index + 1)
         else if (action === 'down' && recent.length > 0) {
           zone = 'recent'
           recentIndex = Math.min(recentIndex, recent.length - 1)
@@ -105,12 +112,20 @@
 <section class="hero" aria-live="polite">
   {#key channel.id}
     <div class="hero-text">
-      <h1>{channel.name}</h1>
-      <ul class="chips">
-        {#each meta as item (item)}
-          <li>{item}</li>
-        {/each}
-      </ul>
+      {#if emptyLibrary && onOptionsTile}
+        <h1>Aún no hay juegos</h1>
+        <p class="first-steps">
+          Copia tus juegos a <code>{library.romRoot}\&lt;consola&gt;</code> en el USB, por ejemplo
+          <code>{library.romFolderPath('ps2')}</code>, y escanéalos desde Opciones.
+        </p>
+      {:else}
+        <h1>{channel.name}</h1>
+        <ul class="chips">
+          {#each meta as item (item)}
+            <li>{item}</li>
+          {/each}
+        </ul>
+      {/if}
     </div>
     <div class="fan" class:hidden={onOptionsTile}>
       {#each fan as game, i (game.id)}
@@ -126,8 +141,8 @@
 
 <section class="shelf" class:dimmed={zone !== 'channels'}>
   <div class="tray"></div>
-  {#each CHANNELS as ch, i (ch.id)}
-    {@const focused = zone === 'channels' && i === channelIndex}
+  {#each shelf.channels as ch, i (ch.id)}
+    {@const focused = zone === 'channels' && i === index}
     <button
       class="channel"
       class:focused
@@ -148,8 +163,8 @@
     class:focused={optionsFocused}
     class:boot
     style:--tint="#8FA3BF"
-    style:--delay="{CHANNELS.length * 70}ms"
-    onmouseenter={() => ((zone = 'channels'), focusChannel(OPTIONS_INDEX))}
+    style:--delay="{shelf.channels.length * 70}ms"
+    onmouseenter={() => ((zone = 'channels'), focusChannel(ids.length - 1))}
     onclick={() => (sound.select(), onOptions())}
   >
     <span class="tile round focus-ring" class:focused={optionsFocused}>
@@ -255,6 +270,21 @@
     font-size: 26px;
     color: var(--ink-soft);
   }
+  .first-steps {
+    max-width: 980px;
+    margin: 28px 0 0;
+    font-size: 30px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+  .first-steps code {
+    font-family: var(--font-body);
+    font-weight: 700;
+    color: var(--ink);
+    background: var(--cloud);
+    padding: 2px 12px;
+    border-radius: 12px;
+  }
   .chips li:first-child {
     color: var(--ink);
   }
@@ -299,7 +329,8 @@
     right: 112px;
     top: 520px;
     display: flex;
-    justify-content: space-between;
+    /* de izquierda a derecha: con pocas consolas no quedan separadas a los extremos */
+    gap: 52px;
     padding: 30px 48px 0;
     transition: opacity 200ms ease;
   }

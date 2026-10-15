@@ -32,6 +32,9 @@ class Library {
   /** Consolas que se están escaneando en este momento */
   /** @type {string[]} */
   scanning = $state([])
+  /** Avance del primer escaneo, para la pantalla de carga */
+  /** @type {{ name: string, current: number, total: number } | null} */
+  progress = $state(null)
   /** @type {Record<string, LibraryGame[]>} */
   bySystem = $state({})
   /** Favoritos marcados o desmarcados desde Relix (pisan el valor de ES-DE) */
@@ -57,6 +60,7 @@ class Library {
 
   async load() {
     this.status = 'loading'
+    this.progress = null
     try {
       const raw = await loadLibrary()
       this.romRoot = raw.romRoot
@@ -73,9 +77,14 @@ class Library {
       const cache = /** @type {ScanCache|null} */ (load(SCANS_KEY, null))
       this.scans = cache && cache.driveId === raw.driveId ? cache.systems : {}
 
-      // Primera vez o disco nuevo: se escanean las consolas que no tienen lista
-      const missing = PLATFORMS.map((p) => p.id).filter((id) => !this.scans[id])
-      if (missing.length > 0) await this.#scan(missing)
+      // Primera vez o disco nuevo: se escanean las consolas que no tienen lista,
+      // de a una para mostrar el avance en la pantalla de carga
+      const missing = PLATFORMS.filter((p) => !this.scans[p.id])
+      for (const [i, p] of missing.entries()) {
+        this.progress = { name: p.shortName, current: i + 1, total: missing.length }
+        await this.#scan([p.id])
+      }
+      this.progress = null
 
       this.#rebuild()
       this.status = 'ready'

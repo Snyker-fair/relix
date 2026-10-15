@@ -115,16 +115,29 @@ Para GameCube se usa el núcleo de RetroArch porque el Dolphin standalone tiene
 roto el lanzamiento desde frontends en su última versión. Se cambia en
 `platforms.js`.
 
-## Etapas
+## Hecho
 
-- [x] **Etapa 1: interfaz.** Pantallas, navegación con control, favoritos,
-      "seguir jugando", lector de ES-DE y generador de URIs con tests.
-- [x] **Identidad Relix.** Logo, íconos de la app y guía de marca en `brand/`.
-- [ ] **Etapa 2: shell UWP en C#.** Código listo en `shell/` y probado contra
-      un shell simulado. **Falta validarlo en la consola** siguiendo
-      [`shell/README.md`](shell/README.md): control sin cursor, B sin salir,
-      lectura del USB, portadas y regreso desde el emulador.
-- [ ] **Etapa 3: tu biblioteca real.** Escanear con ES-DE en el PC, copiar al
-      USB y probar cada emulador de punta a punta.
-- [ ] **Etapa 4: pulido.** Búsqueda, ajustes de rutas desde la interfaz,
-      silenciar sonidos, temas por consola y videos de vista previa.
+- [x] **Interfaz:** inicio con canales, biblioteca en grilla, favoritos, "Seguir jugando".
+- [x] **Identidad Relix:** logo, íconos de la app y guía de marca en `brand/`.
+- [x] **Shell en C#:** WebView2, control nativo sin modo mouse, lectura del USB,
+      lanzamiento de emuladores y regreso con `relix:`. Validado en la consola.
+- [x] **Escaneo de `roms`:** nombres limpios, multidisco, Wii U en carpetas, ES-DE opcional.
+- [x] **Opciones:** biblioteca guardada y escaneo por consola.
+
+## Hoja de ruta
+
+1. **Arreglos rápidos:** Reintentar cuando no hay USB, ocultar consolas vacías,
+   avance del primer escaneo, posición en la grilla.
+2. **Portadas desde internet**, con miniaturas para que la grilla siga rápida.
+3. **Encontrar juegos:** saltar por letra (LT/RT), menú del juego (Y), búsqueda,
+   ordenar y filtrar, colecciones.
+4. **Respaldo en el USB** (`E:\relix\`) y **tiempo de juego** por juego, con
+   "ordenar por más jugados".
+5. **Más consolas** (SNES, GBA, N64, Mega Drive, Dreamcast, Xbox 360, 3DS) y
+   **elegir emulador** por consola o por juego.
+6. **Revisión del sistema** (USB, carpetas, emuladores instalados) y **primer uso guiado**.
+7. **Ficha más viva:** fanart de fondo, video de vista previa, protector de pantalla.
+8. **Portafolio:** GitHub público, tests en GitHub Actions, releases instalables,
+   interfaz en inglés.
+
+Más adelante: RetroAchievements, administrar la biblioteca desde el celular, perfiles.

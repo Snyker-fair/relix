@@ -2,7 +2,6 @@
   import { launch, mode, notifyReady, onShellEvent, ShellError } from './lib/core/bridge.js'
   import { buildLaunchUri } from './lib/core/launchUri.js'
   import { getPlatform } from './lib/core/platforms.js'
-  import { CHANNELS } from './lib/ui/channels.js'
   import { dispatch, startInput } from './lib/ui/input.js'
   import { library } from './lib/ui/library.svelte.js'
   import { sound } from './lib/ui/sound.js'
@@ -11,11 +10,14 @@
   import LaunchOverlay from './screens/LaunchOverlay.svelte'
   import Library from './screens/Library.svelte'
   import Options from './screens/Options.svelte'
+  import Status from './screens/Status.svelte'
 
   /** @typedef {{ name: 'home' } | { name: 'library', systemId: string }} MainScreen */
   /** @type {MainScreen | { name: 'options', from: MainScreen }} */
   let screen = $state({ name: 'home' })
-  let channelIndex = $state(1) // empieza en la primera consola, no en Favoritos
+  /** Canal con el foco en el inicio (id de consola, 'favorites' u 'options'). null = el primero */
+  /** @type {string|null} */
+  let focusedId = $state(null)
   let boot = $state(true)
 
   /** @type {{ game: any, uri: string } | null} */
@@ -54,7 +56,7 @@
 
   /** @param {string} systemId */
   function openLibrary(systemId) {
-    channelIndex = CHANNELS.findIndex((c) => c.id === systemId)
+    focusedId = systemId
     screen = { name: 'library', systemId }
   }
 
@@ -94,18 +96,13 @@
 </script>
 
 <Stage>
-  {#if library.status === 'loading'}
-    <p class="status">Desempolvando tus reliquias…</p>
-  {:else if library.status === 'error'}
-    <div class="status error">
-      <h1>No pudimos leer tu biblioteca</h1>
-      <p>{library.error}</p>
-    </div>
+  {#if library.status !== 'ready'}
+    <Status />
   {:else if screen.name === 'home'}
     <Home
-      {channelIndex}
+      {focusedId}
       {boot}
-      onChannelChange={(i) => (channelIndex = i)}
+      onFocusChange={(id) => (focusedId = id)}
       onOpen={openLibrary}
       onLaunch={startGame}
       onOptions={openOptions}
@@ -133,27 +130,6 @@
 </Stage>
 
 <style>
-  .status {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-content: center;
-    margin: 0;
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 56px;
-    text-align: center;
-  }
-  .status.error h1 {
-    margin: 0;
-    font-size: 64px;
-  }
-  .status.error p {
-    font-family: var(--font-body);
-    font-weight: 600;
-    font-size: 28px;
-    color: var(--ink-soft);
-  }
   .toast {
     position: absolute;
     /* arriba al centro: tapa por un momento la barra superior, nunca el contenido */

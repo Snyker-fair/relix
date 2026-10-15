@@ -8,14 +8,24 @@
   import { library } from '../lib/ui/library.svelte.js'
   import Logo from '../lib/ui/Logo.svelte'
   import PadButton from '../lib/ui/PadButton.svelte'
+  import { settings } from '../lib/ui/settings.svelte.js'
+  import { shelf } from '../lib/ui/shelf.svelte.js'
   import { sound } from '../lib/ui/sound.js'
 
   /** @type {{ onBack: () => void, onToast: (message: string) => void }} */
   let { onBack, onToast } = $props()
 
-  // Una fila por consola y, al final, "Escanear todo"
-  const ROWS = [...PLATFORMS.map((p) => p.id), 'all']
+  // Secciones: se cambian con LB/RB, igual que las consolas en la biblioteca
+  const SECTIONS = [
+    { id: 'library', name: 'Biblioteca' },
+    { id: 'preferences', name: 'Preferencias' },
+  ]
+  // Biblioteca: una fila por consola y, al final, "Escanear todo"
+  const LIBRARY_ROWS = [...PLATFORMS.map((p) => p.id), 'all']
+  const PREFERENCE_ROWS = ['empty', 'sounds']
 
+  let section = $state('library')
+  const ROWS = $derived(section === 'library' ? LIBRARY_ROWS : PREFERENCE_ROWS)
   let index = $state(0)
   /** true mientras corre "Escanear todo" (las filas muestran cuál va) */
   let scanningAll = $state(false)
@@ -80,6 +90,22 @@
     }
   }
 
+  function toggleRow() {
+    const id = ROWS[index]
+    if (id === 'empty') settings.toggleEmptyConsoles()
+    else if (id === 'sounds') settings.toggleSounds()
+    sound.select() // con los sonidos recién apagados, este ya no suena
+  }
+
+  /** @param {number} delta */
+  function switchSection(delta) {
+    const next = SECTIONS.findIndex((s) => s.id === section) + delta
+    if (next < 0 || next >= SECTIONS.length) return
+    section = SECTIONS[next].id
+    index = 0
+    sound.move()
+  }
+
   /** @param {number} next */
   function move(next) {
     if (next < 0 || next >= ROWS.length || next === index) return
@@ -91,7 +117,9 @@
     pushHandler((action) => {
       if (action === 'up') move(index - 1)
       else if (action === 'down') move(index + 1)
-      else if (action === 'a') scanRow()
+      else if (action === 'lb') switchSection(-1)
+      else if (action === 'rb') switchSection(1)
+      else if (action === 'a') section === 'library' ? scanRow() : toggleRow()
       else if (action === 'b' || action === 'start') (sound.back(), onBack())
     }),
   )
@@ -102,23 +130,48 @@
     <PadButton name="b" size={30} />
     <Logo size={34} />
   </button>
+
+  <nav class="tabs" aria-label="Secciones">
+    <button class="bumper" onclick={() => dispatch('lb')} aria-label="Sección anterior">
+      <PadButton name="lb" size={30} />
+    </button>
+    {#each SECTIONS as s (s.id)}
+      <button
+        class="tab"
+        class:active={s.id === section}
+        onclick={() => s.id !== section && ((section = s.id), (index = 0), sound.move())}
+      >
+        {s.name}
+      </button>
+    {/each}
+    <button class="bumper" onclick={() => dispatch('rb')} aria-label="Sección siguiente">
+      <PadButton name="rb" size={30} />
+    </button>
+  </nav>
+
   <Clock />
 </header>
 
 <section class="intro">
   <span class="intro-icon"><ChannelIcon id="options" color="#23304A" size={84} /></span>
   <h1>Opciones</h1>
-  <h2>Biblioteca</h2>
-  <p>
-    Relix guarda la lista de juegos de cada consola para abrir al instante. Escanea una consola
-    cuando agregues o quites juegos de su carpeta.
-  </p>
-  <ul class="chips">
-    <li>{plural(totalGames, 'juego', 'juegos')}</li>
-    <li>{library.romRoot}</li>
-  </ul>
+  {#if section === 'library'}
+    <h2>Biblioteca</h2>
+    <p>
+      Relix guarda la lista de juegos de cada consola para abrir al instante. Escanea una consola
+      cuando agregues o quites juegos de su carpeta.
+    </p>
+    <ul class="chips">
+      <li>{plural(totalGames, 'juego', 'juegos')}</li>
+      <li>{library.romRoot}</li>
+    </ul>
+  {:else}
+    <h2>Preferencias</h2>
+    <p>Qué se ve en el inicio y cómo suena Relix. Los cambios se guardan solos.</p>
+  {/if}
 </section>
 
+{#if section === 'library'}
 <section class="rows" aria-label="Escanear consolas">
   {#each ROWS as id, i (id)}
     {@const platform = PLATFORMS.find((p) => p.id === id)}
@@ -169,10 +222,50 @@
     </button>
   {/each}
 </section>
+{:else}
+<section class="rows" aria-label="Preferencias">
+  {#each ROWS as id, i (id)}
+    {@const focused = i === index}
+    {@const on = id === 'empty' ? settings.showEmptyConsoles : settings.sounds}
+    <button
+      class="row focus-ring"
+      class:focused
+      style:--tint="#8FA3BF"
+      onmouseenter={() => move(i)}
+      onclick={() => (i === index ? toggleRow() : move(i))}
+    >
+      <span class="badge neutral">
+        <ChannelIcon id={id === 'empty' ? 'eye' : 'sound'} color="#23304A" size={52} />
+      </span>
+      <span class="text">
+        {#if id === 'empty'}
+          <strong>Consolas sin juegos</strong>
+          <span>
+            {on
+              ? 'Se muestran en el inicio aunque estén vacías'
+              : shelf.hiddenCount > 0
+                ? `Ocultas en el inicio (ahora ${plural(shelf.hiddenCount, 'canal oculto', 'canales ocultos')})`
+                : 'Ocultas en el inicio'}
+          </span>
+        {:else}
+          <strong>Sonidos de la interfaz</strong>
+          <span>El tic al moverte y el pop al elegir</span>
+        {/if}
+      </span>
+      <span class="state">
+        {#if focused}<PadButton name="a" size={30} />{/if}
+        <span class="value" class:on>
+          {id === 'empty' ? (on ? 'Visibles' : 'Ocultas') : on ? 'Activados' : 'Desactivados'}
+        </span>
+      </span>
+    </button>
+  {/each}
+</section>
+{/if}
 
 <HintBar
   hints={[
-    { button: 'a', label: 'Escanear' },
+    { button: 'a', label: section === 'library' ? 'Escanear' : 'Cambiar' },
     { button: 'b', label: 'Volver' },
   ]}
 />
@@ -186,6 +279,32 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+  }
+  .tabs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.65);
+  }
+  .bumper {
+    padding: 0 8px;
+  }
+  .tab {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 26px;
+    padding: 8px 24px 6px;
+    border-radius: 999px;
+    color: var(--ink-soft);
+    transition:
+      background 160ms ease,
+      color 160ms ease;
+  }
+  .tab.active {
+    background: var(--ink);
+    color: var(--cloud);
   }
   .back {
     display: flex;
@@ -287,6 +406,19 @@
     width: 80px;
     height: 80px;
     border-radius: 26px;
+  }
+  .badge.neutral {
+    background: var(--sky);
+  }
+  .value {
+    padding: 6px 18px 8px;
+    border-radius: 999px;
+    background: var(--sky);
+    color: var(--ink-soft);
+  }
+  .value.on {
+    background: var(--pop);
+    color: var(--cloud);
   }
   .badge.refresh {
     background: var(--pop);

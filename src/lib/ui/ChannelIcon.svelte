@@ -56,6 +56,14 @@
     {/each}
     <circle cx="48" cy="48" r="23" fill={color} stroke="none" />
     <circle cx="48" cy="48" r="9" fill="#FFFFFF" stroke="none" />
+  {:else if id === 'eye'}
+    <!-- ojo: qué se ve en el inicio -->
+    <path d="M10 48s14-22 38-22 38 22 38 22-14 22-38 22S10 48 10 48Z" />
+    <circle cx="48" cy="48" r="9" fill={color} />
+  {:else if id === 'sound'}
+    <!-- parlante -->
+    <path d="M16 38h14l18-14v48L30 58H16Z" fill={color} />
+    <path d="M60 38a14 14 0 0 1 0 20M68 28a28 28 0 0 1 0 40" />
   {:else if id === 'refresh'}
     <!-- flecha circular -->
     <path d="M74 52a26 26 0 1 1-8-22" />

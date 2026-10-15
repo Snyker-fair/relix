@@ -1,6 +1,7 @@
 <script>
   import { getPlatform } from '../lib/core/platforms.js'
   import { CHANNELS } from '../lib/ui/channels.js'
+  import { shelf } from '../lib/ui/shelf.svelte.js'
   import Clock from '../lib/ui/Clock.svelte'
   import CoverArt from '../lib/ui/CoverArt.svelte'
   import HintBar from '../lib/ui/HintBar.svelte'
@@ -27,12 +28,18 @@
 
   let index = $state(0)
 
-  const channelIndex = $derived(CHANNELS.findIndex((c) => c.id === systemId))
-  const channel = $derived(CHANNELS[channelIndex])
+  // Pestañas: solo los canales visibles (los vacíos se ocultan, salvo que se pida verlos)
+  const channelIndex = $derived(shelf.channels.findIndex((c) => c.id === systemId))
+  const channel = $derived(CHANNELS.find((c) => c.id === systemId) ?? CHANNELS[0])
   const games = $derived(library.gamesFor(systemId))
   const game = $derived(games[Math.min(index, games.length - 1)])
   const platform = $derived(game ? getPlatform(game.system) : null)
   const favorite = $derived(game ? library.isFavorite(game) : false)
+  // Letra del juego enfocado, sin tildes; números y símbolos van en "#"
+  const letter = $derived.by(() => {
+    const first = (game?.sortName ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').charAt(0).toUpperCase()
+    return /[A-Z]/.test(first) ? first : '#'
+  })
 
   // Desplazamiento de la grilla: mantiene visible la fila enfocada
   const row = $derived(Math.floor(index / COLUMNS))
@@ -75,9 +82,9 @@
   /** @param {number} delta */
   function switchChannel(delta) {
     const next = channelIndex + delta
-    if (next < 0 || next >= CHANNELS.length) return
+    if (next < 0 || next >= shelf.channels.length) return
     sound.move()
-    onSwitch(CHANNELS[next].id)
+    onSwitch(shelf.channels[next].id)
   }
 
   $effect(() =>
@@ -107,7 +114,7 @@
     <button class="bumper" onclick={() => dispatch('lb')} aria-label="Consola anterior">
       <PadButton name="lb" size={30} />
     </button>
-    {#each CHANNELS as ch (ch.id)}
+    {#each shelf.channels as ch (ch.id)}
       <button
         class="tab"
         class:active={ch.id === systemId}
@@ -183,6 +190,13 @@
       {/each}
     </div>
   </section>
+{/if}
+
+{#if games.length > 0}
+  <div class="position" aria-live="polite">
+    <span class="letter">{letter}</span>
+    <span>Juego {Math.min(index, games.length - 1) + 1} de {games.length}</span>
+  </div>
 {/if}
 
 <HintBar
@@ -320,6 +334,31 @@
     line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+  /* ── Posición en la lista ─────────────── */
+  .position {
+    position: absolute;
+    left: 112px;
+    bottom: 60px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-weight: 700;
+    font-size: 26px;
+    color: var(--ink-soft);
+  }
+  .letter {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: var(--ink);
+    color: var(--cloud);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 26px;
+    padding-top: 3px;
   }
   .file {
     margin: 20px 0 0;
