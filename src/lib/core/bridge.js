@@ -136,7 +136,7 @@ export async function scanRoms(systemIds) {
   }
   // Navegador: "encuentra" los juegos de los gamelists de prueba, con una pausa
   // para que se vea el estado de escaneo en la demo.
-  await new Promise((resolve) => setTimeout(resolve, 600))
+  await new Promise((resolve) => setTimeout(resolve, 150))
   /** @type {Record<string, RomScan>} */
   const roms = {}
   for (const p of platforms) {
