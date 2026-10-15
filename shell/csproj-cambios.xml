@@ -1,0 +1,7 @@
+<!--
+  Cambio en RelixShell.csproj: empaqueta la interfaz compilada (carpeta ui)
+  dentro de la app. Pégalo justo antes de la línea final </Project>.
+-->
+<ItemGroup>
+  <Content Include="ui\**\*" />
+</ItemGroup>

@@ -115,6 +115,23 @@ export function romAbsolutePath(romRoot, game) {
 }
 
 /**
+ * URL de una imagen del juego servida por el shell (RelixShell).
+ * Va sin extensión: el shell prueba .png, .jpg, .jpeg y .webp en el USB.
+ *
+ *   mediaUrl('https://relix.example/media', game, 'covers')
+ *   -> https://relix.example/media/psx/covers/Final%20Fantasy%20VII%20(USA)/Final%20Fantasy%20VII%20(USA)
+ *
+ * @param {string} mediaBase
+ * @param {Game} game
+ * @param {string} type  uno de MEDIA_TYPES
+ */
+export function mediaUrl(mediaBase, game, type) {
+  const parts = game.path.split('/')
+  parts[parts.length - 1] = fileStem(game.path)
+  return [mediaBase.replace(/\/+$/, ''), game.system, type, ...parts.map(encodeURIComponent)].join('/')
+}
+
+/**
  * Rutas posibles de una imagen del juego, en orden. El shell revisa cuál existe.
  * @param {string} mediaRoot  p. ej. "E:\\ES-DE\\downloaded_media"
  * @param {Game} game

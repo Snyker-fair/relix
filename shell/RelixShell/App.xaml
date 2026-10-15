@@ -1,0 +1,11 @@
+<Application
+    x:Class="RelixShell.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:RelixShell">
+
+    <Application.Resources>
+        <!-- Estilos de WinUI 2: los necesita el control WebView2 -->
+        <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+    </Application.Resources>
+</Application>

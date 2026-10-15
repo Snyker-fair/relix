@@ -1,21 +1,29 @@
 /**
- * Puente entre la interfaz (Svelte) y el "shell" nativo en C#.
+ * Puente entre la interfaz (Svelte) y el shell nativo en C# (RelixShell).
  *
  * En la Xbox, la interfaz vive dentro de un control WebView2 de una app UWP.
- * La web no puede leer el USB ni abrir otras apps, así que se lo pide al shell
- * con mensajes:
+ * La web no puede leer el USB, abrir otras apps ni leer el control de forma
+ * confiable, así que se comunica con el shell por mensajes:
  *
- *   web  -> shell   { id, type, payload }
- *   shell -> web    { id, ok: true, result }  |  { id, ok: false, error }
+ *   Pedidos (web -> shell, con respuesta):
+ *     { id, type: 'loadLibrary', payload: { systems: ['psx', ...] } }
+ *        -> { id, ok: true, result: { romRoot, mediaBase, gamelists: { psx: '<xml>' } } }
+ *     { id, type: 'launch', payload: { uri, romPath } }
+ *        -> { id, ok: true, result: true }
+ *     Error: { id, ok: false, error: 'mensaje para el jugador', code: 'rom-missing' | ... }
  *
- * Tipos de mensaje (el shell en C# se implementa en la Etapa 2):
- *   'loadLibrary'  -> { romRoot, systems: { [id]: gamelistXml } , media: {...} }
- *   'launch'       -> { uri }   abre el emulador con Launcher.LaunchUriAsync
+ *   Avisos (web -> shell, sin respuesta):
+ *     { type: 'ready' }                  la interfaz ya puede recibir el control
  *
- * En el navegador (desarrollo / demo) no hay shell: usamos datos de prueba
- * y el lanzamiento solo se muestra en pantalla.
+ *   Eventos (shell -> web):
+ *     { event: 'input', action: 'up' }   botón del control (leído en C#)
+ *     { event: 'resumed' }               la consola volvió a Relix desde un emulador
+ *
+ * En el navegador (desarrollo / demo) no hay shell: se usan datos de prueba y
+ * el lanzamiento solo se muestra en pantalla.
  */
 
+import { PLATFORMS } from './platforms.js'
 import psx from '../../mock/gamelists/psx/gamelist.xml?raw'
 import psp from '../../mock/gamelists/psp/gamelist.xml?raw'
 import ps2 from '../../mock/gamelists/ps2/gamelist.xml?raw'
@@ -29,19 +37,37 @@ function webview() {
   return /** @type {any} */ (globalThis).chrome?.webview ?? null
 }
 
+/** 'xbox' dentro de RelixShell; 'browser' en el PC o en la demo */
 export const mode = webview() ? 'xbox' : 'browser'
+
+/** Error que viene del shell. `code` permite mostrar un mensaje a medida. */
+export class ShellError extends Error {
+  /** @param {string} message @param {string} [code] */
+  constructor(message, code) {
+    super(message)
+    this.name = 'ShellError'
+    this.code = code ?? 'error'
+  }
+}
 
 let nextId = 1
 /** @type {Map<number, {resolve: Function, reject: Function}>} */
 const pending = new Map()
+/** @type {Set<(e: {event: string, action?: string}) => void>} */
+const listeners = new Set()
 
 if (webview()) {
   webview().addEventListener('message', (/** @type {MessageEvent} */ e) => {
     const msg = e.data
+    if (msg?.event) {
+      for (const fn of listeners) fn(msg)
+      return
+    }
     const waiter = pending.get(msg?.id)
     if (!waiter) return
     pending.delete(msg.id)
-    msg.ok ? waiter.resolve(msg.result) : waiter.reject(new Error(msg.error ?? 'Error del shell'))
+    if (msg.ok) waiter.resolve(msg.result)
+    else waiter.reject(new ShellError(msg.error ?? 'El shell no respondió.', msg.code))
   })
 }
 
@@ -55,23 +81,41 @@ function request(type, payload) {
 }
 
 /**
+ * Escucha los eventos del shell (control, regreso desde un emulador).
+ * @param {(e: {event: string, action?: string}) => void} fn
+ * @returns {() => void} para dejar de escuchar
+ */
+export function onShellEvent(fn) {
+  listeners.add(fn)
+  return () => listeners.delete(fn)
+}
+
+/** Avisa al shell que la interfaz está lista para recibir el control. */
+export function notifyReady() {
+  if (mode === 'xbox') webview().postMessage({ type: 'ready' })
+}
+
+/**
  * @typedef {Object} RawLibrary
- * @property {string} romRoot                 Carpeta de ROMs en la consola
+ * @property {string} romRoot                  Carpeta de ROMs en la consola
+ * @property {string|null} mediaBase           URL base de las imágenes de ES-DE (null = sin portadas)
  * @property {Record<string, string>} gamelists  XML de ES-DE por sistema
- * @property {Record<string, string>} [covers]   id de juego -> URL de portada
  */
 
 /** @returns {Promise<RawLibrary>} */
 export async function loadLibrary() {
-  if (mode === 'xbox') return request('loadLibrary')
-  return { romRoot: 'E:\\roms', gamelists: MOCK_GAMELISTS, covers: {} }
+  if (mode === 'xbox') {
+    return request('loadLibrary', { systems: PLATFORMS.map((p) => p.id) })
+  }
+  return { romRoot: 'E:\\roms', mediaBase: null, gamelists: MOCK_GAMELISTS }
 }
 
 /**
  * Abre el emulador. En el navegador emite un evento para mostrar la URI.
  * @param {string} uri
+ * @param {string} romPath  Ruta del juego; el shell revisa que exista antes de lanzar
  */
-export async function launch(uri) {
-  if (mode === 'xbox') return request('launch', { uri })
+export async function launch(uri, romPath) {
+  if (mode === 'xbox') return request('launch', { uri, romPath })
   window.dispatchEvent(new CustomEvent('relix:launch-preview', { detail: { uri } }))
 }

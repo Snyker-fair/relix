@@ -3,6 +3,7 @@ import psxXml from '../src/mock/gamelists/psx/gamelist.xml?raw'
 import {
   fileStem,
   mediaCandidates,
+  mediaUrl,
   parseGamelist,
   parseYear,
   romAbsolutePath,
@@ -52,6 +53,19 @@ describe('rutas', () => {
   it('propone las rutas de portada de ES-DE respetando subcarpetas', () => {
     expect(mediaCandidates('E:\\ES-DE\\downloaded_media', game, 'covers')[0]).toBe(
       'E:\\ES-DE\\downloaded_media\\psx\\covers\\Final Fantasy VII (USA)\\Final Fantasy VII (USA).png',
+    )
+  })
+
+  it('arma la URL de portada que sirve el shell, sin extensión y escapada', () => {
+    expect(mediaUrl('https://relix.example/media/', game, 'covers')).toBe(
+      'https://relix.example/media/psx/covers/Final%20Fantasy%20VII%20(USA)/Final%20Fantasy%20VII%20(USA)',
+    )
+  })
+
+  it('escapa caracteres que romperían la URL', () => {
+    const [g] = parseGamelist('<gameList><game><path>./Ratchet &amp; Clank #1?.chd</path></game></gameList>', 'ps2')
+    expect(mediaUrl('https://relix.example/media', g, 'covers')).toBe(
+      'https://relix.example/media/ps2/covers/Ratchet%20%26%20Clank%20%231%3F',
     )
   })
 

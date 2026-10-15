@@ -1,9 +1,9 @@
 <script>
-  import { launch } from './lib/core/bridge.js'
+  import { launch, mode, notifyReady, onShellEvent, ShellError } from './lib/core/bridge.js'
   import { buildLaunchUri } from './lib/core/launchUri.js'
   import { getPlatform } from './lib/core/platforms.js'
   import { CHANNELS } from './lib/ui/channels.js'
-  import { startInput } from './lib/ui/input.js'
+  import { dispatch, startInput } from './lib/ui/input.js'
   import { library } from './lib/ui/library.svelte.js'
   import { sound } from './lib/ui/sound.js'
   import Stage from './lib/ui/Stage.svelte'
@@ -22,8 +22,17 @@
   /** @type {ReturnType<typeof setTimeout>} */
   let toastTimer
 
-  startInput()
-  library.load()
+  // En el navegador: teclado y control con la Gamepad API.
+  // En la Xbox: el control lo lee el shell en C# y llega como evento 'input'.
+  startInput({ keyboard: mode === 'browser', gamepad: mode === 'browser' })
+
+  onShellEvent((e) => {
+    if (e.event === 'input' && e.action) dispatch(/** @type {any} */ (e.action))
+    // La consola volvió a Relix al cerrar el emulador
+    else if (e.event === 'resumed') launching = null
+  })
+
+  library.load().finally(notifyReady)
 
   $effect(() => {
     const t = setTimeout(() => (boot = false), 1400)
@@ -56,14 +65,25 @@
     }
     sound.select()
     launching = { game, uri }
-    library.markPlayed(game)
     try {
-      await launch(uri)
+      await launch(uri, library.romPath(game))
+      library.markPlayed(game)
     } catch (e) {
       launching = null
       sound.error()
-      showToast(`No se pudo abrir ${platform.emulatorName}. Revisa que esté instalado en la consola.`)
+      showToast(launchErrorMessage(e, platform.emulatorName))
     }
+  }
+
+  /** @param {unknown} e @param {string} emulatorName */
+  function launchErrorMessage(e, emulatorName) {
+    if (e instanceof ShellError) {
+      if (e.code === 'emulator-missing') {
+        return `${emulatorName} no está instalado en la consola. Instálalo desde el Device Portal.`
+      }
+      return e.message
+    }
+    return `No se pudo abrir ${emulatorName}. Revisa que esté instalado en la consola.`
   }
 </script>
 

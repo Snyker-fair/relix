@@ -19,14 +19,9 @@
       }
     }),
   )
-
-  // En la Xbox, Relix queda en segundo plano mientras corre el emulador y
-  // vuelve sola gracias a launchOnExit. Al volver, cerramos el overlay.
-  $effect(() => {
-    const onVisible = () => document.visibilityState === 'visible' && mode === 'xbox' && onClose()
-    document.addEventListener('visibilitychange', onVisible)
-    return () => document.removeEventListener('visibilitychange', onVisible)
-  })
+  // En la Xbox, Relix queda en segundo plano mientras corre el emulador y la
+  // consola la vuelve a abrir con launchOnExit=relix:. El shell avisa con el
+  // evento 'resumed' y App.svelte cierra este overlay.
 </script>
 
 <div class="overlay" role="dialog" aria-modal="true" aria-label="Abriendo {game.name}">
@@ -45,7 +40,7 @@
         </p>
         <code>{uri}</code>
       {:else}
-        <p class="explain">Un momento…</p>
+        <p class="explain">Al cerrar el emulador vuelves aquí.</p>
       {/if}
     </div>
   </div>

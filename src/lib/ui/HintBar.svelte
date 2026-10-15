@@ -23,7 +23,7 @@
   .hints {
     position: absolute;
     right: 112px;
-    bottom: 48px;
+    bottom: 60px; /* dentro del área segura de la TV (5 %) */
     display: flex;
     gap: 36px;
   }

@@ -2,7 +2,7 @@
  * Estado compartido de la biblioteca (runes de Svelte 5).
  */
 import { loadLibrary } from '../core/bridge.js'
-import { parseGamelist, romAbsolutePath } from '../core/esde.js'
+import { mediaUrl, parseGamelist, romAbsolutePath } from '../core/esde.js'
 import { PLATFORMS } from '../core/platforms.js'
 import { load, save } from './storage.js'
 
@@ -40,7 +40,10 @@ class Library {
       for (const p of PLATFORMS) {
         const xml = raw.gamelists[p.id]
         bySystem[p.id] = xml
-          ? parseGamelist(xml, p.id).map((g) => ({ ...g, cover: raw.covers?.[g.id] }))
+          ? parseGamelist(xml, p.id).map((g) => ({
+              ...g,
+              cover: raw.mediaBase ? mediaUrl(raw.mediaBase, g, 'covers') : undefined,
+            }))
           : []
       }
       this.romRoot = raw.romRoot

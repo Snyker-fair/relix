@@ -104,14 +104,23 @@ function poll(t) {
 }
 
 let started = false
-export function startInput() {
+
+/**
+ * Activa las fuentes de entrada del navegador.
+ * En la Xbox ambas van apagadas: el shell lee el control en C# y llama a
+ * `dispatch` por cada botón (ver App.svelte), así nunca llega dos veces.
+ * @param {{ keyboard?: boolean, gamepad?: boolean }} [sources]
+ */
+export function startInput({ keyboard = true, gamepad = true } = {}) {
   if (started) return
   started = true
-  window.addEventListener('keydown', (e) => {
-    const action = KEYS[e.key] ?? KEYS[e.key.toLowerCase()]
-    if (!action) return
-    e.preventDefault()
-    dispatch(action)
-  })
-  requestAnimationFrame(poll)
+  if (keyboard) {
+    window.addEventListener('keydown', (e) => {
+      const action = KEYS[e.key] ?? KEYS[e.key.toLowerCase()]
+      if (!action) return
+      e.preventDefault()
+      dispatch(action)
+    })
+  }
+  if (gamepad) requestAnimationFrame(poll)
 }

@@ -17,11 +17,12 @@ manejarse con el control. Logo, colores, tipografía y voz de la marca están en
 ```
 ┌─────────────────────── App UWP "Relix" (Xbox) ──────────────────────┐
 │                                                                     │
-│   Shell en C# (Etapa 2)                 Interfaz en Svelte (esto)   │
+│   Shell en C# (shell/)                  Interfaz en Svelte (src/)   │
 │   ─────────────────────                 ─────────────────────────   │
+│   · Lee el control (nativo)           ──►  evento 'input'           │
 │   · Lee el USB (gamelists, portadas)  ◄──  bridge.loadLibrary()     │
 │   · Abre emuladores por URI           ◄──  bridge.launch(uri)       │
-│   · Vuelve al frente con relix:           (mensajes de WebView2)    │
+│   · Vuelve al frente con relix:       ──►  evento 'resumed'         │
 │                                                                     │
 └─────────────────────────────────┬───────────────────────────────────┘
                                   │ Launcher.LaunchUriAsync(...)
@@ -39,6 +40,11 @@ manejarse con el control. Logo, colores, tipografía y voz de la marca están en
   el emulador.
 - **La interfaz corre en WebView2** (Chromium), soportado en apps UWP de Xbox
   y depurable con las DevTools de Edge desde el PC.
+- **El control se lee en C#** (`Windows.Gaming.Input`) y llega a la interfaz
+  como mensajes. Así se evita el cursor del "modo mouse" y un bug conocido de
+  WebView2 en Xbox con el foco y el botón B.
+- **La interfaz y las portadas se sirven desde `https://relix.example`**, una
+  dirección interna que responde el shell sin salir a internet.
 
 ## Estructura
 
@@ -54,6 +60,8 @@ src/
   mock/gamelists/    gamelists de ejemplo con el formato real de ES-DE
 tests/               tests de launchUri y esde (vitest)
 brand/               logo, íconos de la app y guía de marca
+shell/               el shell en C# (RelixShell) y la guía para Visual Studio
+scripts/             copy-to-shell.mjs: copia la interfaz al proyecto de Visual Studio
 ```
 
 ## Comandos
@@ -64,6 +72,7 @@ npm run dev            # abre en el navegador con datos de prueba
 npm test               # corre los tests
 npm run build          # dist/ para empaquetar dentro de la app UWP
 npm run build:single   # dist-single/index.html autocontenido (demo)
+npm run build:shell -- "C:\Proyectos\RelixShell\RelixShell"   # compila y copia a Visual Studio
 ```
 
 **Controles en el navegador:** flechas para moverte, Enter para elegir, Esc para
@@ -106,16 +115,10 @@ roto el lanzamiento desde frontends en su última versión. Se cambia en
 - [x] **Etapa 1: interfaz.** Pantallas, navegación con control, favoritos,
       "seguir jugando", lector de ES-DE y generador de URIs con tests.
 - [x] **Identidad Relix.** Logo, íconos de la app y guía de marca en `brand/`.
-- [ ] **Etapa 2: shell UWP en C#.** Proyecto `RelixShell` en Visual Studio con WebView2.
-  - Copiar `brand/uwp/` a `Assets` y ajustar los recursos visuales del manifiesto.
-  - Declarar el protocolo `relix` y la capacidad `removableStorage` en el
-    manifiesto, con las asociaciones de tipo de archivo que exige UWP para
-    leer el USB (`.xml`, `.png`, `.jpg`…).
-  - Servir `dist/` dentro de la app y responder los mensajes `loadLibrary`
-    y `launch` del puente.
-  - Servir portadas desde el USB a la interfaz (a validar en la consola).
-  - Ajustes de Xbox: desactivar el modo mouse, que B no cierre la app,
-    pantalla completa sin márgenes de TV, y marcar la app como **Game**.
+- [ ] **Etapa 2: shell UWP en C#.** Código listo en `shell/` y probado contra
+      un shell simulado. **Falta validarlo en la consola** siguiendo
+      [`shell/README.md`](shell/README.md): control sin cursor, B sin salir,
+      lectura del USB, portadas y regreso desde el emulador.
 - [ ] **Etapa 3: tu biblioteca real.** Escanear con ES-DE en el PC, copiar al
       USB y probar cada emulador de punta a punta.
 - [ ] **Etapa 4: pulido.** Búsqueda, ajustes de rutas desde la interfaz,

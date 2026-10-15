@@ -1,0 +1,140 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.Web.WebView2.Core;
+using Windows.Storage;
+using Windows.Storage.Streams;
+
+namespace RelixShell
+{
+    /// <summary>
+    /// Responde los pedidos de la interfaz a https://relix.example sin pasar por la red:
+    ///
+    ///   /index.html, /assets/...   archivos de la interfaz (carpeta ui del paquete)
+    ///   /media/psx/covers/Juego    imágenes de ES-DE en el USB (prueba .png, .jpg, .jpeg, .webp)
+    ///
+    /// Todo pasa por el mismo origen, así la interfaz no tiene problemas de CORS.
+    /// </summary>
+    internal sealed class LocalServer
+    {
+        private const string MediaPrefix = "/media/";
+
+        private static readonly string[] ImageExtensions = { ".png", ".jpg", ".jpeg", ".webp" };
+
+        private static readonly Dictionary<string, string> ContentTypes =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { ".html", "text/html; charset=utf-8" },
+                { ".js", "text/javascript; charset=utf-8" },
+                { ".css", "text/css; charset=utf-8" },
+                { ".json", "application/json" },
+                { ".svg", "image/svg+xml" },
+                { ".png", "image/png" },
+                { ".jpg", "image/jpeg" },
+                { ".jpeg", "image/jpeg" },
+                { ".webp", "image/webp" },
+                { ".woff2", "font/woff2" },
+                { ".woff", "font/woff" },
+            };
+
+        private readonly CoreWebView2 core;
+        private readonly Func<LibraryPaths> getPaths;
+
+        public LocalServer(CoreWebView2 core, Func<LibraryPaths> getPaths)
+        {
+            this.core = core;
+            this.getPaths = getPaths;
+            core.AddWebResourceRequestedFilter(MainPage.Origin + "/*", CoreWebView2WebResourceContext.All);
+            core.WebResourceRequested += OnRequest;
+        }
+
+        private async void OnRequest(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs args)
+        {
+            var deferral = args.GetDeferral();
+            try
+            {
+                string path = Uri.UnescapeDataString(new Uri(args.Request.Uri).AbsolutePath);
+                bool isMedia = path.StartsWith(MediaPrefix, StringComparison.Ordinal);
+
+                StorageFile file = isMedia
+                    ? await FindMediaAsync(path.Substring(MediaPrefix.Length))
+                    : await FindUiFileAsync(path);
+
+                if (file == null)
+                {
+                    args.Response = core.Environment.CreateWebResourceResponse(null, 404, "Not Found", "");
+                    return;
+                }
+
+                IRandomAccessStream stream = await file.OpenReadAsync();
+                args.Response = core.Environment.CreateWebResourceResponse(
+                    stream, 200, "OK", Headers(file.FileType, isMedia));
+            }
+            catch (Exception)
+            {
+                args.Response = core.Environment.CreateWebResourceResponse(null, 500, "Error", "");
+            }
+            finally
+            {
+                deferral.Complete();
+            }
+        }
+
+        /// <summary>Archivos de la interfaz: carpeta ui dentro del paquete de la app.</summary>
+        private static async Task<StorageFile> FindUiFileAsync(string path)
+        {
+            if (path.Length == 0 || path == "/")
+            {
+                path = "/index.html";
+            }
+            if (path.Contains(".."))
+            {
+                return null;
+            }
+
+            try
+            {
+                return await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///ui" + path));
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>Imágenes de ES-DE: carpeta downloaded_media del USB.</summary>
+        private async Task<StorageFile> FindMediaAsync(string relative)
+        {
+            LibraryPaths paths = getPaths();
+            if (paths == null || relative.Contains(".."))
+            {
+                return null;
+            }
+
+            string basePath = Path.Combine(paths.MediaRoot, relative.Replace('/', '\\'));
+            foreach (string extension in ImageExtensions)
+            {
+                StorageFile file = await LibraryReader.TryGetFileAsync(basePath + extension);
+                if (file != null)
+                {
+                    return file;
+                }
+            }
+            return null;
+        }
+
+        private static string Headers(string extension, bool isMedia)
+        {
+            string contentType;
+            if (!ContentTypes.TryGetValue(extension, out contentType))
+            {
+                contentType = "application/octet-stream";
+            }
+
+            // Las portadas casi nunca cambian: que el WebView2 las guarde una semana.
+            string cache = isMedia ? "max-age=604800" : "no-cache";
+            return "Content-Type: " + contentType + "\r\nCache-Control: " + cache;
+        }
+    }
+}
