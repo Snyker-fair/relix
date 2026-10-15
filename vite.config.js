@@ -11,6 +11,17 @@ export default defineConfig(({ mode }) => ({
     outDir: mode === 'single' ? 'dist-single' : 'dist',
     // Chromium de WebView2 en Xbox es moderno; no hace falta transpilar a ES5
     target: 'es2022',
+    rollupOptions: {
+      // Nombres fijos, sin código aleatorio (index.js y no index-CDvk.js).
+      // Visual Studio arma el paquete con la lista de archivos de ui/; si los
+      // nombres cambiaran en cada compilación, podría quedar apuntando a
+      // archivos que ya no existen.
+      output: {
+        entryFileNames: 'assets/[name].js',
+        chunkFileNames: 'assets/[name].js',
+        assetFileNames: 'assets/[name][extname]',
+      },
+    },
   },
   test: {
     environment: 'jsdom',
