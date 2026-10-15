@@ -5,8 +5,9 @@
 **Tus reliquias, listas para jugar.**
 
 Frontend para lanzar juegos en una Xbox Series X|S en **Modo Desarrollador**.
-Lee tu biblioteca de **ES-DE** (gamelists y portadas) y abre cada juego en su
-emulador: RetroArch, XBSX2, PPSSPP, etc.
+Escanea la carpeta `roms` de tu USB, lista cada juego en su consola y lo abre
+en su emulador: RetroArch, XBSX2, PPSSPP, etc. Si además copias la carpeta de
+**ES-DE**, usa sus portadas, descripciones y favoritos.
 
 Estilo visual lúdico y redondeado, pensado para verse en una TV a 3 metros y
 manejarse con el control. Logo, colores, tipografía y voz de la marca están en
@@ -54,6 +55,7 @@ src/
     platforms.js     consolas, colores y cómo se lanza cada emulador
     launchUri.js     arma la URI de lanzamiento
     esde.js          lee gamelist.xml de ES-DE y calcula rutas de ROMs/portadas
+    scan.js          convierte los archivos de roms en juegos (nombres, multidisco, Wii U)
     bridge.js        habla con el shell en C# (o usa datos de prueba en el navegador)
   lib/ui/            piezas de interfaz: entrada del control, sonidos, portadas…
   screens/           Home (fila de canales), Library (grilla), LaunchOverlay

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Web.WebView2.Core;
 using Windows.Data.Json;
@@ -49,12 +50,16 @@ namespace RelixShell
             // Fondo celeste mientras carga, sin destello blanco (formato AARRGGBB).
             // Estas variables deben quedar antes de crear el WebView2.
             Environment.SetEnvironmentVariable("WEBVIEW2_DEFAULT_BACKGROUND_COLOR", "FFDDEBF7");
+
+            // Sonido: el navegador solo deja sonar audio después de un clic o una
+            // tecla. En Relix el control llega por mensajes desde C#, que no
+            // cuentan como gesto, así que sin esto los sonidos quedan mudos.
+            string browserArguments = "--autoplay-policy=no-user-gesture-required";
 #if DEBUG
             // Permite inspeccionar la interfaz desde Edge en el PC (edge://inspect).
-            Environment.SetEnvironmentVariable(
-                "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS",
-                "--enable-features=msEdgeDevToolsWdpRemoteDebugging");
+            browserArguments += " --enable-features=msEdgeDevToolsWdpRemoteDebugging";
 #endif
+            Environment.SetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", browserArguments);
 
             await Web.EnsureCoreWebView2Async();
             CoreWebView2 core = Web.CoreWebView2;
@@ -152,17 +157,48 @@ namespace RelixShell
             {
                 throw new UserFacingException(
                     "no-library",
-                    "No encontré la carpeta ES-DE en ningún disco USB. Conecta el disco y revisa que tenga las carpetas ES-DE y roms en la raíz.");
+                    "No encontré la carpeta roms en ningún disco USB. Conecta el disco y revisa que tenga la carpeta roms en la raíz.");
             }
 
             var gamelists = new JsonObject();
-            foreach (IJsonValue system in payload.GetNamedArray("systems", new JsonArray()))
+            var roms = new JsonObject();
+
+            // Cada consola llega como { id: "psx", folders: ["psx", "ps1", "playstation"] }
+            foreach (IJsonValue value in payload.GetNamedArray("systems", new JsonArray()))
             {
-                string id = system.GetString();
+                JsonObject system = value.GetObject();
+                string id = system.GetNamedString("id");
+
+                // Datos de ES-DE (opcionales)
                 string xml = await LibraryReader.ReadGamelistAsync(paths, id);
                 if (xml != null)
                 {
                     gamelists.SetNamedValue(id, JsonValue.CreateStringValue(xml));
+                }
+
+                // Juegos que están de verdad en el USB
+                var folderNames = new List<string>();
+                foreach (IJsonValue name in system.GetNamedArray("folders", new JsonArray()))
+                {
+                    folderNames.Add(name.GetString());
+                }
+                if (folderNames.Count == 0)
+                {
+                    folderNames.Add(id);
+                }
+
+                RomFolder scan = await LibraryReader.ScanRomsAsync(paths, folderNames);
+                if (scan != null)
+                {
+                    var files = new JsonArray();
+                    foreach (string file in scan.Files)
+                    {
+                        files.Add(JsonValue.CreateStringValue(file));
+                    }
+                    var entry = new JsonObject();
+                    entry.SetNamedValue("folder", JsonValue.CreateStringValue(scan.Folder));
+                    entry.SetNamedValue("files", files);
+                    roms.SetNamedValue(id, entry);
                 }
             }
 
@@ -170,6 +206,7 @@ namespace RelixShell
             result.SetNamedValue("romRoot", JsonValue.CreateStringValue(paths.RomRoot));
             result.SetNamedValue("mediaBase", JsonValue.CreateStringValue(Origin + "/media"));
             result.SetNamedValue("gamelists", gamelists);
+            result.SetNamedValue("roms", roms);
             return result;
         }
 

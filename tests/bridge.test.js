@@ -41,7 +41,8 @@ describe('bridge con el shell de Xbox', () => {
     const pending = bridge.loadLibrary()
     const msg = shell.sent.at(-1)
     expect(msg.type).toBe('loadLibrary')
-    expect(msg.payload.systems).toEqual(['psx', 'psp', 'ps2', 'gc', 'wiiu'])
+    expect(msg.payload.systems.map((s) => s.id)).toEqual(['psx', 'psp', 'ps2', 'gc', 'wiiu'])
+    expect(msg.payload.systems[0].folders).toEqual(['psx', 'ps1', 'playstation'])
 
     shell.emit({ id: msg.id, ok: true, result: { romRoot: 'F:\\roms', mediaBase: 'https://relix.example/media', gamelists: {} } })
     await expect(pending).resolves.toMatchObject({ romRoot: 'F:\\roms' })

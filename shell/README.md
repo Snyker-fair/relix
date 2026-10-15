@@ -5,14 +5,14 @@ El shell es la parte en C# que corre en la Xbox. Tiene cuatro trabajos:
 1. **Mostrar la interfaz.** La interfaz de Relix corre dentro de un WebView2 a
    pantalla completa.
 2. **Leer el control** de forma nativa y pasarle cada botón a la interfaz.
-3. **Leer el USB:** los gamelists y las portadas de ES-DE.
+3. **Leer el USB:** escanea `roms\<consola>\` y, si existe, lee los gamelists y portadas de ES-DE.
 4. **Abrir los emuladores** y volver a Relix cuando los cierras.
 
 ```
 Shell/
   GamepadInput.cs   control de Xbox -> acciones (up, a, b, lb...)
   LocalServer.cs    sirve la interfaz y las portadas en https://relix.example
-  LibraryReader.cs  encuentra el USB y lee los gamelists
+  LibraryReader.cs  encuentra el USB, escanea roms y lee los gamelists
 MainPage.xaml(.cs)  el WebView2 y los mensajes con la interfaz
 App.xaml(.cs)       arranque, sin modo mouse, vuelta desde el emulador (relix:)
 ```
@@ -120,9 +120,22 @@ que cambies la interfaz** y luego vuelve a presionar F5.
    el disco. Los emuladores también lo necesitan.
 4. Conecta el disco a la Xbox.
 
-Con estos gamelists de prueba vas a ver la biblioteca de ejemplo. Como no hay
-juegos de verdad, al presionar A en uno, Relix te avisará que no encontró el
-juego en el USB. Ese aviso confirma que todo el camino funciona.
+Relix lista lo que encuentra en `roms\<consola>\`. Con la carpeta de prueba,
+que tiene `roms` vacía, verás cada consola con el aviso de que no hay juegos y
+en qué carpeta ponerlos. Copia un juego real en esa carpeta y aparecerá solo.
+
+Nombres de carpeta que Relix reconoce:
+
+| Consola | Carpeta dentro de `roms` | Formatos |
+|---|---|---|
+| PS1 | `psx`, `ps1` o `playstation` | .chd .cue .pbp .m3u |
+| PSP | `psp` | .iso .cso .chd .pbp |
+| PS2 | `ps2` o `playstation2` | .chd .iso .cso |
+| GameCube | `gc`, `gamecube` o `ngc` | .rvz .iso .gcz .gcm .ciso |
+| Wii U | `wiiu` | .wua .wux .wud y carpetas con `code\*.rpx` |
+
+Juegos de varios discos: usa un `.m3u` (Relix muestra solo ese) o deja los
+discos con `(Disc 1)`, `(Disc 2)` en el nombre (Relix muestra solo el disco 1).
 
 ### 9. Ejecuta en la Xbox
 
@@ -154,7 +167,9 @@ así el emulador tiene todos los recursos de la consola.
 | Error de compilación con `XamlControlsResources` o `WebView2` | Falta el paso 1 (NuGet Microsoft.UI.Xaml) |
 | Error con `GamepadInput`, `LocalServer` o `LibraryReader` | Falta el paso 3 (carpeta Shell) |
 | Pantalla celeste vacía | Falta el paso 6 o el 7: la carpeta `ui` no quedó en el paquete |
-| "No encontré la carpeta ES-DE en ningún disco USB" | La carpeta `ES-DE` debe estar en la raíz del disco. Corre la USB Permissions Tool |
+| "No encontré la carpeta roms en ningún disco USB" | La carpeta `roms` debe estar en la raíz del disco. Corre la USB Permissions Tool |
+| Un juego no aparece | Revisa que su formato esté en la tabla del paso 8 y que esté a 3 carpetas de profundidad como máximo |
+| No hay sonido | Revisa que `MainPage.xaml.cs` tenga la línea `--autoplay-policy=no-user-gesture-required` |
 | "… no está instalado en la consola" | Ese emulador no está instalado, o su protocolo es otro |
 | Aparece un cursor o B saca a Relix | Avísame: es justo lo que hay que validar en la consola |
 

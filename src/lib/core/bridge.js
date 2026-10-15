@@ -6,8 +6,12 @@
  * confiable, así que se comunica con el shell por mensajes:
  *
  *   Pedidos (web -> shell, con respuesta):
- *     { id, type: 'loadLibrary', payload: { systems: ['psx', ...] } }
- *        -> { id, ok: true, result: { romRoot, mediaBase, gamelists: { psx: '<xml>' } } }
+ *     { id, type: 'loadLibrary', payload: { systems: [{ id: 'psx', folders: ['psx', 'ps1'] }, ...] } }
+ *        -> { id, ok: true, result: {
+ *             romRoot, mediaBase,
+ *             gamelists: { psx: '<xml>' },                          (los que existan)
+ *             roms: { psx: { folder: 'ps1', files: ['Crash (USA).chd', 'FF7/FF7.m3u'] } }
+ *           } }
  *     { id, type: 'launch', payload: { uri, romPath } }
  *        -> { id, ok: true, result: true }
  *     Error: { id, ok: false, error: 'mensaje para el jugador', code: 'rom-missing' | ... }
@@ -100,12 +104,16 @@ export function notifyReady() {
  * @property {string} romRoot                  Carpeta de ROMs en la consola
  * @property {string|null} mediaBase           URL base de las imágenes de ES-DE (null = sin portadas)
  * @property {Record<string, string>} gamelists  XML de ES-DE por sistema
+ * @property {Record<string, {folder: string, files: string[]}>} [roms]
+ *   Archivos encontrados en roms\<carpeta>\ por sistema (solo en la Xbox)
  */
 
 /** @returns {Promise<RawLibrary>} */
 export async function loadLibrary() {
   if (mode === 'xbox') {
-    return request('loadLibrary', { systems: PLATFORMS.map((p) => p.id) })
+    return request('loadLibrary', {
+      systems: PLATFORMS.map((p) => ({ id: p.id, folders: p.folders })),
+    })
   }
   return { romRoot: 'E:\\roms', mediaBase: null, gamelists: MOCK_GAMELISTS }
 }

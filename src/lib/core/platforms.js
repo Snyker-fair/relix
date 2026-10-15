@@ -23,7 +23,8 @@
  * @property {string} emulatorName
  * @property {Launcher|null} launcher
  * @property {string} [launcherNote]
- * @property {string[]} extensions
+ * @property {string[]} folders     Nombres aceptados para su carpeta en roms\ (el primero que exista)
+ * @property {string[]} extensions  Formatos de juego que Relix lista al escanear
  */
 
 /** @type {Platform[]} */
@@ -38,6 +39,7 @@ export const PLATFORMS = [
     ink: '#3A1606',
     emulatorName: 'RetroArch · SwanStation',
     launcher: { kind: 'retroarch', protocol: 'retroarch', core: 'swanstation_libretro.dll' },
+    folders: ['psx', 'ps1', 'playstation'],
     extensions: ['chd', 'cue', 'pbp', 'm3u'],
   },
   {
@@ -50,7 +52,8 @@ export const PLATFORMS = [
     ink: '#0A1A47',
     emulatorName: 'PPSSPP',
     launcher: { kind: 'standalone', protocol: 'ppsspp', exe: 'ppsspp.exe' },
-    extensions: ['iso', 'cso', 'chd'],
+    folders: ['psp'],
+    extensions: ['iso', 'cso', 'chd', 'pbp'],
   },
   {
     id: 'ps2',
@@ -62,7 +65,8 @@ export const PLATFORMS = [
     ink: '#03302B',
     emulatorName: 'XBSX2',
     launcher: { kind: 'standalone', protocol: 'xbsx2', exe: 'xbsx2.exe' },
-    extensions: ['chd', 'iso'],
+    folders: ['ps2', 'playstation2'],
+    extensions: ['chd', 'iso', 'cso'],
   },
   {
     id: 'gc',
@@ -76,7 +80,8 @@ export const PLATFORMS = [
     // El Dolphin standalone tiene roto el lanzamiento desde frontends en su
     // última versión; DevStore recomienda el núcleo de RetroArch para esto.
     launcher: { kind: 'retroarch', protocol: 'retroarch', core: 'dolphin_libretro.dll' },
-    extensions: ['rvz', 'iso', 'gcz'],
+    folders: ['gc', 'gamecube', 'ngc'],
+    extensions: ['rvz', 'iso', 'gcz', 'gcm', 'ciso'],
   },
   {
     id: 'wiiu',
@@ -89,7 +94,8 @@ export const PLATFORMS = [
     emulatorName: 'Cemu (experimental)',
     launcher: null,
     launcherNote: 'El port de Cemu para Xbox aún no tiene un protocolo de lanzamiento documentado.',
-    extensions: ['wua', 'wux', 'rpx'],
+    folders: ['wiiu'],
+    extensions: ['wua', 'wux', 'wud', 'rpx'],
   },
 ]
 

@@ -63,9 +63,11 @@ export function fileStem(relPath) {
  * Lee un gamelist.xml de ES-DE.
  * @param {string} xml
  * @param {string} system  id del sistema (psx, ps2...)
+ * @param {{ includeHidden?: boolean }} [options]  includeHidden: devolver también
+ *   los juegos ocultos (con hidden: true), para que el escaneo no los vuelva a mostrar
  * @returns {Game[]}
  */
-export function parseGamelist(xml, system) {
+export function parseGamelist(xml, system, { includeHidden = false } = {}) {
   const doc = new DOMParser().parseFromString(xml, 'application/xml')
   if (doc.getElementsByTagName('parsererror').length > 0) {
     throw new Error(`El gamelist.xml de "${system}" no es un XML válido.`)
@@ -99,19 +101,24 @@ export function parseGamelist(xml, system) {
     })
   }
 
-  return games
-    .filter((g) => !g.hidden)
-    .sort((a, b) => a.sortName.localeCompare(b.sortName, 'es', { sensitivity: 'base' }))
+  return games.filter((g) => includeHidden || !g.hidden).sort(bySortName)
+}
+
+/** Orden alfabético en español, sin distinguir mayúsculas ni tildes */
+export function bySortName(/** @type {Game} */ a, /** @type {Game} */ b) {
+  return a.sortName.localeCompare(b.sortName, 'es', { sensitivity: 'base' })
 }
 
 /**
  * Ruta absoluta (estilo Windows) del juego en la consola.
  * @param {string} romRoot  p. ej. "E:\\roms"
  * @param {Game} game
+ * @param {string} [folder]  carpeta real de la consola dentro de roms (p. ej. "ps1");
+ *   por defecto, el id del sistema
  */
-export function romAbsolutePath(romRoot, game) {
+export function romAbsolutePath(romRoot, game, folder = game.system) {
   const root = romRoot.replace(/[\\/]+$/, '')
-  return [root, game.system, ...game.path.split('/')].join('\\')
+  return [root, folder, ...game.path.split('/')].join('\\')
 }
 
 /**

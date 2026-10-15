@@ -65,6 +65,12 @@
     sound.move()
   }
 
+  /** ['chd', 'iso', 'cso'] -> ".chd, .iso o .cso" */
+  function formatList(/** @type {string[]} */ extensions) {
+    const list = extensions.map((e) => `.${e}`)
+    return list.length > 1 ? `${list.slice(0, -1).join(', ')} o ${list.at(-1)}` : list[0]
+  }
+
   /** @param {number} delta */
   function switchChannel(delta) {
     const next = channelIndex + delta
@@ -125,8 +131,11 @@
       <p>En cualquier consola, pon el foco en un juego y presiona <PadButton name="x" size={30} /> para guardarlo aquí.</p>
     {:else}
       <p>
-        Copia tus juegos a <code>{library.romRoot}\{channel.id}</code> y el
-        <code>gamelist.xml</code> de ES-DE a <code>ES-DE\gamelists\{channel.id}</code> en el mismo disco.
+        Copia tus juegos a <code>{library.romFolderPath(channel.id)}</code> y vuelve a abrir Relix.
+        Formatos: {formatList(channel.extensions)}.
+      </p>
+      <p class="hint">
+        Para portadas y descripciones, agrega la carpeta <code>ES-DE</code> en la raíz del mismo disco.
       </p>
     {/if}
   </section>
@@ -142,7 +151,12 @@
         {#each chips as chip (chip)}<li>{chip}</li>{/each}
       </ul>
       {#if platform.launcher}
-        <p class="desc">{game.description || 'Sin descripción.'}</p>
+        {#if game.description}
+          <p class="desc">{game.description}</p>
+        {:else}
+          <!-- Sin datos de ES-DE: el nombre del archivo dice qué versión es -->
+          <p class="file">{game.path.split('/').pop()}</p>
+        {/if}
         <p class="via">Se abre con {platform.emulatorName}</p>
       {:else}
         <p class="note">{platform.launcherNote}</p>
@@ -305,6 +319,15 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+  .file {
+    margin: 20px 0 0;
+    padding: 10px 16px;
+    border-radius: 16px;
+    background: var(--sky);
+    font-size: 21px;
+    color: var(--ink-soft);
+    overflow-wrap: anywhere;
+  }
   .via {
     margin: auto 0 0;
     padding-top: 16px;
@@ -378,6 +401,10 @@
     font-size: 30px;
     line-height: 1.5;
     color: var(--ink-soft);
+  }
+  .empty p.hint {
+    margin-top: 18px;
+    font-size: 25px;
   }
   .empty code {
     font-family: var(--font-body);

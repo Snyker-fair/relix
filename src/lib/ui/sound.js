@@ -15,8 +15,26 @@ function audio() {
       return null
     }
   }
-  if (ctx.state === 'suspended') ctx.resume().catch(() => {})
+  if (ctx.state === 'suspended') {
+    ctx.resume().catch(() => {})
+    warnIfBlocked()
+  }
   return ctx
+}
+
+let warned = false
+/** Deja una pista en la consola (edge://inspect) si el navegador bloquea el audio. */
+function warnIfBlocked() {
+  if (warned) return
+  setTimeout(() => {
+    if (ctx?.state === 'suspended' && !warned) {
+      warned = true
+      console.warn(
+        '[Relix] El audio está bloqueado por la política de autoplay. En la Xbox, ' +
+          'el shell debe pasar --autoplay-policy=no-user-gesture-required al WebView2.',
+      )
+    }
+  }, 1000)
 }
 
 /**
