@@ -130,7 +130,7 @@
     <div class="fan" class:hidden={onOptionsTile}>
       {#each fan as game, i (game.id)}
         <div class="fan-card" style:--i={i - (fan.length - 1) / 2}>
-          <CoverArt {game} platform={getPlatform(game.system)} width={210} />
+          <CoverArt {game} platform={getPlatform(game.system)} width={210} height={294} thumb />
         </div>
       {:else}
         <p class="empty">Todavía no hay juegos aquí.</p>
@@ -187,7 +187,9 @@
           onmouseenter={() => ((zone = 'recent'), (recentIndex = i))}
           onclick={() => onLaunch(game)}
         >
-          <CoverArt {game} {platform} width={64} showTitle={false} />
+          <span class="recent-cover">
+            <CoverArt {game} {platform} width={64} height={84} showTitle={false} thumb />
+          </span>
           <span class="recent-text">
             <strong>{game.name}</strong>
             <span>{platform.shortName}</span>
@@ -301,7 +303,8 @@
   .fan-card {
     position: absolute;
     left: 50%;
-    top: 30px;
+    /* apoyadas abajo: PS1 es más baja y PSP más alta */
+    bottom: 6px;
     transform: translateX(calc(-50% + var(--i) * 165px)) rotate(calc(var(--i) * 8deg));
     transform-origin: 50% 120%;
     box-shadow: 0 18px 30px -16px rgb(35 48 74 / 0.45);
@@ -425,6 +428,13 @@
   }
   .recent-item :global(.cover) {
     border-radius: 16px;
+  }
+  .recent-cover {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 64px;
+    height: 84px;
   }
   .recent-text {
     display: flex;

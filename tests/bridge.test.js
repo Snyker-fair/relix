@@ -88,4 +88,52 @@ describe('bridge con el shell de Xbox', () => {
     bridge.notifyReady()
     expect(shell.sent.at(-1)).toEqual({ type: 'ready' })
   })
+
+  it('pide la lista de portadas de libretro con el nombre de carpeta de la consola', async () => {
+    const ps2 = (await import('../src/lib/core/platforms.js')).getPlatform('ps2')
+    const pending = bridge.coverIndex(/** @type {any} */ (ps2))
+    const msg = shell.sent.at(-1)
+    expect(msg).toMatchObject({ type: 'coverIndex', payload: { system: 'ps2', libretro: 'Sony - PlayStation 2' } })
+    shell.emit({ id: msg.id, ok: true, result: { names: ['Ookami (USA)'] } })
+    await expect(pending).resolves.toEqual(['Ookami (USA)'])
+  })
+
+  it('baja portadas y reporta el avance solo de esa consola', async () => {
+    const ps2 = (await import('../src/lib/core/platforms.js')).getPlatform('ps2')
+    /** @type {number[][]} */
+    const progress = []
+    const items = [{ key: 'Okami (USA)', remote: 'Ookami (USA)' }]
+    const pending = bridge.downloadCovers(/** @type {any} */ (ps2), items, (done, total) => progress.push([done, total]))
+    const msg = shell.sent.at(-1)
+    expect(msg).toMatchObject({ type: 'downloadCovers', payload: { system: 'ps2', libretro: 'Sony - PlayStation 2', items } })
+
+    shell.emit({ event: 'coverProgress', system: 'psx', done: 1, total: 9 }) // otra consola: se ignora
+    shell.emit({ event: 'coverProgress', system: 'ps2', done: 1, total: 1 })
+    shell.emit({ id: msg.id, ok: true, result: { saved: ['Okami (USA)'], failed: [] } })
+    await expect(pending).resolves.toEqual({ saved: ['Okami (USA)'], failed: [] })
+    expect(progress).toEqual([[1, 1]])
+
+    shell.emit({ event: 'coverProgress', system: 'ps2', done: 2, total: 2 }) // ya terminó: no escucha
+    expect(progress).toEqual([[1, 1]])
+  })
+
+  it('pide qué portadas hay en el USB', async () => {
+    const pending = bridge.listCovers(['psx'])
+    const msg = shell.sent.at(-1)
+    expect(msg).toMatchObject({ type: 'listCovers', payload: { systems: ['psx'] } })
+    shell.emit({ id: msg.id, ok: true, result: { covers: { psx: ['FF7 (USA)/FF7 (USA).png'] } } })
+    await expect(pending).resolves.toEqual({ psx: ['FF7 (USA)/FF7 (USA).png'] })
+  })
+
+  it('arma las URLs de la portada y su miniatura', () => {
+    const bases = { mediaBase: 'https://relix.example/media', thumbBase: 'https://relix.example/thumb' }
+    expect(bridge.coverUrls('psx', 'FF7 (USA)/FF7 #1.png', bases)).toEqual({
+      cover: 'https://relix.example/media/psx/covers/FF7%20(USA)/FF7%20%231.png',
+      thumb: 'https://relix.example/thumb/psx/FF7%20(USA)/FF7%20%231.png',
+    })
+    // Shell anterior sin miniaturas: usa la original
+    expect(bridge.coverUrls('ps2', 'Okami.jpg', { mediaBase: bases.mediaBase }).thumb).toBe(
+      'https://relix.example/media/ps2/covers/Okami.jpg',
+    )
+  })
 })

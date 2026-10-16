@@ -6,8 +6,9 @@
 
 Frontend para lanzar juegos en una Xbox Series X|S en **Modo Desarrollador**.
 Escanea la carpeta `roms` de tu USB, lista cada juego en su consola y lo abre
-en su emulador: RetroArch, XBSX2, PPSSPP, etc. Si además copias la carpeta de
-**ES-DE**, usa sus portadas, descripciones y favoritos.
+en su emulador: RetroArch, XBSX2, PPSSPP, etc. Descarga las portadas desde la
+misma consola (libretro-thumbnails, las de RetroArch) y, si además copias la
+carpeta de **ES-DE**, usa sus portadas, descripciones y favoritos.
 
 Estilo visual lúdico y redondeado, pensado para verse en una TV a 3 metros y
 manejarse con el control. Logo, colores, tipografía y voz de la marca están en
@@ -49,6 +50,12 @@ manejarse con el control. Logo, colores, tipografía y voz de la marca están en
   **Opciones** (ícono de engranaje o botón Menú ≡) se re-escanea consola por consola.
 - **La interfaz y las portadas se sirven desde `https://relix.example`**, una
   dirección interna que responde el shell sin salir a internet.
+- **Portadas sin cuentas.** En **Opciones › Portadas** Relix baja las portadas de
+  [libretro-thumbnails](https://github.com/libretro-thumbnails) por consola: nombre
+  exacto (Redump) o mismo título con la región preferida. Si el nombre es dudoso
+  ("GT4", "Persona 4"), no adivina: lo deja para **Elegir a mano** con las
+  candidatas más parecidas. La grilla usa miniaturas JPG que el shell crea una vez.
+  Cada consola tiene la forma de su caja: PS1 cuadrada, PSP alta.
 
 ## Estructura
 
@@ -59,11 +66,13 @@ src/
     launchUri.js     arma la URI de lanzamiento
     esde.js          lee gamelist.xml de ES-DE y calcula rutas de ROMs/portadas
     scan.js          convierte los archivos de roms en juegos (nombres, multidisco, Wii U)
+    coverMatch.js    busca la portada de cada juego en la lista de libretro
     bridge.js        habla con el shell en C# (o usa datos de prueba en el navegador)
   lib/ui/            piezas de interfaz: entrada del control, sonidos, portadas…
-  screens/           Home (fila de canales), Library (grilla), Options, LaunchOverlay
+  screens/           Home, Library (grilla), Options, CoverPicker (elegir portada), LaunchOverlay
   mock/gamelists/    gamelists de ejemplo con el formato real de ES-DE
-tests/               tests de launchUri y esde (vitest)
+  mock/libretro-names.json  nombres reales de libretro (demo y tests)
+tests/               tests de la lógica y del puente con el shell (vitest)
 brand/               logo, íconos de la app y guía de marca
 shell/               el shell en C# (RelixShell) y la guía para Visual Studio
 scripts/             copy-to-shell.mjs: copia la interfaz al proyecto de Visual Studio
@@ -95,11 +104,12 @@ se desactiva ese "modo mouse".
 |---|---|
 | ROMs | `E:\roms\<sistema>\` |
 | Gamelists | `E:\ES-DE\gamelists\<sistema>\gamelist.xml` |
-| Portadas | `E:\ES-DE\downloaded_media\<sistema>\covers\` |
+| Portadas | `E:\ES-DE\downloaded_media\<sistema>\covers\` (las de ES-DE y las que baja Relix) |
+| Caché de Relix | `E:\relix\cache\` (listas de libretro y miniaturas; se puede borrar) |
 
 `<sistema>` usa los nombres de ES-DE: `psx`, `psp`, `ps2`, `gc`, `wiiu`.
 Así puedes escanear y descargar portadas con ES-DE en el PC y copiar las
-carpetas tal cual al disco USB.
+carpetas tal cual al disco USB, y lo que baja Relix también lo ve ES-DE.
 
 ## Emuladores configurados
 
@@ -123,12 +133,15 @@ roto el lanzamiento desde frontends en su última versión. Se cambia en
       lanzamiento de emuladores y regreso con `relix:`. Validado en la consola.
 - [x] **Escaneo de `roms`:** nombres limpios, multidisco, Wii U en carpetas, ES-DE opcional.
 - [x] **Opciones:** biblioteca guardada y escaneo por consola.
+- [x] **Arreglos rápidos:** Reintentar cuando no hay USB, ocultar consolas vacías,
+      avance del primer escaneo, posición en la grilla.
+- [x] **Portadas desde internet:** libretro sin cuentas, elegir a mano, miniaturas,
+      forma de caja por consola y región preferida.
 
 ## Hoja de ruta
 
-1. **Arreglos rápidos:** Reintentar cuando no hay USB, ocultar consolas vacías,
-   avance del primer escaneo, posición en la grilla.
-2. **Portadas desde internet**, con miniaturas para que la grilla siga rápida.
+1. ~~Arreglos rápidos~~ (hecho)
+2. ~~Portadas desde internet~~ (hecho)
 3. **Encontrar juegos:** saltar por letra (LT/RT), menú del juego (Y), búsqueda,
    ordenar y filtrar, colecciones.
 4. **Respaldo en el USB** (`E:\relix\`) y **tiempo de juego** por juego, con
@@ -137,6 +150,7 @@ roto el lanzamiento desde frontends en su última versión. Se cambia en
    **elegir emulador** por consola o por juego.
 6. **Revisión del sistema** (USB, carpetas, emuladores instalados) y **primer uso guiado**.
 7. **Ficha más viva:** fanart de fondo, video de vista previa, protector de pantalla.
+   Con ScreenScraper, que además completa las portadas de PSP que libretro no tiene.
 8. **Portafolio:** GitHub público, tests en GitHub Actions, releases instalables,
    interfaz en inglés.
 

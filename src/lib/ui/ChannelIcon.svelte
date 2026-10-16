@@ -68,5 +68,22 @@
     <!-- flecha circular -->
     <path d="M74 52a26 26 0 1 1-8-22" />
     <path d="M70 14v18H52" />
+  {:else if id === 'cover'}
+    <!-- caja con un paisaje: portada -->
+    <rect x="20" y="10" width="56" height="76" rx="9" />
+    <path d="M30 70 43 53l9 10 8-7 8 14" />
+    <circle cx="58" cy="31" r="6" fill={color} />
+  {:else if id === 'download'}
+    <!-- flecha hacia la bandeja: bajar -->
+    <path d="M48 14v42M31 40l17 17 17-17" />
+    <path d="M18 62v10a9 9 0 0 0 9 9h42a9 9 0 0 0 9-9V62" />
+  {:else if id === 'pick'}
+    <!-- caja con visto bueno: elegir a mano -->
+    <rect x="20" y="10" width="56" height="76" rx="9" />
+    <path d="M34 49l10 10 19-21" />
+  {:else if id === 'globe'}
+    <!-- globo: región -->
+    <circle cx="48" cy="48" r="34" />
+    <path d="M14 48h68M48 14c-13 10-13 58 0 68M48 14c13 10 13 58 0 68" />
   {/if}
 </svg>

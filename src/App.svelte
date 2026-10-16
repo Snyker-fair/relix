@@ -6,6 +6,7 @@
   import { library } from './lib/ui/library.svelte.js'
   import { sound } from './lib/ui/sound.js'
   import Stage from './lib/ui/Stage.svelte'
+  import CoverPicker from './screens/CoverPicker.svelte'
   import Home from './screens/Home.svelte'
   import LaunchOverlay from './screens/LaunchOverlay.svelte'
   import Library from './screens/Library.svelte'
@@ -13,7 +14,12 @@
   import Status from './screens/Status.svelte'
 
   /** @typedef {{ name: 'home' } | { name: 'library', systemId: string }} MainScreen */
-  /** @type {MainScreen | { name: 'options', from: MainScreen }} */
+  /**
+   * Opciones recuerda desde dónde se abrió, para volver ahí con B.
+   * @type {MainScreen
+   *   | { name: 'options', from: MainScreen, section?: string }
+   *   | { name: 'coverPicker', from: MainScreen }}
+   */
   let screen = $state({ name: 'home' })
   /** Canal con el foco en el inicio (id de consola, 'favorites' u 'options'). null = el primero */
   /** @type {string|null} */
@@ -51,7 +57,7 @@
   }
 
   function openOptions() {
-    if (screen.name !== 'options') screen = { name: 'options', from: screen }
+    if (screen.name === 'home' || screen.name === 'library') screen = { name: 'options', from: screen }
   }
 
   /** @param {string} systemId */
@@ -115,9 +121,17 @@
       onLaunch={startGame}
       onOptions={openOptions}
     />
+  {:else if screen.name === 'options'}
+    {@const from = screen.from}
+    <Options
+      initialSection={screen.section}
+      onBack={() => (screen = from)}
+      onToast={showToast}
+      onPickCovers={() => (screen = { name: 'coverPicker', from })}
+    />
   {:else}
     {@const from = screen.from}
-    <Options onBack={() => (screen = from)} onToast={showToast} />
+    <CoverPicker onBack={() => (screen = { name: 'options', from, section: 'covers' })} onToast={showToast} />
   {/if}
 
   {#if launching}

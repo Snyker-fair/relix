@@ -1,18 +1,38 @@
 <script>
   /**
-   * Portada de un juego. Si ES-DE trajo imagen, se usa esa.
-   * Si no, se dibuja una portada provisoria con el color de la consola,
-   * variando tono y adornos según el nombre (cada juego se ve distinto).
+   * Portada de un juego, con la forma de la caja de su consola (PS1 es
+   * cuadrada, PSP es alta...). Si hay imagen se usa; si no, se dibuja una
+   * portada provisoria con el color de la consola, variando tono y adornos
+   * según el nombre (cada juego se ve distinto).
+   *
+   *   width           ancho; el alto sale de la forma de la caja
+   *   width + height  espacio máximo: la caja entra entera en ese espacio
+   *   thumb           usar la miniatura (grillas y listas) en vez de la original
    */
   import ChannelIcon from './ChannelIcon.svelte'
 
-  /** @type {{ game: any, platform: any, width?: number, showTitle?: boolean }} */
-  let { game, platform, width = 184, showTitle = true } = $props()
+  /**
+   * @type {{ game: any, platform: any, width?: number, height?: number, showTitle?: boolean, thumb?: boolean }}
+   */
+  let { game, platform, width = 184, height, showTitle = true, thumb = false } = $props()
 
-  let failed = $state(false)
+  /** La imagen que no cargó; si la URL cambia, se vuelve a intentar */
+  let failedSrc = $state('')
+  /** La imagen que ya se ve (mientras carga, queda la portada de color debajo) */
+  let loadedSrc = $state('')
+  const src = $derived((thumb ? (game.thumb ?? game.cover) : game.cover) ?? '')
+  const showImage = $derived(src !== '' && src !== failedSrc)
+
+  const aspect = $derived(platform.coverAspect ?? 0.71)
+  const size = $derived.by(() => {
+    if (height !== undefined && width / height > aspect) {
+      return { w: Math.round(height * aspect), h: height }
+    }
+    return { w: width, h: Math.round(width / aspect) }
+  })
 
   /** Hash simple y estable del nombre */
-  function hash(str) {
+  function hash(/** @type {string} */ str) {
     let h = 2166136261
     for (let i = 0; i < str.length; i++) {
       h ^= str.charCodeAt(i)
@@ -32,30 +52,37 @@
   const blobX = $derived(20 + (seed % 60))
   const blobY = $derived(10 + ((seed >> 6) % 40))
   const blobSize = $derived(55 + ((seed >> 12) % 35))
-  const height = $derived(Math.round(width * 1.4))
-  const titleSize = $derived(Math.max(14, Math.round(width / (game.name.length > 22 ? 9.5 : 7.5))))
+  const titleSize = $derived(Math.max(14, Math.round(size.w / (game.name.length > 22 ? 9.5 : 7.5))))
 </script>
 
 <div
   class="cover"
-  style:width="{width}px"
-  style:height="{height}px"
+  style:width="{size.w}px"
+  style:height="{size.h}px"
   style:--bg={bg}
   style:--ink={platform.ink}
 >
-  {#if game.cover && !failed}
-    <img src={game.cover} alt={game.name} onerror={() => (failed = true)} />
-  {:else}
+  {#if !showImage || loadedSrc !== src}
     <div
       class="blob"
       style:left="{blobX}%"
       style:top="{blobY}%"
       style:width="{blobSize}%"
     ></div>
-    <div class="icon"><ChannelIcon id={platform.id} color={platform.ink} size={width * 0.22} /></div>
+    <div class="icon"><ChannelIcon id={platform.id} color={platform.ink} size={size.w * 0.22} /></div>
     {#if showTitle}
       <p class="title" style:font-size="{titleSize}px">{game.name}</p>
     {/if}
+  {/if}
+  {#if showImage}
+    <img
+      {src}
+      alt={game.name}
+      decoding="async"
+      class:loaded={loadedSrc === src}
+      onload={() => (loadedSrc = src)}
+      onerror={() => (failedSrc = src)}
+    />
   {/if}
 </div>
 
@@ -69,10 +96,17 @@
     color: var(--ink);
   }
   img {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
+    opacity: 0;
+    transition: opacity 180ms ease;
+  }
+  img.loaded {
+    opacity: 1;
   }
   .blob {
     position: absolute;

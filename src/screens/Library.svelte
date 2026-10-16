@@ -24,7 +24,9 @@
 
   const COLUMNS = 5
   const COVER_W = 184
-  const ROW_H = 258 + 34 // alto de portada + separación
+  const GAP_Y = 34
+  /** Alto visible de la grilla (sin el margen para el salto del foco) */
+  const VIEW_H = 836 - 42 - 12
 
   let index = $state(0)
 
@@ -41,12 +43,26 @@
     return /[A-Z]/.test(first) ? first : '#'
   })
 
+  // Cada caja tiene la forma de su consola: las filas no miden lo mismo
+  // (PS1 es cuadrada, PSP es alta). Dónde empieza cada fila:
+  const rowTops = $derived.by(() => {
+    const tops = [0]
+    for (let start = 0; start < games.length; start += COLUMNS) {
+      const tallest = Math.max(
+        ...games.slice(start, start + COLUMNS).map((g) => Math.round(COVER_W / (getPlatform(g.system)?.coverAspect ?? 0.71))),
+      )
+      tops.push(tops.at(-1) + tallest + GAP_Y)
+    }
+    return tops
+  })
+
   // Desplazamiento de la grilla: mantiene visible la fila enfocada
   const row = $derived(Math.floor(index / COLUMNS))
   let scrollRow = $state(0)
   $effect(() => {
-    if (row < scrollRow) scrollRow = row
-    else if (row > scrollRow + 1) scrollRow = row - 1
+    let top = Math.min(scrollRow, row)
+    while (top < row && rowTops[row + 1] - GAP_Y - rowTops[top] > VIEW_H) top++
+    scrollRow = top
   })
 
   // Al cambiar de consola, volver al primer juego
@@ -144,7 +160,8 @@
         Formatos: {formatList(channel.extensions)}.
       </p>
       <p class="hint">
-        Para portadas y descripciones, agrega la carpeta <code>ES-DE</code> en la raíz del mismo disco.
+        Las portadas se buscan en <strong>Opciones › Portadas</strong>. Las descripciones vienen de
+        <code>ES-DE</code>, si tienes esa carpeta en el mismo disco.
       </p>
     {/if}
   </section>
@@ -152,7 +169,7 @@
   <section class="detail" style:--tint={platform.color}>
     {#key game.id}
       <div class="detail-cover">
-        <CoverArt {game} {platform} width={250} showTitle={false} />
+        <CoverArt {game} {platform} width={250} height={350} showTitle={false} />
         {#if favorite}<span class="heart" aria-label="Favorito">♥</span>{/if}
       </div>
       <h1 class:long={game.name.length > 24}>{game.name}</h1>
@@ -174,7 +191,7 @@
   </section>
 
   <section class="grid-window">
-    <div class="grid" style:transform="translateY({-scrollRow * ROW_H}px)">
+    <div class="grid" style:transform="translateY({-(rowTops[scrollRow] ?? 0)}px)">
       {#each games as g, i (g.id)}
         {@const p = getPlatform(g.system)}
         <button
@@ -184,7 +201,7 @@
           onmouseenter={() => move(i)}
           onclick={() => (i === index ? onLaunch(g) : move(i))}
         >
-          <CoverArt game={g} platform={p} width={COVER_W} />
+          <CoverArt game={g} platform={p} width={COVER_W} thumb />
           {#if library.isFavorite(g)}<span class="mini-heart" aria-label="Favorito">♥</span>{/if}
         </button>
       {/each}
@@ -275,7 +292,7 @@
   .detail-cover {
     position: relative;
     flex: none;
-    width: 250px;
+    align-self: flex-start;
     animation: bob 300ms var(--spring) both;
   }
   .detail-cover :global(.cover) {
@@ -402,6 +419,8 @@
     display: grid;
     grid-template-columns: repeat(5, 184px);
     gap: 34px 28px;
+    /* en Favoritos se mezclan formas: las cajas se apoyan abajo, como en una repisa */
+    align-items: end;
     transition: transform 320ms var(--spring);
   }
   .cell {

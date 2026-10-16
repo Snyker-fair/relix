@@ -6,14 +6,22 @@
  *     instante la próxima vez, y se actualiza desde Opciones consola por consola;
  *   - los gamelists de ES-DE (opcionales), que se leen en cada inicio porque
  *     son pocos archivos.
+ *
+ * Las portadas están en ES-DE/downloaded_media/<consola>/covers/, con el
+ * nombre del juego. El shell dice cuáles hay; así la interfaz solo pide las
+ * que existen y sabe cuántas faltan.
  */
-import { loadLibrary, scanRoms } from '../core/bridge.js'
+import { coverUrls, listCovers, loadLibrary, scanRoms } from '../core/bridge.js'
+import { coverKey } from '../core/coverMatch.js'
 import { mediaUrl, parseGamelist, romAbsolutePath } from '../core/esde.js'
 import { getPlatform, PLATFORMS } from '../core/platforms.js'
 import { gamesFromFiles, mergeWithGamelist } from '../core/scan.js'
 import { load, save } from './storage.js'
 
-/** @typedef {import('../core/esde.js').Game & { cover?: string }} LibraryGame */
+/**
+ * @typedef {import('../core/esde.js').Game & { cover?: string, thumb?: string }} LibraryGame
+ *   cover: portada original (panel de detalle); thumb: miniatura (grilla)
+ */
 /** @typedef {{ folder: string, files: string[], scannedAt: number }} SavedScan */
 /** @typedef {{ driveId: string, systems: Record<string, SavedScan> }} ScanCache */
 /** @typedef {{ id: string, added: number, removed: number, total: number }} ScanChange */
@@ -42,8 +50,14 @@ class Library {
   favoriteOverrides = $state(load('favorites', {}))
   /** @type {string[]} */
   recentIds = $state(load('recent', []))
+  /** Portadas que hay en el USB, por consola: ["Okami (USA).png", ...] */
+  /** @type {Record<string, string[]>} */
+  coverFiles = $state({})
 
   all = $derived(Object.values(this.bySystem).flat())
+
+  /** @type {Map<string, LibraryGame>} */
+  byId = $derived(new Map(this.all.map((g) => [g.id, g])))
 
   favorites = $derived(this.all.filter((g) => this.isFavorite(g)))
 
@@ -56,7 +70,14 @@ class Library {
   #listed = {}
   /** @type {string|null} */
   #mediaBase = null
+  /** @type {string|null} */
+  #thumbBase = null
+  /** El shell manda la lista de portadas (si es una versión anterior, no) */
+  #knowsCovers = false
   #driveId = ''
+  /** Portadas reemplazadas desde Relix: cambia la URL para no ver la anterior guardada */
+  /** @type {Record<string, number>} */
+  #coverRevisions = load('coverRevisions', {})
 
   async load() {
     this.status = 'loading'
@@ -65,6 +86,9 @@ class Library {
       const raw = await loadLibrary()
       this.romRoot = raw.romRoot
       this.#mediaBase = raw.mediaBase
+      this.#thumbBase = raw.thumbBase ?? null
+      this.#knowsCovers = raw.covers !== undefined
+      this.coverFiles = raw.covers ?? {}
       this.#driveId = raw.driveId
       this.#listed = Object.fromEntries(
         PLATFORMS.map((p) => {
@@ -133,7 +157,7 @@ class Library {
     save(SCANS_KEY, { driveId: this.#driveId, systems: next })
   }
 
-  /** Arma los juegos de cada consola con el escaneo guardado y ES-DE */
+  /** Arma los juegos de cada consola con el escaneo guardado, ES-DE y las portadas */
   #rebuild() {
     /** @type {Record<string, LibraryGame[]>} */
     const bySystem = {}
@@ -143,12 +167,59 @@ class Library {
       const games = scan
         ? mergeWithGamelist(listed, gamesFromFiles(scan.files, p))
         : listed.filter((g) => !g.hidden)
-      bySystem[p.id] = games.map((g) => ({
-        ...g,
-        cover: this.#mediaBase ? mediaUrl(this.#mediaBase, g, 'covers') : undefined,
-      }))
+      // "okami (usa)" -> "Okami (USA).png"
+      const covers = new Map((this.coverFiles[p.id] ?? []).map((f) => [f.replace(/\.[^./]+$/, '').toLowerCase(), f]))
+      bySystem[p.id] = games.map((g) => ({ ...g, ...this.#coverFor(g, covers) }))
     }
     this.bySystem = bySystem
+  }
+
+  /**
+   * @param {import('../core/esde.js').Game} game
+   * @param {Map<string, string>} covers  portadas de su consola por clave en minúsculas
+   */
+  #coverFor(game, covers) {
+    if (!this.#knowsCovers) {
+      // Shell anterior: se pide la portada sin saber si existe (el shell prueba extensiones)
+      const cover = this.#mediaBase ? mediaUrl(this.#mediaBase, game, 'covers') : undefined
+      return { cover, thumb: cover }
+    }
+    const key = coverKey(game).toLowerCase()
+    const file = covers.get(key)
+    if (!file) return { cover: undefined, thumb: undefined }
+
+    const urls = coverUrls(game.system, file, { mediaBase: this.#mediaBase, thumbBase: this.#thumbBase })
+    const revision = this.#coverRevisions[`${game.system}/${key}`]
+    const suffix = revision ? `?v=${revision}` : ''
+    return { cover: urls.cover && urls.cover + suffix, thumb: urls.thumb && urls.thumb + suffix }
+  }
+
+  /**
+   * Vuelve a leer qué portadas hay (después de descargar).
+   * @param {string[]} systemIds
+   * @param {string[]} [changedKeys]  portadas recién reemplazadas (coverKey de cada juego)
+   */
+  async refreshCovers(systemIds, changedKeys = []) {
+    if (changedKeys.length > 0) {
+      const now = Date.now()
+      for (const id of systemIds) {
+        for (const key of changedKeys) this.#coverRevisions[`${id}/${key.toLowerCase()}`] = now
+      }
+      save('coverRevisions', this.#coverRevisions)
+    }
+    const files = await listCovers(systemIds)
+    this.coverFiles = { ...this.coverFiles, ...files }
+    this.#knowsCovers = true
+    this.#rebuild()
+  }
+
+  /**
+   * Cuántos juegos de una consola tienen portada.
+   * @param {string} systemId
+   */
+  coverCount(systemId) {
+    const games = this.gamesFor(systemId)
+    return { withCover: games.filter((g) => g.cover).length, total: games.length }
   }
 
   /** @param {string} systemId  id de consola o 'favorites' */

@@ -26,6 +26,7 @@ namespace RelixShell
         public static MainPage Current { get; private set; }
 
         private readonly GamepadInput gamepad = new GamepadInput();
+        private readonly CoverService covers = new CoverService();
         private LocalServer server;
         private LibraryPaths paths;
 
@@ -67,7 +68,7 @@ namespace RelixShell
             core.Settings.IsZoomControlEnabled = false;
             core.Settings.IsStatusBarEnabled = false;
 
-            server = new LocalServer(core, () => paths);
+            server = new LocalServer(core, () => paths, covers);
             core.WebMessageReceived += OnWebMessage;
 
             // Si el proceso que dibuja la web se cae, se vuelve a cargar la interfaz.
@@ -142,6 +143,21 @@ namespace RelixShell
                         await LaunchAsync(payload);
                         Reply(id, JsonValue.CreateBooleanValue(true));
                         break;
+
+                    case "listCovers":
+                        await EnsurePathsAsync(refresh: false);
+                        var listed = new JsonObject();
+                        listed.SetNamedValue("covers", await ListCoversAsync(SystemIds(payload)));
+                        Reply(id, listed);
+                        break;
+
+                    case "coverIndex":
+                        Reply(id, await CoverIndexAsync(payload));
+                        break;
+
+                    case "downloadCovers":
+                        Reply(id, await DownloadCoversAsync(payload));
+                        break;
                 }
             }
             catch (UserFacingException ex)
@@ -164,9 +180,9 @@ namespace RelixShell
 
             var gamelists = new JsonObject();
             // Cada consola llega como { id: "psx", folders: ["psx", "ps1", "playstation"] }
-            foreach (IJsonValue value in payload.GetNamedArray("systems", new JsonArray()))
+            List<string> systemIds = SystemIds(payload);
+            foreach (string id in systemIds)
             {
-                string id = value.GetObject().GetNamedString("id");
                 string xml = await LibraryReader.ReadGamelistAsync(paths, id);
                 if (xml != null)
                 {
@@ -179,8 +195,98 @@ namespace RelixShell
             // Identifica el disco: si cambia, la interfaz descarta la lista guardada.
             result.SetNamedValue("driveId", JsonValue.CreateStringValue(paths.DriveRoot + "|" + paths.DriveName));
             result.SetNamedValue("mediaBase", JsonValue.CreateStringValue(Origin + "/media"));
+            result.SetNamedValue("thumbBase", JsonValue.CreateStringValue(Origin + "/thumb"));
             result.SetNamedValue("gamelists", gamelists);
+            result.SetNamedValue("covers", await ListCoversAsync(systemIds));
             return result;
+        }
+
+        // ── Portadas ────────────────────────────────────────────────────────
+
+        /// <summary>{ psx: ["Okami (USA).png", ...] } para las consolas pedidas.</summary>
+        private async Task<JsonObject> ListCoversAsync(List<string> systemIds)
+        {
+            var result = new JsonObject();
+            foreach (string id in systemIds)
+            {
+                result.SetNamedValue(id, StringArray(await CoverService.ListCoversAsync(paths, id)));
+            }
+            return result;
+        }
+
+        /// <summary>Lista de portadas de libretro para una consola: { names: [...] }.</summary>
+        private async Task<IJsonValue> CoverIndexAsync(JsonObject payload)
+        {
+            await EnsurePathsAsync(refresh: false);
+            List<string> names = await covers.GetIndexAsync(paths, payload.GetNamedString("libretro"));
+            var result = new JsonObject();
+            result.SetNamedValue("names", StringArray(names));
+            return result;
+        }
+
+        /// <summary>
+        /// Baja portadas al USB. Pedido: { system, libretro, items: [{ key, remote }] }.
+        /// Mientras baja, manda eventos coverProgress { system, done, total }.
+        /// </summary>
+        private async Task<IJsonValue> DownloadCoversAsync(JsonObject payload)
+        {
+            await EnsurePathsAsync(refresh: false);
+            string systemId = payload.GetNamedString("system");
+
+            var items = new List<CoverRequest>();
+            foreach (IJsonValue value in payload.GetNamedArray("items", new JsonArray()))
+            {
+                JsonObject item = value.GetObject();
+                items.Add(new CoverRequest(item.GetNamedString("key"), item.GetNamedString("remote")));
+            }
+
+            CoverDownloadResult download = await covers.DownloadAsync(
+                paths, systemId, payload.GetNamedString("libretro"), items,
+                (done, total) =>
+                {
+                    var progress = new JsonObject();
+                    progress.SetNamedValue("event", JsonValue.CreateStringValue("coverProgress"));
+                    progress.SetNamedValue("system", JsonValue.CreateStringValue(systemId));
+                    progress.SetNamedValue("done", JsonValue.CreateNumberValue(done));
+                    progress.SetNamedValue("total", JsonValue.CreateNumberValue(total));
+                    Post(progress);
+                });
+
+            var failed = new JsonArray();
+            foreach (KeyValuePair<string, string> failure in download.Failed)
+            {
+                var entry = new JsonObject();
+                entry.SetNamedValue("key", JsonValue.CreateStringValue(failure.Key));
+                entry.SetNamedValue("error", JsonValue.CreateStringValue(failure.Value));
+                failed.Add(entry);
+            }
+            var result = new JsonObject();
+            result.SetNamedValue("saved", StringArray(download.Saved));
+            result.SetNamedValue("failed", failed);
+            return result;
+        }
+
+        /// <summary>Ids de "systems", que llegan como ["psx"] o como [{ id: "psx", ... }].</summary>
+        private static List<string> SystemIds(JsonObject payload)
+        {
+            var ids = new List<string>();
+            foreach (IJsonValue value in payload.GetNamedArray("systems", new JsonArray()))
+            {
+                ids.Add(value.ValueType == JsonValueType.String
+                    ? value.GetString()
+                    : value.GetObject().GetNamedString("id"));
+            }
+            return ids;
+        }
+
+        private static JsonArray StringArray(IEnumerable<string> values)
+        {
+            var array = new JsonArray();
+            foreach (string value in values)
+            {
+                array.Add(JsonValue.CreateStringValue(value));
+            }
+            return array;
         }
 
         /// <summary>

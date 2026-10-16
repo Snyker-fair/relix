@@ -40,3 +40,19 @@ export function scanSummary(consoleName, { added, removed, total }) {
   if (parts.length === 0) return `${consoleName}: sin cambios (${plural(total, 'juego', 'juegos')})`
   return `${consoleName}: ${parts.join(' y ')} (${total} en total)`
 }
+
+/**
+ * Resumen de una búsqueda de portadas para el aviso:
+ * "PS2: 7 portadas nuevas · 2 para elegir a mano · 1 sin resultados"
+ * @param {string} consoleName
+ * @param {{ saved: number, failed: number, toChoose: number, notFound: number }} result
+ */
+export function coverSummary(consoleName, { saved, failed, toChoose, notFound }) {
+  const parts = []
+  if (saved > 0) parts.push(saved === 1 ? '1 portada nueva' : `${saved} portadas nuevas`)
+  if (toChoose > 0) parts.push(`${toChoose} para elegir a mano`)
+  if (notFound > 0) parts.push(`${notFound} sin resultados`)
+  if (failed > 0) parts.push(failed === 1 ? '1 no se pudo bajar' : `${failed} no se pudieron bajar`)
+  if (parts.length === 0) return `${consoleName}: ya tenías todas las portadas`
+  return `${consoleName}: ${parts.join(' · ')}`
+}

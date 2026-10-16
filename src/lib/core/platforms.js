@@ -25,6 +25,8 @@
  * @property {string} [launcherNote]
  * @property {string[]} folders     Nombres aceptados para su carpeta en roms\ (el primero que exista)
  * @property {string[]} extensions  Formatos de juego que Relix lista al escanear
+ * @property {string} libretro      Carpeta de la consola en libretro-thumbnails (portadas)
+ * @property {number} coverAspect   Ancho / alto de su caja (PS1 es cuadrada, PSP es alta)
  */
 
 /** @type {Platform[]} */
@@ -41,6 +43,8 @@ export const PLATFORMS = [
     launcher: { kind: 'retroarch', protocol: 'retroarch', core: 'swanstation_libretro.dll' },
     folders: ['psx', 'ps1', 'playstation'],
     extensions: ['chd', 'cue', 'pbp', 'm3u'],
+    libretro: 'Sony - PlayStation',
+    coverAspect: 1,
   },
   {
     id: 'psp',
@@ -54,6 +58,8 @@ export const PLATFORMS = [
     launcher: { kind: 'standalone', protocol: 'ppsspp', exe: 'ppsspp.exe' },
     folders: ['psp'],
     extensions: ['iso', 'cso', 'chd', 'pbp'],
+    libretro: 'Sony - PlayStation Portable',
+    coverAspect: 0.58,
   },
   {
     id: 'ps2',
@@ -67,6 +73,8 @@ export const PLATFORMS = [
     launcher: { kind: 'standalone', protocol: 'xbsx2', exe: 'xbsx2.exe' },
     folders: ['ps2', 'playstation2'],
     extensions: ['chd', 'iso', 'cso'],
+    libretro: 'Sony - PlayStation 2',
+    coverAspect: 0.71,
   },
   {
     id: 'gc',
@@ -82,6 +90,8 @@ export const PLATFORMS = [
     launcher: { kind: 'retroarch', protocol: 'retroarch', core: 'dolphin_libretro.dll' },
     folders: ['gc', 'gamecube', 'ngc'],
     extensions: ['rvz', 'iso', 'gcz', 'gcm', 'ciso'],
+    libretro: 'Nintendo - GameCube',
+    coverAspect: 0.71,
   },
   {
     id: 'wiiu',
@@ -96,6 +106,8 @@ export const PLATFORMS = [
     launcherNote: 'El port de Cemu para Xbox aún no tiene un protocolo de lanzamiento documentado.',
     folders: ['wiiu'],
     extensions: ['wua', 'wux', 'wud', 'rpx'],
+    libretro: 'Nintendo - Wii U',
+    coverAspect: 0.71,
   },
 ]
 

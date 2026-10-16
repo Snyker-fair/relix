@@ -8,8 +8,9 @@
  *   Pedidos (web -> shell, con respuesta):
  *     { id, type: 'loadLibrary', payload: { systems: [{ id: 'psx', folders: ['psx', 'ps1'] }, ...] } }
  *        -> { id, ok: true, result: {
- *             romRoot, driveId, mediaBase,
+ *             romRoot, driveId, mediaBase, thumbBase,
  *             gamelists: { psx: '<xml>' },                          (los que existan)
+ *             covers: { psx: ['Okami (USA).png', 'Sub/Juego.jpg'] }  (portadas en el USB)
  *           } }
  *     { id, type: 'scanRoms', payload: { systems: [{ id: 'ps2', folders: ['ps2', 'playstation2'] }] } }
  *        -> { id, ok: true, result: {
@@ -17,6 +18,12 @@
  *           } }                                                   (solo las consolas pedidas)
  *     { id, type: 'launch', payload: { uri, romPath } }
  *        -> { id, ok: true, result: true }
+ *     { id, type: 'listCovers', payload: { systems: ['ps2'] } }
+ *        -> { id, ok: true, result: { covers: { ps2: ['Okami (USA).png'] } } }
+ *     { id, type: 'coverIndex', payload: { system: 'ps2', libretro: 'Sony - PlayStation 2' } }
+ *        -> { id, ok: true, result: { names: ['Ookami (USA)', ...] } }   (sin ".png")
+ *     { id, type: 'downloadCovers', payload: { system, libretro, items: [{ key, remote }] } }
+ *        -> { id, ok: true, result: { saved: ['Okami (USA)'], failed: [{ key, error }] } }
  *     Error: { id, ok: false, error: 'mensaje para el jugador', code: 'rom-missing' | ... }
  *
  *   Avisos (web -> shell, sin respuesta):
@@ -25,12 +32,15 @@
  *   Eventos (shell -> web):
  *     { event: 'input', action: 'up' }   botón del control (leído en C#)
  *     { event: 'resumed' }               la consola volvió a Relix desde un emulador
+ *     { event: 'coverProgress', system, done, total }   avance de downloadCovers
  *
  * En el navegador (desarrollo / demo) no hay shell: se usan datos de prueba y
  * el lanzamiento solo se muestra en pantalla.
  */
 
-import { PLATFORMS } from './platforms.js'
+import { remoteCoverUrl } from './coverMatch.js'
+import { getPlatform, PLATFORMS } from './platforms.js'
+import mockCoverNames from '../../mock/libretro-names.json'
 import psx from '../../mock/gamelists/psx/gamelist.xml?raw'
 import psp from '../../mock/gamelists/psp/gamelist.xml?raw'
 import ps2 from '../../mock/gamelists/ps2/gamelist.xml?raw'
@@ -60,7 +70,8 @@ export class ShellError extends Error {
 let nextId = 1
 /** @type {Map<number, {resolve: Function, reject: Function}>} */
 const pending = new Map()
-/** @type {Set<(e: {event: string, action?: string}) => void>} */
+/** @typedef {{ event: string, action?: string, system?: string, done?: number, total?: number }} ShellEvent */
+/** @type {Set<(e: ShellEvent) => void>} */
 const listeners = new Set()
 
 if (webview()) {
@@ -89,7 +100,7 @@ function request(type, payload) {
 
 /**
  * Escucha los eventos del shell (control, regreso desde un emulador).
- * @param {(e: {event: string, action?: string}) => void} fn
+ * @param {(e: ShellEvent) => void} fn
  * @returns {() => void} para dejar de escuchar
  */
 export function onShellEvent(fn) {
@@ -109,7 +120,9 @@ export function notifyReady() {
  * @property {string} romRoot                  Carpeta de ROMs en la consola
  * @property {string} driveId                  Identifica el disco (si cambia, se vuelve a escanear)
  * @property {string|null} mediaBase           URL base de las imágenes de ES-DE (null = sin portadas)
+ * @property {string|null} [thumbBase]         URL base de las miniaturas
  * @property {Record<string, string>} gamelists  XML de ES-DE por sistema
+ * @property {Record<string, string[]>} [covers] Portadas en el USB por consola (falta si el shell es anterior)
  */
 
 /** @param {import('./platforms.js').Platform} p */
@@ -120,7 +133,14 @@ export async function loadLibrary() {
   if (mode === 'xbox') {
     return request('loadLibrary', { systems: PLATFORMS.map(systemRequest) })
   }
-  return { romRoot: 'E:\\roms', driveId: 'demo', mediaBase: null, gamelists: MOCK_GAMELISTS }
+  return {
+    romRoot: 'E:\\roms',
+    driveId: 'demo',
+    mediaBase: null,
+    thumbBase: null,
+    gamelists: MOCK_GAMELISTS,
+    covers: demoCoverFiles(PLATFORMS.map((p) => p.id)),
+  }
 }
 
 /**
@@ -155,4 +175,113 @@ export async function scanRoms(systemIds) {
 export async function launch(uri, romPath) {
   if (mode === 'xbox') return request('launch', { uri, romPath })
   window.dispatchEvent(new CustomEvent('relix:launch-preview', { detail: { uri } }))
+}
+
+// ── Portadas ─────────────────────────────────────────────────────────────
+
+/**
+ * Portadas que ya están en el USB, con su extensión.
+ * @param {string[]} systemIds
+ * @returns {Promise<Record<string, string[]>>}
+ */
+export async function listCovers(systemIds) {
+  if (mode === 'xbox') return (await request('listCovers', { systems: systemIds })).covers
+  return demoCoverFiles(systemIds)
+}
+
+/**
+ * Nombres de las portadas de una consola en libretro (sin ".png").
+ * @param {import('./platforms.js').Platform} platform
+ * @returns {Promise<string[]>}
+ */
+export async function coverIndex(platform) {
+  if (mode === 'xbox') {
+    return (await request('coverIndex', { system: platform.id, libretro: platform.libretro })).names
+  }
+  await new Promise((resolve) => setTimeout(resolve, 400))
+  return /** @type {Record<string, string[]>} */ (mockCoverNames)[platform.id] ?? []
+}
+
+/**
+ * @typedef {{ key: string, remote: string }} CoverDownload
+ * @typedef {{ saved: string[], failed: Array<{ key: string, error: string }> }} CoverDownloadResult
+ */
+
+/**
+ * Baja portadas de libretro al USB.
+ * @param {import('./platforms.js').Platform} platform
+ * @param {CoverDownload[]} items
+ * @param {(done: number, total: number) => void} [onProgress]
+ * @returns {Promise<CoverDownloadResult>}
+ */
+export async function downloadCovers(platform, items, onProgress) {
+  if (mode === 'xbox') {
+    const stop = onShellEvent((e) => {
+      if (e.event === 'coverProgress' && e.system === platform.id) onProgress?.(e.done ?? 0, e.total ?? 0)
+    })
+    try {
+      return await request('downloadCovers', { system: platform.id, libretro: platform.libretro, items })
+    } finally {
+      stop()
+    }
+  }
+  // Navegador: "guarda" la portada recordando su nombre en libretro
+  const saved = demoCovers()
+  for (const [i, item] of items.entries()) {
+    await new Promise((resolve) => setTimeout(resolve, 90))
+    saved[`${platform.id}/${item.key}`] = item.remote
+    onProgress?.(i + 1, items.length)
+  }
+  saveDemoCovers(saved)
+  return { saved: items.map((i) => i.key), failed: [] }
+}
+
+/**
+ * URLs de una portada que está en el USB: la original y su miniatura.
+ * @param {string} system
+ * @param {string} file          relativa a covers, con extensión
+ * @param {{ mediaBase: string|null, thumbBase?: string|null }} bases
+ */
+export function coverUrls(system, file, { mediaBase, thumbBase }) {
+  if (mode === 'browser') {
+    const remote = demoCovers()[`${system}/${file.replace(/\.[^./]+$/, '')}`]
+    const platform = getPlatform(system)
+    const url = remote && platform ? remoteCoverUrl(platform.libretro, remote) : ''
+    return { cover: url, thumb: url }
+  }
+  const path = file.split('/').map(encodeURIComponent).join('/')
+  const cover = `${mediaBase}/${system}/covers/${path}`
+  return { cover, thumb: thumbBase ? `${thumbBase}/${system}/${path}` : cover }
+}
+
+// En el navegador las portadas "descargadas" se recuerdan en el navegador
+const DEMO_KEY = 'relix:demo-covers'
+
+/** @returns {Record<string, string>} "<consola>/<clave>" -> nombre en libretro */
+function demoCovers() {
+  try {
+    return JSON.parse(localStorage.getItem(DEMO_KEY) ?? '{}')
+  } catch {
+    return {}
+  }
+}
+
+/** @param {Record<string, string>} covers */
+function saveDemoCovers(covers) {
+  try {
+    localStorage.setItem(DEMO_KEY, JSON.stringify(covers))
+  } catch {
+    // sin almacenamiento: se olvidan al recargar
+  }
+}
+
+/** @param {string[]} systemIds */
+function demoCoverFiles(systemIds) {
+  const saved = Object.keys(demoCovers())
+  return Object.fromEntries(
+    systemIds.map((id) => [
+      id,
+      saved.filter((k) => k.startsWith(`${id}/`)).map((k) => `${k.slice(id.length + 1)}.png`),
+    ]),
+  )
 }

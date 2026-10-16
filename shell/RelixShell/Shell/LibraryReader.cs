@@ -125,7 +125,8 @@ namespace RelixShell
             return null;
         }
 
-        private static async Task CollectFilesAsync(StorageFolder folder, string prefix, int depth, List<string> files)
+        /// <summary>Lista los archivos de una carpeta y sus subcarpetas (rutas relativas con "/").</summary>
+        internal static async Task CollectFilesAsync(StorageFolder folder, string prefix, int depth, List<string> files)
         {
             IReadOnlyList<IStorageItem> items;
             try

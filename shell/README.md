@@ -58,7 +58,14 @@ Visual Studio los recarga solo. Si te pregunta, elige **Sí a todo**.
 1. Haz clic derecho en el proyecto **RelixShell** y elige **Agregar → Nueva carpeta**.
    Llámala `Shell`.
 2. Haz clic derecho en la carpeta **Shell** y elige **Agregar → Elemento existente…**
-3. Selecciona los tres `.cs` de `relix\shell\RelixShell\Shell\`. Visual Studio los copia al proyecto.
+3. Selecciona los cuatro `.cs` de `relix\shell\RelixShell\Shell\`. Visual Studio los copia al proyecto.
+
+| Archivo | Qué hace |
+|---|---|
+| `GamepadInput.cs` | Lee el control y lo manda a la interfaz |
+| `LocalServer.cs` | Sirve la interfaz, las portadas y las miniaturas desde `https://relix.example` |
+| `LibraryReader.cs` | Encuentra el USB y recorre la carpeta `roms` |
+| `CoverService.cs` | Baja portadas de libretro y crea las miniaturas |
 
 ### 4. Ajusta el manifiesto
 
@@ -137,6 +144,17 @@ Nombres de carpeta que Relix reconoce:
 Juegos de varios discos: usa un `.m3u` (Relix muestra solo ese) o deja los
 discos con `(Disc 1)`, `(Disc 2)` en el nombre (Relix muestra solo el disco 1).
 
+Lo que Relix escribe en el disco (por eso necesita los permisos del punto 3):
+
+```
+E:\ES-DE\downloaded_media\<consola>\covers\   portadas descargadas (la misma carpeta de ES-DE)
+E:\relix\cache\libretro\                      lista de portadas de cada consola (se renueva cada mes)
+E:\relix\cache\miniaturas\                    miniaturas JPG de la grilla
+```
+
+`E:\relix\cache` se puede borrar cuando quieras: Relix la vuelve a crear. Si
+reemplazas portadas desde el PC, bórrala para que se rehagan las miniaturas.
+
 ### 9. Ejecuta en la Xbox
 
 Usa la misma configuración de antes: **Debug**, **x64** y **Máquina remota**. Luego presiona **F5**.
@@ -165,12 +183,16 @@ así el emulador tiene todos los recursos de la consola.
 | Qué ves | Qué revisar |
 |---|---|
 | Error de compilación con `XamlControlsResources` o `WebView2` | Falta el paso 1 (NuGet Microsoft.UI.Xaml) |
-| Error con `GamepadInput`, `LocalServer` o `LibraryReader` | Falta el paso 3 (carpeta Shell) |
+| Error con `GamepadInput`, `LocalServer`, `LibraryReader` o `CoverService` | Falta el paso 3 (carpeta Shell) |
 | Pantalla celeste vacía | Falta el paso 6 o el 7: la carpeta `ui` no quedó en el paquete |
 | "No encontré la carpeta roms en ningún disco USB" | La carpeta `roms` debe estar en la raíz del disco. Corre la USB Permissions Tool |
 | Un juego no aparece | Revisa que su formato esté en la tabla del paso 8 y que esté a 3 carpetas de profundidad como máximo |
 | No hay sonido | Revisa que `MainPage.xaml.cs` tenga la línea `--autoplay-policy=no-user-gesture-required` |
 | "… no está instalado en la consola" | Ese emulador no está instalado, o su protocolo es otro |
+| "No pude conectarme al servidor de portadas" | La Xbox no tiene internet, o falta `internetClient` en el manifiesto (paso 4) |
+| "No pude guardar en el USB" | Vuelve a correr la herramienta de permisos del paso 8 con el disco conectado al PC |
+| Una portada equivocada | Pon al archivo del juego su nombre estándar (p. ej. `Gran Turismo 4 (USA).chd`), borra su portada de `ES-DE\downloaded_media\<consola>\covers\` y busca de nuevo. En el paso 3 de la hoja de ruta, el menú del juego (Y) tendrá "Cambiar portada" |
+| Muchos juegos de PSP sin portada | libretro tiene cerca de la mitad de las portadas de PSP; ES-DE en el PC las completa (paso 7 de la hoja de ruta) |
 | Aparece un cursor o B saca a Relix | Avísame: es justo lo que hay que validar en la consola |
 
 ### Ver la consola de la interfaz desde el PC

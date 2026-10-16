@@ -11,14 +11,17 @@ namespace RelixShell
     /// <summary>
     /// Responde los pedidos de la interfaz a https://relix.example sin pasar por la red:
     ///
-    ///   /index.html, /assets/...   archivos de la interfaz (carpeta ui del paquete)
-    ///   /media/psx/covers/Juego    imágenes de ES-DE en el USB (prueba .png, .jpg, .jpeg, .webp)
+    ///   /index.html, /assets/...         archivos de la interfaz (carpeta ui del paquete)
+    ///   /media/psx/covers/Juego.png      imágenes de ES-DE en el USB, por su nombre exacto
+    ///   /media/psx/covers/Juego          sin extensión: prueba .png, .jpg, .jpeg y .webp
+    ///   /thumb/psx/Juego.png             miniatura JPG de esa portada (ver CoverService)
     ///
     /// Todo pasa por el mismo origen, así la interfaz no tiene problemas de CORS.
     /// </summary>
     internal sealed class LocalServer
     {
         private const string MediaPrefix = "/media/";
+        private const string ThumbPrefix = "/thumb/";
 
         private static readonly string[] ImageExtensions = { ".png", ".jpg", ".jpeg", ".webp" };
 
@@ -40,11 +43,13 @@ namespace RelixShell
 
         private readonly CoreWebView2 core;
         private readonly Func<LibraryPaths> getPaths;
+        private readonly CoverService covers;
 
-        public LocalServer(CoreWebView2 core, Func<LibraryPaths> getPaths)
+        public LocalServer(CoreWebView2 core, Func<LibraryPaths> getPaths, CoverService covers)
         {
             this.core = core;
             this.getPaths = getPaths;
+            this.covers = covers;
             core.AddWebResourceRequestedFilter(MainPage.Origin + "/*", CoreWebView2WebResourceContext.All);
             core.WebResourceRequested += OnRequest;
         }
@@ -56,10 +61,13 @@ namespace RelixShell
             {
                 string path = Uri.UnescapeDataString(new Uri(args.Request.Uri).AbsolutePath);
                 bool isMedia = path.StartsWith(MediaPrefix, StringComparison.Ordinal);
+                bool isThumb = path.StartsWith(ThumbPrefix, StringComparison.Ordinal);
 
-                StorageFile file = isMedia
-                    ? await FindMediaAsync(path.Substring(MediaPrefix.Length))
-                    : await FindUiFileAsync(path);
+                StorageFile file = isThumb
+                    ? await FindThumbnailAsync(path.Substring(ThumbPrefix.Length))
+                    : isMedia
+                        ? await FindMediaAsync(path.Substring(MediaPrefix.Length))
+                        : await FindUiFileAsync(path);
 
                 if (file == null)
                 {
@@ -69,7 +77,7 @@ namespace RelixShell
 
                 IRandomAccessStream stream = await file.OpenReadAsync();
                 args.Response = core.Environment.CreateWebResourceResponse(
-                    stream, 200, "OK", Headers(file.FileType, isMedia));
+                    stream, 200, "OK", Headers(file.FileType, isMedia || isThumb));
             }
             catch (Exception)
             {
@@ -88,7 +96,7 @@ namespace RelixShell
             {
                 path = "/index.html";
             }
-            if (path.Contains(".."))
+            if (GoesUp(path))
             {
                 return null;
             }
@@ -107,12 +115,19 @@ namespace RelixShell
         private async Task<StorageFile> FindMediaAsync(string relative)
         {
             LibraryPaths paths = getPaths();
-            if (paths == null || relative.Contains(".."))
+            if (paths == null || GoesUp(relative))
             {
                 return null;
             }
 
             string basePath = Path.Combine(paths.MediaRoot, relative.Replace('/', '\\'));
+
+            // La interfaz ya sabe qué portadas hay (con su extensión): una sola búsqueda
+            if (Array.IndexOf(ImageExtensions, Path.GetExtension(basePath).ToLowerInvariant()) >= 0)
+            {
+                return await LibraryReader.TryGetFileAsync(basePath);
+            }
+
             foreach (string extension in ImageExtensions)
             {
                 StorageFile file = await LibraryReader.TryGetFileAsync(basePath + extension);
@@ -124,6 +139,27 @@ namespace RelixShell
             return null;
         }
 
+        /// <summary>"psx/Juego.png" -> miniatura de downloaded_media\psx\covers\Juego.png</summary>
+        private async Task<StorageFile> FindThumbnailAsync(string relative)
+        {
+            LibraryPaths paths = getPaths();
+            int slash = relative.IndexOf('/');
+            if (paths == null || slash <= 0 || GoesUp(relative))
+            {
+                return null;
+            }
+            return await covers.GetThumbnailAsync(paths, relative.Substring(0, slash), relative.Substring(slash + 1));
+        }
+
+        /// <summary>
+        /// true si la ruta intenta salir de su carpeta ("../"). Un nombre como
+        /// "Juego... (USA)" sí es válido.
+        /// </summary>
+        private static bool GoesUp(string path)
+        {
+            return Array.IndexOf(path.Split('/', '\\'), "..") >= 0;
+        }
+
         private static string Headers(string extension, bool isMedia)
         {
             string contentType;
@@ -133,6 +169,7 @@ namespace RelixShell
             }
 
             // Las portadas casi nunca cambian: que el WebView2 las guarde una semana.
+            // Si Relix reemplaza una, la interfaz cambia la URL (?v=...).
             string cache = isMedia ? "max-age=604800" : "no-cache";
             return "Content-Type: " + contentType + "\r\nCache-Control: " + cache;
         }

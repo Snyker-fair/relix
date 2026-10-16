@@ -1,8 +1,10 @@
 <script>
-  import { PLATFORMS } from '../lib/core/platforms.js'
+  import { REGION_NAMES } from '../lib/core/coverMatch.js'
+  import { getPlatform, PLATFORMS } from '../lib/core/platforms.js'
   import ChannelIcon from '../lib/ui/ChannelIcon.svelte'
   import Clock from '../lib/ui/Clock.svelte'
-  import { plural, scanSummary, timeAgo } from '../lib/ui/format.js'
+  import { covers } from '../lib/ui/covers.svelte.js'
+  import { coverSummary, plural, scanSummary, timeAgo } from '../lib/ui/format.js'
   import HintBar from '../lib/ui/HintBar.svelte'
   import { dispatch, pushHandler } from '../lib/ui/input.js'
   import { library } from '../lib/ui/library.svelte.js'
@@ -12,23 +14,44 @@
   import { shelf } from '../lib/ui/shelf.svelte.js'
   import { sound } from '../lib/ui/sound.js'
 
-  /** @type {{ onBack: () => void, onToast: (message: string) => void }} */
-  let { onBack, onToast } = $props()
+  /**
+   * @type {{
+   *   onBack: () => void,
+   *   onToast: (message: string) => void,
+   *   onPickCovers: () => void,
+   *   initialSection?: string,
+   * }}
+   */
+  let { onBack, onToast, onPickCovers, initialSection = 'library' } = $props()
 
   // Secciones: se cambian con LB/RB, igual que las consolas en la biblioteca
   const SECTIONS = [
     { id: 'library', name: 'Biblioteca' },
+    { id: 'covers', name: 'Portadas' },
     { id: 'preferences', name: 'Preferencias' },
   ]
   // Biblioteca: una fila por consola y, al final, "Escanear todo"
   const LIBRARY_ROWS = [...PLATFORMS.map((p) => p.id), 'all']
-  const PREFERENCE_ROWS = ['empty', 'sounds']
+  const PREFERENCE_ROWS = ['empty', 'sounds', 'region']
 
-  let section = $state('library')
-  const ROWS = $derived(section === 'library' ? LIBRARY_ROWS : PREFERENCE_ROWS)
+  // Portadas: las consolas con juegos, "Buscar en todas" y "Elegir a mano"
+  const coverPlatforms = $derived.by(() => {
+    const withGames = PLATFORMS.filter((p) => library.gamesFor(p.id).length > 0)
+    return withGames.length > 0 ? withGames : PLATFORMS
+  })
+  const COVER_ROWS = $derived([...coverPlatforms.map((p) => p.id), 'all', 'choose'])
+
+  // Solo importa al abrir (p. ej. volver a Portadas desde "Elegir a mano")
+  // svelte-ignore state_referenced_locally
+  let section = $state(initialSection)
+  const ROWS = $derived(
+    section === 'library' ? LIBRARY_ROWS : section === 'covers' ? COVER_ROWS : PREFERENCE_ROWS,
+  )
   let index = $state(0)
   /** true mientras corre "Escanear todo" (las filas muestran cuál va) */
   let scanningAll = $state(false)
+  /** true mientras corre "Buscar en todas" */
+  let searchingAll = $state(false)
   /** Para refrescar los "hace X min" mientras la pantalla está abierta */
   let now = $state(Date.now())
 
@@ -39,6 +62,25 @@
 
   const busy = $derived(library.scanning.length > 0)
   const totalGames = $derived(PLATFORMS.reduce((n, p) => n + library.gamesFor(p.id).length, 0))
+  const coverBusy = $derived(covers.busy !== null || searchingAll)
+  const coverTotals = $derived(
+    PLATFORMS.reduce(
+      (sum, p) => {
+        const count = library.coverCount(p.id)
+        return { withCover: sum.withCover + count.withCover, total: sum.total + count.total }
+      },
+      { withCover: 0, total: 0 },
+    ),
+  )
+  const hintA = $derived(
+    section === 'library'
+      ? 'Escanear'
+      : section === 'preferences'
+        ? 'Cambiar'
+        : ROWS[index] === 'choose'
+          ? 'Elegir'
+          : 'Buscar',
+  )
 
   /** @param {string} id */
   function rowMeta(id) {
@@ -90,11 +132,66 @@
     }
   }
 
+  async function coverRow() {
+    const id = ROWS[index]
+    if (id === 'choose') {
+      if (covers.pending.length === 0) {
+        sound.error()
+        onToast('No hay portadas por elegir. Primero busca en una consola.')
+        return
+      }
+      sound.select()
+      onPickCovers()
+      return
+    }
+    if (coverBusy) return
+    sound.select()
+    try {
+      if (id !== 'all') {
+        onToast(coverSummary(getPlatform(id)?.shortName ?? id, await covers.find(id)))
+      } else {
+        // Una consola tras otra, solo las que tienen juegos sin portada
+        const total = { saved: 0, failed: 0, toChoose: 0, notFound: 0 }
+        searchingAll = true
+        try {
+          for (const p of coverPlatforms) {
+            const count = library.coverCount(p.id)
+            if (count.withCover === count.total) continue
+            const result = await covers.find(p.id)
+            total.saved += result.saved
+            total.failed += result.failed
+            total.toChoose += result.toChoose
+            total.notFound += result.notFound
+          }
+        } finally {
+          searchingAll = false
+        }
+        onToast(coverSummary('Listo', total))
+      }
+      now = Date.now()
+      sound.favorite()
+    } catch (e) {
+      sound.error()
+      onToast(e instanceof Error ? e.message : 'No se pudieron buscar las portadas.')
+    }
+  }
+
   function toggleRow() {
     const id = ROWS[index]
     if (id === 'empty') settings.toggleEmptyConsoles()
     else if (id === 'sounds') settings.toggleSounds()
+    else if (id === 'region') settings.cycleCoverRegion()
     sound.select() // con los sonidos recién apagados, este ya no suena
+  }
+
+  /** "45 de 52 con portada" y qué tan llena está la consola (0 a 1) */
+  function coverMeta(/** @type {string} */ id) {
+    const { withCover, total } = library.coverCount(id)
+    return {
+      text: `${withCover} de ${total} con portada`,
+      full: total > 0 && withCover === total,
+      ratio: total > 0 ? withCover / total : 0,
+    }
   }
 
   /** @param {number} delta */
@@ -119,7 +216,7 @@
       else if (action === 'down') move(index + 1)
       else if (action === 'lb') switchSection(-1)
       else if (action === 'rb') switchSection(1)
-      else if (action === 'a') section === 'library' ? scanRow() : toggleRow()
+      else if (action === 'a') section === 'library' ? scanRow() : section === 'covers' ? coverRow() : toggleRow()
       else if (action === 'b' || action === 'start') (sound.back(), onBack())
     }),
   )
@@ -165,9 +262,19 @@
       <li>{plural(totalGames, 'juego', 'juegos')}</li>
       <li>{library.romRoot}</li>
     </ul>
+  {:else if section === 'covers'}
+    <h2>Portadas</h2>
+    <p>
+      Relix las busca en libretro, las mismas de RetroArch, y las guarda en el USB junto a las de
+      ES-DE. Si no está seguro de cuál es, te deja elegir.
+    </p>
+    <ul class="chips">
+      <li>{coverTotals.withCover} de {coverTotals.total} con portada</li>
+      <li>Región: {REGION_NAMES[settings.coverRegion]}</li>
+    </ul>
   {:else}
     <h2>Preferencias</h2>
-    <p>Qué se ve en el inicio y cómo suena Relix. Los cambios se guardan solos.</p>
+    <p>Qué se ve en el inicio, cómo suena Relix y qué portadas prefieres. Los cambios se guardan solos.</p>
   {/if}
 </section>
 
@@ -222,11 +329,92 @@
     </button>
   {/each}
 </section>
+{:else if section === 'covers'}
+<section class="rows compact" aria-label="Portadas">
+  {#each ROWS as id, i (id)}
+    {@const platform = PLATFORMS.find((p) => p.id === id)}
+    {@const focused = i === index}
+    <button
+      class="row focus-ring"
+      class:focused
+      class:all={id === 'all'}
+      style:--tint={platform?.color ?? (id === 'choose' ? 'var(--glint)' : 'var(--pop)')}
+      onmouseenter={() => move(i)}
+      onclick={() => (i === index ? coverRow() : move(i))}
+    >
+      {#if platform}
+        {@const meta = coverMeta(id)}
+        <span class="badge" style:background={platform.color}>
+          <ChannelIcon id={id} color={platform.ink} size={46} />
+        </span>
+        <span class="text">
+          <strong>{platform.name}</strong>
+          <span class="count">
+            {meta.text}
+            <i class="meter" aria-hidden="true">
+              <i style:width="{meta.ratio * 100}%" style:background={platform.color}></i>
+            </i>
+          </span>
+        </span>
+        <span class="state">
+          {#if covers.busy === id}
+            <span class="spinner" aria-hidden="true"></span>
+            {covers.progress?.phase === 'download'
+              ? `Bajando ${covers.progress.done} de ${covers.progress.total}`
+              : 'Buscando…'}
+          {:else if focused && !coverBusy}
+            <PadButton name="a" size={30} /> Buscar
+          {:else if meta.full}
+            <span class="value on">Completa</span>
+          {:else if covers.results[id]}
+            {timeAgo(covers.results[id].at, now)}
+          {:else}
+            sin buscar
+          {/if}
+        </span>
+      {:else if id === 'all'}
+        <span class="badge refresh">
+          <ChannelIcon id="download" color="#FFFFFF" size={46} />
+        </span>
+        <span class="text">
+          <strong>Buscar en todas</strong>
+          <span>Solo las consolas a las que les faltan portadas</span>
+        </span>
+        <span class="state">
+          {#if searchingAll}
+            <span class="spinner" aria-hidden="true"></span> Buscando…
+          {:else if focused && !coverBusy}
+            <PadButton name="a" size={30} /> Buscar
+          {/if}
+        </span>
+      {:else}
+        <span class="badge pick">
+          <ChannelIcon id="pick" color="#23304A" size={46} />
+        </span>
+        <span class="text">
+          <strong>Elegir a mano</strong>
+          <span>
+            {covers.pending.length > 0
+              ? `${plural(covers.pending.length, 'juego espera', 'juegos esperan')} que elijas su portada`
+              : 'Nada pendiente: aquí llegan los juegos con nombres dudosos'}
+          </span>
+        </span>
+        <span class="state">
+          {#if focused}
+            <PadButton name="a" size={30} /> Elegir
+          {:else if covers.pending.length > 0}
+            <span class="value on">{covers.pending.length}</span>
+          {/if}
+        </span>
+      {/if}
+    </button>
+  {/each}
+</section>
 {:else}
 <section class="rows" aria-label="Preferencias">
   {#each ROWS as id, i (id)}
     {@const focused = i === index}
-    {@const on = id === 'empty' ? settings.showEmptyConsoles : settings.sounds}
+    {@const on = id === 'empty' ? settings.showEmptyConsoles : id === 'sounds' ? settings.sounds : true}
     <button
       class="row focus-ring"
       class:focused
@@ -235,7 +423,7 @@
       onclick={() => (i === index ? toggleRow() : move(i))}
     >
       <span class="badge neutral">
-        <ChannelIcon id={id === 'empty' ? 'eye' : 'sound'} color="#23304A" size={52} />
+        <ChannelIcon id={id === 'empty' ? 'eye' : id === 'sounds' ? 'sound' : 'globe'} color="#23304A" size={52} />
       </span>
       <span class="text">
         {#if id === 'empty'}
@@ -247,15 +435,24 @@
                 ? `Ocultas en el inicio (ahora ${plural(shelf.hiddenCount, 'canal oculto', 'canales ocultos')})`
                 : 'Ocultas en el inicio'}
           </span>
-        {:else}
+        {:else if id === 'sounds'}
           <strong>Sonidos de la interfaz</strong>
           <span>El tic al moverte y el pop al elegir</span>
+        {:else}
+          <strong>Región de las portadas</strong>
+          <span>Para los juegos cuyo archivo no dice la región</span>
         {/if}
       </span>
       <span class="state">
         {#if focused}<PadButton name="a" size={30} />{/if}
         <span class="value" class:on>
-          {id === 'empty' ? (on ? 'Visibles' : 'Ocultas') : on ? 'Activados' : 'Desactivados'}
+          {#if id === 'empty'}
+            {on ? 'Visibles' : 'Ocultas'}
+          {:else if id === 'sounds'}
+            {on ? 'Activados' : 'Desactivados'}
+          {:else}
+            {REGION_NAMES[settings.coverRegion]}
+          {/if}
         </span>
       </span>
     </button>
@@ -265,7 +462,7 @@
 
 <HintBar
   hints={[
-    { button: 'a', label: section === 'library' ? 'Escanear' : 'Cambiar' },
+    { button: 'a', label: hintA },
     { button: 'b', label: 'Volver' },
   ]}
 />
@@ -398,6 +595,43 @@
   }
   .row.all {
     margin-top: 10px;
+  }
+  /* Portadas tiene más filas: un poco más bajas para que quepan */
+  .rows.compact {
+    gap: 14px;
+  }
+  .rows.compact .row {
+    height: 92px;
+  }
+  .rows.compact .badge {
+    width: 68px;
+    height: 68px;
+    border-radius: 22px;
+  }
+  .rows.compact .badge.refresh {
+    border-radius: 50%;
+  }
+  .badge.pick {
+    background: var(--sun);
+  }
+  .text .count {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .meter {
+    display: block;
+    flex: none;
+    width: 120px;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--sky);
+    overflow: hidden;
+  }
+  .meter i {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
   }
   .badge {
     display: grid;
