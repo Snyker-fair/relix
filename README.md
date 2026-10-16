@@ -67,6 +67,11 @@ manejarse con el control. Logo, colores, tipografía y voz de la marca están en
   saliendo del emulador o con el botón Xbox. Las partidas de menos de 1 minuto no
   cuentan y las de más de 12 horas se descartan. Si la Xbox cierra Relix mientras
   juegas, la partida se cierra la próxima vez que abra.
+- **Juegos que no abren.** El emulador no le avisa a Relix cuando falla (se cierra
+  y la Xbox vuelve sola). Si vuelves antes de 15 segundos, Relix lo toma como un
+  juego que no abrió y dice qué revisar: en PS1, la BIOS exacta según la región
+  del archivo (`scph5500.bin` Japón, `scph5501.bin` EE. UU., `scph5502.bin` Europa)
+  en la carpeta `system` de RetroArch.
 
 ## Estructura
 
@@ -81,6 +86,7 @@ src/
     search.js        búsqueda por comienzo de palabra (sin tildes; II = 2)
     sorting.js       orden A–Z / recientes / más jugados / año y saltos con LT/RT
     userData.js      formato de datos.json, qué copia manda y tiempo de cada partida
+    quickExit.js     aviso cuando un juego se cierra al abrir (BIOS según la región)
     collections.js   lee y escribe colecciones en el formato de ES-DE
     bridge.js        habla con el shell en C# (o usa datos de prueba en el navegador)
   lib/ui/            piezas de interfaz: entrada del control, sonidos, portadas…

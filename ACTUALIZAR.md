@@ -153,6 +153,8 @@ npm run build:shell -- "C:\ProyectosVisual\RelixShell"
 - [ ] **Y → Ordenar biblioteca**: aparece **Más jugados** (solo en consolas donde ya jugaste).
 - [ ] **Acerca de**: la tarjeta **Tiempo de juego** con el total y tus 3 más jugados;
       **En tu USB** dice "Guardado hace …".
+- [ ] Un juego que no abre (por ejemplo, de PS1 europeo sin `scph5502.bin`): al volver,
+      Relix avisa "se cerró enseguida" y dice qué BIOS revisar.
 - [ ] Al día siguiente, en el PC: `E:\relix\respaldos\datos-AAAA-MM-DD.json`.
 - [ ] Prueba fuerte (opcional): desinstala Relix desde Dev Home, vuelve a desplegar
       con **F5** y abre: favoritos y tiempo siguen ahí (vienen del USB).

@@ -3,6 +3,7 @@
   import { launch, mode, notifyReady, onShellEvent, ShellError } from './lib/core/bridge.js'
   import { buildLaunchUri } from './lib/core/launchUri.js'
   import { getPlatform } from './lib/core/platforms.js'
+  import { QUICK_EXIT_SECONDS, quickExitMessage } from './lib/core/quickExit.js'
   import { COLLECTIONS, COLLECTION_PREFIX, isCollectionId } from './lib/ui/channels.js'
   import { collections } from './lib/ui/collections.svelte.js'
   import { dispatch, startInput } from './lib/ui/input.js'
@@ -51,7 +52,7 @@
   onShellEvent((e) => {
     if (e.event === 'input' && e.action) dispatch(/** @type {any} */ (e.action))
     // Volviste a Relix: al cerrar el emulador (resumed) o por otro camino, como el botón Xbox (visible)
-    else if (e.event === 'resumed' || e.event === 'visible') backInRelix()
+    else if (e.event === 'resumed' || e.event === 'visible') backInRelix({ fromEmulator: true })
   })
 
   /**
@@ -86,11 +87,27 @@
     }
   })
 
-  /** Cierra la partida en curso (si había) y cuenta lo jugado */
-  function backInRelix() {
+  /**
+   * Cierra la partida en curso (si había) y cuenta lo jugado. Si volviste
+   * desde el emulador a los pocos segundos, el juego no abrió: se avisa qué
+   * revisar (el emulador no le dice nada a Relix).
+   * @param {{ fromEmulator?: boolean }} [how]  false = cerraste el aviso "Abriendo…" con B
+   */
+  function backInRelix({ fromEmulator = false } = {}) {
     launching = null
     const finished = library.endSession()
-    if (finished) announcePlaytime(finished)
+    if (!finished) return
+    if (fromEmulator && finished.elapsed < QUICK_EXIT_SECONDS) warnQuickExit(finished.id)
+    else announcePlaytime(finished)
+  }
+
+  /** @param {string} id */
+  function warnQuickExit(id) {
+    const game = library.byId.get(id)
+    const platform = game && getPlatform(game.system)
+    if (!game || !platform) return
+    sound.error()
+    showToast(quickExitMessage(game, platform), 9000)
   }
 
   /** "Okami: 45 min jugados · 12 h en total" @param {{ id: string, seconds: number }} finished */
@@ -110,11 +127,11 @@
     return () => clearTimeout(t)
   })
 
-  /** @param {string} message */
-  function showToast(message) {
+  /** @param {string} message @param {number} [duration] ms */
+  function showToast(message, duration = 3500) {
     toast = message
     clearTimeout(toastTimer)
-    toastTimer = setTimeout(() => (toast = ''), 3500)
+    toastTimer = setTimeout(() => (toast = ''), duration)
   }
 
   function openOptions() {
@@ -246,7 +263,7 @@
   {/if}
 
   {#if launching}
-    <LaunchOverlay game={launching.game} uri={launching.uri} onClose={backInRelix} />
+    <LaunchOverlay game={launching.game} uri={launching.uri} onClose={() => backInRelix()} />
   {/if}
 
   {#if toast}
@@ -261,7 +278,10 @@
     top: 44px;
     left: 50%;
     translate: -50% 0;
-    max-width: 1000px;
+    /* entre el logo y el reloj: hasta los avisos largos caben en dos líneas
+       (max-content: sin él, al estar anclado al centro no pasaría de 960 px) */
+    width: max-content;
+    max-width: 1180px;
     padding: 18px 32px;
     border-radius: 999px;
     background: var(--ink);

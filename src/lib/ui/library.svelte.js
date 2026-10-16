@@ -332,23 +332,27 @@ class Library {
    * Volviste a Relix: cierra la partida en curso y suma su tiempo
    * (las de menos de 1 minuto o más de 12 horas no cuentan).
    * @param {boolean} [count]  false = descartarla (el emulador no abrió)
-   * @returns {{ id: string, seconds: number } | null}  null si no había partida
+   * @returns {{ id: string, seconds: number, elapsed: number } | null}
+   *   seconds: lo que se sumó; elapsed: cuánto pasó desde que se lanzó.
+   *   null si no había partida.
    */
   endSession(count = true) {
     /** @type {import('../core/userData.js').Session|null} */
     const session = load('session', null)
     if (!session) return null
     save('session', null)
-    if (!count) return { id: session.id, seconds: 0 }
+    const now = Date.now()
+    const elapsed = Math.round((now - session.startedAt) / 1000)
+    if (!count) return { id: session.id, seconds: 0, elapsed }
 
-    const { playtime, seconds } = closeSession(this.playtime, session, Date.now())
+    const { playtime, seconds } = closeSession(this.playtime, session, now)
     if (seconds > 0) {
       this.playtime = playtime
       save('playtime', playtime)
       // Por si Relix se cerró antes de anotarla como reciente
       if ((this.lastPlayed[session.id] ?? 0) < session.startedAt) this.#markPlayed(session.id, session.startedAt)
     }
-    return { id: session.id, seconds }
+    return { id: session.id, seconds, elapsed }
   }
 
   /** @param {string} systemId  carpeta donde Relix busca los juegos de esa consola */
