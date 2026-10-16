@@ -61,6 +61,27 @@ Doble clic en `Package.appxmanifest` → pestaña **Funcionalidades**. Deben est
 - **Internet (cliente)**: para bajar portadas.
 - **Almacenamiento extraíble**: para leer y escribir en el USB.
 
+## 4b. Íconos nuevos (gema y nombre)
+
+La imagen de la app en la ficha de la Xbox ahora lleva la gema y el nombre, y hay
+una versión grande para TV 4K.
+
+1. Copia **todos** los PNG de `C:\ProyectosVisual\relix\brand\uwp\` a
+   `C:\ProyectosVisual\RelixShell\Assets\` y elige **Reemplazar**.
+2. En el Explorador de soluciones, abre la carpeta **Assets**. Si no aparece
+   `Square310x310Logo.scale-200.png`: clic derecho en **Assets** →
+   **Agregar → Elemento existente…** → elige ese archivo (una sola vez).
+3. Clic derecho en `Package.appxmanifest` → **Ver código**. Busca
+   `<uap:DefaultTile` y déjalo así (agrega el atributo `Square310x310Logo`):
+   ```xml
+   <uap:DefaultTile
+     Wide310x150Logo="Assets\Wide310x150Logo.png"
+     Square310x310Logo="Assets\Square310x310Logo.png" />
+   ```
+   Si dentro de `<uap:DefaultTile>` hay un bloque `<uap:ShowNameOnTiles>`, bórralo:
+   las imágenes ya traen el nombre y la Xbox lo pondría dos veces.
+4. Guarda (**Ctrl + S**).
+
 ## 5. Compila la interfaz y cópiala al proyecto
 
 En `cmd` (no PowerShell):
@@ -99,6 +120,9 @@ npm run build:shell -- "C:\ProyectosVisual\RelixShell"
 - [ ] **Vista ⧉** abre la búsqueda desde el inicio o la biblioteca; con → se pasa a los resultados.
 - [ ] **Y → Ordenar biblioteca**: A–Z → Recientes (→ Año, si tus juegos traen año de ES-DE).
 - [ ] **Y → Ocultar juego** y luego **≡ → Biblioteca → Juegos ocultos** para recuperarlo.
+
+### Imagen de la app
+- [ ] En la ficha de Relix de la Xbox (la de **Reanudar**), el cuadro muestra la gema y el nombre.
 
 ### Ajustes visuales (entre el paso 3 y el 4)
 - [ ] En el inicio, al moverte entre canales el enfocado ya no toca a sus vecinos.

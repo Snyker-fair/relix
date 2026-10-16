@@ -64,7 +64,8 @@ Copia todos a la carpeta `Assets` del proyecto **RelixShell** y acepta reemplaza
 
 | Archivo | Tamaño | Dónde se ve |
 |---|---|---|
-| `Square150x150Logo.scale-200.png` | 300×300 | Tile en Dev Home |
+| `Square150x150Logo.scale-200.png` | 300×300 | Ficha de la app en la Xbox, Dev Home, pines (gema y nombre) |
+| `Square310x310Logo.scale-200.png` | 620×620 | Tile grande: la misma imagen con más detalle para TV 4K |
 | `Wide310x150Logo.scale-200.png` | 620×300 | Tile ancho |
 | `Square44x44Logo.scale-200.png` | 88×88 | Listas de apps |
 | `Square44x44Logo.targetsize-24_altform-unplated.png` | 24×24 | Íconos pequeños |
@@ -77,7 +78,7 @@ En `Package.appxmanifest` (pestaña *Recursos visuales*):
 - **Nombre para mostrar:** `Relix`
 - **Color de fondo del tile:** `#DDEBF7`
 - **Color de fondo de la pantalla de presentación:** `#DDEBF7`
-- **Mostrar nombre en:** desmarca el tile ancho (el logo ya lo trae)
+- **Mostrar nombre en:** desmarca todos los tiles (las imágenes ya traen el nombre)
 
 En la pestaña *Declaraciones*, el protocolo se llama **`relix`**. Es el que usan
 los emuladores para devolverte a la app al cerrar un juego.

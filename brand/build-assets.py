@@ -56,6 +56,16 @@ def lockup(mark_px: int) -> str:
 </div>"""
 
 
+def stacked(mark_px: int) -> str:
+    """Gema arriba y nombre abajo, centrados: para los tiles cuadrados."""
+    word = mark_px * 0.62
+    return f"""
+<div style="display:flex;flex-direction:column;align-items:center;gap:{mark_px * 0.06}px">
+  <div style="width:{mark_px}px;height:{mark_px}px">{MARK}</div>
+  <div class="word" style="font-size:{word}px">rel<span class="i">ı<span class="dot"></span></span>x</div>
+</div>"""
+
+
 def page(w: int, h: int, bg: str | None, inner: str) -> str:
     background = bg or "transparent"
     return f"""<!doctype html><html><head><meta charset="utf-8"><style>
@@ -80,8 +90,10 @@ ASSETS = {
     # Ícono de la lista de apps (Dev Home) y barra de tareas
     "Square44x44Logo.scale-200.png": (88, 88, None, mark_box(84)),
     "Square44x44Logo.targetsize-24_altform-unplated.png": (24, 24, None, mark_box(24)),
-    # Tile cuadrado: es lo que más vas a ver en la Xbox
-    "Square150x150Logo.scale-200.png": (300, 300, SKY, mark_box(200)),
+    # Tile cuadrado: es lo que más vas a ver en la Xbox (ficha de la app, Dev Home, pines)
+    "Square150x150Logo.scale-200.png": (300, 300, SKY, stacked(160)),
+    # Tile grande: la misma imagen con el doble de detalle, para TV 4K
+    "Square310x310Logo.scale-200.png": (620, 620, SKY, stacked(330)),
     # Tile ancho
     "Wide310x150Logo.scale-200.png": (620, 300, SKY, lockup(150)),
     # Pantalla de carga (el fondo lo pone el manifiesto: #DDEBF7)
