@@ -125,6 +125,26 @@ describe('bridge con el shell de Xbox', () => {
     await expect(pending).resolves.toEqual({ psx: ['FF7 (USA)/FF7 (USA).png'] })
   })
 
+  it('lee y guarda colecciones, y borra portadas', async () => {
+    const listing = bridge.listCollections()
+    let msg = shell.sent.at(-1)
+    expect(msg.type).toBe('listCollections')
+    shell.emit({ id: msg.id, ok: true, result: { collections: [{ file: 'custom-A.cfg', text: 'x\n' }] } })
+    await expect(listing).resolves.toEqual([{ file: 'custom-A.cfg', text: 'x\n' }])
+
+    const saving = bridge.saveCollection('custom-A.cfg', '')
+    msg = shell.sent.at(-1)
+    expect(msg).toMatchObject({ type: 'saveCollection', payload: { file: 'custom-A.cfg', text: '' } })
+    shell.emit({ id: msg.id, ok: true, result: true })
+    await expect(saving).resolves.toBe(true)
+
+    const deleting = bridge.deleteCover('ps2', 'Okami (USA)')
+    msg = shell.sent.at(-1)
+    expect(msg).toMatchObject({ type: 'deleteCover', payload: { system: 'ps2', key: 'Okami (USA)' } })
+    shell.emit({ id: msg.id, ok: true, result: true })
+    await expect(deleting).resolves.toBe(true)
+  })
+
   it('arma las URLs de la portada y su miniatura', () => {
     const bases = { mediaBase: 'https://relix.example/media', thumbBase: 'https://relix.example/thumb' }
     expect(bridge.coverUrls('psx', 'FF7 (USA)/FF7 #1.png', bases)).toEqual({
