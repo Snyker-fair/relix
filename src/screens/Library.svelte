@@ -26,9 +26,13 @@
    *   onOptions: () => void,
    *   onMenu: (game: any, sortOptions: import('../lib/core/sorting.js').SortOrder[]) => void,
    *   onSearch: () => void,
+   *   onGuide: (systemId: string) => void,
    * }}
    */
-  let { systemId, onBack, onSwitch, onLaunch, onOptions, onMenu, onSearch } = $props()
+  let { systemId, onBack, onSwitch, onLaunch, onOptions, onMenu, onSearch, onGuide } = $props()
+
+  /** Consola sin juegos: Y abre su guía (no aplica a Favoritos ni Colecciones) */
+  const guideable = $derived(Boolean(getPlatform(systemId)))
 
   const COLUMNS = 5
   const COVER_W = 178
@@ -181,6 +185,7 @@
       else if (action === 'b') (sound.back(), onBack())
       else if (action === 'x' && game) (library.toggleFavorite(game), sound.favorite())
       else if (action === 'y' && game) (sound.select(), onMenu(game, sortOptions))
+      else if (action === 'y' && guideable) (sound.select(), onGuide(systemId))
       else if (action === 'a' && game) onLaunch(game)
       else if (action === 'view') (sound.select(), onSearch())
       else if (action === 'start') (sound.select(), onOptions())
@@ -237,12 +242,13 @@
       <p>Agrega juegos desde el menú del juego: <PadButton name="y" size={30} /> › Colecciones.</p>
     {:else}
       <p>
-        Copia tus juegos a <code>{library.romFolderPath(channel.id)}</code> y vuelve a abrir Relix.
+        Copia tus juegos a <code>{library.romFolderPath(channel.id)}</code> y escanéala en
+        <strong>≡ › Biblioteca</strong>.
         Formatos: {formatList(channel.extensions)}.
       </p>
       <p class="hint">
-        Las portadas se buscan en <strong>Opciones › Portadas</strong>. Las descripciones vienen de
-        <code>ES-DE</code>, si tienes esa carpeta en el mismo disco.
+        ¿Primera vez con {channel.shortName}? <PadButton name="y" size={28} /> abre la guía: qué emulador
+        instalar, qué archivos pide y dónde van tus juegos.
       </p>
     {/if}
   </section>
@@ -327,6 +333,7 @@
         { button: 'b', label: 'Volver' },
       ]
     : [
+        ...(guideable ? [{ button: 'y', label: 'Ver guía' }] : []),
         { button: 'view', label: 'Buscar' },
         { button: 'b', label: 'Volver' },
       ]}

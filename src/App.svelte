@@ -15,6 +15,7 @@
   import Stage from './lib/ui/Stage.svelte'
   import CoverPicker from './screens/CoverPicker.svelte'
   import GameMenu from './screens/GameMenu.svelte'
+  import Guide from './screens/Guide.svelte'
   import Home from './screens/Home.svelte'
   import LaunchOverlay from './screens/LaunchOverlay.svelte'
   import Library from './screens/Library.svelte'
@@ -27,8 +28,9 @@
    * @typedef {{ name: 'home' }
    *   | { name: 'library', systemId: string }
    *   | { name: 'search', from: any }
-   *   | { name: 'options', from: any, section?: string }
-   *   | { name: 'coverPicker', back: any, gameId?: string }} Screen
+   *   | { name: 'options', from: any, section?: string, row?: string }
+   *   | { name: 'coverPicker', back: any, gameId?: string }
+   *   | { name: 'guide', systemId: string, back: any }} Screen
    */
   /** @type {Screen} */
   let screen = $state({ name: 'home' })
@@ -169,6 +171,11 @@
     menu = { game, sortOptions }
   }
 
+  /** Guía para dejar andando una consola @param {string} systemId */
+  function openGuide(systemId) {
+    screen = { name: 'guide', systemId, back: screen }
+  }
+
   /** @param {any} game */
   function changeCover(game) {
     screen = { name: 'coverPicker', back: screen, gameId: game.id }
@@ -245,6 +252,7 @@
       onOptions={openOptions}
       onMenu={openMenu}
       onSearch={openSearch}
+      onGuide={openGuide}
     />
   {:else if screen.name === 'search'}
     {@const from = screen.from}
@@ -254,9 +262,18 @@
     {@const options = screen}
     <Options
       initialSection={screen.section}
+      initialRow={screen.row}
       onBack={() => (screen = from)}
       onToast={showToast}
       onPickCovers={() => (screen = { name: 'coverPicker', back: { ...options, section: 'covers' } })}
+      onGuide={(systemId) => (screen = { name: 'guide', systemId, back: { ...options, section: 'consoles' } })}
+    />
+  {:else if screen.name === 'guide'}
+    {@const back = screen.back}
+    <!-- Al volver a Consolas, el foco queda en la consola de la guía (aunque cambiaras con LB/RB) -->
+    <Guide
+      systemId={screen.systemId}
+      onBack={(systemId) => (screen = back.name === 'options' ? { ...back, row: systemId } : back)}
     />
   {:else}
     {@const back = screen.back}

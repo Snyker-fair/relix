@@ -24,10 +24,13 @@
    *   onBack: () => void,
    *   onToast: (message: string) => void,
    *   onPickCovers: () => void,
+   *   onGuide: (systemId: string) => void,
    *   initialSection?: string,
+   *   initialRow?: string,
    * }}
+   *   initialRow: fila con el foco al abrir (p. ej. la consola de la guía de la que vuelves)
    */
-  let { onBack, onToast, onPickCovers, initialSection = 'library' } = $props()
+  let { onBack, onToast, onPickCovers, onGuide, initialSection = 'library', initialRow } = $props()
 
   // Secciones: se cambian con LB/RB, igual que las consolas en la biblioteca
   const SECTIONS = [
@@ -102,7 +105,8 @@
   const buildDate = BUILD_DATE
     ? new Date(`${BUILD_DATE}T12:00:00`).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })
     : ''
-  let index = $state(0)
+  // svelte-ignore state_referenced_locally
+  let index = $state(Math.max(0, initialRow ? ROWS.indexOf(initialRow) : 0))
   /** true mientras corre "Escanear todo" (las filas muestran cuál va) */
   let scanningAll = $state(false)
   /** true mientras corre "Buscar en todas" */
@@ -305,6 +309,7 @@
       else if (action === 'down') move(index + 1)
       else if (action === 'lb') switchSection(-1)
       else if (action === 'rb') switchSection(1)
+      else if (action === 'y' && section === 'consoles') (sound.select(), onGuide(ROWS[index]))
       else if (action === 'a' && section !== 'about')
         section === 'library'
           ? scanRow()
@@ -662,6 +667,7 @@
       ]
     : [
         { button: 'a', label: hintA },
+        ...(section === 'consoles' ? [{ button: 'y', label: 'Guía' }] : []),
         { button: 'b', label: 'Volver' },
       ]}
 />

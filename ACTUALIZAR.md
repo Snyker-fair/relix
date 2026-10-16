@@ -100,7 +100,8 @@ npm install
 npm run build:shell -- "C:\ProyectosVisual\RelixShell"
 ```
 
-`npm install` solo hace falta si cambió `package.json`; correrlo de más no hace daño.
+`npm install` hace falta esta vez: se agregó `uqr` (los códigos QR de las guías).
+Correrlo de más no hace daño.
 
 ## 6. Despliega en la Xbox
 
@@ -169,6 +170,12 @@ npm run build:shell -- "C:\ProyectosVisual\RelixShell"
 - [ ] **≡ → Acerca de**: la tarjeta **Emuladores en la consola** marca con ✓ los que tienes.
 - [ ] En un juego, **Y → Abrir con…** → elige otro emulador: el panel dice "solo este juego".
 - [ ] Juegos de Xbox 360 en carpeta (`Halo 3 (USA)\default.xex`) aparecen con el nombre de la carpeta.
+
+### Guías por consola
+- [ ] **≡ → Consolas → Y** abre la guía de la consola enfocada; LB/RB pasan a otra y B vuelve a la misma fila.
+- [ ] Arriba a la izquierda dice si el emulador está instalado y cuántos juegos encontró.
+- [ ] El QR se abre con la cámara del celular (lleva a DevStore › Emuladores).
+- [ ] En una consola sin juegos (con **Consolas sin juegos: Visibles** en Preferencias), **Y** abre su guía.
 
 Si algo falla, la tabla **Si algo falla** de [`shell/README.md`](shell/README.md) tiene las causas más comunes.
 

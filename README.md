@@ -87,6 +87,7 @@ src/
     sorting.js       orden A–Z / recientes / más jugados / año y saltos con LT/RT
     userData.js      formato de datos.json, qué copia manda y tiempo de cada partida
     quickExit.js     aviso cuando un juego se cierra al abrir (BIOS según la región)
+    guides.js        guías de instalación por consola y emulador (DevStore, BIOS, carpetas)
     collections.js   lee y escribe colecciones en el formato de ES-DE
     bridge.js        habla con el shell en C# (o usa datos de prueba en el navegador)
   lib/ui/            piezas de interfaz: entrada del control, sonidos, portadas…
@@ -159,7 +160,7 @@ pregunta a la Xbox qué protocolos hay (Acerca de muestra cuáles).
 | GBA | RetroArch mGBA, gpSP, VBA-M |
 | GameCube | RetroArch Dolphin, Dolphin (`dolphin:`; su última versión no abre juegos desde otras apps) |
 | Wii U | ninguno: el port de Cemu no registra un protocolo, se abre desde Dev Home |
-| 3DS | Citra RA (`citrara:`), Panda3DS (`panda:`), los dos experimentales |
+| 3DS | RetroArch 3DS (`citrara:`), Panda3DS (`panda:`), los dos experimentales |
 | Mega Drive | RetroArch Genesis Plus GX, RetroArch PicoDrive |
 | Dreamcast | RetroArch Flycast, Flycast (`flycast:`) |
 | Xbox 360 | Xenia Canary (`xeniacanary:`), Xenia (`xenia:`) |
@@ -197,6 +198,10 @@ versión pública. Se suma como una consola más cuando madure.
       y Xbox 360; emulador por consola (Opciones › Consolas) o por juego (Y › Abrir
       con…); Relix revisa cuáles están instalados; el inicio y las pestañas se
       deslizan cuando no caben.
+- [x] **Guías por consola:** qué emulador instalar (desde DevStore y el Device Portal),
+      qué archivos pide y dónde van, dónde van los juegos y cómo probar; con lo que
+      Relix ya sabe (emulador instalado, juegos encontrados) y un QR a DevStore.
+      Se abren con Y en Opciones › Consolas o desde una consola sin juegos.
 
 ## Controles
 
@@ -205,7 +210,7 @@ versión pública. Se suma como una consola más cuando madure.
 | A | Abrir / jugar |
 | B | Volver |
 | X | Favorito (en la búsqueda: borrar letra) |
-| Y | Menú del juego: jugar, abrir con…, favorito, colecciones, cambiar portada, ocultar, ordenar |
+| Y | Menú del juego: jugar, abrir con…, favorito, colecciones, cambiar portada, ocultar, ordenar. En Opciones › Consolas, o en una consola sin juegos: la guía |
 | LB / RB | Consola anterior / siguiente (o colección, dentro de Colecciones) |
 | LT / RT | Letra anterior / siguiente (año, si ordenas por año) |
 | Vista ⧉ | Buscar en todas las consolas |
@@ -231,3 +236,5 @@ Más adelante: RetroAchievements, administrar la biblioteca desde el celular, pe
 ---
 
 Creado por **snyker-fair** ([GitHub](https://github.com/snyker-fair)).
+
+Los códigos QR se generan con [uqr](https://github.com/unjs/uqr) (MIT).

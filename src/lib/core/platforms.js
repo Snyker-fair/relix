@@ -207,7 +207,8 @@ export const PLATFORMS = [
     color: '#5468E8',
     ink: '#0B1240',
     emulators: [
-      standalone('citrara', 'Citra RA', 'citrara', 'citrara.exe', 'experimental'),
+      // "RetroArch 3DS" en DevStore; RetroPass lo abre con el protocolo citrara:
+      standalone('citrara', 'RetroArch 3DS', 'citrara', 'citrara.exe', 'experimental'),
       standalone('panda3ds', 'Panda3DS', 'panda', 'Alber.exe', 'experimental'),
     ],
     folders: ['n3ds', '3ds'],
