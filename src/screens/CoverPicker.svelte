@@ -180,7 +180,7 @@
   <section class="detail" style:--tint={platform.color}>
     {#key game.id}
       <div class="detail-cover">
-        <CoverArt {game} {platform} width={250} height={330} />
+        <CoverArt {game} {platform} width={250} height={330} real />
       </div>
       <h1 class:long={game.name.length > 24}>{game.name}</h1>
       <ul class="chips">

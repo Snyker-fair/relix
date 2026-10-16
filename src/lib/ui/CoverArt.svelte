@@ -1,20 +1,34 @@
+<script module>
+  /** Forma estándar de las portadas en grillas y listas (la de PS2, GameCube y Wii U) */
+  export const TILE_ASPECT = 0.71
+</script>
+
 <script>
   /**
-   * Portada de un juego, con la forma de la caja de su consola (PS1 es
-   * cuadrada, PSP es alta...). Si hay imagen se usa; si no, se dibuja una
-   * portada provisoria con el color de la consola, variando tono y adornos
-   * según el nombre (cada juego se ve distinto).
+   * Portada de un juego. Si hay imagen se usa; si no, se dibuja una portada
+   * provisoria con el color de la consola, variando tono y adornos según el
+   * nombre (cada juego se ve distinto).
    *
-   *   width           ancho; el alto sale de la forma de la caja
-   *   width + height  espacio máximo: la caja entra entera en ese espacio
+   * Dos formas:
+   *   - estándar (por defecto): todas iguales, para que grillas y listas se
+   *     vean parejas; la imagen llena el marco y se recorta lo que sobra
+   *   - real: la caja completa con la forma de su consola (PS1 cuadrada, PSP
+   *     alta), para el panel de detalle
+   *
+   *   width           ancho; el alto sale de la forma
+   *   width + height  espacio máximo: la portada entra entera en ese espacio
+   *   real            usar la forma real de la caja
    *   thumb           usar la miniatura (grillas y listas) en vez de la original
    */
   import ChannelIcon from './ChannelIcon.svelte'
 
   /**
-   * @type {{ game: any, platform: any, width?: number, height?: number, showTitle?: boolean, thumb?: boolean }}
+   * @type {{
+   *   game: any, platform: any, width?: number, height?: number,
+   *   showTitle?: boolean, thumb?: boolean, real?: boolean,
+   * }}
    */
-  let { game, platform, width = 184, height, showTitle = true, thumb = false } = $props()
+  let { game, platform, width = 184, height, showTitle = true, thumb = false, real = false } = $props()
 
   /** La imagen que no cargó; si la URL cambia, se vuelve a intentar */
   let failedSrc = $state('')
@@ -23,7 +37,7 @@
   const src = $derived((thumb ? (game.thumb ?? game.cover) : game.cover) ?? '')
   const showImage = $derived(src !== '' && src !== failedSrc)
 
-  const aspect = $derived(platform.coverAspect ?? 0.71)
+  const aspect = $derived(real ? (platform.coverAspect ?? TILE_ASPECT) : TILE_ASPECT)
   const size = $derived.by(() => {
     if (height !== undefined && width / height > aspect) {
       return { w: Math.round(height * aspect), h: height }

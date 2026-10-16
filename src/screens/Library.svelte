@@ -3,7 +3,7 @@
   import { CHANNELS } from '../lib/ui/channels.js'
   import { shelf } from '../lib/ui/shelf.svelte.js'
   import Clock from '../lib/ui/Clock.svelte'
-  import CoverArt from '../lib/ui/CoverArt.svelte'
+  import CoverArt, { TILE_ASPECT } from '../lib/ui/CoverArt.svelte'
   import HintBar from '../lib/ui/HintBar.svelte'
   import PadButton from '../lib/ui/PadButton.svelte'
   import Logo from '../lib/ui/Logo.svelte'
@@ -24,9 +24,7 @@
 
   const COLUMNS = 5
   const COVER_W = 184
-  const GAP_Y = 34
-  /** Alto visible de la grilla (sin el margen para el salto del foco) */
-  const VIEW_H = 836 - 42 - 12
+  const ROW_H = Math.round(COVER_W / TILE_ASPECT) + 34 // alto de portada + separación
 
   let index = $state(0)
 
@@ -43,26 +41,12 @@
     return /[A-Z]/.test(first) ? first : '#'
   })
 
-  // Cada caja tiene la forma de su consola: las filas no miden lo mismo
-  // (PS1 es cuadrada, PSP es alta). Dónde empieza cada fila:
-  const rowTops = $derived.by(() => {
-    const tops = [0]
-    for (let start = 0; start < games.length; start += COLUMNS) {
-      const tallest = Math.max(
-        ...games.slice(start, start + COLUMNS).map((g) => Math.round(COVER_W / (getPlatform(g.system)?.coverAspect ?? 0.71))),
-      )
-      tops.push(tops.at(-1) + tallest + GAP_Y)
-    }
-    return tops
-  })
-
   // Desplazamiento de la grilla: mantiene visible la fila enfocada
   const row = $derived(Math.floor(index / COLUMNS))
   let scrollRow = $state(0)
   $effect(() => {
-    let top = Math.min(scrollRow, row)
-    while (top < row && rowTops[row + 1] - GAP_Y - rowTops[top] > VIEW_H) top++
-    scrollRow = top
+    if (row < scrollRow) scrollRow = row
+    else if (row > scrollRow + 1) scrollRow = row - 1
   })
 
   // Al cambiar de consola, volver al primer juego
@@ -169,7 +153,8 @@
   <section class="detail" style:--tint={platform.color}>
     {#key game.id}
       <div class="detail-cover">
-        <CoverArt {game} {platform} width={250} height={350} showTitle={false} />
+        <!-- Aquí sí, la caja completa con su forma real -->
+        <CoverArt {game} {platform} width={250} height={350} showTitle={false} real />
         {#if favorite}<span class="heart" aria-label="Favorito">♥</span>{/if}
       </div>
       <h1 class:long={game.name.length > 24}>{game.name}</h1>
@@ -191,7 +176,7 @@
   </section>
 
   <section class="grid-window">
-    <div class="grid" style:transform="translateY({-(rowTops[scrollRow] ?? 0)}px)">
+    <div class="grid" style:transform="translateY({-scrollRow * ROW_H}px)">
       {#each games as g, i (g.id)}
         {@const p = getPlatform(g.system)}
         <button
@@ -419,8 +404,6 @@
     display: grid;
     grid-template-columns: repeat(5, 184px);
     gap: 34px 28px;
-    /* en Favoritos se mezclan formas: las cajas se apoyan abajo, como en una repisa */
-    align-items: end;
     transition: transform 320ms var(--spring);
   }
   .cell {

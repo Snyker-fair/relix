@@ -55,7 +55,8 @@ manejarse con el control. Logo, colores, tipografía y voz de la marca están en
   exacto (Redump) o mismo título con la región preferida. Si el nombre es dudoso
   ("GT4", "Persona 4"), no adivina: lo deja para **Elegir a mano** con las
   candidatas más parecidas. La grilla usa miniaturas JPG que el shell crea una vez.
-  Cada consola tiene la forma de su caja: PS1 cuadrada, PSP alta.
+  En grillas y listas todas las portadas miden lo mismo; el panel de detalle
+  muestra la caja completa con su forma real (PS1 cuadrada, PSP alta).
 
 ## Estructura
 
@@ -136,7 +137,7 @@ roto el lanzamiento desde frontends en su última versión. Se cambia en
 - [x] **Arreglos rápidos:** Reintentar cuando no hay USB, ocultar consolas vacías,
       avance del primer escaneo, posición en la grilla.
 - [x] **Portadas desde internet:** libretro sin cuentas, elegir a mano, miniaturas,
-      forma de caja por consola y región preferida.
+      tamaño parejo en la grilla, caja real en el detalle y región preferida.
 
 ## Hoja de ruta
 
