@@ -24,6 +24,12 @@
  *        -> { id, ok: true, result: { names: ['Ookami (USA)', ...] } }   (sin ".png")
  *     { id, type: 'downloadCovers', payload: { system, libretro, items: [{ key, remote }] } }
  *        -> { id, ok: true, result: { saved: ['Okami (USA)'], failed: [{ key, error }] } }
+ *     { id, type: 'deleteCover', payload: { system: 'ps2', key: 'Okami (USA)' } }
+ *        -> { id, ok: true, result: true }                       (y su miniatura)
+ *     { id, type: 'listCollections' }
+ *        -> { id, ok: true, result: { collections: [{ file: 'custom-Con amigos.cfg', text }] } }
+ *     { id, type: 'saveCollection', payload: { file: 'custom-Con amigos.cfg', text } }
+ *        -> { id, ok: true, result: true }                       (text vacío = borrar)
  *     Error: { id, ok: false, error: 'mensaje para el jugador', code: 'rom-missing' | ... }
  *
  *   Avisos (web -> shell, sin respuesta):
@@ -284,4 +290,69 @@ function demoCoverFiles(systemIds) {
       saved.filter((k) => k.startsWith(`${id}/`)).map((k) => `${k.slice(id.length + 1)}.png`),
     ]),
   )
+}
+
+/**
+ * Borra la portada de un juego (queda la de color).
+ * @param {string} system
+ * @param {string} key  ruta del juego sin extensión
+ */
+export async function deleteCover(system, key) {
+  if (mode === 'xbox') return request('deleteCover', { system, key })
+  const saved = demoCovers()
+  delete saved[`${system}/${key}`]
+  saveDemoCovers(saved)
+  return true
+}
+
+// ── Colecciones (ES-DE/collections/custom-*.cfg) ─────────────────────────
+
+/** @typedef {{ file: string, text: string }} CollectionFile */
+
+/** @returns {Promise<CollectionFile[]>} */
+export async function listCollections() {
+  if (mode === 'xbox') return (await request('listCollections')).collections
+  return Object.entries(demoCollections()).map(([file, text]) => ({ file, text }))
+}
+
+/**
+ * Guarda una colección; con texto vacío, la borra.
+ * @param {string} file  "custom-Nombre.cfg"
+ * @param {string} text
+ */
+export async function saveCollection(file, text) {
+  if (mode === 'xbox') return request('saveCollection', { file, text })
+  const all = demoCollections()
+  if (text) all[file] = text
+  else delete all[file]
+  try {
+    localStorage.setItem(DEMO_COLLECTIONS_KEY, JSON.stringify(all))
+  } catch {
+    // sin almacenamiento: se olvidan al recargar
+  }
+  return true
+}
+
+const DEMO_COLLECTIONS_KEY = 'relix:demo-collections'
+
+/** En la demo hay una colección de ejemplo (con un juego de una consola que Relix no maneja) */
+const DEMO_SEED = {
+  'custom-Con amigos.cfg': [
+    '%ROMPATH%/ps2/Burnout 3 - Takedown (USA).chd',
+    '%ROMPATH%/gc/F-Zero GX (USA).rvz',
+    '%ROMPATH%/wiiu/Splatoon (USA).wua',
+    '%ROMPATH%/psx/Tekken 3 (USA).chd',
+    '%ROMPATH%/snes/Super Mario Kart (USA).sfc',
+    '',
+  ].join('\n'),
+}
+
+/** @returns {Record<string, string>} */
+function demoCollections() {
+  try {
+    const saved = localStorage.getItem(DEMO_COLLECTIONS_KEY)
+    return saved ? JSON.parse(saved) : { ...DEMO_SEED }
+  } catch {
+    return { ...DEMO_SEED }
+  }
 }

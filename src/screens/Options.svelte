@@ -30,8 +30,8 @@
     { id: 'covers', name: 'Portadas' },
     { id: 'preferences', name: 'Preferencias' },
   ]
-  // Biblioteca: una fila por consola y, al final, "Escanear todo"
-  const LIBRARY_ROWS = [...PLATFORMS.map((p) => p.id), 'all']
+  // Biblioteca: una fila por consola, "Escanear todo" y los juegos ocultos
+  const LIBRARY_ROWS = [...PLATFORMS.map((p) => p.id), 'all', 'hidden']
   const PREFERENCE_ROWS = ['empty', 'sounds', 'region']
 
   // Portadas: las consolas con juegos, "Buscar en todas" y "Elegir a mano"
@@ -74,7 +74,9 @@
   )
   const hintA = $derived(
     section === 'library'
-      ? 'Escanear'
+      ? ROWS[index] === 'hidden'
+        ? 'Mostrar'
+        : 'Escanear'
       : section === 'preferences'
         ? 'Cambiar'
         : ROWS[index] === 'choose'
@@ -98,8 +100,9 @@
   }
 
   async function scanRow() {
-    if (busy || scanningAll) return
     const id = ROWS[index]
+    if (id === 'hidden') return unhideRow()
+    if (busy || scanningAll) return
     sound.select()
     try {
       if (id !== 'all') {
@@ -130,6 +133,18 @@
       sound.error()
       onToast(e instanceof Error ? e.message : 'No se pudo escanear. Revisa que el USB esté conectado.')
     }
+  }
+
+  function unhideRow() {
+    const count = library.hiddenCount()
+    if (count === 0) {
+      sound.error()
+      onToast('No hay juegos ocultos. Se ocultan desde el menú del juego (Y).')
+      return
+    }
+    library.unhideAll()
+    sound.favorite()
+    onToast(`Listo: ${plural(count, 'juego vuelve', 'juegos vuelven')} a la biblioteca`)
   }
 
   async function coverRow() {
@@ -279,7 +294,7 @@
 </section>
 
 {#if section === 'library'}
-<section class="rows" aria-label="Escanear consolas">
+<section class="rows compact" aria-label="Escanear consolas">
   {#each ROWS as id, i (id)}
     {@const platform = PLATFORMS.find((p) => p.id === id)}
     {@const focused = i === index}
@@ -295,7 +310,7 @@
       {#if platform}
         {@const meta = rowMeta(id)}
         <span class="badge" style:background={platform.color}>
-          <ChannelIcon id={id} color={platform.ink} size={52} />
+          <ChannelIcon id={id} color={platform.ink} size={46} />
         </span>
         <span class="text">
           <strong>{platform.name}</strong>
@@ -310,9 +325,29 @@
             {meta.when}
           {/if}
         </span>
+      {:else if id === 'hidden'}
+        {@const hiddenCount = library.hiddenCount()}
+        <span class="badge neutral">
+          <ChannelIcon id="hide" color="#23304A" size={46} />
+        </span>
+        <span class="text">
+          <strong>Juegos ocultos</strong>
+          <span>
+            {hiddenCount > 0
+              ? `${plural(hiddenCount, 'juego oculto', 'juegos ocultos')} con Y › Ocultar juego`
+              : 'Ninguno. Se ocultan desde el menú del juego (Y)'}
+          </span>
+        </span>
+        <span class="state">
+          {#if focused && hiddenCount > 0}
+            <PadButton name="a" size={30} /> Mostrar de nuevo
+          {:else if hiddenCount > 0}
+            <span class="value on">{hiddenCount}</span>
+          {/if}
+        </span>
       {:else}
         <span class="badge refresh">
-          <ChannelIcon id="refresh" color="#FFFFFF" size={52} />
+          <ChannelIcon id="refresh" color="#FFFFFF" size={46} />
         </span>
         <span class="text">
           <strong>Escanear todo</strong>

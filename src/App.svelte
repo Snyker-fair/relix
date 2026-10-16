@@ -1,26 +1,36 @@
 <script>
+  import { untrack } from 'svelte'
   import { launch, mode, notifyReady, onShellEvent, ShellError } from './lib/core/bridge.js'
   import { buildLaunchUri } from './lib/core/launchUri.js'
   import { getPlatform } from './lib/core/platforms.js'
+  import { COLLECTIONS, COLLECTION_PREFIX, isCollectionId } from './lib/ui/channels.js'
+  import { collections } from './lib/ui/collections.svelte.js'
   import { dispatch, startInput } from './lib/ui/input.js'
   import { library } from './lib/ui/library.svelte.js'
   import { sound } from './lib/ui/sound.js'
   import Stage from './lib/ui/Stage.svelte'
   import CoverPicker from './screens/CoverPicker.svelte'
+  import GameMenu from './screens/GameMenu.svelte'
   import Home from './screens/Home.svelte'
   import LaunchOverlay from './screens/LaunchOverlay.svelte'
   import Library from './screens/Library.svelte'
   import Options from './screens/Options.svelte'
+  import Search from './screens/Search.svelte'
   import Status from './screens/Status.svelte'
 
-  /** @typedef {{ name: 'home' } | { name: 'library', systemId: string }} MainScreen */
   /**
-   * Opciones recuerda desde dónde se abrió, para volver ahí con B.
-   * @type {MainScreen
-   *   | { name: 'options', from: MainScreen, section?: string }
-   *   | { name: 'coverPicker', from: MainScreen }}
+   * Pantallas. Las que se abren "encima" recuerdan desde dónde, para volver con B.
+   * @typedef {{ name: 'home' }
+   *   | { name: 'library', systemId: string }
+   *   | { name: 'search', from: any }
+   *   | { name: 'options', from: any, section?: string }
+   *   | { name: 'coverPicker', back: any, gameId?: string }} Screen
    */
+  /** @type {Screen} */
   let screen = $state({ name: 'home' })
+  /** Menú del juego (Y), encima de la pantalla actual */
+  /** @type {{ game: any, sortOptions?: import('./lib/core/sorting.js').SortOrder[] } | null} */
+  let menu = $state(null)
   /** Canal con el foco en el inicio (id de consola, 'favorites' u 'options'). null = el primero */
   /** @type {string|null} */
   let focusedId = $state(null)
@@ -44,6 +54,11 @@
 
   library.load().finally(notifyReady)
 
+  // Las colecciones se leen del USB cuando la biblioteca está lista (también al reintentar)
+  $effect(() => {
+    if (library.status === 'ready') untrack(() => collections.load())
+  })
+
   $effect(() => {
     const t = setTimeout(() => (boot = false), 1400)
     return () => clearTimeout(t)
@@ -60,10 +75,37 @@
     if (screen.name === 'home' || screen.name === 'library') screen = { name: 'options', from: screen }
   }
 
-  /** @param {string} systemId */
+  function openSearch() {
+    if (screen.name !== 'search') screen = { name: 'search', from: screen }
+  }
+
+  /**
+   * Abre un canal. "Colecciones" abre la primera colección; en el inicio,
+   * el foco queda en el canal Colecciones.
+   * @param {string} systemId
+   */
   function openLibrary(systemId) {
-    focusedId = systemId
-    screen = { name: 'library', systemId }
+    let id = systemId
+    if (id === COLLECTIONS.id) {
+      const first = collections.visible[0]
+      if (!first) return
+      id = `${COLLECTION_PREFIX}${first.name}`
+    }
+    focusedId = isCollectionId(id) ? COLLECTIONS.id : id
+    screen = { name: 'library', systemId: id }
+  }
+
+  /**
+   * @param {any} game
+   * @param {import('./lib/core/sorting.js').SortOrder[]} [sortOptions]
+   */
+  function openMenu(game, sortOptions) {
+    menu = { game, sortOptions }
+  }
+
+  /** @param {any} game */
+  function changeCover(game) {
+    screen = { name: 'coverPicker', back: screen, gameId: game.id }
   }
 
   /** @param {any} game */
@@ -112,6 +154,8 @@
       onOpen={openLibrary}
       onLaunch={startGame}
       onOptions={openOptions}
+      onSearch={openSearch}
+      onMenu={(game) => openMenu(game)}
     />
   {:else if screen.name === 'library'}
     <Library
@@ -120,18 +164,35 @@
       onSwitch={openLibrary}
       onLaunch={startGame}
       onOptions={openOptions}
+      onMenu={openMenu}
+      onSearch={openSearch}
     />
+  {:else if screen.name === 'search'}
+    {@const from = screen.from}
+    <Search onBack={() => (screen = from)} onLaunch={startGame} onMenu={(game) => openMenu(game)} />
   {:else if screen.name === 'options'}
     {@const from = screen.from}
+    {@const options = screen}
     <Options
       initialSection={screen.section}
       onBack={() => (screen = from)}
       onToast={showToast}
-      onPickCovers={() => (screen = { name: 'coverPicker', from })}
+      onPickCovers={() => (screen = { name: 'coverPicker', back: { ...options, section: 'covers' } })}
     />
   {:else}
-    {@const from = screen.from}
-    <CoverPicker onBack={() => (screen = { name: 'options', from, section: 'covers' })} onToast={showToast} />
+    {@const back = screen.back}
+    <CoverPicker gameId={screen.gameId} onBack={() => (screen = back)} onToast={showToast} />
+  {/if}
+
+  {#if menu}
+    <GameMenu
+      game={menu.game}
+      sortOptions={menu.sortOptions}
+      onClose={() => (menu = null)}
+      onLaunch={startGame}
+      onChangeCover={changeCover}
+      onToast={showToast}
+    />
   {/if}
 
   {#if launching}

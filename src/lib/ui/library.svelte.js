@@ -53,17 +53,46 @@ class Library {
   /** Portadas que hay en el USB, por consola: ["Okami (USA).png", ...] */
   /** @type {Record<string, string[]>} */
   coverFiles = $state({})
+  /** Juegos ocultos desde el menú del juego (BIOS, demos, duplicados...) */
+  /** @type {string[]} */
+  hiddenIds = $state(load('hidden', []))
+  /** Cuándo se jugó cada juego por última vez (para ordenar por recientes) */
+  /** @type {Record<string, number>} */
+  lastPlayed = $state(load('lastPlayed', {}))
 
-  all = $derived(Object.values(this.bySystem).flat())
+  /** Lo que se muestra: todo menos los ocultos */
+  /** @type {Record<string, LibraryGame[]>} */
+  visibleBySystem = $derived.by(() => {
+    const hidden = new Set(this.hiddenIds)
+    return Object.fromEntries(
+      Object.entries(this.bySystem).map(([id, games]) => [id, games.filter((g) => !hidden.has(g.id))]),
+    )
+  })
+
+  all = $derived(Object.values(this.visibleBySystem).flat())
 
   /** @type {Map<string, LibraryGame>} */
   byId = $derived(new Map(this.all.map((g) => [g.id, g])))
 
+  /** Por id en minúsculas (las colecciones de ES-DE no distinguen mayúsculas) */
+  /** @type {Map<string, LibraryGame>} */
+  byKey = $derived(new Map(this.all.map((g) => [g.id.toLowerCase(), g])))
+
+  /** Carpeta en minúsculas -> consola: "ps1" -> "psx" (para leer colecciones) */
+  /** @type {Map<string, string>} */
+  folderToSystem = $derived.by(() => {
+    const map = new Map()
+    for (const p of PLATFORMS) {
+      for (const folder of p.folders) map.set(folder.toLowerCase(), p.id)
+      const scanned = this.scans[p.id]?.folder
+      if (scanned) map.set(scanned.toLowerCase(), p.id)
+    }
+    return map
+  })
+
   favorites = $derived(this.all.filter((g) => this.isFavorite(g)))
 
-  recent = $derived(
-    this.recentIds.map((id) => this.all.find((g) => g.id === id)).filter((g) => g !== undefined),
-  )
+  recent = $derived(this.recentIds.map((id) => this.byId.get(id)).filter((g) => g !== undefined))
 
   // Datos del inicio que no cambian al re-escanear
   /** @type {Record<string, import('../core/esde.js').Game[]>} */
@@ -224,7 +253,31 @@ class Library {
 
   /** @param {string} systemId  id de consola o 'favorites' */
   gamesFor(systemId) {
-    return systemId === 'favorites' ? this.favorites : (this.bySystem[systemId] ?? [])
+    return systemId === 'favorites' ? this.favorites : (this.visibleBySystem[systemId] ?? [])
+  }
+
+  /** @param {LibraryGame} game */
+  hide(game) {
+    if (this.hiddenIds.includes(game.id)) return
+    this.hiddenIds = [...this.hiddenIds, game.id]
+    save('hidden', this.hiddenIds)
+  }
+
+  /** Vuelve a mostrar todos los juegos ocultos */
+  unhideAll() {
+    this.hiddenIds = []
+    save('hidden', this.hiddenIds)
+  }
+
+  /** Ocultos que siguen existiendo en el USB */
+  hiddenCount() {
+    const hidden = new Set(this.hiddenIds)
+    return Object.values(this.bySystem).flat().filter((g) => hidden.has(g.id)).length
+  }
+
+  /** @param {string} systemId  carpeta real de la consola dentro de roms ("ps1", "psx"...) */
+  folderOf(systemId) {
+    return this.scans[systemId]?.folder ?? getPlatform(systemId)?.folders[0] ?? systemId
   }
 
   /** @param {LibraryGame} game */
@@ -242,12 +295,13 @@ class Library {
   markPlayed(game) {
     this.recentIds = [game.id, ...this.recentIds.filter((id) => id !== game.id)].slice(0, MAX_RECENT)
     save('recent', this.recentIds)
+    this.lastPlayed = { ...this.lastPlayed, [game.id]: Date.now() }
+    save('lastPlayed', this.lastPlayed)
   }
 
   /** @param {string} systemId  carpeta donde Relix busca los juegos de esa consola */
   romFolderPath(systemId) {
-    const folder = this.scans[systemId]?.folder ?? getPlatform(systemId)?.folders[0] ?? systemId
-    return `${this.romRoot}\\${folder}`
+    return `${this.romRoot}\\${this.folderOf(systemId)}`
   }
 
   /** @param {LibraryGame} game */

@@ -5,7 +5,8 @@ El shell es la parte en C# que corre en la Xbox. Tiene cuatro trabajos:
 1. **Mostrar la interfaz.** La interfaz de Relix corre dentro de un WebView2 a
    pantalla completa.
 2. **Leer el control** de forma nativa y pasarle cada botón a la interfaz.
-3. **Leer el USB:** escanea `roms\<consola>\` y, si existe, lee los gamelists y portadas de ES-DE.
+3. **Leer y escribir en el USB:** escanea `roms\<consola>\`, lee los gamelists de ES-DE y
+   guarda las portadas descargadas, sus miniaturas y tus colecciones.
 4. **Abrir los emuladores** y volver a Relix cuando los cierras.
 
 ```
@@ -58,14 +59,15 @@ Visual Studio los recarga solo. Si te pregunta, elige **Sí a todo**.
 1. Haz clic derecho en el proyecto **RelixShell** y elige **Agregar → Nueva carpeta**.
    Llámala `Shell`.
 2. Haz clic derecho en la carpeta **Shell** y elige **Agregar → Elemento existente…**
-3. Selecciona los cuatro `.cs` de `relix\shell\RelixShell\Shell\`. Visual Studio los copia al proyecto.
+3. Selecciona los cinco `.cs` de `relix\shell\RelixShell\Shell\`. Visual Studio los copia al proyecto.
 
 | Archivo | Qué hace |
 |---|---|
 | `GamepadInput.cs` | Lee el control y lo manda a la interfaz |
 | `LocalServer.cs` | Sirve la interfaz, las portadas y las miniaturas desde `https://relix.example` |
 | `LibraryReader.cs` | Encuentra el USB y recorre la carpeta `roms` |
-| `CoverService.cs` | Baja portadas de libretro y crea las miniaturas |
+| `CoverService.cs` | Baja portadas de libretro, crea las miniaturas y las borra si eliges la de color |
+| `CollectionStore.cs` | Lee y guarda las colecciones en `ES-DE\collections` |
 
 ### 4. Ajusta el manifiesto
 
@@ -150,6 +152,7 @@ Lo que Relix escribe en el disco (por eso necesita los permisos del punto 3):
 E:\ES-DE\downloaded_media\<consola>\covers\   portadas descargadas (la misma carpeta de ES-DE)
 E:\relix\cache\libretro\                      lista de portadas de cada consola (se renueva cada mes)
 E:\relix\cache\miniaturas\                    miniaturas JPG de la grilla
+E:\ES-DE\collections\custom-<Nombre>.cfg        tus colecciones (las ve también ES-DE)
 ```
 
 `E:\relix\cache` se puede borrar cuando quieras: Relix la vuelve a crear. Si
@@ -183,7 +186,7 @@ así el emulador tiene todos los recursos de la consola.
 | Qué ves | Qué revisar |
 |---|---|
 | Error de compilación con `XamlControlsResources` o `WebView2` | Falta el paso 1 (NuGet Microsoft.UI.Xaml) |
-| Error con `GamepadInput`, `LocalServer`, `LibraryReader` o `CoverService` | Falta el paso 3 (carpeta Shell) |
+| Error con `GamepadInput`, `LocalServer`, `LibraryReader`, `CoverService` o `CollectionStore` | Falta el paso 3 (carpeta Shell) |
 | Pantalla celeste vacía | Falta el paso 6 o el 7: la carpeta `ui` no quedó en el paquete |
 | "No encontré la carpeta roms en ningún disco USB" | La carpeta `roms` debe estar en la raíz del disco. Corre la USB Permissions Tool |
 | Un juego no aparece | Revisa que su formato esté en la tabla del paso 8 y que esté a 3 carpetas de profundidad como máximo |

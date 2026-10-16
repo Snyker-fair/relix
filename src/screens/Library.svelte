@@ -1,6 +1,8 @@
 <script>
+  import { untrack } from 'svelte'
   import { getPlatform } from '../lib/core/platforms.js'
-  import { CHANNELS } from '../lib/ui/channels.js'
+  import { jumpIndex, sectionOf, SORT_NAMES, sortGames } from '../lib/core/sorting.js'
+  import { isCollectionId } from '../lib/ui/channels.js'
   import { shelf } from '../lib/ui/shelf.svelte.js'
   import Clock from '../lib/ui/Clock.svelte'
   import CoverArt, { TILE_ASPECT } from '../lib/ui/CoverArt.svelte'
@@ -9,6 +11,7 @@
   import Logo from '../lib/ui/Logo.svelte'
   import { dispatch, pushHandler } from '../lib/ui/input.js'
   import { library } from '../lib/ui/library.svelte.js'
+  import { settings } from '../lib/ui/settings.svelte.js'
   import { sound } from '../lib/ui/sound.js'
 
   /**
@@ -18,9 +21,11 @@
    *   onSwitch: (systemId: string) => void,
    *   onLaunch: (game: any) => void,
    *   onOptions: () => void,
+   *   onMenu: (game: any, sortOptions: import('../lib/core/sorting.js').SortOrder[]) => void,
+   *   onSearch: () => void,
    * }}
    */
-  let { systemId, onBack, onSwitch, onLaunch, onOptions } = $props()
+  let { systemId, onBack, onSwitch, onLaunch, onOptions, onMenu, onSearch } = $props()
 
   const COLUMNS = 5
   const COVER_W = 184
@@ -28,17 +33,40 @@
 
   let index = $state(0)
 
-  // Pestañas: solo los canales visibles (los vacíos se ocultan, salvo que se pida verlos)
-  const channelIndex = $derived(shelf.channels.findIndex((c) => c.id === systemId))
-  const channel = $derived(CHANNELS.find((c) => c.id === systemId) ?? CHANNELS[0])
-  const games = $derived(library.gamesFor(systemId))
+  // Pestañas: los canales visibles o, dentro de una colección, las colecciones
+  const tabs = $derived(shelf.tabsFor(systemId))
+  const channelIndex = $derived(tabs.findIndex((c) => c.id === systemId))
+  const channel = $derived(shelf.channelFor(systemId))
+  const inCollection = $derived(isCollectionId(systemId))
+
+  // Orden: "Año" solo tiene sentido si algún juego trae el año (de ES-DE)
+  const unsorted = $derived(shelf.gamesFor(systemId))
+  const sortOptions = $derived(
+    /** @type {import('../lib/core/sorting.js').SortOrder[]} */ (
+      unsorted.some((g) => g.year) ? ['az', 'recent', 'year'] : ['az', 'recent']
+    ),
+  )
+  const order = $derived(sortOptions.includes(settings.sortOrder) ? settings.sortOrder : 'az')
+  const games = $derived(sortGames(unsorted, order, library.lastPlayed))
+
   const game = $derived(games[Math.min(index, games.length - 1)])
   const platform = $derived(game ? getPlatform(game.system) : null)
   const favorite = $derived(game ? library.isFavorite(game) : false)
-  // Letra del juego enfocado, sin tildes; números y símbolos van en "#"
-  const letter = $derived.by(() => {
-    const first = (game?.sortName ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').charAt(0).toUpperCase()
-    return /[A-Z]/.test(first) ? first : '#'
+  // Sección del juego enfocado: la letra en A–Z, el año en "Año"
+  const section = $derived(game ? (sectionOf(game, order) ?? '•') : '')
+
+  // Si la lista cambia (otro orden, un juego oculto...), el foco sigue en el mismo juego
+  let focusedGameId = ''
+  $effect(() => {
+    focusedGameId = game?.id ?? ''
+  })
+  $effect(() => {
+    const list = games
+    untrack(() => {
+      const i = list.findIndex((g) => g.id === focusedGameId)
+      if (i >= 0) index = i
+      else if (index >= list.length) index = Math.max(0, list.length - 1)
+    })
   })
 
   // Desplazamiento de la grilla: mantiene visible la fila enfocada
@@ -52,9 +80,31 @@
   // Al cambiar de consola, volver al primer juego
   $effect(() => {
     systemId
-    index = 0
-    scrollRow = 0
+    untrack(() => {
+      index = 0
+      scrollRow = 0
+      focusedGameId = ''
+    })
   })
+
+  // Letra grande al saltar con LT / RT
+  let bubble = $state('')
+  /** Cambia en cada salto para que la animación vuelva a empezar */
+  let bubbleId = $state(0)
+  /** @type {ReturnType<typeof setTimeout>} */
+  let bubbleTimer
+
+  /** @param {1|-1} direction */
+  function jump(direction) {
+    const next = jumpIndex(games, index, direction, order)
+    if (next === index) return sound.error()
+    index = next
+    sound.move()
+    bubble = sectionOf(games[next], order) ?? `${next + 1}`
+    bubbleId++
+    clearTimeout(bubbleTimer)
+    bubbleTimer = setTimeout(() => (bubble = ''), 650)
+  }
 
   const chips = $derived.by(() => {
     if (!game) return []
@@ -82,9 +132,9 @@
   /** @param {number} delta */
   function switchChannel(delta) {
     const next = channelIndex + delta
-    if (next < 0 || next >= shelf.channels.length) return
+    if (next < 0 || next >= tabs.length) return
     sound.move()
-    onSwitch(shelf.channels[next].id)
+    onSwitch(tabs[next].id)
   }
 
   $effect(() =>
@@ -96,9 +146,13 @@
       else if (action === 'down') move(Math.min(index + COLUMNS, games.length - 1))
       else if (action === 'lb') switchChannel(-1)
       else if (action === 'rb') switchChannel(1)
+      else if (action === 'lt' && game) jump(-1)
+      else if (action === 'rt' && game) jump(1)
       else if (action === 'b') (sound.back(), onBack())
       else if (action === 'x' && game) (library.toggleFavorite(game), sound.favorite())
+      else if (action === 'y' && game) (sound.select(), onMenu(game, sortOptions))
       else if (action === 'a' && game) onLaunch(game)
+      else if (action === 'view') (sound.select(), onSearch())
       else if (action === 'start') (sound.select(), onOptions())
     }),
   )
@@ -110,11 +164,11 @@
     <Logo size={34} />
   </button>
 
-  <nav class="tabs" aria-label="Consolas">
-    <button class="bumper" onclick={() => dispatch('lb')} aria-label="Consola anterior">
+  <nav class="tabs" aria-label={inCollection ? 'Colecciones' : 'Consolas'}>
+    <button class="bumper" onclick={() => dispatch('lb')} aria-label="Anterior">
       <PadButton name="lb" size={30} />
     </button>
-    {#each shelf.channels as ch (ch.id)}
+    {#each tabs as ch (ch.id)}
       <button
         class="tab"
         class:active={ch.id === systemId}
@@ -125,7 +179,7 @@
         {ch.shortName}
       </button>
     {/each}
-    <button class="bumper" onclick={() => dispatch('rb')} aria-label="Consola siguiente">
+    <button class="bumper" onclick={() => dispatch('rb')} aria-label="Siguiente">
       <PadButton name="rb" size={30} />
     </button>
   </nav>
@@ -135,9 +189,17 @@
 
 {#if games.length === 0}
   <section class="empty">
-    <h1>{channel.id === 'favorites' ? 'Aún no tienes favoritos' : `No hay juegos de ${channel.name}`}</h1>
+    <h1>
+      {channel.id === 'favorites'
+        ? 'Aún no tienes favoritos'
+        : inCollection
+          ? 'Esta colección quedó vacía'
+          : `No hay juegos de ${channel.name}`}
+    </h1>
     {#if channel.id === 'favorites'}
       <p>En cualquier consola, pon el foco en un juego y presiona <PadButton name="x" size={30} /> para guardarlo aquí.</p>
+    {:else if inCollection}
+      <p>Agrega juegos desde el menú del juego: <PadButton name="y" size={30} /> › Colecciones.</p>
     {:else}
       <p>
         Copia tus juegos a <code>{library.romFolderPath(channel.id)}</code> y vuelve a abrir Relix.
@@ -196,19 +258,32 @@
 
 {#if games.length > 0}
   <div class="position" aria-live="polite">
-    <span class="letter">{letter}</span>
+    <span class="letter" class:wide={section.length > 1}>{section}</span>
     <span>Juego {Math.min(index, games.length - 1) + 1} de {games.length}</span>
+    <span class="order">{SORT_NAMES[order]}</span>
   </div>
+{/if}
+
+{#if bubble}
+  {#key bubbleId}
+    <div class="bubble" aria-hidden="true">{bubble}</div>
+  {/key}
 {/if}
 
 <HintBar
   hints={games.length > 0
     ? [
         { button: 'a', label: platform?.launcher ? 'Jugar' : 'No disponible' },
-        { button: 'x', label: favorite ? 'Quitar de favoritos' : 'Favorito' },
+        { button: 'y', label: 'Menú' },
+        { button: 'x', label: 'Favorito' },
+        { button: 'lt', also: 'rt', label: order === 'az' ? 'Letra' : order === 'year' ? 'Año' : 'Página' },
+        { button: 'view', label: 'Buscar' },
         { button: 'b', label: 'Volver' },
       ]
-    : [{ button: 'b', label: 'Volver' }]}
+    : [
+        { button: 'view', label: 'Buscar' },
+        { button: 'b', label: 'Volver' },
+      ]}
 />
 
 <style>
@@ -361,6 +436,53 @@
     font-weight: 800;
     font-size: 26px;
     padding-top: 3px;
+  }
+  .letter.wide {
+    width: auto;
+    padding: 3px 14px 0;
+    font-size: 22px;
+  }
+  .order {
+    padding: 4px 14px 6px;
+    border-radius: 999px;
+    background: var(--cloud);
+    font-size: 21px;
+  }
+  /* letra grande al saltar con LT / RT */
+  .bubble {
+    position: absolute;
+    left: 1290px;
+    top: 470px;
+    translate: -50% -50%;
+    display: grid;
+    place-items: center;
+    min-width: 200px;
+    height: 200px;
+    padding: 12px 40px 0;
+    border-radius: 60px;
+    background: rgb(35 48 74 / 0.88);
+    color: var(--cloud);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 120px;
+    line-height: 1;
+    z-index: 5;
+    pointer-events: none;
+    animation: bubble 650ms ease both;
+  }
+  @keyframes bubble {
+    0% {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    15%,
+    75% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+    }
   }
   .file {
     margin: 20px 0 0;

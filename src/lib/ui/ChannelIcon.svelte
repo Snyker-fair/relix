@@ -81,6 +81,28 @@
     <!-- caja con visto bueno: elegir a mano -->
     <rect x="20" y="10" width="56" height="76" rx="9" />
     <path d="M34 49l10 10 19-21" />
+  {:else if id === 'collections' || id.startsWith('collection:')}
+    <!-- cajas apiladas: colecciones -->
+    <rect x="30" y="14" width="44" height="58" rx="8" opacity="0.55" />
+    <rect x="20" y="24" width="44" height="58" rx="8" fill={color} />
+  {:else if id === 'search'}
+    <!-- lupa -->
+    <circle cx="42" cy="42" r="24" />
+    <path d="M60 60l20 20" stroke-width="9" />
+  {:else if id === 'play'}
+    <!-- triángulo: jugar -->
+    <path d="M32 20v56l46-28Z" fill={color} />
+  {:else if id === 'hide'}
+    <!-- ojo tachado: ocultar -->
+    <path d="M10 48s14-22 38-22 38 22 38 22-14 22-38 22S10 48 10 48Z" />
+    <circle cx="48" cy="48" r="9" fill={color} />
+    <path d="M18 80 78 16" stroke-width="7" />
+  {:else if id === 'sort'}
+    <!-- flechas arriba y abajo: ordenar -->
+    <path d="M32 78V18M16 34l16-16 16 16" />
+    <path d="M64 18v60M48 62l16 16 16-16" />
+  {:else if id === 'plus'}
+    <path d="M48 18v60M18 48h60" stroke-width="9" />
   {:else if id === 'globe'}
     <!-- globo: región -->
     <circle cx="48" cy="48" r="34" />

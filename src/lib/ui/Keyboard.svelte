@@ -1,0 +1,180 @@
+<script>
+  /**
+   * Teclado en pantalla para escribir con el control, estilo Nintendo.
+   * La pantalla que lo usa le pasa los botones con `handle(action)`:
+   *
+   *   flechas  moverse    A  escribir la tecla    X  borrar    Y  espacio
+   *
+   * `handle` devuelve false si la acción no le toca (por ejemplo, salir por
+   * el borde derecho hacia los resultados de la búsqueda).
+   */
+  import { sound } from './sound.js'
+
+  /**
+   * @type {{
+   *   value?: string,
+   *   onSubmit?: (value: string) => void,
+   *   maxLength?: number,
+   *   active?: boolean,
+   * }}
+   */
+  let { value = $bindable(''), onSubmit, maxLength = 40, active = true } = $props()
+
+  const COLUMNS = 7
+  const LETTERS = ['ABCDEFG', 'HIJKLMN', 'ÑOPQRST', 'UVWXYZ-', '1234567', "890&':."]
+
+  /** @typedef {{ id: string, label: string, span: number, kind: 'char'|'space'|'del'|'ok' }} Key */
+
+  /** @type {Key[][]} */
+  const rows = $derived([
+    ...LETTERS.map((r) => [...r].map((ch) => /** @type {Key} */ ({ id: ch, label: ch, span: 1, kind: 'char' }))),
+    onSubmit
+      ? [
+          { id: 'space', label: 'Espacio', span: 3, kind: 'space' },
+          { id: 'del', label: 'Borrar', span: 2, kind: 'del' },
+          { id: 'ok', label: 'Listo', span: 2, kind: 'ok' },
+        ]
+      : [
+          { id: 'space', label: 'Espacio', span: 4, kind: 'space' },
+          { id: 'del', label: 'Borrar', span: 3, kind: 'del' },
+        ],
+  ])
+
+  let row = $state(0)
+  /** Columna de 0 a 6; las teclas anchas ocupan varias */
+  let col = $state(0)
+
+  /** La tecla que cubre una columna y dónde empieza */
+  function keyAt(/** @type {number} */ r, /** @type {number} */ c) {
+    let start = 0
+    for (const key of rows[r]) {
+      if (c < start + key.span) return { key, start }
+      start += key.span
+    }
+    const last = rows[r].at(-1)
+    return { key: /** @type {Key} */ (last), start: COLUMNS - (last?.span ?? 1) }
+  }
+
+  const focused = $derived(keyAt(row, col))
+
+  /** @param {Key} key */
+  function press(key) {
+    if (key.kind === 'del') {
+      if (value.length === 0) return sound.error()
+      value = value.slice(0, -1)
+    } else if (key.kind === 'ok') {
+      if (!value.trim()) return sound.error()
+      onSubmit?.(value.trim())
+      return
+    } else if (key.kind === 'space') {
+      if (value.length === 0 || value.endsWith(' ') || value.length >= maxLength) return sound.error()
+      value += ' '
+    } else {
+      if (value.length >= maxLength) return sound.error()
+      // Mayúscula al empezar cada palabra: "Con amigos" -> "Con Amigos" queda bien en títulos
+      const startOfWord = value.length === 0 || value.endsWith(' ')
+      value += startOfWord ? key.label : key.label.toLowerCase()
+    }
+    sound.select()
+  }
+
+  /**
+   * @param {import('./input.js').Action} action
+   * @returns {boolean} false si la acción no le corresponde al teclado
+   */
+  export function handle(action) {
+    const { key, start } = focused
+    if (action === 'left') {
+      if (start === 0) return false
+      col = keyAt(row, start - 1).start
+    } else if (action === 'right') {
+      if (start + key.span >= COLUMNS) return false
+      col = start + key.span
+    } else if (action === 'up') {
+      if (row === 0) return false
+      row--
+    } else if (action === 'down') {
+      if (row === rows.length - 1) return false
+      row++
+    } else if (action === 'a') {
+      press(key)
+      return true
+    } else if (action === 'x') {
+      press({ id: 'del', label: '', span: 1, kind: 'del' })
+      return true
+    } else if (action === 'y') {
+      press({ id: 'space', label: '', span: 1, kind: 'space' })
+      return true
+    } else {
+      return false
+    }
+    sound.move()
+    return true
+  }
+
+  /** Vuelve al teclado desde los resultados: a la última columna de la fila */
+  export function enterFromRight() {
+    col = COLUMNS - 1
+  }
+</script>
+
+<div class="keyboard" class:active role="group" aria-label="Teclado">
+  {#each rows as keys, r (r)}
+    <div class="row">
+      {#each keys as key (key.id)}
+        <button
+          class="key"
+          class:wide={key.span > 1}
+          class:ok={key.kind === 'ok'}
+          class:focused={active && focused.key.id === key.id}
+          style:grid-column="span {key.span}"
+          onclick={() => press(key)}
+        >
+          {key.label}
+        </button>
+      {/each}
+    </div>
+  {/each}
+</div>
+
+<style>
+  .keyboard {
+    display: grid;
+    gap: 10px;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: repeat(7, 66px);
+    gap: 10px;
+  }
+  .key {
+    height: 62px;
+    border-radius: 18px;
+    background: var(--sky);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--ink);
+    padding-top: 3px;
+    transition:
+      transform 140ms var(--spring),
+      background 140ms ease,
+      color 140ms ease;
+  }
+  .key.wide {
+    font-size: 22px;
+  }
+  .key.ok {
+    background: var(--ink);
+    color: var(--cloud);
+  }
+  .key.focused {
+    background: var(--pop);
+    color: var(--cloud);
+    transform: scale(1.12);
+    box-shadow: 0 10px 22px -10px var(--pop);
+  }
+  .keyboard:not(.active) {
+    opacity: 0.7;
+  }
+</style>

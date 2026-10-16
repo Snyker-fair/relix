@@ -8,7 +8,7 @@
  *
  * Nunca se usa internet sin que el jugador lo pida.
  */
-import { coverIndex, downloadCovers } from '../core/bridge.js'
+import { coverIndex, deleteCover, downloadCovers } from '../core/bridge.js'
 import {
   buildCoverIndex,
   coverCandidates,
@@ -154,6 +154,19 @@ class Covers {
     const result = await downloadCovers(platform, [{ key, remote: remoteName }])
     if (result.failed.length > 0) throw new Error(result.failed[0].error || 'No se pudo descargar la portada.')
     await library.refreshCovers([game.system], [key])
+  }
+
+  /**
+   * Quita la portada descargada de un juego y no la vuelve a buscar.
+   * @param {import('./library.svelte.js').LibraryGame} game
+   */
+  async useColor(game) {
+    const key = coverKey(game)
+    if (game.cover) {
+      await deleteCover(game.system, key)
+      await library.refreshCovers([game.system], [key])
+    }
+    this.skip(game)
   }
 
   /**

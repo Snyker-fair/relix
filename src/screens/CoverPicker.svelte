@@ -1,7 +1,8 @@
 <script>
   /**
    * Elegir portada a mano: para los juegos cuyo nombre no permitió encontrar
-   * una portada segura (apodos como "GT4", nombres cortos como "Persona 4").
+   * una portada segura (apodos como "GT4", nombres cortos como "Persona 4"),
+   * o para cambiar la de un juego desde su menú (Y).
    * Muestra las candidatas más parecidas de libretro; A guarda la elegida,
    * X deja la portada de color y LB/RB pasan al juego anterior o siguiente.
    */
@@ -13,12 +14,16 @@
   import { covers } from '../lib/ui/covers.svelte.js'
   import HintBar from '../lib/ui/HintBar.svelte'
   import { dispatch, pushHandler } from '../lib/ui/input.js'
+  import { library } from '../lib/ui/library.svelte.js'
   import Logo from '../lib/ui/Logo.svelte'
   import PadButton from '../lib/ui/PadButton.svelte'
   import { sound } from '../lib/ui/sound.js'
 
-  /** @type {{ onBack: () => void, onToast: (message: string) => void }} */
-  let { onBack, onToast } = $props()
+  /**
+   * gameId: cambiar la portada de un solo juego (desde el menú Y), aunque ya tenga
+   * @type {{ onBack: () => void, onToast: (message: string) => void, gameId?: string }}
+   */
+  let { onBack, onToast, gameId } = $props()
 
   const COLUMNS = 3
   /** Espacio de cada candidata (la caja entra entera, con la forma de su consola) */
@@ -37,16 +42,19 @@
   /** @type {string[]} */
   let broken = $state([])
 
-  const pending = $derived(covers.pending)
+  const single = $derived(gameId !== undefined)
+  const pending = $derived(
+    single ? [library.byId.get(/** @type {string} */ (gameId))].filter((g) => g !== undefined) : covers.pending,
+  )
   const game = $derived(pending[Math.min(gameIndex, pending.length - 1)])
-  const gameId = $derived(game?.id)
+  const currentId = $derived(game?.id)
   const platform = $derived(game ? getPlatform(game.system) : null)
   const fileName = $derived(game?.path.split('/').pop() ?? '')
 
   // Al cambiar de juego, buscar sus candidatas (por id: la biblioteca se
   // rearma al guardar portadas y no hay que buscar de nuevo por eso)
   $effect(() => {
-    if (!gameId) return
+    if (!currentId) return
     const current = untrack(() => game)
     if (!current) return
     candidates = null
@@ -97,7 +105,8 @@
       await covers.choose(current, candidate.name)
       sound.favorite()
       onToast(`Portada guardada: ${current.name}`)
-      // El juego sale de la lista: el que sigue queda en la misma posición
+      if (single) onBack()
+      // Si no, el juego sale de la lista: el que sigue queda en la misma posición
     } catch (e) {
       sound.error()
       onToast(e instanceof Error ? e.message : 'No se pudo guardar la portada.')
@@ -106,12 +115,18 @@
     }
   }
 
-  function skip() {
+  async function skip() {
     if (!game || saving >= 0) return
     const current = game // al saltarlo sale de la lista
-    covers.skip(current)
-    sound.back()
-    onToast(`${current.name} queda con su portada de color`)
+    try {
+      await covers.useColor(current)
+      sound.back()
+      onToast(`${current.name} queda con su portada de color`)
+      if (single) onBack()
+    } catch (e) {
+      sound.error()
+      onToast(e instanceof Error ? e.message : 'No se pudo quitar la portada.')
+    }
   }
 
   /** @type {Array<{ button: import('../lib/ui/input.js').Action, label: string }>} */
@@ -155,8 +170,8 @@
       </button>
     {/if}
     <span class="pill-text">
-      Elegir portada
-      {#if pending.length > 0}
+      {single ? 'Cambiar portada' : 'Elegir portada'}
+      {#if pending.length > 1 || (!single && pending.length > 0)}
         <span class="counter">{Math.min(gameIndex, pending.length - 1) + 1} de {pending.length}</span>
       {/if}
     </span>
@@ -188,7 +203,11 @@
       </ul>
       <p class="file">{fileName}</p>
       <p class="ask">
-        No encontré una portada segura para este archivo. ¿Es alguna de estas?
+        {#if single}
+          Elige la portada correcta, o presiona <PadButton name="x" size={28} /> para usar la de color.
+        {:else}
+          No encontré una portada segura para este archivo. ¿Es alguna de estas?
+        {/if}
       </p>
     {/key}
   </section>

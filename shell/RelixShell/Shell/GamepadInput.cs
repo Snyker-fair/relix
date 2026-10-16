@@ -8,7 +8,7 @@ namespace RelixShell
 {
     /// <summary>
     /// Lee el control de Xbox de forma nativa y lo traduce a las acciones de la
-    /// interfaz: up, down, left, right, a, b, x, y, lb, rb, start.
+    /// interfaz: up, down, left, right, a, b, x, y, lb, rb, lt, rt, start, view.
     ///
     /// La interfaz no lee el control por su cuenta dentro de la consola: así no
     /// depende de cómo WebView2 maneje el gamepad y nunca aparece el cursor del
@@ -17,6 +17,9 @@ namespace RelixShell
     internal sealed class GamepadInput
     {
         private const double StickDeadzone = 0.5;
+
+        /// <summary>Los gatillos son analógicos: cuentan como apretados desde la mitad.</summary>
+        private const double TriggerThreshold = 0.5;
         private static readonly TimeSpan RepeatDelay = TimeSpan.FromMilliseconds(380);
         private static readonly TimeSpan RepeatRate = TimeSpan.FromMilliseconds(110);
 
@@ -30,14 +33,16 @@ namespace RelixShell
                 { GamepadButtons.LeftShoulder, "lb" },
                 { GamepadButtons.RightShoulder, "rb" },
                 { GamepadButtons.Menu, "start" },
+                { GamepadButtons.View, "view" },
                 { GamepadButtons.DPadUp, "up" },
                 { GamepadButtons.DPadDown, "down" },
                 { GamepadButtons.DPadLeft, "left" },
                 { GamepadButtons.DPadRight, "right" },
             };
 
-        private static readonly HashSet<string> Directions =
-            new HashSet<string> { "up", "down", "left", "right" };
+        /// <summary>Acciones que se repiten al mantenerlas (moverse y saltar de letra).</summary>
+        private static readonly HashSet<string> Repeating =
+            new HashSet<string> { "up", "down", "left", "right", "lt", "rt" };
 
         /// <summary>Se dispara una vez por pulsación (y repetido al mantener una dirección).</summary>
         public event Action<string> ActionPressed;
@@ -115,7 +120,7 @@ namespace RelixShell
                     held[action] = now + RepeatDelay;
                     ActionPressed?.Invoke(action);
                 }
-                else if (Directions.Contains(action) && now >= next)
+                else if (Repeating.Contains(action) && now >= next)
                 {
                     held[action] = now + RepeatRate;
                     ActionPressed?.Invoke(action);
@@ -150,6 +155,9 @@ namespace RelixShell
                         pressed.Add(pair.Value);
                     }
                 }
+
+                if (reading.LeftTrigger > TriggerThreshold) pressed.Add("lt");
+                if (reading.RightTrigger > TriggerThreshold) pressed.Add("rt");
 
                 // En Windows.Gaming.Input, Y positivo es hacia arriba.
                 if (reading.LeftThumbstickX < -StickDeadzone) pressed.Add("left");

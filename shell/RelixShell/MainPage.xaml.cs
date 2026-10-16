@@ -158,6 +158,22 @@ namespace RelixShell
                     case "downloadCovers":
                         Reply(id, await DownloadCoversAsync(payload));
                         break;
+
+                    case "deleteCover":
+                        await EnsurePathsAsync(refresh: false);
+                        await covers.DeleteCoverAsync(paths, payload.GetNamedString("system"), payload.GetNamedString("key"));
+                        Reply(id, JsonValue.CreateBooleanValue(true));
+                        break;
+
+                    case "listCollections":
+                        Reply(id, await ListCollectionsAsync());
+                        break;
+
+                    case "saveCollection":
+                        await EnsurePathsAsync(refresh: false);
+                        await CollectionStore.SaveAsync(paths, payload.GetNamedString("file"), payload.GetNamedString("text", ""));
+                        Reply(id, JsonValue.CreateBooleanValue(true));
+                        break;
                 }
             }
             catch (UserFacingException ex)
@@ -263,6 +279,25 @@ namespace RelixShell
             var result = new JsonObject();
             result.SetNamedValue("saved", StringArray(download.Saved));
             result.SetNamedValue("failed", failed);
+            return result;
+        }
+
+        // ── Colecciones ─────────────────────────────────────────────────────
+
+        /// <summary>{ collections: [{ file: "custom-Nombre.cfg", text: "..." }] }</summary>
+        private async Task<IJsonValue> ListCollectionsAsync()
+        {
+            await EnsurePathsAsync(refresh: false);
+            var list = new JsonArray();
+            foreach (KeyValuePair<string, string> collection in await CollectionStore.ListAsync(paths))
+            {
+                var entry = new JsonObject();
+                entry.SetNamedValue("file", JsonValue.CreateStringValue(collection.Key));
+                entry.SetNamedValue("text", JsonValue.CreateStringValue(collection.Value));
+                list.Add(entry);
+            }
+            var result = new JsonObject();
+            result.SetNamedValue("collections", list);
             return result;
         }
 

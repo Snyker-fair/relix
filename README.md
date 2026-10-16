@@ -68,9 +68,12 @@ src/
     esde.js          lee gamelist.xml de ES-DE y calcula rutas de ROMs/portadas
     scan.js          convierte los archivos de roms en juegos (nombres, multidisco, Wii U)
     coverMatch.js    busca la portada de cada juego en la lista de libretro
+    search.js        búsqueda por comienzo de palabra (sin tildes; II = 2)
+    sorting.js       orden A–Z / recientes / año y saltos con LT/RT
+    collections.js   lee y escribe colecciones en el formato de ES-DE
     bridge.js        habla con el shell en C# (o usa datos de prueba en el navegador)
   lib/ui/            piezas de interfaz: entrada del control, sonidos, portadas…
-  screens/           Home, Library (grilla), Options, CoverPicker (elegir portada), LaunchOverlay
+  screens/           Home, Library (grilla), Search, GameMenu (Y), Options, CoverPicker, LaunchOverlay
   mock/gamelists/    gamelists de ejemplo con el formato real de ES-DE
   mock/libretro-names.json  nombres reales de libretro (demo y tests)
 tests/               tests de la lógica y del puente con el shell (vitest)
@@ -106,6 +109,7 @@ se desactiva ese "modo mouse".
 | ROMs | `E:\roms\<sistema>\` |
 | Gamelists | `E:\ES-DE\gamelists\<sistema>\gamelist.xml` |
 | Portadas | `E:\ES-DE\downloaded_media\<sistema>\covers\` (las de ES-DE y las que baja Relix) |
+| Colecciones | `E:\ES-DE\collections\custom-<Nombre>.cfg` (las ve también ES-DE) |
 | Caché de Relix | `E:\relix\cache\` (listas de libretro y miniaturas; se puede borrar) |
 
 `<sistema>` usa los nombres de ES-DE: `psx`, `psp`, `ps2`, `gc`, `wiiu`.
@@ -138,13 +142,30 @@ roto el lanzamiento desde frontends en su última versión. Se cambia en
       avance del primer escaneo, posición en la grilla.
 - [x] **Portadas desde internet:** libretro sin cuentas, elegir a mano, miniaturas,
       tamaño parejo en la grilla, caja real en el detalle y región preferida.
+- [x] **Encontrar juegos:** saltos por letra (LT/RT), menú del juego (Y), búsqueda con
+      teclado en pantalla (⧉), orden A–Z / recientes / año, colecciones en formato
+      ES-DE y juegos ocultos.
+
+## Controles
+
+| Botón | Qué hace |
+|---|---|
+| A | Abrir / jugar |
+| B | Volver |
+| X | Favorito (en la búsqueda: borrar letra) |
+| Y | Menú del juego: jugar, favorito, colecciones, cambiar portada, ocultar, ordenar |
+| LB / RB | Consola anterior / siguiente (o colección, dentro de Colecciones) |
+| LT / RT | Letra anterior / siguiente (año, si ordenas por año) |
+| Vista ⧉ | Buscar en todas las consolas |
+| Menú ≡ | Opciones |
+
+En el navegador: flechas, Enter, Esc, X, Y, Q/E, Z/C, V y M.
 
 ## Hoja de ruta
 
 1. ~~Arreglos rápidos~~ (hecho)
 2. ~~Portadas desde internet~~ (hecho)
-3. **Encontrar juegos:** saltar por letra (LT/RT), menú del juego (Y), búsqueda,
-   ordenar y filtrar, colecciones.
+3. ~~Encontrar juegos~~ (hecho; filtros por género/jugadores quedan para el paso 7)
 4. **Respaldo en el USB** (`E:\relix\`) y **tiempo de juego** por juego, con
    "ordenar por más jugados".
 5. **Más consolas** (SNES, GBA, N64, Mega Drive, Dreamcast, Xbox 360, 3DS) y

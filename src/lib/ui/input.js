@@ -2,13 +2,13 @@
  * Entrada unificada: control de Xbox (Gamepad API) + teclado.
  *
  * Todo se traduce a acciones simples:
- *   up down left right   a b x y   lb rb   start
+ *   up down left right   a b x y   lb rb   lt rt   start view
  *
  * Las pantallas registran un manejador con `pushHandler`; solo el de arriba
  * de la pila recibe acciones (así un overlay "tapa" a la pantalla de abajo).
  */
 
-/** @typedef {'up'|'down'|'left'|'right'|'a'|'b'|'x'|'y'|'lb'|'rb'|'start'} Action */
+/** @typedef {'up'|'down'|'left'|'right'|'a'|'b'|'x'|'y'|'lb'|'rb'|'lt'|'rt'|'start'|'view'} Action */
 
 /** @type {Array<(action: Action) => void>} */
 const handlers = []
@@ -44,6 +44,10 @@ const KEYS = {
   e: 'rb',
   m: 'start', // botón Menú: abre Opciones
   o: 'start',
+  z: 'lt', // gatillos: letra anterior / siguiente
+  c: 'rt',
+  v: 'view', // botón Vista: buscar
+  '/': 'view',
   PageUp: 'lb',
   PageDown: 'rb',
 }
@@ -58,13 +62,17 @@ const BUTTONS = [
   [3, 'y'],
   [4, 'lb'],
   [5, 'rb'],
+  [6, 'lt'],
+  [7, 'rt'],
+  [8, 'view'],
   [9, 'start'],
   [12, 'up'],
   [13, 'down'],
   [14, 'left'],
   [15, 'right'],
 ]
-const DIRECTIONS = new Set(['up', 'down', 'left', 'right'])
+/** Acciones que se repiten al mantenerlas (moverse y saltar de letra) */
+const REPEATING = new Set(['up', 'down', 'left', 'right', 'lt', 'rt'])
 const STICK_DEADZONE = 0.5
 const REPEAT_DELAY = 380 // ms antes de empezar a repetir al mantener
 const REPEAT_RATE = 110 // ms entre repeticiones
@@ -96,7 +104,7 @@ function poll(t) {
     if (next === undefined) {
       held.set(action, t + REPEAT_DELAY)
       dispatch(action)
-    } else if (DIRECTIONS.has(action) && t >= next) {
+    } else if (REPEATING.has(action) && t >= next) {
       held.set(action, t + REPEAT_RATE)
       dispatch(action)
     }

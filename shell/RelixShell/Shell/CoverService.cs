@@ -427,6 +427,24 @@ namespace RelixShell
             }
         }
 
+        /// <summary>
+        /// Borra la portada de un juego (en cualquier formato) y su miniatura.
+        /// Así queda con la portada de color. key: ruta del juego sin extensión.
+        /// </summary>
+        public async Task DeleteCoverAsync(LibraryPaths paths, string systemId, string key)
+        {
+            string basePath = Path.Combine(paths.MediaRoot, systemId, "covers", key.Replace('/', '\\'));
+            foreach (string extension in ImageExtensions)
+            {
+                StorageFile file = await LibraryReader.TryGetFileAsync(basePath + extension);
+                if (file != null)
+                {
+                    await file.DeleteAsync();
+                }
+            }
+            await DeleteThumbnailAsync(paths, systemId, key);
+        }
+
         /// <summary>Al reemplazar una portada, su miniatura vieja se borra.</summary>
         private async Task DeleteThumbnailAsync(LibraryPaths paths, string systemId, string key)
         {
@@ -473,7 +491,7 @@ namespace RelixShell
             return cacheRoot;
         }
 
-        private static async Task<StorageFolder> CreateFoldersAsync(StorageFolder parent, params string[] names)
+        internal static async Task<StorageFolder> CreateFoldersAsync(StorageFolder parent, params string[] names)
         {
             StorageFolder folder = parent;
             foreach (string name in names)

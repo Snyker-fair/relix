@@ -7,6 +7,7 @@
   import { plural } from '../lib/ui/format.js'
   import HintBar from '../lib/ui/HintBar.svelte'
   import { pushHandler } from '../lib/ui/input.js'
+  import { collections } from '../lib/ui/collections.svelte.js'
   import { library } from '../lib/ui/library.svelte.js'
   import Logo from '../lib/ui/Logo.svelte'
   import { shelf } from '../lib/ui/shelf.svelte.js'
@@ -20,9 +21,11 @@
    *   onLaunch: (game: any) => void,
    *   onFocusChange: (id: string) => void,
    *   onOptions: () => void,
+   *   onSearch: () => void,
+   *   onMenu: (game: any) => void,
    * }}
    */
-  let { focusedId, boot, onOpen, onLaunch, onFocusChange, onOptions } = $props()
+  let { focusedId, boot, onOpen, onLaunch, onFocusChange, onOptions, onSearch, onMenu } = $props()
 
   const OPTIONS = { id: 'options', name: 'Opciones', shortName: 'Opciones' }
 
@@ -35,16 +38,21 @@
   const index = $derived.by(() => {
     const found = focusedId ? ids.indexOf(focusedId) : -1
     if (found >= 0) return found
-    // Por defecto, la primera consola (no Favoritos)
-    const firstConsole = shelf.channels.findIndex((c) => c.id !== 'favorites')
+    // Por defecto, la primera consola (no Favoritos ni Colecciones)
+    const firstConsole = shelf.channels.findIndex((c) => c.id !== 'favorites' && c.id !== 'collections')
     return firstConsole >= 0 ? firstConsole : 0
   })
   const onOptionsTile = $derived(ids[index] === 'options')
   const channel = $derived(onOptionsTile ? OPTIONS : shelf.channels[index])
-  const games = $derived(onOptionsTile ? [] : library.gamesFor(channel.id))
+  const games = $derived(onOptionsTile ? [] : shelf.gamesFor(channel.id))
   const optionsFocused = $derived(zone === 'channels' && onOptionsTile)
   const emptyLibrary = $derived(library.all.length === 0)
   const recent = $derived(library.recent.slice(0, 4))
+  // Con Favoritos, Colecciones y las cinco consolas la fila se aprieta un poco
+  // (1600 px útiles: canales de 184 px y Opciones de 156 px)
+  const shelfGap = $derived(
+    Math.max(18, Math.min(52, Math.floor((1600 - shelf.channels.length * 184 - 156) / shelf.channels.length))),
+  )
 
   // Tres portadas en abanico para el canal enfocado: favoritos primero
   const fan = $derived(
@@ -53,12 +61,20 @@
 
   const meta = $derived.by(() => {
     if (onOptionsTile) {
-      const consoles = shelf.channels.filter((c) => c.id !== 'favorites').length
+      const consoles = shelf.channels.filter((c) => c.id !== 'favorites' && c.id !== 'collections').length
       return [plural(library.all.length, 'juego', 'juegos'), plural(consoles, 'consola', 'consolas'), 'Escaneo y preferencias']
     }
     if (channel.id === 'favorites') {
       const systems = new Set(games.map((g) => g.system)).size
       return [plural(games.length, 'juego', 'juegos'), plural(systems, 'consola', 'consolas')]
+    }
+    if (channel.id === 'collections') {
+      const count = collections.visible.length
+      return [
+        plural(count, 'colección', 'colecciones'),
+        plural(games.length, 'juego', 'juegos'),
+        ...collections.visible.slice(0, 2).map((c) => c.name),
+      ]
     }
     return [channel.maker, String(channel.year), plural(games.length, 'juego', 'juegos'), channel.emulatorName]
   })
@@ -86,12 +102,17 @@
         } else if (action === 'start') {
           sound.select()
           onOptions()
+        } else if (action === 'view') {
+          sound.select()
+          onSearch()
         }
       } else {
         if (action === 'left' && recentIndex > 0) (recentIndex--, sound.move())
         else if (action === 'right' && recentIndex < recent.length - 1) (recentIndex++, sound.move())
         else if (action === 'up' || action === 'b') ((zone = 'channels'), sound.move())
         else if (action === 'a') onLaunch(recent[recentIndex])
+        else if (action === 'y') (sound.select(), onMenu(recent[recentIndex]))
+        else if (action === 'view') (sound.select(), onSearch())
         else if (action === 'start') (sound.select(), onOptions())
       }
     }),
@@ -102,8 +123,8 @@
   <Logo size={64} {boot} />
   {#if mode === 'browser'}
     <p class="kbd-help">
-      Sin control: flechas para moverte, Enter para elegir, Esc para volver, X favorito, Q y E
-      cambian de consola, M abre Opciones. También puedes usar el mouse.
+      Sin control: flechas, Enter elige, Esc vuelve, X favorito, Y menú del juego, Q/E cambian de
+      consola, Z/C saltan de letra, V busca, M abre Opciones. También sirve el mouse.
     </p>
   {/if}
   <Clock />
@@ -139,7 +160,7 @@
   {/key}
 </section>
 
-<section class="shelf" class:dimmed={zone !== 'channels'}>
+<section class="shelf" class:dimmed={zone !== 'channels'} style:gap="{shelfGap}px">
   <div class="tray"></div>
   {#each shelf.channels as ch, i (ch.id)}
     {@const focused = zone === 'channels' && i === index}
@@ -202,10 +223,12 @@
   hints={zone === 'channels'
     ? [
         { button: 'a', label: 'Abrir' },
+        { button: 'view', label: 'Buscar' },
         { button: 'start', label: 'Opciones' },
       ]
     : [
         { button: 'a', label: 'Jugar' },
+        { button: 'y', label: 'Menú' },
         { button: 'b', label: 'Volver' },
       ]}
 />
