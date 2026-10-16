@@ -89,6 +89,10 @@
     <!-- lupa -->
     <circle cx="42" cy="42" r="24" />
     <path d="M60 60l20 20" stroke-width="9" />
+  {:else if id === 'time'}
+    <!-- reloj: tiempo jugado -->
+    <circle cx="48" cy="48" r="34" />
+    <path d="M48 28v20l14 10" stroke-width="7" />
   {:else if id === 'play'}
     <!-- triángulo: jugar -->
     <path d="M32 20v56l46-28Z" fill={color} />

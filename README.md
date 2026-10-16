@@ -57,6 +57,16 @@ manejarse con el control. Logo, colores, tipografía y voz de la marca están en
   candidatas más parecidas. La grilla usa miniaturas JPG que el shell crea una vez.
   En grillas y listas todas las portadas miden lo mismo; el panel de detalle
   muestra la caja completa con su forma real (PS1 cuadrada, PSP alta).
+- **Tus datos viajan con el USB.** Favoritos, ocultos, tiempo de juego, portadas
+  elegidas y preferencias se guardan solos en `E:\relix\datos.json` (2 segundos
+  después de cada cambio, y en el acto al lanzar un juego). Si reinstalas Relix o
+  cambias de Xbox, siguen ahí. Hay una copia de la versión anterior y un respaldo
+  por día de los últimos 7; si `datos.json` se daña, Relix usa la copia más nueva
+  que sirva.
+- **Tiempo de juego.** Relix anota la hora al lanzar y la hora al volver, sea
+  saliendo del emulador o con el botón Xbox. Las partidas de menos de 1 minuto no
+  cuentan y las de más de 12 horas se descartan. Si la Xbox cierra Relix mientras
+  juegas, la partida se cierra la próxima vez que abra.
 
 ## Estructura
 
@@ -69,7 +79,8 @@ src/
     scan.js          convierte los archivos de roms en juegos (nombres, multidisco, Wii U)
     coverMatch.js    busca la portada de cada juego en la lista de libretro
     search.js        búsqueda por comienzo de palabra (sin tildes; II = 2)
-    sorting.js       orden A–Z / recientes / año y saltos con LT/RT
+    sorting.js       orden A–Z / recientes / más jugados / año y saltos con LT/RT
+    userData.js      formato de datos.json, qué copia manda y tiempo de cada partida
     collections.js   lee y escribe colecciones en el formato de ES-DE
     bridge.js        habla con el shell en C# (o usa datos de prueba en el navegador)
   lib/ui/            piezas de interfaz: entrada del control, sonidos, portadas…
@@ -110,7 +121,13 @@ se desactiva ese "modo mouse".
 | Gamelists | `E:\ES-DE\gamelists\<sistema>\gamelist.xml` |
 | Portadas | `E:\ES-DE\downloaded_media\<sistema>\covers\` (las de ES-DE y las que baja Relix) |
 | Colecciones | `E:\ES-DE\collections\custom-<Nombre>.cfg` (las ve también ES-DE) |
+| Tus datos | `E:\relix\datos.json` (y `datos.anterior.json`) |
+| Respaldos diarios | `E:\relix\respaldos\datos-AAAA-MM-DD.json` (los últimos 7) |
 | Caché de Relix | `E:\relix\cache\` (listas de libretro y miniaturas; se puede borrar) |
+
+**Volver a un respaldo:** en el PC, copia el `datos-<día>.json` que quieras
+encima de `E:\relix\datos.json` y abre Relix. Cuando el archivo del USB cambia por
+fuera de la app (un respaldo, u otra Xbox), Relix usa el del USB.
 
 `<sistema>` usa los nombres de ES-DE: `psx`, `psp`, `ps2`, `gc`, `wiiu`.
 Así puedes escanear y descargar portadas con ES-DE en el PC y copiar las
@@ -147,6 +164,9 @@ roto el lanzamiento desde frontends en su última versión. Se cambia en
       ES-DE y juegos ocultos.
 - [x] **Acerca de:** versión y fecha de compilación, emulador de cada consola,
       rutas en el USB, resumen de la biblioteca y créditos (Opciones › Acerca de).
+- [x] **Tus datos en el USB y tiempo de juego:** respaldo automático con copias
+      diarias, tiempo y partidas por juego (detalle, Seguir jugando, Acerca de) y
+      orden "Más jugados".
 
 ## Controles
 
@@ -168,8 +188,7 @@ En el navegador: flechas, Enter, Esc, X, Y, Q/E, Z/C, V y M.
 1. ~~Arreglos rápidos~~ (hecho)
 2. ~~Portadas desde internet~~ (hecho)
 3. ~~Encontrar juegos~~ (hecho; filtros por género/jugadores quedan para el paso 7)
-4. **Respaldo en el USB** (`E:\relix\`) y **tiempo de juego** por juego, con
-   "ordenar por más jugados".
+4. ~~Respaldo en el USB y tiempo de juego~~ (hecho)
 5. **Más consolas** (SNES, GBA, N64, Mega Drive, Dreamcast, Xbox 360, 3DS) y
    **elegir emulador** por consola o por juego.
 6. **Revisión del sistema** (USB, carpetas, emuladores instalados) y **primer uso guiado**.

@@ -59,7 +59,7 @@ Visual Studio los recarga solo. Si te pregunta, elige **Sí a todo**.
 1. Haz clic derecho en el proyecto **RelixShell** y elige **Agregar → Nueva carpeta**.
    Llámala `Shell`.
 2. Haz clic derecho en la carpeta **Shell** y elige **Agregar → Elemento existente…**
-3. Selecciona los cinco `.cs` de `relix\shell\RelixShell\Shell\`. Visual Studio los copia al proyecto.
+3. Selecciona los seis `.cs` de `relix\shell\RelixShell\Shell\`. Visual Studio los copia al proyecto.
 
 | Archivo | Qué hace |
 |---|---|
@@ -68,6 +68,7 @@ Visual Studio los recarga solo. Si te pregunta, elige **Sí a todo**.
 | `LibraryReader.cs` | Encuentra el USB y recorre la carpeta `roms` |
 | `CoverService.cs` | Baja portadas de libretro, crea las miniaturas y las borra si eliges la de color |
 | `CollectionStore.cs` | Lee y guarda las colecciones en `ES-DE\collections` |
+| `UserDataStore.cs` | Guarda tus datos en `relix\datos.json`, con copia anterior y respaldos diarios |
 
 ### 4. Ajusta el manifiesto
 
@@ -191,7 +192,8 @@ así el emulador tiene todos los recursos de la consola.
 | Qué ves | Qué revisar |
 |---|---|
 | Error de compilación con `XamlControlsResources` o `WebView2` | Falta el paso 1 (NuGet Microsoft.UI.Xaml) |
-| Error con `GamepadInput`, `LocalServer`, `LibraryReader`, `CoverService` o `CollectionStore` | Falta el paso 3 (carpeta Shell) |
+| Error con `GamepadInput`, `LocalServer`, `LibraryReader`, `CoverService`, `CollectionStore` o `UserDataStore` | Falta el paso 3 (carpeta Shell) |
+| "No pude guardar tus datos en el USB" | El USB no deja escribir: vuelve a aplicarle los permisos con la USB Permissions Tool. Mientras, tus datos quedan en la app y pasan al USB cuando se pueda |
 | Pantalla celeste vacía | Falta el paso 6 o el 7: la carpeta `ui` no quedó en el paquete |
 | "No encontré la carpeta roms en ningún disco USB" | La carpeta `roms` debe estar en la raíz del disco. Corre la USB Permissions Tool |
 | Un juego no aparece | Revisa que su formato esté en la tabla del paso 8 y que esté a 3 carpetas de profundidad como máximo |

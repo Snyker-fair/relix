@@ -107,6 +107,14 @@ describe('orden y saltos', () => {
     expect(sortGames(list, 'recent', played).map((g) => g.name).slice(0, 3)).toEqual(['Okami', 'Bully', '007 Nightfire'])
   })
 
+  it('más jugados: más tiempo primero, los nunca jugados al final en A–Z', () => {
+    const time = { [list[4].id]: { seconds: 600 }, [list[1].id]: { seconds: 9000 } }
+    expect(sortGames(list, 'played', {}, time).map((g) => g.name).slice(0, 4)).toEqual([
+      'Amplitude', 'Burnout 3', '007 Nightfire', 'Ape Escape 2',
+    ])
+    expect(sectionOf(list[0], 'played')).toBeNull()
+  })
+
   it('RT salta a la letra siguiente; LT al inicio de la actual o a la anterior', () => {
     // 0 "#", 1-2 "A", 3-4 "B", 5 "C", 6 "O"
     expect(jumpIndex(list, 0, 1, 'az')).toBe(1)

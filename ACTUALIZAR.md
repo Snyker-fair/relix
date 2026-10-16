@@ -43,9 +43,11 @@ Copiar un `.cs` a la carpeta no basta: Visual Studio solo compila los que están
 |---|---|
 | `CoverService.cs` | Paso 2 de la hoja de ruta (portadas) |
 | `CollectionStore.cs` | Paso 3 (colecciones) |
+| `UserDataStore.cs` | Paso 4 (tus datos en el USB y tiempo de juego) |
 
-Al final, la carpeta **Shell** debe tener cinco archivos: `CollectionStore.cs`,
-`CoverService.cs`, `GamepadInput.cs`, `LibraryReader.cs` y `LocalServer.cs`.
+Al final, la carpeta **Shell** debe tener seis archivos: `CollectionStore.cs`,
+`CoverService.cs`, `GamepadInput.cs`, `LibraryReader.cs`, `LocalServer.cs` y
+`UserDataStore.cs`.
 
 > **Ojo:** si un archivo ya aparece en **Shell**, no lo agregues otra vez. Y haz
 > el clic derecho sobre la carpeta **Shell**, no sobre el proyecto: si no, Visual
@@ -136,9 +138,24 @@ npm run build:shell -- "C:\ProyectosVisual\RelixShell"
 - [ ] En las grillas, el aro rosado del juego enfocado no toca la fila de arriba ni las portadas de al lado.
 
 ### Acerca de
-- [ ] **≡ → RB hasta Acerca de** muestra la versión 0.4.0, la fecha de compilación y "Xbox · Modo Desarrollador".
+- [ ] **≡ → RB hasta Acerca de** muestra la versión 0.5.0, la fecha de compilación y "Xbox · Modo Desarrollador".
 - [ ] La tarjeta **Emuladores** dice qué abre cada consola, y **En tu USB** muestra tu letra de disco real.
-- [ ] **Créditos** empieza con "Creado por: snyker-fair".
+- [ ] Al pie del panel izquierdo dice **Creado por snyker-fair**.
+
+### Paso 4 · Tus datos y tiempo de juego
+- [ ] Al abrir la versión nueva, tus favoritos y ocultos de antes siguen ahí, y en el PC
+      aparece `E:\relix\datos.json` con ellos.
+- [ ] Juega **más de 1 minuto** y sal desde el menú del emulador: arriba aparece
+      "<Juego>: N min jugados".
+- [ ] Juega otra vez y vuelve con el **botón Xbox** → Relix: también se suma.
+- [ ] El panel del juego muestra el reloj: tiempo · partidas · hace cuánto. En
+      **Seguir jugando** dice "Jugado …".
+- [ ] **Y → Ordenar biblioteca**: aparece **Más jugados** (solo en consolas donde ya jugaste).
+- [ ] **Acerca de**: la tarjeta **Tiempo de juego** con el total y tus 3 más jugados;
+      **En tu USB** dice "Guardado hace …".
+- [ ] Al día siguiente, en el PC: `E:\relix\respaldos\datos-AAAA-MM-DD.json`.
+- [ ] Prueba fuerte (opcional): desinstala Relix desde Dev Home, vuelve a desplegar
+      con **F5** y abre: favoritos y tiempo siguen ahí (vienen del USB).
 
 Si algo falla, la tabla **Si algo falla** de [`shell/README.md`](shell/README.md) tiene las causas más comunes.
 
@@ -156,3 +173,5 @@ Si algo falla, la tabla **Si algo falla** de [`shell/README.md`](shell/README.md
 | 3 | `Shell/CoverService.cs` | `DeleteCoverAsync` (usar la portada de color) |
 | 3 | `Shell/GamepadInput.cs` | Gatillos LT/RT (con repetición) y botón Vista |
 | 3 | `MainPage.xaml.cs` | Mensajes `deleteCover`, `listCollections`, `saveCollection` |
+| 4 | `Shell/UserDataStore.cs` | **Nuevo.** `E:\relix\datos.json`, copia anterior y respaldos diarios |
+| 4 | `MainPage.xaml.cs` | Mensajes `loadUserData`, `saveUserData`; evento `visible` al volver a primer plano |

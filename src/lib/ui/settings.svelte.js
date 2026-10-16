@@ -4,7 +4,7 @@
 import { REGION_PREFERENCES } from '../core/coverMatch.js'
 import { SORT_NAMES } from '../core/sorting.js'
 import { sound } from './sound.js'
-import { load, save } from './storage.js'
+import { load, onReplaced, save } from './storage.js'
 
 const KEY = 'settings'
 
@@ -26,6 +26,11 @@ class Settings {
   sortOrder = $state('az')
 
   constructor() {
+    this.#restore()
+    onReplaced(() => this.#restore())
+  }
+
+  #restore() {
     const saved = load(KEY, {})
     this.showEmptyConsoles = saved.showEmptyConsoles ?? false
     this.sounds = saved.sounds ?? true

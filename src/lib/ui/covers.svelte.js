@@ -20,7 +20,7 @@ import {
 import { getPlatform, PLATFORMS } from '../core/platforms.js'
 import { library } from './library.svelte.js'
 import { settings } from './settings.svelte.js'
-import { load, save } from './storage.js'
+import { load, onReplaced, save } from './storage.js'
 
 /**
  * @typedef {{ saved: number, failed: number, toChoose: number, notFound: number, at: number }} CoverResult
@@ -55,6 +55,15 @@ class Covers {
 
   /** @type {Map<string, Promise<import('../core/coverMatch.js').CoverIndex>>} */
   #indexes = new Map()
+
+  constructor() {
+    // Llegaron tus datos del USB: se vuelven a leer
+    onReplaced(() => {
+      this.choices = load('coverChoices', {})
+      this.skipped = load('coverSkipped', [])
+      this.results = load('coverResults', {})
+    })
+  }
 
   /**
    * Lista de portadas de una consola (se pide una vez por sesión).

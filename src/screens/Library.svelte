@@ -3,6 +3,8 @@
   import { getPlatform } from '../lib/core/platforms.js'
   import { jumpIndex, sectionOf, SORT_NAMES, sortGames } from '../lib/core/sorting.js'
   import { isCollectionId } from '../lib/ui/channels.js'
+  import ChannelIcon from '../lib/ui/ChannelIcon.svelte'
+  import { formatPlaytime, plural, timeAgo } from '../lib/ui/format.js'
   import { shelf } from '../lib/ui/shelf.svelte.js'
   import Clock from '../lib/ui/Clock.svelte'
   import CoverArt, { TILE_ASPECT } from '../lib/ui/CoverArt.svelte'
@@ -40,19 +42,24 @@
   const channel = $derived(shelf.channelFor(systemId))
   const inCollection = $derived(isCollectionId(systemId))
 
-  // Orden: "Año" solo tiene sentido si algún juego trae el año (de ES-DE)
+  // Orden: "Más jugados" solo si ya jugaste alguno; "Año", si algún juego trae el año (de ES-DE)
   const unsorted = $derived(shelf.gamesFor(systemId))
   const sortOptions = $derived(
-    /** @type {import('../lib/core/sorting.js').SortOrder[]} */ (
-      unsorted.some((g) => g.year) ? ['az', 'recent', 'year'] : ['az', 'recent']
-    ),
+    /** @type {import('../lib/core/sorting.js').SortOrder[]} */ ([
+      'az',
+      'recent',
+      ...(unsorted.some((g) => library.playtime[g.id]) ? ['played'] : []),
+      ...(unsorted.some((g) => g.year) ? ['year'] : []),
+    ]),
   )
   const order = $derived(sortOptions.includes(settings.sortOrder) ? settings.sortOrder : 'az')
-  const games = $derived(sortGames(unsorted, order, library.lastPlayed))
+  const games = $derived(sortGames(unsorted, order, library.lastPlayed, library.playtime))
 
   const game = $derived(games[Math.min(index, games.length - 1)])
   const platform = $derived(game ? getPlatform(game.system) : null)
   const favorite = $derived(game ? library.isFavorite(game) : false)
+  /** Tiempo jugado del juego enfocado (si ya lo jugaste) */
+  const played = $derived(game ? library.playtime[game.id] : undefined)
   // Sección del juego enfocado: la letra en A–Z, el año en "Año"
   const section = $derived(game ? (sectionOf(game, order) ?? '•') : '')
 
@@ -224,6 +231,14 @@
       <ul class="chips">
         {#each chips as chip (chip)}<li>{chip}</li>{/each}
       </ul>
+      {#if played}
+        <p class="played">
+          <ChannelIcon id="time" size={26} />
+          <strong>{formatPlaytime(played.seconds)}</strong>
+          <span>· {plural(played.plays, 'partida', 'partidas')}</span>
+          {#if library.lastPlayed[game.id]}<span>· {timeAgo(library.lastPlayed[game.id])}</span>{/if}
+        </p>
+      {/if}
       {#if platform.launcher}
         {#if game.description}
           <p class="desc">{game.description}</p>
@@ -400,6 +415,26 @@
     background: color-mix(in oklab, var(--tint) 18%, white);
     font-weight: 700;
     font-size: 21px;
+  }
+  .played {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    align-self: flex-start;
+    margin: 14px 0 0;
+    padding: 6px 16px 6px 12px;
+    border-radius: 999px;
+    background: var(--sky);
+    font-size: 21px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+  .played strong {
+    color: var(--ink);
+    font-size: 22px;
+  }
+  .played :global(svg) {
+    color: var(--ink);
   }
   .desc {
     flex: none;

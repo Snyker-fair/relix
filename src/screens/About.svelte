@@ -1,13 +1,16 @@
 <script>
   /**
-   * Opciones › Acerca de: qué emulador abre cada consola, dónde guarda Relix
-   * las cosas en el USB, un resumen de la biblioteca y los créditos.
+   * Opciones › Acerca de: qué emulador abre cada consola, cuánto has jugado,
+   * un resumen de la biblioteca y dónde guarda Relix las cosas en el USB.
    * Es solo para leer: no hay nada que enfocar.
    */
-  import { PLATFORMS } from '../lib/core/platforms.js'
+  import { getPlatform, PLATFORMS } from '../lib/core/platforms.js'
+  import { mostPlayed, totalSeconds } from '../lib/core/userData.js'
   import ChannelIcon from '../lib/ui/ChannelIcon.svelte'
   import { collections } from '../lib/ui/collections.svelte.js'
+  import { formatPlaytime, plural, timeAgo } from '../lib/ui/format.js'
   import { library } from '../lib/ui/library.svelte.js'
+  import { userData } from '../lib/ui/userData.svelte.js'
 
   /** "E:\roms" -> "E:" */
   const drive = $derived(library.romRoot.replace(/[\\/]+roms[\\/]*$/i, '') || 'E:')
@@ -16,8 +19,23 @@
     { label: 'Juegos', path: `${library.romRoot}\\<consola>` },
     { label: 'Portadas', path: `${drive}\\ES-DE\\downloaded_media` },
     { label: 'Colecciones', path: `${drive}\\ES-DE\\collections` },
-    { label: 'Caché (se puede borrar)', path: `${drive}\\relix\\cache` },
+    { label: 'Tus datos', path: `${drive}\\relix\\datos.json` },
+    { label: 'Respaldos', path: `${drive}\\relix\\respaldos (7 días)` },
+    { label: 'Caché', path: `${drive}\\relix\\cache (se puede borrar)` },
   ])
+
+  /** Solo cuentan los juegos que siguen en el USB */
+  const inLibrary = (/** @type {string} */ id) => library.byId.has(id)
+  const total = $derived(totalSeconds(library.playtime, inLibrary))
+  const plays = $derived(
+    Object.entries(library.playtime).reduce((n, [id, s]) => n + (inLibrary(id) ? s.plays : 0), 0),
+  )
+  const top = $derived(
+    mostPlayed(library.playtime, inLibrary).map((entry) => {
+      const game = /** @type {import('../lib/ui/library.svelte.js').LibraryGame} */ (library.byId.get(entry.id))
+      return { ...entry, game, platform: getPlatform(game.system) }
+    }),
+  )
 
   const stats = $derived.by(() => {
     const covers = PLATFORMS.reduce((n, p) => n + library.coverCount(p.id).withCover, 0)
@@ -30,6 +48,14 @@
       { value: collections.visible.length, label: collections.visible.length === 1 ? 'colección' : 'colecciones' },
       { value: library.hiddenCount(), label: library.hiddenCount() === 1 ? 'oculto' : 'ocultos' },
     ]
+  })
+
+  /** Cómo va el respaldo en el USB */
+  const saveState = $derived.by(() => {
+    if (userData.status === 'error') return { tone: 'bad', text: 'No se pudo guardar' }
+    if (userData.status === 'off') return { tone: 'muted', text: 'Solo en la app' }
+    if (userData.status === 'pending') return { tone: 'muted', text: 'Guardando…' }
+    return { tone: 'ok', text: userData.savedAt ? `Guardado ${timeAgo(userData.savedAt)}` : 'Al día' }
   })
 
   /** @param {import('../lib/core/platforms.js').Platform} p */
@@ -61,6 +87,31 @@
     </article>
 
     <article class="card">
+      <h3>Tiempo de juego</h3>
+      {#if total > 0}
+        <p class="total">
+          <strong>{formatPlaytime(total)}</strong>
+          <span>en {plural(plays, 'partida', 'partidas')}</span>
+        </p>
+        <ol class="top">
+          {#each top as entry, i (entry.id)}
+            <li>
+              <span class="rank" style:background={entry.platform.color} style:color={entry.platform.ink}>{i + 1}</span>
+              <span class="name">{entry.game.name}</span>
+              <span class="time">{formatPlaytime(entry.seconds)}</span>
+            </li>
+          {/each}
+        </ol>
+      {:else}
+        <p class="empty">
+          Aún no hay partidas contadas. El tiempo se suma solo cuando vuelves de un juego.
+        </p>
+      {/if}
+    </article>
+  </div>
+
+  <div class="column">
+    <article class="card">
       <h3>Tu biblioteca</h3>
       <ul class="stats">
         {#each stats as s (s.label)}
@@ -68,29 +119,19 @@
         {/each}
       </ul>
     </article>
-  </div>
 
-  <div class="column">
     <article class="card">
-      <h3>En tu USB</h3>
-      <ul class="list">
+      <div class="head">
+        <h3>En tu USB</h3>
+        <span class="state {saveState.tone}">{saveState.text}</span>
+      </div>
+      <ul class="paths">
         {#each paths as item (item.label)}
-          <li class="path">
+          <li>
             <span class="label">{item.label}</span>
             <code>{item.path}</code>
           </li>
         {/each}
-      </ul>
-    </article>
-
-    <article class="card">
-      <h3>Créditos</h3>
-      <ul class="credits">
-        <li class="author"><strong>Creado por:</strong> snyker-fair</li>
-        <li><strong>Portadas:</strong> libretro-thumbnails</li>
-        <li><strong>Formato:</strong> compatible con ES-DE</li>
-        <li><strong>Letras:</strong> Baloo 2 y Nunito (SIL OFL)</li>
-        <li><strong>Hecho con:</strong> Svelte, C# y WebView2</li>
       </ul>
     </article>
   </div>
@@ -124,11 +165,23 @@
     font-weight: 800;
     font-size: 30px;
   }
-  ul {
+  ul,
+  ol {
     list-style: none;
     margin: 0;
     padding: 0;
   }
+  code {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── Emuladores ───────────────── */
   .list {
     display: flex;
     flex-direction: column;
@@ -168,35 +221,70 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  code {
-    font-family: var(--font-body);
+  code.muted {
+    font-style: italic;
+  }
+
+  /* ── Tiempo de juego ──────────── */
+  .total {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin: 0 0 14px;
+  }
+  .total strong {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 40px;
+    line-height: 1;
+  }
+  .total span {
     font-weight: 700;
-    font-size: 18px;
+    font-size: 20px;
     color: var(--ink-soft);
+  }
+  .top {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .top li {
+    display: grid;
+    grid-template-columns: 36px 1fr auto;
+    align-items: center;
+    gap: 14px;
+  }
+  .rank {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 21px;
+    padding-top: 2px;
+  }
+  .name {
+    font-weight: 700;
+    font-size: 21px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  code.muted {
-    font-style: italic;
-  }
-  .path {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding: 8px 16px;
-    border-radius: 18px;
-    background: var(--sky);
-  }
-  .path .label {
+  .time {
     font-weight: 700;
     font-size: 19px;
     color: var(--ink-soft);
   }
-  .path code {
-    font-size: 22px;
-    color: var(--ink);
+  .empty {
+    margin: 0;
+    font-size: 20px;
+    line-height: 1.4;
+    color: var(--ink-soft);
   }
+
+  /* ── Tu biblioteca ────────────── */
   .stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -221,21 +309,55 @@
     font-size: 18px;
     color: var(--ink-soft);
   }
-  .credits {
+
+  /* ── En tu USB ────────────────── */
+  .head {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
-    font-size: 20px;
-    line-height: 1.4;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .state {
+    padding: 4px 14px 6px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 18px;
+    white-space: nowrap;
+  }
+  .state.ok {
+    background: #d9f2dc;
+    color: #1d5a27;
+  }
+  .state.muted {
+    background: var(--sky);
     color: var(--ink-soft);
   }
-  .credits strong {
-    color: var(--ink);
+  .state.bad {
+    background: var(--pop);
+    color: var(--cloud);
   }
-  .credits .author {
-    font-family: var(--font-display);
+  .paths {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .paths li {
+    display: grid;
+    grid-template-columns: 124px 1fr;
+    align-items: baseline;
+    gap: 12px;
+    padding: 6px 14px;
+    border-radius: 14px;
+    background: var(--sky);
+    min-width: 0;
+  }
+  .paths .label {
     font-weight: 700;
-    font-size: 23px;
+    font-size: 18px;
+    color: var(--ink-soft);
+  }
+  .paths code {
+    font-size: 19px;
     color: var(--ink);
   }
 </style>

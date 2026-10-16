@@ -313,6 +313,13 @@
       {#if buildDate}<li>Compilada el {buildDate}</li>{/if}
       <li>{mode === 'xbox' ? 'Xbox · Modo Desarrollador' : 'Demo en el navegador'}</li>
     </ul>
+    <div class="credits">
+      <strong>Creado por snyker-fair</strong>
+      <p>
+        Portadas de libretro-thumbnails · formato de ES-DE · letras Baloo 2 y Nunito (SIL OFL) ·
+        hecho con Svelte, C# y WebView2
+      </p>
+    </div>
   {:else}
     <h2>Preferencias</h2>
     <p>Qué se ve en el inicio, cómo suena Relix y qué portadas prefieres. Los cambios se guardan solos.</p>
@@ -635,6 +642,22 @@
     background: var(--sky);
     font-weight: 700;
     font-size: 22px;
+  }
+  /* créditos, al pie del panel de Acerca de */
+  .credits {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 3px dashed var(--sky);
+  }
+  .credits strong {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 24px;
+  }
+  .intro .credits p {
+    margin: 4px 0 0;
+    font-size: 19px;
+    line-height: 1.4;
   }
 
   /* ── Filas ───────────────────────────── */

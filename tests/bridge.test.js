@@ -145,6 +145,20 @@ describe('bridge con el shell de Xbox', () => {
     await expect(deleting).resolves.toBe(true)
   })
 
+  it('lee y guarda tus datos en el USB', async () => {
+    const loading = bridge.loadUserData()
+    let msg = shell.sent.at(-1)
+    expect(msg.type).toBe('loadUserData')
+    shell.emit({ id: msg.id, ok: true, result: { driveId: 'E:\\|RELIX', text: null, source: null } })
+    await expect(loading).resolves.toEqual({ driveId: 'E:\\|RELIX', text: null, source: null })
+
+    const saving = bridge.saveUserData('{"app":"relix"}')
+    msg = shell.sent.at(-1)
+    expect(msg).toMatchObject({ type: 'saveUserData', payload: { text: '{"app":"relix"}' } })
+    shell.emit({ id: msg.id, ok: false, error: 'No pude guardar tus datos en el USB.', code: 'usb-readonly' })
+    await expect(saving).rejects.toMatchObject({ code: 'usb-readonly' })
+  })
+
   it('arma las URLs de la portada y su miniatura', () => {
     const bases = { mediaBase: 'https://relix.example/media', thumbBase: 'https://relix.example/thumb' }
     expect(bridge.coverUrls('psx', 'FF7 (USA)/FF7 #1.png', bases)).toEqual({

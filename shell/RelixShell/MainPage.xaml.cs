@@ -42,6 +42,7 @@ namespace RelixShell
             SystemNavigationManager.GetForCurrentView().BackRequested += (s, e) => e.Handled = true;
 
             Window.Current.Activated += OnWindowActivated;
+            Window.Current.VisibilityChanged += OnVisibilityChanged;
         }
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
@@ -99,6 +100,18 @@ namespace RelixShell
             else
             {
                 gamepad.Resume();
+            }
+        }
+
+        /// <summary>
+        /// Relix volvió a verse (al salir del emulador o con el botón Xbox): la
+        /// interfaz cierra la partida en curso y suma el tiempo jugado.
+        /// </summary>
+        private void OnVisibilityChanged(object sender, VisibilityChangedEventArgs e)
+        {
+            if (e.Visible)
+            {
+                SendEvent("visible", null);
             }
         }
 
@@ -174,6 +187,16 @@ namespace RelixShell
                         await CollectionStore.SaveAsync(paths, payload.GetNamedString("file"), payload.GetNamedString("text", ""));
                         Reply(id, JsonValue.CreateBooleanValue(true));
                         break;
+
+                    case "loadUserData":
+                        Reply(id, await LoadUserDataAsync());
+                        break;
+
+                    case "saveUserData":
+                        await EnsurePathsAsync(refresh: false);
+                        await UserDataStore.SaveAsync(paths, payload.GetNamedString("text"));
+                        Reply(id, JsonValue.CreateBooleanValue(true));
+                        break;
                 }
             }
             catch (UserFacingException ex)
@@ -209,11 +232,35 @@ namespace RelixShell
             var result = new JsonObject();
             result.SetNamedValue("romRoot", JsonValue.CreateStringValue(paths.RomRoot));
             // Identifica el disco: si cambia, la interfaz descarta la lista guardada.
-            result.SetNamedValue("driveId", JsonValue.CreateStringValue(paths.DriveRoot + "|" + paths.DriveName));
+            result.SetNamedValue("driveId", JsonValue.CreateStringValue(DriveId()));
             result.SetNamedValue("mediaBase", JsonValue.CreateStringValue(Origin + "/media"));
             result.SetNamedValue("thumbBase", JsonValue.CreateStringValue(Origin + "/thumb"));
             result.SetNamedValue("gamelists", gamelists);
             result.SetNamedValue("covers", await ListCoversAsync(systemIds));
+            return result;
+        }
+
+        /// <summary>Identifica el disco: si cambia, la interfaz no mezcla datos de dos USB.</summary>
+        private string DriveId()
+        {
+            return paths.DriveRoot + "|" + paths.DriveName;
+        }
+
+        // ── Tus datos (E:\relix\datos.json) ──────────────────────────────────
+
+        /// <summary>
+        /// { driveId, text, source }. text es null si el USB aún no tiene datos;
+        /// source dice de qué archivo salió (datos.json, la anterior o un respaldo).
+        /// </summary>
+        private async Task<IJsonValue> LoadUserDataAsync()
+        {
+            await EnsurePathsAsync(refresh: false);
+            UserDataFile file = await UserDataStore.LoadAsync(paths);
+
+            var result = new JsonObject();
+            result.SetNamedValue("driveId", JsonValue.CreateStringValue(DriveId()));
+            result.SetNamedValue("text", file == null ? JsonValue.CreateNullValue() : JsonValue.CreateStringValue(file.Text));
+            result.SetNamedValue("source", file == null ? JsonValue.CreateNullValue() : JsonValue.CreateStringValue(file.Source));
             return result;
         }
 

@@ -16,7 +16,8 @@ import { coverKey } from '../core/coverMatch.js'
 import { mediaUrl, parseGamelist, romAbsolutePath } from '../core/esde.js'
 import { getPlatform, PLATFORMS } from '../core/platforms.js'
 import { gamesFromFiles, mergeWithGamelist } from '../core/scan.js'
-import { load, save } from './storage.js'
+import { closeSession } from '../core/userData.js'
+import { load, onReplaced, save } from './storage.js'
 
 /**
  * @typedef {import('../core/esde.js').Game & { cover?: string, thumb?: string }} LibraryGame
@@ -59,6 +60,9 @@ class Library {
   /** Cuándo se jugó cada juego por última vez (para ordenar por recientes) */
   /** @type {Record<string, number>} */
   lastPlayed = $state(load('lastPlayed', {}))
+  /** Tiempo jugado y partidas de cada juego */
+  /** @type {Record<string, import('../core/userData.js').PlayStats>} */
+  playtime = $state(load('playtime', {}))
 
   /** Lo que se muestra: todo menos los ocultos */
   /** @type {Record<string, LibraryGame[]>} */
@@ -107,6 +111,17 @@ class Library {
   /** Portadas reemplazadas desde Relix: cambia la URL para no ver la anterior guardada */
   /** @type {Record<string, number>} */
   #coverRevisions = load('coverRevisions', {})
+
+  constructor() {
+    // Llegaron tus datos del USB: se vuelven a leer
+    onReplaced(() => {
+      this.favoriteOverrides = load('favorites', {})
+      this.recentIds = load('recent', [])
+      this.hiddenIds = load('hidden', [])
+      this.lastPlayed = load('lastPlayed', {})
+      this.playtime = load('playtime', {})
+    })
+  }
 
   async load() {
     this.status = 'loading'
@@ -293,10 +308,47 @@ class Library {
 
   /** @param {LibraryGame} game */
   markPlayed(game) {
-    this.recentIds = [game.id, ...this.recentIds.filter((id) => id !== game.id)].slice(0, MAX_RECENT)
+    this.#markPlayed(game.id, Date.now())
+  }
+
+  /** @param {string} id @param {number} at */
+  #markPlayed(id, at) {
+    this.recentIds = [id, ...this.recentIds.filter((other) => other !== id)].slice(0, MAX_RECENT)
     save('recent', this.recentIds)
-    this.lastPlayed = { ...this.lastPlayed, [game.id]: Date.now() }
+    this.lastPlayed = { ...this.lastPlayed, [id]: at }
     save('lastPlayed', this.lastPlayed)
+  }
+
+  /**
+   * Empieza a contar una partida. Queda guardada: si la Xbox cierra Relix
+   * mientras juegas, se cierra igual la próxima vez que abra.
+   * @param {LibraryGame} game
+   */
+  startSession(game) {
+    save('session', { id: game.id, startedAt: Date.now() })
+  }
+
+  /**
+   * Volviste a Relix: cierra la partida en curso y suma su tiempo
+   * (las de menos de 1 minuto o más de 12 horas no cuentan).
+   * @param {boolean} [count]  false = descartarla (el emulador no abrió)
+   * @returns {{ id: string, seconds: number } | null}  null si no había partida
+   */
+  endSession(count = true) {
+    /** @type {import('../core/userData.js').Session|null} */
+    const session = load('session', null)
+    if (!session) return null
+    save('session', null)
+    if (!count) return { id: session.id, seconds: 0 }
+
+    const { playtime, seconds } = closeSession(this.playtime, session, Date.now())
+    if (seconds > 0) {
+      this.playtime = playtime
+      save('playtime', playtime)
+      // Por si Relix se cerró antes de anotarla como reciente
+      if ((this.lastPlayed[session.id] ?? 0) < session.startedAt) this.#markPlayed(session.id, session.startedAt)
+    }
+    return { id: session.id, seconds }
   }
 
   /** @param {string} systemId  carpeta donde Relix busca los juegos de esa consola */

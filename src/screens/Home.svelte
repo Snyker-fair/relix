@@ -4,7 +4,7 @@
   import ChannelIcon from '../lib/ui/ChannelIcon.svelte'
   import Clock from '../lib/ui/Clock.svelte'
   import CoverArt from '../lib/ui/CoverArt.svelte'
-  import { plural } from '../lib/ui/format.js'
+  import { formatPlaytime, plural } from '../lib/ui/format.js'
   import HintBar from '../lib/ui/HintBar.svelte'
   import { pushHandler } from '../lib/ui/input.js'
   import { collections } from '../lib/ui/collections.svelte.js'
@@ -212,6 +212,7 @@
     <div class="recent-row">
       {#each recent as game, i (game.id)}
         {@const platform = getPlatform(game.system)}
+        {@const played = library.playtime[game.id]}
         <button
           class="recent-item focus-ring"
           class:focused={zone === 'recent' && i === recentIndex}
@@ -222,7 +223,7 @@
           <CoverArt {game} {platform} width={56} showTitle={false} thumb />
           <span class="recent-text">
             <strong>{game.name}</strong>
-            <span>{platform.shortName}</span>
+            <span>{played ? `${platform.shortName} · Jugado ${formatPlaytime(played.seconds)}` : platform.shortName}</span>
           </span>
         </button>
       {/each}
@@ -483,6 +484,9 @@
   .recent-text span {
     font-size: 20px;
     color: var(--ink-soft);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   @keyframes rise {

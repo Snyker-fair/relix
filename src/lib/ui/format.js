@@ -56,3 +56,18 @@ export function coverSummary(consoleName, { saved, failed, toChoose, notFound })
   if (parts.length === 0) return `${consoleName}: ya tenías todas las portadas`
   return `${consoleName}: ${parts.join(' · ')}`
 }
+
+/**
+ * Tiempo jugado: "45 min", "3 h 20 min", "3 h", "128 h".
+ * Pasadas las 10 horas, los minutos ya no aportan.
+ * @param {number} seconds
+ */
+export function formatPlaytime(seconds) {
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 1) return 'menos de 1 min'
+  if (minutes < 60) return `${minutes} min`
+  const hours = Math.floor(minutes / 60)
+  const rest = minutes % 60
+  if (hours >= 10 || rest === 0) return `${hours} h`
+  return `${hours} h ${rest} min`
+}

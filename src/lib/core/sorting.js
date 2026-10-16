@@ -4,18 +4,21 @@
  *   az      A–Z (el normal). Los saltos van de letra en letra.
  *   recent  jugados recientemente primero; los nunca jugados al final, en A–Z.
  *           Los saltos avanzan de a una página.
+ *   played  más tiempo jugado primero; los nunca jugados al final, en A–Z.
+ *           Los saltos avanzan de a una página.
  *   year    por año de lanzamiento (dato de ES-DE); los sin año al final.
  *           Los saltos van de año en año.
  */
 
 import { bySortName } from './esde.js'
 
-/** @typedef {'az'|'recent'|'year'} SortOrder */
+/** @typedef {'az'|'recent'|'played'|'year'} SortOrder */
 
 /** Nombre visible de cada orden */
 export const SORT_NAMES = /** @type {Record<SortOrder, string>} */ ({
   az: 'A–Z',
   recent: 'Recientes',
+  played: 'Más jugados',
   year: 'Año',
 })
 
@@ -33,12 +36,14 @@ export function letterOf(name) {
  * @param {T[]} games
  * @param {SortOrder} order
  * @param {Record<string, number>} [lastPlayed]  id -> fecha en que se jugó por última vez (ms)
+ * @param {Record<string, { seconds: number }>} [playtime]  id -> tiempo jugado
  * @returns {T[]}
  */
-export function sortGames(games, order, lastPlayed = {}) {
+export function sortGames(games, order, lastPlayed = {}, playtime = {}) {
   const az = [...games].sort(bySortName)
   // sort es estable: dentro de un mismo año o sin jugar, queda el orden A–Z
   if (order === 'recent') return az.sort((a, b) => (lastPlayed[b.id] ?? 0) - (lastPlayed[a.id] ?? 0))
+  if (order === 'played') return az.sort((a, b) => (playtime[b.id]?.seconds ?? 0) - (playtime[a.id]?.seconds ?? 0))
   if (order === 'year') return az.sort((a, b) => (a.year ?? 99999) - (b.year ?? 99999))
   return az
 }

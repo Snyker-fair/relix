@@ -8,6 +8,8 @@
   import { dispatch, startInput } from './lib/ui/input.js'
   import { library } from './lib/ui/library.svelte.js'
   import { sound } from './lib/ui/sound.js'
+  import { userData } from './lib/ui/userData.svelte.js'
+  import { formatPlaytime } from './lib/ui/format.js'
   import Stage from './lib/ui/Stage.svelte'
   import CoverPicker from './screens/CoverPicker.svelte'
   import GameMenu from './screens/GameMenu.svelte'
@@ -48,16 +50,60 @@
 
   onShellEvent((e) => {
     if (e.event === 'input' && e.action) dispatch(/** @type {any} */ (e.action))
-    // La consola volvió a Relix al cerrar el emulador
-    else if (e.event === 'resumed') launching = null
+    // Volviste a Relix: al cerrar el emulador (resumed) o por otro camino, como el botón Xbox (visible)
+    else if (e.event === 'resumed' || e.event === 'visible') backInRelix()
   })
+
+  /**
+   * Partida que terminó con Relix cerrado (la Xbox lo cerró mientras jugabas):
+   * se cierra al abrir y se avisa cuando la biblioteca esté lista.
+   */
+  let finishedWhileClosed = library.endSession()
 
   library.load().finally(notifyReady)
 
-  // Las colecciones se leen del USB cuando la biblioteca está lista (también al reintentar)
+  // Al tener la biblioteca: colecciones del USB, tus datos (si el USB apareció
+  // recién, con Reintentar) y el aviso de la partida que quedó pendiente
   $effect(() => {
-    if (library.status === 'ready') untrack(() => collections.load())
+    if (library.status !== 'ready') return
+    untrack(() => {
+      collections.load()
+      userData.resync()
+      if (finishedWhileClosed) {
+        announcePlaytime(finishedWhileClosed)
+        finishedWhileClosed = null
+      }
+      if (userData.recoveredFrom) showToast(`Tus datos se recuperaron de relix\\${userData.recoveredFrom}`)
+    })
   })
+
+  // Si el USB no deja guardar tus datos, se avisa una vez
+  let warnedSave = false
+  $effect(() => {
+    if (userData.status === 'error' && !warnedSave) {
+      warnedSave = true
+      untrack(() => showToast(userData.error))
+    }
+  })
+
+  /** Cierra la partida en curso (si había) y cuenta lo jugado */
+  function backInRelix() {
+    launching = null
+    const finished = library.endSession()
+    if (finished) announcePlaytime(finished)
+  }
+
+  /** "Okami: 45 min jugados · 12 h en total" @param {{ id: string, seconds: number }} finished */
+  function announcePlaytime({ id, seconds }) {
+    const game = library.byId.get(id)
+    const total = library.playtime[id]?.seconds ?? 0
+    if (!game || seconds <= 0) return
+    showToast(
+      total > seconds
+        ? `${game.name}: ${formatPlaytime(seconds)} jugados · ${formatPlaytime(total)} en total`
+        : `${game.name}: ${formatPlaytime(seconds)} jugados`,
+    )
+  }
 
   $effect(() => {
     const t = setTimeout(() => (boot = false), 1400)
@@ -121,11 +167,15 @@
     }
     sound.select()
     launching = { game, uri }
+    // La partida empieza a contar y queda en el USB antes de que la Xbox pase al emulador
+    library.startSession(game)
+    await userData.flush()
     try {
       await launch(uri, library.romPath(game))
       library.markPlayed(game)
     } catch (e) {
       launching = null
+      library.endSession(false)
       sound.error()
       showToast(launchErrorMessage(e, platform.emulatorName))
     }
@@ -196,7 +246,7 @@
   {/if}
 
   {#if launching}
-    <LaunchOverlay game={launching.game} uri={launching.uri} onClose={() => (launching = null)} />
+    <LaunchOverlay game={launching.game} uri={launching.uri} onClose={backInRelix} />
   {/if}
 
   {#if toast}

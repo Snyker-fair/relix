@@ -30,6 +30,11 @@
  *        -> { id, ok: true, result: { collections: [{ file: 'custom-Con amigos.cfg', text }] } }
  *     { id, type: 'saveCollection', payload: { file: 'custom-Con amigos.cfg', text } }
  *        -> { id, ok: true, result: true }                       (text vacío = borrar)
+ *     { id, type: 'loadUserData' }
+ *        -> { id, ok: true, result: { driveId, text, source } }  (E:\relix\datos.json;
+ *             text null si aún no hay; source: 'datos.json', 'datos.anterior.json' o un respaldo)
+ *     { id, type: 'saveUserData', payload: { text } }
+ *        -> { id, ok: true, result: true }      (guarda la anterior y un respaldo por día)
  *     Error: { id, ok: false, error: 'mensaje para el jugador', code: 'rom-missing' | ... }
  *
  *   Avisos (web -> shell, sin respuesta):
@@ -38,6 +43,7 @@
  *   Eventos (shell -> web):
  *     { event: 'input', action: 'up' }   botón del control (leído en C#)
  *     { event: 'resumed' }               la consola volvió a Relix desde un emulador
+ *     { event: 'visible' }               Relix volvió a verse (por cualquier camino)
  *     { event: 'coverProgress', system, done, total }   avance de downloadCovers
  *
  * En el navegador (desarrollo / demo) no hay shell: se usan datos de prueba y
@@ -356,3 +362,51 @@ function demoCollections() {
     return { ...DEMO_SEED }
   }
 }
+
+// ── Tus datos (E:\relix\datos.json) ─────────────────────────────────────
+
+/** @typedef {{ driveId: string, text: string|null, source: string|null }} UserDataFile */
+
+/** @returns {Promise<UserDataFile>} */
+export async function loadUserData() {
+  if (mode === 'xbox') return request('loadUserData')
+  let text = null
+  try {
+    text = localStorage.getItem(DEMO_USERDATA_KEY)
+  } catch {
+    // sin almacenamiento: la demo parte con los datos de ejemplo
+  }
+  return { driveId: 'demo', text: text ?? DEMO_USERDATA, source: 'datos.json' }
+}
+
+/** @param {string} text  contenido completo de datos.json */
+export async function saveUserData(text) {
+  if (mode === 'xbox') return request('saveUserData', { text })
+  try {
+    localStorage.setItem(DEMO_USERDATA_KEY, text)
+  } catch {
+    // sin almacenamiento: se olvida al recargar
+  }
+  return true
+}
+
+// En la demo, el "USB" es el navegador. Trae algo de tiempo jugado de ejemplo.
+const DEMO_USERDATA_KEY = 'relix:demo-userdata'
+const DEMO_USERDATA = JSON.stringify({
+  app: 'relix',
+  version: 1,
+  savedAt: '2026-10-01T12:00:00.000Z',
+  playtime: {
+    'ps2/Okami (USA).chd': { seconds: 151_200, plays: 23 },
+    'gc/F-Zero GX (USA).rvz': { seconds: 46_800, plays: 31 },
+    'psx/Tekken 3 (USA).chd': { seconds: 27_000, plays: 18 },
+    'ps2/Burnout 3 - Takedown (USA).chd': { seconds: 12_600, plays: 9 },
+    'wiiu/Splatoon (USA).wua': { seconds: 2_700, plays: 2 },
+  },
+  lastPlayed: {
+    'ps2/Okami (USA).chd': Date.parse('2026-09-30T23:10:00Z'),
+    'gc/F-Zero GX (USA).rvz': Date.parse('2026-09-28T21:00:00Z'),
+    'psx/Tekken 3 (USA).chd': Date.parse('2026-09-20T19:30:00Z'),
+  },
+  recent: ['ps2/Okami (USA).chd', 'gc/F-Zero GX (USA).rvz', 'psx/Tekken 3 (USA).chd'],
+})
