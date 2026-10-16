@@ -1,5 +1,8 @@
 <script>
+  import { mode } from '../lib/core/bridge.js'
   import { REGION_NAMES } from '../lib/core/coverMatch.js'
+  import { BUILD_DATE, VERSION } from '../lib/core/version.js'
+  import About from './About.svelte'
   import { getPlatform, PLATFORMS } from '../lib/core/platforms.js'
   import ChannelIcon from '../lib/ui/ChannelIcon.svelte'
   import Clock from '../lib/ui/Clock.svelte'
@@ -29,6 +32,7 @@
     { id: 'library', name: 'Biblioteca' },
     { id: 'covers', name: 'Portadas' },
     { id: 'preferences', name: 'Preferencias' },
+    { id: 'about', name: 'Acerca de' },
   ]
   // Biblioteca: una fila por consola, "Escanear todo" y los juegos ocultos
   const LIBRARY_ROWS = [...PLATFORMS.map((p) => p.id), 'all', 'hidden']
@@ -45,8 +49,18 @@
   // svelte-ignore state_referenced_locally
   let section = $state(initialSection)
   const ROWS = $derived(
-    section === 'library' ? LIBRARY_ROWS : section === 'covers' ? COVER_ROWS : PREFERENCE_ROWS,
+    section === 'library'
+      ? LIBRARY_ROWS
+      : section === 'covers'
+        ? COVER_ROWS
+        : section === 'preferences'
+          ? PREFERENCE_ROWS
+          : [], // Acerca de: solo para leer
   )
+  /** "2026-10-16" -> "16 oct 2026" */
+  const buildDate = BUILD_DATE
+    ? new Date(`${BUILD_DATE}T12:00:00`).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })
+    : ''
   let index = $state(0)
   /** true mientras corre "Escanear todo" (las filas muestran cuál va) */
   let scanningAll = $state(false)
@@ -231,7 +245,8 @@
       else if (action === 'down') move(index + 1)
       else if (action === 'lb') switchSection(-1)
       else if (action === 'rb') switchSection(1)
-      else if (action === 'a') section === 'library' ? scanRow() : section === 'covers' ? coverRow() : toggleRow()
+      else if (action === 'a' && section !== 'about')
+        section === 'library' ? scanRow() : section === 'covers' ? coverRow() : toggleRow()
       else if (action === 'b' || action === 'start') (sound.back(), onBack())
     }),
   )
@@ -286,6 +301,17 @@
     <ul class="chips">
       <li>{coverTotals.withCover} de {coverTotals.total} con portada</li>
       <li>Región: {REGION_NAMES[settings.coverRegion]}</li>
+    </ul>
+  {:else if section === 'about'}
+    <h2>Acerca de</h2>
+    <p>
+      Tus reliquias, listas para jugar. Un lanzador hecho a la medida para tus emuladores en la
+      Xbox, que lee tu USB tal como lo deja ES-DE.
+    </p>
+    <ul class="chips">
+      <li>Versión {VERSION}</li>
+      {#if buildDate}<li>Compilada el {buildDate}</li>{/if}
+      <li>{mode === 'xbox' ? 'Xbox · Modo Desarrollador' : 'Demo en el navegador'}</li>
     </ul>
   {:else}
     <h2>Preferencias</h2>
@@ -445,6 +471,8 @@
     </button>
   {/each}
 </section>
+{:else if section === 'about'}
+<About />
 {:else}
 <section class="rows" aria-label="Preferencias">
   {#each ROWS as id, i (id)}
@@ -496,10 +524,15 @@
 {/if}
 
 <HintBar
-  hints={[
-    { button: 'a', label: hintA },
-    { button: 'b', label: 'Volver' },
-  ]}
+  hints={section === 'about'
+    ? [
+        { button: 'lb', also: 'rb', label: 'Secciones' },
+        { button: 'b', label: 'Volver' },
+      ]
+    : [
+        { button: 'a', label: hintA },
+        { button: 'b', label: 'Volver' },
+      ]}
 />
 
 <style>

@@ -1,11 +1,17 @@
 import { svelte } from '@sveltejs/vite-plugin-svelte'
 import { defineConfig } from 'vite'
 import { viteSingleFile } from 'vite-plugin-singlefile'
+import pkg from './package.json' with { type: 'json' }
 
 // `npm run build`         -> dist/ normal (para empaquetar dentro de la app UWP)
 // `npm run build:single`  -> dist-single/index.html autocontenido (vista previa / demo)
 export default defineConfig(({ mode }) => ({
   base: './',
+  // Versión y fecha de compilación, para Opciones › Acerca de
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+    __BUILD_DATE__: JSON.stringify(new Date().toISOString().slice(0, 10)),
+  },
   plugins: [svelte(), ...(mode === 'single' ? [viteSingleFile()] : [])],
   build: {
     outDir: mode === 'single' ? 'dist-single' : 'dist',

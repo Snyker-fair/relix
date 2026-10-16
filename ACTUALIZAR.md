@@ -129,6 +129,10 @@ npm run build:shell -- "C:\ProyectosVisual\RelixShell"
 - [ ] En la búsqueda, el campo (blanco, con lupa) queda separado del teclado.
 - [ ] En las grillas, el aro rosado del juego enfocado no toca la fila de arriba ni las portadas de al lado.
 
+### Acerca de
+- [ ] **≡ → RB hasta Acerca de** muestra la versión 0.4.0, la fecha de compilación y "Xbox · Modo Desarrollador".
+- [ ] La tarjeta **Emuladores** dice qué abre cada consola, y **En tu USB** muestra tu letra de disco real.
+
 Si algo falla, la tabla **Si algo falla** de [`shell/README.md`](shell/README.md) tiene las causas más comunes.
 
 ---

@@ -145,6 +145,8 @@ roto el lanzamiento desde frontends en su última versión. Se cambia en
 - [x] **Encontrar juegos:** saltos por letra (LT/RT), menú del juego (Y), búsqueda con
       teclado en pantalla (⧉), orden A–Z / recientes / año, colecciones en formato
       ES-DE y juegos ocultos.
+- [x] **Acerca de:** versión y fecha de compilación, emulador de cada consola,
+      rutas en el USB, resumen de la biblioteca y créditos (Opciones › Acerca de).
 
 ## Controles
 
