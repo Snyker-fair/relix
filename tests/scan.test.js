@@ -93,3 +93,19 @@ describe('mergeWithGamelist', () => {
     expect(names(mergeWithGamelist(listed, scanned))).toEqual(['Persona 4'])
   })
 })
+
+describe('consolas nuevas', () => {
+  it('Xbox 360 y Dreamcast en carpetas: el nombre sale de la carpeta', async () => {
+    const { getPlatform } = await import('../src/lib/core/platforms.js')
+    const x360 = gamesFromFiles(['Halo 3 (USA)/default.xex', 'Forza Motorsport 4 (USA).iso'], getPlatform('xbox360'))
+    expect(x360.map((g) => g.name)).toEqual(['Forza Motorsport 4', 'Halo 3'])
+    const dc = gamesFromFiles(['Shenmue (USA)/disc.gdi', 'Shenmue (USA)/track01.bin', 'Jet Grind Radio (USA).cdi'], getPlatform('dreamcast'))
+    expect(dc.map((g) => g.name)).toEqual(['Jet Grind Radio', 'Shenmue'])
+  })
+
+  it('cartuchos en zip', async () => {
+    const { getPlatform } = await import('../src/lib/core/platforms.js')
+    const snes = gamesFromFiles(['Super Metroid (Japan, USA) (En,Ja).sfc', 'Chrono Trigger (USA).zip', 'notas.txt'], getPlatform('snes'))
+    expect(snes.map((g) => g.name)).toEqual(['Chrono Trigger', 'Super Metroid'])
+  })
+})

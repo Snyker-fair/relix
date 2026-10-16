@@ -6,8 +6,8 @@
   import { pushHandler } from '../lib/ui/input.js'
   import { sound } from '../lib/ui/sound.js'
 
-  /** @type {{ game: any, uri: string, onClose: () => void }} */
-  let { game, uri, onClose } = $props()
+  /** @type {{ game: any, uri: string, emulatorName: string, onClose: () => void }} */
+  let { game, uri, emulatorName, onClose } = $props()
 
   const platform = $derived(getPlatform(game.system))
 
@@ -30,7 +30,7 @@
       <CoverArt {game} {platform} width={260} />
     </div>
     <div class="text">
-      <p class="kicker">Abriendo {platform.emulatorName}</p>
+      <p class="kicker">Abriendo {emulatorName}</p>
       <h1>{game.name}</h1>
 
       {#if mode === 'browser'}

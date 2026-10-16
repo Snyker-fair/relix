@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<gameList>
+	<game>
+		<path>./Sonic The Hedgehog 2 (World).md</path>
+		<name>Sonic the Hedgehog 2</name>
+		<desc>Sonic y Tails corren contra el Dr. Robotnik.</desc>
+		<releasedate>19921121T000000</releasedate>
+		<developer>Sega</developer>
+		<publisher>Sega</publisher>
+		<genre>Plataformas</genre>
+		<players>1-2</players>
+		<favorite>true</favorite>
+	</game>
+	<game>
+		<path>./Streets of Rage 2 (USA).md</path>
+		<name>Streets of Rage 2</name>
+		<desc>Peleas callejeras para dos, con la música de Yuzo Koshiro.</desc>
+		<releasedate>19921220T000000</releasedate>
+		<developer>Sega</developer>
+		<publisher>Sega</publisher>
+		<genre>Beat 'em up</genre>
+		<players>1-2</players>
+	</game>
+	<game>
+		<path>./Gunstar Heroes (USA).md</path>
+		<name>Gunstar Heroes</name>
+		<desc>Disparos y saltos a toda velocidad, de Treasure.</desc>
+		<releasedate>19930909T000000</releasedate>
+		<developer>Treasure</developer>
+		<publisher>Sega</publisher>
+		<genre>Acción</genre>
+		<players>1-2</players>
+	</game>
+</gameList>

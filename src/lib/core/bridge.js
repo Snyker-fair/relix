@@ -30,6 +30,8 @@
  *        -> { id, ok: true, result: { collections: [{ file: 'custom-Con amigos.cfg', text }] } }
  *     { id, type: 'saveCollection', payload: { file: 'custom-Con amigos.cfg', text } }
  *        -> { id, ok: true, result: true }                       (text vacío = borrar)
+ *     { id, type: 'emulatorStatus', payload: { protocols: ['retroarch', 'duckstation'] } }
+ *        -> { id, ok: true, result: { status: { retroarch: true, duckstation: false } } }
  *     { id, type: 'loadUserData' }
  *        -> { id, ok: true, result: { driveId, text, source } }  (E:\relix\datos.json;
  *             text null si aún no hay; source: 'datos.json', 'datos.anterior.json' o un respaldo)
@@ -58,8 +60,15 @@ import psp from '../../mock/gamelists/psp/gamelist.xml?raw'
 import ps2 from '../../mock/gamelists/ps2/gamelist.xml?raw'
 import gc from '../../mock/gamelists/gc/gamelist.xml?raw'
 import wiiu from '../../mock/gamelists/wiiu/gamelist.xml?raw'
+import snes from '../../mock/gamelists/snes/gamelist.xml?raw'
+import n64 from '../../mock/gamelists/n64/gamelist.xml?raw'
+import gba from '../../mock/gamelists/gba/gamelist.xml?raw'
+import n3ds from '../../mock/gamelists/n3ds/gamelist.xml?raw'
+import megadrive from '../../mock/gamelists/megadrive/gamelist.xml?raw'
+import dreamcast from '../../mock/gamelists/dreamcast/gamelist.xml?raw'
+import xbox360 from '../../mock/gamelists/xbox360/gamelist.xml?raw'
 
-const MOCK_GAMELISTS = { psx, psp, ps2, gc, wiiu }
+const MOCK_GAMELISTS = { psx, psp, ps2, gc, wiiu, snes, n64, gba, n3ds, megadrive, dreamcast, xbox360 }
 
 /** @returns {any} */
 function webview() {
@@ -361,6 +370,20 @@ function demoCollections() {
   } catch {
     return { ...DEMO_SEED }
   }
+}
+
+// ── Emuladores instalados ────────────────────────────────────────────────
+
+/**
+ * Qué emuladores tiene la Xbox, por protocolo.
+ * @param {string[]} protocols
+ * @returns {Promise<Record<string, boolean>>}
+ */
+export async function emulatorStatus(protocols) {
+  if (mode === 'xbox') return (await request('emulatorStatus', { protocols })).status
+  // Demo: una Xbox con RetroArch, PPSSPP, XBSX2 y Xenia Canary
+  const demo = new Set(['retroarch', 'ppsspp', 'xbsx2', 'xeniacanary'])
+  return Object.fromEntries(protocols.map((p) => [p, demo.has(p)]))
 }
 
 // ── Tus datos (E:\relix\datos.json) ─────────────────────────────────────

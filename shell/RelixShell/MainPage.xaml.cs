@@ -188,6 +188,10 @@ namespace RelixShell
                         Reply(id, JsonValue.CreateBooleanValue(true));
                         break;
 
+                    case "emulatorStatus":
+                        Reply(id, await EmulatorStatusAsync(payload));
+                        break;
+
                     case "loadUserData":
                         Reply(id, await LoadUserDataAsync());
                         break;
@@ -428,6 +432,35 @@ namespace RelixShell
                     "no-library",
                     "No encontré la carpeta roms en ningún disco USB. Conecta el disco y revisa que tenga la carpeta roms en la raíz.");
             }
+        }
+
+        /// <summary>
+        /// Qué emuladores tiene la consola: { status: { retroarch: true, duckstation: false } }.
+        /// Pregunta por cada protocolo, igual que el aviso de "no está instalado".
+        /// </summary>
+        private static async Task<IJsonValue> EmulatorStatusAsync(JsonObject payload)
+        {
+            var status = new JsonObject();
+            foreach (IJsonValue value in payload.GetNamedArray("protocols", new JsonArray()))
+            {
+                string protocol = value.GetString();
+                bool available = false;
+                try
+                {
+                    LaunchQuerySupportStatus support = await Launcher.QueryUriSupportAsync(
+                        new Uri(protocol + ":?"), LaunchQuerySupportType.Uri);
+                    available = support == LaunchQuerySupportStatus.Available;
+                }
+                catch (Exception)
+                {
+                    // protocolo no válido: queda como no instalado
+                }
+                status.SetNamedValue(protocol, JsonValue.CreateBooleanValue(available));
+            }
+
+            var result = new JsonObject();
+            result.SetNamedValue("status", status);
+            return result;
         }
 
         private static async Task LaunchAsync(JsonObject payload)

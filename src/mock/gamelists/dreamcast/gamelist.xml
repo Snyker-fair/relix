@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<gameList>
+	<game>
+		<path>./Jet Grind Radio (USA).chd</path>
+		<name>Jet Grind Radio</name>
+		<desc>Patines, grafitis y la radio pirata de Tokio-to.</desc>
+		<releasedate>20001030T000000</releasedate>
+		<developer>Smilebit</developer>
+		<publisher>Sega</publisher>
+		<genre>Acción</genre>
+		<players>1</players>
+	</game>
+	<game>
+		<path>./Shenmue (USA)/disc.gdi</path>
+		<name>Shenmue</name>
+		<desc>Ryo Hazuki busca al asesino de su padre en Yokosuka.</desc>
+		<releasedate>20001107T000000</releasedate>
+		<developer>Sega AM2</developer>
+		<publisher>Sega</publisher>
+		<genre>Aventura</genre>
+		<players>1</players>
+	</game>
+	<game>
+		<path>./Soulcalibur (USA).chd</path>
+		<name>Soulcalibur</name>
+		<desc>Peleas con armas en un torneo legendario.</desc>
+		<releasedate>19990909T000000</releasedate>
+		<developer>Namco</developer>
+		<publisher>Namco</publisher>
+		<genre>Pelea</genre>
+		<players>1-2</players>
+		<favorite>true</favorite>
+	</game>
+</gameList>

@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<gameList>
+	<game>
+		<path>./Metroid Fusion (USA).gba</path>
+		<name>Metroid Fusion</name>
+		<desc>Samus, infectada por el parásito X, explora una estación espacial.</desc>
+		<releasedate>20021117T000000</releasedate>
+		<developer>Nintendo</developer>
+		<publisher>Nintendo</publisher>
+		<genre>Acción</genre>
+		<players>1</players>
+	</game>
+	<game>
+		<path>./Pokemon - Emerald Version (USA, Europe).gba</path>
+		<name>Pokémon Esmeralda</name>
+		<desc>La aventura en Hoenn, con el Frente Batalla.</desc>
+		<releasedate>20040916T000000</releasedate>
+		<developer>Game Freak</developer>
+		<publisher>Nintendo</publisher>
+		<genre>RPG</genre>
+		<players>1</players>
+		<favorite>true</favorite>
+	</game>
+	<game>
+		<path>./Advance Wars (USA).gba</path>
+		<name>Advance Wars</name>
+		<desc>Estrategia por turnos con tanques, aviones y barcos.</desc>
+		<releasedate>20010910T000000</releasedate>
+		<developer>Intelligent Systems</developer>
+		<publisher>Nintendo</publisher>
+		<genre>Estrategia</genre>
+		<players>1-4</players>
+	</game>
+</gameList>

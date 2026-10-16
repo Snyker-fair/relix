@@ -59,6 +59,27 @@ export function fileStem(relPath) {
   return dot > 0 ? name.slice(0, dot) : name
 }
 
+/** Archivos con nombre genérico: el nombre del juego es el de su carpeta */
+const GENERIC_STEMS = /^(default|disc|disco|game|track\s*0*1)$/i
+
+/**
+ * De dónde sale el nombre de un juego (para mostrarlo y buscar su portada):
+ *   "Okami (USA).chd"                 -> "Okami (USA)"
+ *   "Halo 3 (USA)/default.xex"        -> "Halo 3 (USA)"   (Xbox 360)
+ *   "Shenmue (USA)/disc.gdi"          -> "Shenmue (USA)"  (Dreamcast)
+ *   "Zelda [ABC]/code/zelda.rpx"      -> "Zelda [ABC]"    (Wii U en carpetas)
+ * @param {string} relPath
+ */
+export function titleStem(relPath) {
+  const parts = normalizeRelativePath(relPath).split('/')
+  const stem = fileStem(relPath)
+  if (/\.rpx$/i.test(relPath) && parts.length >= 3 && parts.at(-2)?.toLowerCase() === 'code') {
+    return parts.at(-3) ?? stem
+  }
+  if (GENERIC_STEMS.test(stem) && parts.length >= 2) return parts.at(-2) ?? stem
+  return stem
+}
+
 /**
  * Lee un gamelist.xml de ES-DE.
  * @param {string} xml

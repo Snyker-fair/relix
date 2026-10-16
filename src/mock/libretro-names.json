@@ -556,5 +556,40 @@
 "Xenoblade Chronicles X (Europe) (En,Fr,De,Es,It)",
 "Xenoblade Chronicles X (USA) (En,Fr,Es)",
 "Xenoblade X (Japan)"
+],
+"snes": [
+"Chrono Trigger (USA)",
+"Legend of Zelda, The - A Link to the Past (USA)",
+"Super Mario Kart (USA)",
+"Super Metroid (Japan, USA) (En,Ja)"
+],
+"n64": [
+"GoldenEye 007 (USA)",
+"Mario Kart 64 (USA)",
+"Super Mario 64 (USA)"
+],
+"gba": [
+"Advance Wars (USA)",
+"Metroid Fusion (USA)",
+"Pokemon - Emerald Version (USA, Europe)"
+],
+"n3ds": [
+"Legend of Zelda, The - A Link Between Worlds (USA)",
+"Super Mario 3D Land (USA)"
+],
+"megadrive": [
+"Gunstar Heroes (USA)",
+"Sonic The Hedgehog 2 (World)",
+"Streets of Rage 2 (USA)"
+],
+"dreamcast": [
+"Jet Grind Radio (USA)",
+"Shenmue (USA)",
+"Soulcalibur (USA)"
+],
+"xbox360": [
+"Forza Motorsport 4 (USA)",
+"Halo 3 (USA)",
+"Red Dead Redemption (USA)"
 ]
 }

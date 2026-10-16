@@ -113,7 +113,7 @@ npm run build:shell -- "C:\ProyectosVisual\RelixShell"
 ## Qué probar en la TV (por paso)
 
 ### Paso 2 · Portadas
-- [ ] **≡ → RB → Portadas**: cada consola dice "N de M con portada".
+- [ ] **≡ → RB hasta Portadas**: cada consola dice "N de M con portada".
 - [ ] **A** en una consola: "Buscando…", "Bajando X de Y" y el resumen.
 - [ ] La grilla muestra las portadas (la primera vez tardan un poco: se crean las miniaturas).
 - [ ] **Elegir a mano**: A guarda una candidata, X deja la de color.
@@ -138,8 +138,8 @@ npm run build:shell -- "C:\ProyectosVisual\RelixShell"
 - [ ] En las grillas, el aro rosado del juego enfocado no toca la fila de arriba ni las portadas de al lado.
 
 ### Acerca de
-- [ ] **≡ → RB hasta Acerca de** muestra la versión 0.5.0, la fecha de compilación y "Xbox · Modo Desarrollador".
-- [ ] La tarjeta **Emuladores** dice qué abre cada consola, y **En tu USB** muestra tu letra de disco real.
+- [ ] **≡ → RB hasta Acerca de** muestra la versión 0.6.0, la fecha de compilación y "Xbox · Modo Desarrollador".
+- [ ] **En tu USB** muestra tu letra de disco real.
 - [ ] Al pie del panel izquierdo dice **Creado por snyker-fair**.
 
 ### Paso 4 · Tus datos y tiempo de juego
@@ -159,6 +159,17 @@ npm run build:shell -- "C:\ProyectosVisual\RelixShell"
 - [ ] Prueba fuerte (opcional): desinstala Relix desde Dev Home, vuelve a desplegar
       con **F5** y abre: favoritos y tiempo siguen ahí (vienen del USB).
 
+### Paso 5 · Más consolas y elegir emulador
+- [ ] Crea en el USB las carpetas de las consolas que quieras (`E:\roms\snes`, `n64`,
+      `gba`, `n3ds`, `megadrive`, `dreamcast`, `xbox360`) con algunos juegos. Relix las
+      escanea solo la primera vez que abre; después, **≡ → Biblioteca** para re-escanear.
+- [ ] En el inicio, los canales se deslizan al moverte; en la biblioteca, también las pestañas (LB/RB).
+- [ ] **≡ → RB → Consolas**: cada consola dice su emulador e **Instalado** / **No instalado**.
+      A pasa al siguiente emulador.
+- [ ] **≡ → Acerca de**: la tarjeta **Emuladores en la consola** marca con ✓ los que tienes.
+- [ ] En un juego, **Y → Abrir con…** → elige otro emulador: el panel dice "solo este juego".
+- [ ] Juegos de Xbox 360 en carpeta (`Halo 3 (USA)\default.xex`) aparecen con el nombre de la carpeta.
+
 Si algo falla, la tabla **Si algo falla** de [`shell/README.md`](shell/README.md) tiene las causas más comunes.
 
 ---
@@ -177,3 +188,4 @@ Si algo falla, la tabla **Si algo falla** de [`shell/README.md`](shell/README.md
 | 3 | `MainPage.xaml.cs` | Mensajes `deleteCover`, `listCollections`, `saveCollection` |
 | 4 | `Shell/UserDataStore.cs` | **Nuevo.** `E:\relix\datos.json`, copia anterior y respaldos diarios |
 | 4 | `MainPage.xaml.cs` | Mensajes `loadUserData`, `saveUserData`; evento `visible` al volver a primer plano |
+| 5 | `MainPage.xaml.cs` | Mensaje `emulatorStatus` (qué emuladores tiene la consola) |

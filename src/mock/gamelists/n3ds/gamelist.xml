@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<gameList>
+	<game>
+		<path>./Super Mario 3D Land (USA).3ds</path>
+		<name>Super Mario 3D Land</name>
+		<desc>Plataformas en 3D pensadas para la pantalla estereoscópica.</desc>
+		<releasedate>20111113T000000</releasedate>
+		<developer>Nintendo</developer>
+		<publisher>Nintendo</publisher>
+		<genre>Plataformas</genre>
+		<players>1</players>
+	</game>
+	<game>
+		<path>./Legend of Zelda, The - A Link Between Worlds (USA).3ds</path>
+		<name>The Legend of Zelda: A Link Between Worlds</name>
+		<desc>Link se vuelve dibujo para moverse por las paredes.</desc>
+		<releasedate>20131122T000000</releasedate>
+		<developer>Nintendo</developer>
+		<publisher>Nintendo</publisher>
+		<genre>Aventura</genre>
+		<players>1</players>
+	</game>
+</gameList>

@@ -135,23 +135,43 @@ se desactiva ese "modo mouse".
 encima de `E:\relix\datos.json` y abre Relix. Cuando el archivo del USB cambia por
 fuera de la app (un respaldo, u otra Xbox), Relix usa el del USB.
 
-`<sistema>` usa los nombres de ES-DE: `psx`, `psp`, `ps2`, `gc`, `wiiu`.
+`<sistema>` usa los nombres de ES-DE: `psx`, `ps2`, `psp`, `snes`, `n64`, `gba`, `gc`,
+`wiiu`, `n3ds`, `megadrive`, `dreamcast`, `xbox360` (también acepta `ps1`, `genesis`,
+`3ds`, `dc`...). Los juegos de Xbox 360 y Dreamcast pueden ir en carpetas
+(`Halo 3 (USA)/default.xex`, `Shenmue (USA)/disc.gdi`): el nombre sale de la carpeta.
 Así puedes escanear y descargar portadas con ES-DE en el PC y copiar las
 carpetas tal cual al disco USB, y lo que baja Relix también lo ve ES-DE.
 
 ## Emuladores configurados
 
-| Consola | Emulador | Protocolo |
-|---|---|---|
-| PS1 | RetroArch + SwanStation | `retroarch:` (núcleo `swanstation_libretro.dll`) |
-| PSP | PPSSPP | `ppsspp:` |
-| PS2 | XBSX2 | `xbsx2:` |
-| GameCube | RetroArch + Dolphin | `retroarch:` (núcleo `dolphin_libretro.dll`) |
-| Wii U | Cemu | sin protocolo documentado todavía |
+El primero de cada fila es el recomendado. En **Opciones › Consolas** eliges el de
+cada consola (con A pasas al siguiente) y con **Y › Abrir con…** uno distinto para
+un juego puntual. Si no elegiste, Relix usa el primero que tengas instalado: le
+pregunta a la Xbox qué protocolos hay (Acerca de muestra cuáles).
 
-Para GameCube se usa el núcleo de RetroArch porque el Dolphin standalone tiene
-roto el lanzamiento desde frontends en su última versión. Se cambia en
-`platforms.js`.
+| Consola | Emuladores (protocolo) |
+|---|---|
+| PS1 | RetroArch SwanStation, RetroArch Beetle PSX HW, DuckStation (`duckstation:`) |
+| PS2 | XBSX2 (`xbsx2:`) |
+| PSP | PPSSPP (`ppsspp:`), RetroArch PPSSPP |
+| SNES | RetroArch Snes9x, RetroArch bsnes |
+| N64 | RetroArch Mupen64Plus-Next, RetroArch ParaLLEl N64 |
+| GBA | RetroArch mGBA, gpSP, VBA-M |
+| GameCube | RetroArch Dolphin, Dolphin (`dolphin:`; su última versión no abre juegos desde otras apps) |
+| Wii U | ninguno: el port de Cemu no registra un protocolo, se abre desde Dev Home |
+| 3DS | Citra RA (`citrara:`), Panda3DS (`panda:`), los dos experimentales |
+| Mega Drive | RetroArch Genesis Plus GX, RetroArch PicoDrive |
+| Dreamcast | RetroArch Flycast, Flycast (`flycast:`) |
+| Xbox 360 | Xenia Canary (`xeniacanary:`), Xenia (`xenia:`) |
+
+Los de RetroArch se abren con `retroarch:` y su núcleo (`cores\<núcleo>.dll`). Los
+protocolos de los emuladores sueltos son los mismos que usa
+[RetroPass](https://github.com/retropassdev/RetroPass) (`UrlSchemeGenerator.cs`).
+Se configuran en `src/lib/core/platforms.js`.
+
+**Switch:** existe [NXbox](https://github.com/NspxMiguel/NXbox), un port de Eden con
+protocolo `nxbox://`, pero todavía no tiene un juego jugable de punta a punta ni
+versión pública. Se suma como una consola más cuando madure.
 
 ## Hecho
 
@@ -168,11 +188,15 @@ roto el lanzamiento desde frontends en su última versión. Se cambia en
 - [x] **Encontrar juegos:** saltos por letra (LT/RT), menú del juego (Y), búsqueda con
       teclado en pantalla (⧉), orden A–Z / recientes / año, colecciones en formato
       ES-DE y juegos ocultos.
-- [x] **Acerca de:** versión y fecha de compilación, emulador de cada consola,
+- [x] **Acerca de:** versión y fecha de compilación, emuladores instalados,
       rutas en el USB, resumen de la biblioteca y créditos (Opciones › Acerca de).
 - [x] **Tus datos en el USB y tiempo de juego:** respaldo automático con copias
       diarias, tiempo y partidas por juego (detalle, Seguir jugando, Acerca de) y
       orden "Más jugados".
+- [x] **Más consolas y elegir emulador:** SNES, N64, GBA, 3DS, Mega Drive, Dreamcast
+      y Xbox 360; emulador por consola (Opciones › Consolas) o por juego (Y › Abrir
+      con…); Relix revisa cuáles están instalados; el inicio y las pestañas se
+      deslizan cuando no caben.
 
 ## Controles
 
@@ -181,7 +205,7 @@ roto el lanzamiento desde frontends en su última versión. Se cambia en
 | A | Abrir / jugar |
 | B | Volver |
 | X | Favorito (en la búsqueda: borrar letra) |
-| Y | Menú del juego: jugar, favorito, colecciones, cambiar portada, ocultar, ordenar |
+| Y | Menú del juego: jugar, abrir con…, favorito, colecciones, cambiar portada, ocultar, ordenar |
 | LB / RB | Consola anterior / siguiente (o colección, dentro de Colecciones) |
 | LT / RT | Letra anterior / siguiente (año, si ordenas por año) |
 | Vista ⧉ | Buscar en todas las consolas |
@@ -195,8 +219,7 @@ En el navegador: flechas, Enter, Esc, X, Y, Q/E, Z/C, V y M.
 2. ~~Portadas desde internet~~ (hecho)
 3. ~~Encontrar juegos~~ (hecho; filtros por género/jugadores quedan para el paso 7)
 4. ~~Respaldo en el USB y tiempo de juego~~ (hecho)
-5. **Más consolas** (SNES, GBA, N64, Mega Drive, Dreamcast, Xbox 360, 3DS) y
-   **elegir emulador** por consola o por juego.
+5. ~~Más consolas y elegir emulador~~ (hecho; Switch cuando NXbox sea jugable)
 6. **Revisión del sistema** (USB, carpetas, emuladores instalados) y **primer uso guiado**.
 7. **Ficha más viva:** fanart de fondo, video de vista previa, protector de pantalla.
    Con ScreenScraper, que además completa las portadas de PSP que libretro no tiene.

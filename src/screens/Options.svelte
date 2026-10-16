@@ -1,12 +1,14 @@
 <script>
+  import { untrack } from 'svelte'
   import { mode } from '../lib/core/bridge.js'
   import { REGION_NAMES } from '../lib/core/coverMatch.js'
   import { BUILD_DATE, VERSION } from '../lib/core/version.js'
   import About from './About.svelte'
-  import { getPlatform, PLATFORMS } from '../lib/core/platforms.js'
+  import { getPlatform, launcherDetail, PLATFORMS } from '../lib/core/platforms.js'
   import ChannelIcon from '../lib/ui/ChannelIcon.svelte'
   import Clock from '../lib/ui/Clock.svelte'
   import { covers } from '../lib/ui/covers.svelte.js'
+  import { emulators } from '../lib/ui/emulators.svelte.js'
   import { coverSummary, plural, scanSummary, timeAgo } from '../lib/ui/format.js'
   import HintBar from '../lib/ui/HintBar.svelte'
   import { dispatch, pushHandler } from '../lib/ui/input.js'
@@ -30,6 +32,7 @@
   // Secciones: se cambian con LB/RB, igual que las consolas en la biblioteca
   const SECTIONS = [
     { id: 'library', name: 'Biblioteca' },
+    { id: 'consoles', name: 'Consolas' },
     { id: 'covers', name: 'Portadas' },
     { id: 'preferences', name: 'Preferencias' },
     { id: 'about', name: 'Acerca de' },
@@ -37,6 +40,16 @@
   // Biblioteca: una fila por consola, "Escanear todo" y los juegos ocultos
   const LIBRARY_ROWS = [...PLATFORMS.map((p) => p.id), 'all', 'hidden']
   const PREFERENCE_ROWS = ['empty', 'sounds', 'region']
+  // Consolas: con qué emulador se abre cada una
+  const CONSOLE_ROWS = PLATFORMS.map((p) => p.id)
+  /** Cuántas apps de emulador distintas tiene la Xbox (RetroArch cuenta una vez) */
+  const installedApps = $derived(
+    new Set(
+      PLATFORMS.flatMap((p) => p.emulators)
+        .filter((e) => emulators.isInstalled(e) === true)
+        .map((e) => e.launcher.protocol),
+    ).size,
+  )
 
   // Portadas: las consolas con juegos, "Buscar en todas" y "Elegir a mano"
   const coverPlatforms = $derived.by(() => {
@@ -51,12 +64,40 @@
   const ROWS = $derived(
     section === 'library'
       ? LIBRARY_ROWS
-      : section === 'covers'
-        ? COVER_ROWS
-        : section === 'preferences'
-          ? PREFERENCE_ROWS
-          : [], // Acerca de: solo para leer
+      : section === 'consoles'
+        ? CONSOLE_ROWS
+        : section === 'covers'
+          ? COVER_ROWS
+          : section === 'preferences'
+            ? PREFERENCE_ROWS
+            : [], // Acerca de: solo para leer
   )
+
+  // Lista que se desliza: el desplazamiento justo para que la fila enfocada
+  // quede entera a la vista, con margen para su aro
+  let rowsScroll = $state(0)
+  /** @type {HTMLElement | undefined} */
+  let rowsEl = $state()
+  $effect(() => {
+    const el = /** @type {HTMLElement | undefined} */ (rowsEl?.children[index])
+    const view = rowsEl?.parentElement?.clientHeight ?? 0
+    if (!rowsEl || !el || !view) return
+    const MARGIN = 28
+    const top = el.offsetTop
+    const bottom = top + el.offsetHeight
+    const max = Math.max(0, rowsEl.scrollHeight - view)
+    untrack(() => {
+      let next = rowsScroll
+      if (top - next < MARGIN) next = top - MARGIN
+      else if (bottom - next > view - MARGIN) next = bottom - view + MARGIN
+      rowsScroll = Math.max(0, Math.min(next, max))
+    })
+  })
+
+  // Al entrar a Consolas se vuelve a preguntar qué hay instalado
+  $effect(() => {
+    if (section === 'consoles') untrack(() => emulators.check())
+  })
   /** "2026-10-16" -> "16 oct 2026" */
   const buildDate = BUILD_DATE
     ? new Date(`${BUILD_DATE}T12:00:00`).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -91,7 +132,7 @@
       ? ROWS[index] === 'hidden'
         ? 'Mostrar'
         : 'Escanear'
-      : section === 'preferences'
+      : section === 'preferences' || section === 'consoles'
         ? 'Cambiar'
         : ROWS[index] === 'choose'
           ? 'Elegir'
@@ -205,6 +246,25 @@
     }
   }
 
+  /** Consolas: A pasa al emulador siguiente */
+  function consoleRow() {
+    const platform = getPlatform(ROWS[index])
+    if (!platform) return
+    if (platform.emulators.length === 0) {
+      sound.error()
+      onToast(platform.noEmulatorNote ?? `${platform.name} todavía no tiene un emulador para abrir juegos.`)
+      return
+    }
+    if (platform.emulators.length === 1) {
+      sound.error()
+      onToast(`Por ahora ${platform.name} se abre solo con ${platform.emulators[0].name}.`)
+      return
+    }
+    const next = emulators.cyclePlatform(platform)
+    sound.select()
+    if (next?.note) onToast(`${next.name}: ${next.note}.`)
+  }
+
   function toggleRow() {
     const id = ROWS[index]
     if (id === 'empty') settings.toggleEmptyConsoles()
@@ -246,7 +306,13 @@
       else if (action === 'lb') switchSection(-1)
       else if (action === 'rb') switchSection(1)
       else if (action === 'a' && section !== 'about')
-        section === 'library' ? scanRow() : section === 'covers' ? coverRow() : toggleRow()
+        section === 'library'
+          ? scanRow()
+          : section === 'consoles'
+            ? consoleRow()
+            : section === 'covers'
+              ? coverRow()
+              : toggleRow()
       else if (action === 'b' || action === 'start') (sound.back(), onBack())
     }),
   )
@@ -292,6 +358,18 @@
       <li>{plural(totalGames, 'juego', 'juegos')}</li>
       <li>{library.romRoot}</li>
     </ul>
+  {:else if section === 'consoles'}
+    <h2>Consolas</h2>
+    <p>
+      Con qué emulador se abre cada consola. Para un juego puntual, en la biblioteca usa
+      <strong>Y › Abrir con…</strong>
+    </p>
+    <ul class="chips">
+      <li>{plural(PLATFORMS.length, 'consola', 'consolas')}</li>
+      {#if emulators.installed}
+        <li>{plural(installedApps, 'emulador instalado', 'emuladores instalados')}</li>
+      {/if}
+    </ul>
   {:else if section === 'covers'}
     <h2>Portadas</h2>
     <p>
@@ -326,8 +404,13 @@
   {/if}
 </section>
 
+{#if section === 'about'}
+<About />
+{:else}
+<!-- Con doce consolas las filas no caben: la lista se desliza para mostrar la enfocada -->
+<div class="rows-window">
 {#if section === 'library'}
-<section class="rows compact" aria-label="Escanear consolas">
+<section class="rows compact" aria-label="Escanear consolas" bind:this={rowsEl} style:transform="translateY({-rowsScroll}px)">
   {#each ROWS as id, i (id)}
     {@const platform = PLATFORMS.find((p) => p.id === id)}
     {@const focused = i === index}
@@ -397,8 +480,49 @@
     </button>
   {/each}
 </section>
+{:else if section === 'consoles'}
+<section class="rows compact" aria-label="Emulador de cada consola" bind:this={rowsEl} style:transform="translateY({-rowsScroll}px)">
+  {#each ROWS as id, i (id)}
+    {@const platform = /** @type {import('../lib/core/platforms.js').Platform} */ (getPlatform(id))}
+    {@const focused = i === index}
+    {@const emulator = emulators.forPlatform(platform)}
+    {@const installed = emulator ? emulators.isInstalled(emulator) : null}
+    {@const count = library.gamesFor(id).length}
+    <button
+      class="row focus-ring"
+      class:focused
+      style:--tint={platform.color}
+      onmouseenter={() => move(i)}
+      onclick={() => (i === index ? consoleRow() : move(i))}
+    >
+      <span class="badge" style:background={platform.color}>
+        <ChannelIcon {id} color={platform.ink} size={46} />
+      </span>
+      <span class="text">
+        <strong>{platform.name}<small>{plural(count, 'juego', 'juegos')}</small></strong>
+        {#if emulator}
+          <span>{emulator.name} · <code>{launcherDetail(emulator.launcher)}</code></span>
+        {:else}
+          <span>Sin emulador: Cemu aún no se abre desde otra app</span>
+        {/if}
+      </span>
+      <span class="state">
+        {#if focused && platform.emulators.length > 1}
+          <PadButton name="a" size={30} /> Cambiar
+          <span class="value">{platform.emulators.findIndex((e) => e.id === emulator?.id) + 1} de {platform.emulators.length}</span>
+        {:else if installed === true}
+          <span class="value ok">Instalado</span>
+        {:else if installed === false}
+          <span class="value missing">No instalado</span>
+        {:else if !emulator}
+          <span class="value">—</span>
+        {/if}
+      </span>
+    </button>
+  {/each}
+</section>
 {:else if section === 'covers'}
-<section class="rows compact" aria-label="Portadas">
+<section class="rows compact" aria-label="Portadas" bind:this={rowsEl} style:transform="translateY({-rowsScroll}px)">
   {#each ROWS as id, i (id)}
     {@const platform = PLATFORMS.find((p) => p.id === id)}
     {@const focused = i === index}
@@ -478,10 +602,8 @@
     </button>
   {/each}
 </section>
-{:else if section === 'about'}
-<About />
 {:else}
-<section class="rows" aria-label="Preferencias">
+<section class="rows" aria-label="Preferencias" bind:this={rowsEl} style:transform="translateY({-rowsScroll}px)">
   {#each ROWS as id, i (id)}
     {@const focused = i === index}
     {@const on = id === 'empty' ? settings.showEmptyConsoles : id === 'sounds' ? settings.sounds : true}
@@ -528,6 +650,8 @@
     </button>
   {/each}
 </section>
+{/if}
+</div>
 {/if}
 
 <HintBar
@@ -662,14 +786,26 @@
 
   /* ── Filas ───────────────────────────── */
   /* El aro del foco (11 px) deja al menos 16 px libres hasta la fila vecina */
-  .rows {
+  /* La ventana de las filas va de 142 a 970 px; la primera fila queda en 170
+     como el panel de la izquierda. Las filas tienen aire alrededor para el aro
+     del foco y se deslizan cuando no caben; arriba y abajo se desvanecen, así
+     una fila a medio salir no se ve como un borde cortado. */
+  .rows-window {
     position: absolute;
-    left: 776px;
-    right: 124px;
-    top: 170px;
+    left: 760px;
+    right: 108px;
+    top: 142px;
+    bottom: 110px;
+    overflow: hidden;
+    mask-image: linear-gradient(transparent, #000 12px, #000 calc(100% - 12px), transparent);
+  }
+  .rows {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 30px;
+    padding: 28px 16px;
+    transition: transform 260ms var(--spring);
   }
   .row {
     display: flex;
@@ -745,6 +881,22 @@
   .value.on {
     background: var(--pop);
     color: var(--cloud);
+  }
+  .value.missing {
+    background: var(--pop-soft);
+    color: var(--ink);
+  }
+  .value.ok {
+    background: #d9f2dc;
+    color: #1d5a27;
+  }
+  /* "PlayStation  12 juegos" en la fila de Consolas */
+  .text strong small {
+    margin-left: 12px;
+    font-family: var(--font-body);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ink-soft);
   }
   .badge.refresh {
     background: var(--pop);

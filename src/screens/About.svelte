@@ -1,13 +1,13 @@
 <script>
   /**
-   * Opciones › Acerca de: qué emulador abre cada consola, cuánto has jugado,
+   * Opciones › Acerca de: qué emuladores tiene la consola, cuánto has jugado,
    * un resumen de la biblioteca y dónde guarda Relix las cosas en el USB.
    * Es solo para leer: no hay nada que enfocar.
    */
   import { getPlatform, PLATFORMS } from '../lib/core/platforms.js'
   import { mostPlayed, totalSeconds } from '../lib/core/userData.js'
-  import ChannelIcon from '../lib/ui/ChannelIcon.svelte'
   import { collections } from '../lib/ui/collections.svelte.js'
+  import { emulators } from '../lib/ui/emulators.svelte.js'
   import { formatPlaytime, plural, timeAgo } from '../lib/ui/format.js'
   import { library } from '../lib/ui/library.svelte.js'
   import { userData } from '../lib/ui/userData.svelte.js'
@@ -58,32 +58,43 @@
     return { tone: 'ok', text: userData.savedAt ? `Guardado ${timeAgo(userData.savedAt)}` : 'Al día' }
   })
 
-  /** @param {import('../lib/core/platforms.js').Platform} p */
-  function launchDetail(p) {
-    if (!p.launcher) return 'Sin lanzador todavía'
-    if (p.launcher.kind === 'retroarch') return `${p.launcher.protocol}: · ${p.launcher.core}`
-    return `${p.launcher.protocol}: · ${p.launcher.exe}`
-  }
+  /**
+   * Cada app de emulador una vez (RetroArch cubre muchas consolas), con lo
+   * que la Xbox dice que tiene instalado.
+   */
+  const apps = $derived.by(() => {
+    /** @type {Map<string, { protocol: string, name: string, installed: boolean | null }>} */
+    const byProtocol = new Map()
+    for (const p of PLATFORMS) {
+      for (const e of p.emulators) {
+        const { protocol } = e.launcher
+        if (byProtocol.has(protocol)) continue
+        const name = protocol === 'retroarch' ? 'RetroArch' : e.name
+        byProtocol.set(protocol, { protocol, name, installed: emulators.isInstalled(e) })
+      }
+    }
+    return [...byProtocol.values()]
+  })
 </script>
 
 <section class="about" aria-label="Acerca de Relix">
   <div class="column">
     <article class="card">
-      <h3>Emuladores</h3>
-      <ul class="list">
-        {#each PLATFORMS as p (p.id)}
-          <li class="emu">
-            <span class="badge" style:background={p.color}>
-              <ChannelIcon id={p.id} color={p.ink} size={32} />
-            </span>
-            <span class="text">
-              <strong>{p.name}</strong>
-              <span>{p.emulatorName}</span>
-            </span>
-            <code class:muted={!p.launcher}>{launchDetail(p)}</code>
+      <h3>Emuladores en la consola</h3>
+      <ul class="apps">
+        {#each apps as app (app.protocol)}
+          <li class:on={app.installed === true} class:off={app.installed === false}>
+            <span class="mark" aria-hidden="true">{app.installed === true ? '✓' : app.installed === false ? '–' : '?'}</span>
+            {app.name}
           </li>
         {/each}
       </ul>
+      <p class="hint">
+        {emulators.installed
+          ? `${plural(apps.filter((a) => a.installed).length, 'instalado', 'instalados')} de ${apps.length}.`
+          : 'Relix lo revisa al abrir en la Xbox.'}
+        Cuál usa cada consola se elige en <strong>Opciones › Consolas</strong>.
+      </p>
     </article>
 
     <article class="card">
@@ -181,48 +192,48 @@
     text-overflow: ellipsis;
   }
 
-  /* ── Emuladores ───────────────── */
-  .list {
+  /* ── Emuladores en la consola ─── */
+  .apps {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     gap: 10px;
   }
-  .emu {
-    display: grid;
-    grid-template-columns: 52px 1fr;
-    grid-template-rows: auto auto;
-    column-gap: 16px;
+  .apps li {
+    display: flex;
     align-items: center;
-  }
-  .badge {
-    grid-row: span 2;
-    display: grid;
-    place-items: center;
-    width: 52px;
-    height: 52px;
-    border-radius: 16px;
-  }
-  .text {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    min-width: 0;
-  }
-  .text strong {
-    font-family: var(--font-display);
+    gap: 8px;
+    padding: 5px 16px 7px 8px;
+    border-radius: 999px;
+    background: var(--sky);
     font-weight: 700;
-    font-size: 23px;
-    white-space: nowrap;
-  }
-  .text span {
     font-size: 19px;
     color: var(--ink-soft);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
-  code.muted {
-    font-style: italic;
+  .apps li.on {
+    background: #d9f2dc;
+    color: #1d5a27;
+  }
+  .apps li.off {
+    opacity: 0.6;
+  }
+  .mark {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--cloud);
+    font-size: 16px;
+    font-weight: 800;
+  }
+  .hint {
+    margin: 14px 0 0;
+    font-size: 19px;
+    line-height: 1.4;
+    color: var(--ink-soft);
+  }
+  .hint strong {
+    color: var(--ink);
   }
 
   /* ── Tiempo de juego ──────────── */

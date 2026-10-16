@@ -9,11 +9,12 @@
  *   - Solo los formatos de la consola (platforms.js). Un .bin junto a su .cue no aparece.
  *   - Juegos de varios discos: si hay un .m3u, se lista solo el .m3u; si no, solo el disco 1.
  *   - Wii U en carpetas (Juego/code/juego.rpx): el nombre es el de la carpeta.
+ *   - Archivos de nombre genérico (Juego/default.xex, Juego/disc.gdi): también.
  *   - Nombres limpios: "Legend of Zelda, The - Wind Waker (USA) [!]" -> "The Legend of Zelda: Wind Waker".
  *     Si dos juegos quedan con el mismo nombre, se agrega la región: "Okami (Europe)".
  */
 
-import { bySortName, fileStem, normalizeRelativePath } from './esde.js'
+import { bySortName, fileStem, normalizeRelativePath, titleStem } from './esde.js'
 
 /** @typedef {import('./esde.js').Game} Game */
 /** @typedef {import('./platforms.js').Platform} Platform */
@@ -112,7 +113,7 @@ export function gamesFromFiles(files, platform) {
       // Wii U en carpetas: .../Juego [ID]/code/archivo.rpx
       const parts = path.split('/')
       if (parts.length < 3 || parts.at(-2)?.toLowerCase() !== 'code') continue
-      games.push(makeGame(platform.id, path, parts.at(-3) ?? path))
+      games.push(makeGame(platform.id, path, titleStem(path)))
       continue
     }
 
@@ -123,7 +124,7 @@ export function gamesFromFiles(files, platform) {
       if (playlists.has(`${folderOf(path)}/${withoutDisc}`)) continue // lo abre el .m3u
       if (Number(disc[1]) !== 1) continue // sin .m3u: solo el disco 1
     }
-    games.push(makeGame(platform.id, path, stem))
+    games.push(makeGame(platform.id, path, titleStem(path)))
   }
 
   // Mismo nombre dos veces (p. ej. versión USA y Europe): se agrega la región

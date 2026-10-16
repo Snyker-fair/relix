@@ -4,6 +4,7 @@
   import { jumpIndex, sectionOf, SORT_NAMES, sortGames } from '../lib/core/sorting.js'
   import { isCollectionId } from '../lib/ui/channels.js'
   import ChannelIcon from '../lib/ui/ChannelIcon.svelte'
+  import { emulators } from '../lib/ui/emulators.svelte.js'
   import { formatPlaytime, plural, timeAgo } from '../lib/ui/format.js'
   import { shelf } from '../lib/ui/shelf.svelte.js'
   import Clock from '../lib/ui/Clock.svelte'
@@ -38,6 +39,25 @@
 
   // Pestañas: los canales visibles o, dentro de una colección, las colecciones
   const tabs = $derived(shelf.tabsFor(systemId))
+
+  // Pestañas que se deslizan: la activa queda al centro, sin pasarse de los extremos
+  /** @type {HTMLElement | undefined} */
+  let tabWindow = $state()
+  /** @type {HTMLElement | undefined} */
+  let tabStrip = $state()
+  let tabOffset = $state(0)
+  let tabsOverflow = $state(false)
+  $effect(() => {
+    systemId
+    tabs
+    const active = /** @type {HTMLElement | null | undefined} */ (tabStrip?.querySelector('.tab.active'))
+    if (!tabWindow || !tabStrip || !active) return
+    const view = tabWindow.clientWidth
+    const full = tabStrip.scrollWidth
+    tabsOverflow = full > view + 1
+    const center = active.offsetLeft + active.offsetWidth / 2
+    tabOffset = tabsOverflow ? Math.round(Math.max(0, Math.min(center - view / 2, full - view))) : 0
+  })
   const channelIndex = $derived(tabs.findIndex((c) => c.id === systemId))
   const channel = $derived(shelf.channelFor(systemId))
   const inCollection = $derived(isCollectionId(systemId))
@@ -58,6 +78,8 @@
   const game = $derived(games[Math.min(index, games.length - 1)])
   const platform = $derived(game ? getPlatform(game.system) : null)
   const favorite = $derived(game ? library.isFavorite(game) : false)
+  /** Con qué se abre el juego enfocado (null: la consola aún no tiene emulador) */
+  const emulator = $derived(game ? emulators.forGame(game) : null)
   /** Tiempo jugado del juego enfocado (si ya lo jugaste) */
   const played = $derived(game ? library.playtime[game.id] : undefined)
   // Sección del juego enfocado: la letra en A–Z, el año en "Año"
@@ -176,17 +198,22 @@
     <button class="bumper" onclick={() => dispatch('lb')} aria-label="Anterior">
       <PadButton name="lb" size={30} />
     </button>
-    {#each tabs as ch (ch.id)}
-      <button
-        class="tab"
-        class:active={ch.id === systemId}
-        style:--c={ch.color}
-        style:--ink-c={ch.ink}
-        onclick={() => ch.id !== systemId && (sound.move(), onSwitch(ch.id))}
-      >
-        {ch.shortName}
-      </button>
-    {/each}
+    <!-- Con muchas consolas, las pestañas se deslizan para mostrar la activa -->
+    <div class="tab-window" class:sliding={tabsOverflow} bind:this={tabWindow}>
+      <div class="tab-strip" bind:this={tabStrip} style:transform="translateX({-tabOffset}px)">
+        {#each tabs as ch (ch.id)}
+          <button
+            class="tab"
+            class:active={ch.id === systemId}
+            style:--c={ch.color}
+            style:--ink-c={ch.ink}
+            onclick={() => ch.id !== systemId && (sound.move(), onSwitch(ch.id))}
+          >
+            {ch.shortName}
+          </button>
+        {/each}
+      </div>
+    </div>
     <button class="bumper" onclick={() => dispatch('rb')} aria-label="Siguiente">
       <PadButton name="rb" size={30} />
     </button>
@@ -239,16 +266,19 @@
           {#if library.lastPlayed[game.id]}<span>· {timeAgo(library.lastPlayed[game.id])}</span>{/if}
         </p>
       {/if}
-      {#if platform.launcher}
+      {#if emulator}
         {#if game.description}
           <p class="desc">{game.description}</p>
         {:else}
           <!-- Sin datos de ES-DE: el nombre del archivo dice qué versión es -->
           <p class="file">{game.path.split('/').pop()}</p>
         {/if}
-        <p class="via">Se abre con {platform.emulatorName}</p>
+        <p class="via">
+          Se abre con {emulator.name}{#if emulators.hasOwn(game)}<span class="own">solo este juego</span>{/if}
+          {#if emulators.isInstalled(emulator) === false}<span class="missing">no instalado</span>{/if}
+        </p>
       {:else}
-        <p class="note">{platform.launcherNote}</p>
+        <p class="note">{platform.noEmulatorNote}</p>
       {/if}
     {/key}
   </section>
@@ -289,7 +319,7 @@
 <HintBar
   hints={games.length > 0
     ? [
-        { button: 'a', label: platform?.launcher ? 'Jugar' : 'No disponible' },
+        { button: 'a', label: emulator ? 'Jugar' : 'No disponible' },
         { button: 'y', label: 'Menú' },
         { button: 'x', label: 'Favorito' },
         { button: 'lt', also: 'rt', label: order === 'az' ? 'Letra' : order === 'year' ? 'Año' : 'Página' },
@@ -335,7 +365,24 @@
   .bumper {
     padding: 0 8px;
   }
+  /* la ventana cabe entre el logo y el reloj; si las pestañas no caben, se
+     deslizan y se desvanecen en los bordes (así se nota que hay más) */
+  .tab-window {
+    max-width: 1040px;
+    overflow: hidden;
+    border-radius: 999px;
+  }
+  .tab-window.sliding {
+    mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
+  }
+  .tab-strip {
+    display: flex;
+    gap: 10px;
+    transition: transform 260ms var(--spring);
+  }
   .tab {
+    flex: none;
+    white-space: nowrap;
     font-family: var(--font-display);
     font-weight: 700;
     font-size: 26px;
@@ -535,6 +582,22 @@
     font-weight: 700;
     font-size: 21px;
     color: var(--ink-soft);
+  }
+  .via .own,
+  .via .missing {
+    margin-left: 10px;
+    padding: 2px 12px 4px;
+    border-radius: 999px;
+    font-size: 18px;
+    white-space: nowrap;
+  }
+  .via .own {
+    background: var(--sky);
+    color: var(--ink);
+  }
+  .via .missing {
+    background: var(--pop);
+    color: var(--cloud);
   }
   .note {
     margin: 20px 0 0;

@@ -41,19 +41,27 @@ export function ps1BiosRegion(fileName) {
 /**
  * El aviso cuando un juego se cerró al abrir.
  * @param {{ name: string, path: string }} game
- * @param {{ id: string, emulatorName: string }} platform
+ * @param {{ id: string, emulators: unknown[] }} platform
+ * @param {import('./platforms.js').Emulator} emulator  con el que se intentó abrir
  */
-export function quickExitMessage(game, platform) {
+export function quickExitMessage(game, platform, emulator) {
   const intro = `${game.name} se cerró enseguida.`
+  const { launcher } = emulator
   if (platform.id === 'psx') {
     const region = ps1BiosRegion(game.path.split('/').pop() ?? '')
     const bios = region
       ? `${PS1_BIOS[region].file} (BIOS de PS1 ${PS1_BIOS[region].label})`
       : 'la BIOS de PS1 (scph5500, scph5501 o scph5502.bin)'
-    return `${intro} Revisa que ${bios} esté en la carpeta system de RetroArch, o que el archivo no esté dañado.`
+    const where = launcher.kind === 'retroarch' ? 'la carpeta system de RetroArch' : `la carpeta bios de ${emulator.name}`
+    return `${intro} Revisa que ${bios} esté en ${where}, o que el archivo no esté dañado.`
   }
   if (platform.id === 'ps2') {
-    return `${intro} Revisa que XBSX2 tenga una BIOS de PS2 configurada, o que el archivo no esté dañado.`
+    return `${intro} Revisa que ${emulator.name} tenga una BIOS de PS2 configurada, o que el archivo no esté dañado.`
   }
-  return `${intro} Revisa que ${platform.emulatorName} esté instalado y al día, o que el archivo no esté dañado.`
+  // Con otra opción a mano, cambiar de emulador suele ser la solución más rápida
+  const tryOther = platform.emulators.length > 1 ? ' También puedes probar otro con Y › Abrir con…' : ''
+  if (launcher.kind === 'retroarch') {
+    return `${intro} Revisa que tu RetroArch traiga el núcleo ${launcher.core}, o que el archivo no esté dañado.${tryOther}`
+  }
+  return `${intro} Revisa que ${emulator.name} esté instalado y al día, o que el archivo no esté dañado.${tryOther}`
 }

@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<gameList>
+	<game>
+		<path>./Halo 3 (USA)/default.xex</path>
+		<name>Halo 3</name>
+		<desc>El Jefe Maestro termina la guerra contra el Covenant.</desc>
+		<releasedate>20070925T000000</releasedate>
+		<developer>Bungie</developer>
+		<publisher>Microsoft</publisher>
+		<genre>Disparos</genre>
+		<players>1-4</players>
+	</game>
+	<game>
+		<path>./Forza Motorsport 4 (USA).iso</path>
+		<name>Forza Motorsport 4</name>
+		<desc>Simulación de carreras con cientos de autos.</desc>
+		<releasedate>20111011T000000</releasedate>
+		<developer>Turn 10</developer>
+		<publisher>Microsoft</publisher>
+		<genre>Carreras</genre>
+		<players>1-2</players>
+	</game>
+	<game>
+		<path>./Red Dead Redemption (USA).iso</path>
+		<name>Red Dead Redemption</name>
+		<desc>John Marston recorre el oeste en 1911.</desc>
+		<releasedate>20100518T000000</releasedate>
+		<developer>Rockstar San Diego</developer>
+		<publisher>Rockstar Games</publisher>
+		<genre>Acción</genre>
+		<players>1</players>
+	</game>
+</gameList>

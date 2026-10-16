@@ -6,6 +6,7 @@
   import { QUICK_EXIT_SECONDS, quickExitMessage } from './lib/core/quickExit.js'
   import { COLLECTIONS, COLLECTION_PREFIX, isCollectionId } from './lib/ui/channels.js'
   import { collections } from './lib/ui/collections.svelte.js'
+  import { emulators } from './lib/ui/emulators.svelte.js'
   import { dispatch, startInput } from './lib/ui/input.js'
   import { library } from './lib/ui/library.svelte.js'
   import { sound } from './lib/ui/sound.js'
@@ -39,7 +40,7 @@
   let focusedId = $state(null)
   let boot = $state(true)
 
-  /** @type {{ game: any, uri: string } | null} */
+  /** @type {{ game: any, uri: string, emulatorName: string } | null} */
   let launching = $state(null)
   let toast = $state('')
   /** @type {ReturnType<typeof setTimeout>} */
@@ -70,6 +71,7 @@
     untrack(() => {
       collections.load()
       userData.resync()
+      emulators.check()
       if (finishedWhileClosed) {
         announcePlaytime(finishedWhileClosed)
         finishedWhileClosed = null
@@ -105,9 +107,10 @@
   function warnQuickExit(id) {
     const game = library.byId.get(id)
     const platform = game && getPlatform(game.system)
-    if (!game || !platform) return
+    const emulator = game && emulators.forGame(game)
+    if (!game || !platform || !emulator) return
     sound.error()
-    showToast(quickExitMessage(game, platform), 9000)
+    showToast(quickExitMessage(game, platform, emulator), 9000)
   }
 
   /** "Okami: 45 min jugados · 12 h en total" @param {{ id: string, seconds: number }} finished */
@@ -174,16 +177,23 @@
   /** @param {any} game */
   async function startGame(game) {
     const platform = getPlatform(game.system)
+    // El de ese juego, el de su consola o el recomendado (ver emulators.svelte.js)
+    const emulator = emulators.forGame(game)
+    if (!platform || !emulator) {
+      sound.error()
+      showToast(platform?.noEmulatorNote ?? 'Esta consola todavía no tiene un emulador para abrir juegos.')
+      return
+    }
     let uri
     try {
-      uri = buildLaunchUri(platform.launcher, library.romPath(game))
+      uri = buildLaunchUri(emulator.launcher, library.romPath(game))
     } catch (e) {
       sound.error()
-      showToast(platform.launcherNote ?? (e instanceof Error ? e.message : String(e)))
+      showToast(e instanceof Error ? e.message : String(e))
       return
     }
     sound.select()
-    launching = { game, uri }
+    launching = { game, uri, emulatorName: emulator.name }
     // La partida empieza a contar y queda en el USB antes de que la Xbox pase al emulador
     library.startSession(game)
     await userData.flush()
@@ -194,15 +204,17 @@
       launching = null
       library.endSession(false)
       sound.error()
-      showToast(launchErrorMessage(e, platform.emulatorName))
+      showToast(launchErrorMessage(e, emulator.name, platform.emulators.length > 1))
     }
   }
 
-  /** @param {unknown} e @param {string} emulatorName */
-  function launchErrorMessage(e, emulatorName) {
+  /** @param {unknown} e @param {string} emulatorName @param {boolean} hasOthers */
+  function launchErrorMessage(e, emulatorName, hasOthers) {
     if (e instanceof ShellError) {
       if (e.code === 'emulator-missing') {
-        return `${emulatorName} no está instalado en la consola. Instálalo desde el Device Portal.`
+        return hasOthers
+          ? `${emulatorName} no está instalado en la consola. Instálalo, o elige otro en Opciones › Consolas.`
+          : `${emulatorName} no está instalado en la consola. Instálalo desde el Device Portal.`
       }
       return e.message
     }
@@ -263,7 +275,12 @@
   {/if}
 
   {#if launching}
-    <LaunchOverlay game={launching.game} uri={launching.uri} onClose={() => backInRelix()} />
+    <LaunchOverlay
+      game={launching.game}
+      uri={launching.uri}
+      emulatorName={launching.emulatorName}
+      onClose={() => backInRelix()}
+    />
   {/if}
 
   {#if toast}

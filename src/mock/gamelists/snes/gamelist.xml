@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<gameList>
+	<game>
+		<path>./Super Metroid (Japan, USA) (En,Ja).sfc</path>
+		<name>Super Metroid</name>
+		<desc>Samus explora el planeta Zebes en busca de la última larva metroide.</desc>
+		<releasedate>19940319T000000</releasedate>
+		<developer>Nintendo</developer>
+		<publisher>Nintendo</publisher>
+		<genre>Acción</genre>
+		<players>1</players>
+		<favorite>true</favorite>
+	</game>
+	<game>
+		<path>./Chrono Trigger (USA).sfc</path>
+		<name>Chrono Trigger</name>
+		<desc>Un grupo viaja por el tiempo para evitar el fin del mundo.</desc>
+		<releasedate>19950311T000000</releasedate>
+		<developer>Square</developer>
+		<publisher>Square</publisher>
+		<genre>RPG</genre>
+		<players>1</players>
+	</game>
+	<game>
+		<path>./Legend of Zelda, The - A Link to the Past (USA).sfc</path>
+		<name>The Legend of Zelda: A Link to the Past</name>
+		<desc>Link cruza entre el Mundo de la Luz y el de la Oscuridad.</desc>
+		<releasedate>19911121T000000</releasedate>
+		<developer>Nintendo</developer>
+		<publisher>Nintendo</publisher>
+		<genre>Aventura</genre>
+		<players>1</players>
+	</game>
+	<game>
+		<path>./Super Mario Kart (USA).sfc</path>
+		<name>Super Mario Kart</name>
+		<desc>Carreras con caparazones y bananas, de a dos en pantalla dividida.</desc>
+		<releasedate>19920827T000000</releasedate>
+		<developer>Nintendo</developer>
+		<publisher>Nintendo</publisher>
+		<genre>Carreras</genre>
+		<players>1-2</players>
+	</game>
+</gameList>

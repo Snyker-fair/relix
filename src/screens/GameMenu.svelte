@@ -8,6 +8,7 @@
   import ChannelIcon from '../lib/ui/ChannelIcon.svelte'
   import { collections } from '../lib/ui/collections.svelte.js'
   import CoverArt from '../lib/ui/CoverArt.svelte'
+  import { emulators } from '../lib/ui/emulators.svelte.js'
   import HintBar from '../lib/ui/HintBar.svelte'
   import { pushHandler } from '../lib/ui/input.js'
   import { library } from '../lib/ui/library.svelte.js'
@@ -28,9 +29,9 @@
    */
   let { game, sortOptions, onClose, onLaunch, onChangeCover, onToast } = $props()
 
-  /** @typedef {{ id: string, icon: string, label: string, value?: string, checked?: boolean, disabled?: boolean }} Item */
+  /** @typedef {{ id: string, icon: string, label: string, value?: string, checked?: boolean, disabled?: boolean, tag?: string }} Item */
 
-  /** 'main' o la lista de colecciones */
+  /** 'main', la lista de colecciones o la de emuladores */
   let view = $state('main')
   let index = $state(0)
   let naming = $state(false)
@@ -40,9 +41,19 @@
   const favorite = $derived(library.isFavorite(game))
   const inCollections = $derived(collections.namesFor(game))
 
+  const emulator = $derived(emulators.forGame(game))
+  const consoleEmulator = $derived(emulators.forPlatform(platform))
+
+  /** "No instalado" si la Xbox dice que no lo tiene @param {import('../lib/core/platforms.js').Emulator} e */
+  const installTag = (e) => (emulators.isInstalled(e) === false ? 'No instalado' : undefined)
+
   /** @type {Item[]} */
   const mainItems = $derived([
-    { id: 'play', icon: 'play', label: 'Jugar', disabled: !platform?.launcher },
+    { id: 'play', icon: 'play', label: 'Jugar', disabled: !emulator },
+    // Solo si la consola tiene más de un emulador para elegir
+    ...(platform && platform.emulators.length > 1
+      ? [{ id: 'emulator', icon: 'swap', label: 'Abrir con…', value: shortName(emulator?.name ?? '') }]
+      : []),
     { id: 'favorite', icon: 'favorites', label: favorite ? 'Quitar de favoritos' : 'Agregar a favoritos' },
     {
       id: 'collections',
@@ -68,7 +79,39 @@
     })),
   ])
 
-  const items = $derived(view === 'main' ? mainItems : collectionItems)
+  /** Emuladores para este juego: "Como la consola" y cada uno de la lista */
+  /** @type {Item[]} */
+  const emulatorItems = $derived([
+    {
+      id: 'e:',
+      icon: platform?.id ?? 'play',
+      label: 'Como la consola',
+      tag: consoleEmulator ? `Ahora: ${consoleEmulator.name}` : undefined,
+      checked: !emulators.hasOwn(game),
+    },
+    ...(platform?.emulators ?? []).map((e) => ({
+      id: `e:${e.id}`,
+      icon: 'play',
+      label: e.name,
+      tag: installTag(e) ?? e.note,
+      checked: emulators.hasOwn(game) && emulator?.id === e.id,
+    })),
+  ])
+
+  const items = $derived(view === 'main' ? mainItems : view === 'collections' ? collectionItems : emulatorItems)
+
+  /**
+   * Nombre corto para la fila, que es angosta: "RetroArch · SwanStation" -> "SwanStation".
+   * Si la consola tiene el mismo emulador suelto y como núcleo (PPSSPP, Dolphin,
+   * Flycast), el núcleo queda como "PPSSPP (RetroArch)".
+   * @param {string} name
+   */
+  function shortName(name) {
+    const short = name.replace(/^RetroArch · /, '')
+    if (short === name) return name
+    const twin = platform?.emulators.some((e) => e.name === short)
+    return twin ? `${short} (RetroArch)` : short
+  }
 
   /** @type {HTMLElement | undefined} */
   let list = $state()
@@ -98,7 +141,7 @@
     if (!item || busy) return
     if (item.disabled) {
       sound.error()
-      onToast(platform?.launcherNote ?? 'Este juego todavía no se puede abrir.')
+      onToast(platform?.noEmulatorNote ?? 'Este juego todavía no se puede abrir.')
       return
     }
 
@@ -111,6 +154,19 @@
     } else if (item.id === 'collections') {
       sound.select()
       show('collections')
+    } else if (item.id === 'emulator') {
+      sound.select()
+      show('emulators')
+    } else if (item.id.startsWith('e:')) {
+      const chosen = item.id.slice(2) || null
+      emulators.setGame(current, chosen)
+      sound.favorite()
+      onToast(
+        chosen
+          ? `${current.name} se abrirá con ${item.label}`
+          : `${current.name} vuelve a abrirse como su consola (${shortName(consoleEmulator?.name ?? '')})`,
+      )
+      show('main')
     } else if (item.id === 'cover') {
       sound.select()
       onClose()
@@ -188,6 +244,8 @@
 
   {#if view === 'collections'}
     <h3>Colecciones</h3>
+  {:else if view === 'emulators'}
+    <h3>Abrir con</h3>
   {/if}
 
   <ul class="items" bind:this={list}>
@@ -201,7 +259,10 @@
           onclick={() => (i === index ? activate() : move(i))}
         >
           <span class="icon"><ChannelIcon id={item.icon} color="currentColor" size={40} /></span>
-          <span class="label">{item.label}</span>
+          <span class="label" class:small={view === 'emulators'}>
+            {item.label}
+            {#if item.tag}<small>{item.tag}</small>{/if}
+          </span>
           {#if item.checked !== undefined}
             <span class="check" class:on={item.checked} aria-label={item.checked ? 'En la colección' : 'Fuera'}>
               {item.checked ? '✓' : ''}
@@ -352,12 +413,24 @@
   }
   .label {
     flex: 1;
+    min-width: 0;
     font-family: var(--font-display);
     font-weight: 700;
     font-size: 28px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  /* emuladores: nombres largos ("RetroArch · Mupen64Plus-Next") y su estado debajo */
+  .label.small {
+    font-size: 24px;
+    line-height: 1.15;
+  }
+  .label small {
+    display: block;
+    font-family: var(--font-body);
+    font-size: 18px;
+    opacity: 0.7;
   }
   .value {
     max-width: 210px;

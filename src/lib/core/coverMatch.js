@@ -13,7 +13,7 @@
  *      ofrecen las más parecidas para que el jugador elija.
  */
 
-import { fileStem } from './esde.js'
+import { fileStem, titleStem } from './esde.js'
 
 export const THUMBNAILS_SERVER = 'https://thumbnails.libretro.com'
 
@@ -239,9 +239,7 @@ export function regionLabel(/** @type {string} */ name) {
  * @param {{ path: string }} game
  */
 export function coverQuery(game) {
-  const parts = game.path.split('/')
-  if (/\.rpx$/i.test(game.path) && parts.length >= 3) return parts.at(-3) ?? fileStem(game.path)
-  return fileStem(game.path)
+  return titleStem(game.path)
 }
 
 /**

@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<gameList>
+	<game>
+		<path>./Super Mario 64 (USA).z64</path>
+		<name>Super Mario 64</name>
+		<desc>Mario salta a los cuadros del castillo de Peach en busca de estrellas.</desc>
+		<releasedate>19960623T000000</releasedate>
+		<developer>Nintendo</developer>
+		<publisher>Nintendo</publisher>
+		<genre>Plataformas</genre>
+		<players>1</players>
+		<favorite>true</favorite>
+	</game>
+	<game>
+		<path>./Mario Kart 64 (USA).z64</path>
+		<name>Mario Kart 64</name>
+		<desc>Carreras para cuatro jugadores en pantalla dividida.</desc>
+		<releasedate>19961214T000000</releasedate>
+		<developer>Nintendo</developer>
+		<publisher>Nintendo</publisher>
+		<genre>Carreras</genre>
+		<players>1-4</players>
+	</game>
+	<game>
+		<path>./GoldenEye 007 (USA).z64</path>
+		<name>GoldenEye 007</name>
+		<desc>James Bond en misiones de infiltración y un multijugador legendario.</desc>
+		<releasedate>19970825T000000</releasedate>
+		<developer>Rare</developer>
+		<publisher>Nintendo</publisher>
+		<genre>Disparos</genre>
+		<players>1-4</players>
+	</game>
+</gameList>

@@ -8,6 +8,7 @@
   import HintBar from '../lib/ui/HintBar.svelte'
   import { pushHandler } from '../lib/ui/input.js'
   import { collections } from '../lib/ui/collections.svelte.js'
+  import { emulators } from '../lib/ui/emulators.svelte.js'
   import { library } from '../lib/ui/library.svelte.js'
   import Logo from '../lib/ui/Logo.svelte'
   import { shelf } from '../lib/ui/shelf.svelte.js'
@@ -50,15 +51,28 @@
   // Tres juegos: así "Seguir jugando" nunca llega hasta la barra de pistas
   const recent = $derived(library.recent.slice(0, 3))
 
-  // Fila de canales: con muchos canales (Favoritos, Colecciones y cinco
-  // consolas) se achican los íconos, nunca el espacio entre ellos. El canal
-  // enfocado crece 10 % y suma un aro de 15 px: con 48 px de separación quedan
-  // al menos 20 px libres hasta el vecino. 1600 px útiles; Opciones mide 0,85.
-  const SHELF_WIDTH = 1600
+  // Fila de canales. Si caben todos (hasta unos siete), los íconos se achican
+  // un poco para repartirse en el ancho. Con más, quedan de 168 px y la fila se
+  // desliza para mostrar el enfocado, como el menú de Wii U o Switch.
+  // El canal enfocado crece 10 % y suma un aro de 15 px: con 48 px de
+  // separación quedan al menos 20 px libres hasta el vecino. Opciones mide 0,85.
+  const SHELF_WIDTH = 1600 // ancho útil dentro de la bandeja
   const SHELF_GAP = 48
-  const tileSize = $derived(
-    Math.min(184, Math.floor((SHELF_WIDTH - shelf.channels.length * SHELF_GAP) / (shelf.channels.length + 0.85))),
+  const SHELF_PAD = 48 // margen de la bandeja a cada lado
+  const VIEW_WIDTH = 1696 // la bandeja: de 112 a 1808 px
+  const fitTile = $derived(
+    Math.floor((SHELF_WIDTH - shelf.channels.length * SHELF_GAP) / (shelf.channels.length + 0.85)),
   )
+  const sliding = $derived(fitTile < 150)
+  const tileSize = $derived(sliding ? 168 : Math.min(184, fitTile))
+  const trackWidth = $derived(SHELF_PAD * 2 + shelf.channels.length * (tileSize + SHELF_GAP) + tileSize * 0.85)
+  // La fila se corre para dejar el canal enfocado al centro (sin pasarse de los extremos)
+  const shelfOffset = $derived.by(() => {
+    if (!sliding) return 0
+    const width = index < shelf.channels.length ? tileSize : tileSize * 0.85
+    const center = SHELF_PAD + index * (tileSize + SHELF_GAP) + width / 2
+    return Math.round(Math.max(0, Math.min(center - VIEW_WIDTH / 2, trackWidth - VIEW_WIDTH)))
+  })
 
   // Tres portadas en abanico para el canal enfocado: favoritos primero
   const fan = $derived(
@@ -82,7 +96,12 @@
         ...collections.visible.slice(0, 2).map((c) => c.name),
       ]
     }
-    return [channel.maker, String(channel.year), plural(games.length, 'juego', 'juegos'), channel.emulatorName]
+    return [
+      channel.maker,
+      String(channel.year),
+      plural(games.length, 'juego', 'juegos'),
+      emulators.forPlatform(channel)?.name ?? 'Sin emulador todavía',
+    ]
   })
 
   /** @param {number} i */
@@ -140,13 +159,13 @@
   {#key channel.id}
     <div class="hero-text">
       {#if emptyLibrary && onOptionsTile}
-        <h1>Aún no hay juegos</h1>
+        <h1 class="long">Aún no hay juegos</h1>
         <p class="first-steps">
           Copia tus juegos a <code>{library.romRoot}\&lt;consola&gt;</code> en el USB, por ejemplo
           <code>{library.romFolderPath('ps2')}</code>, y escanéalos desde Opciones.
         </p>
       {:else}
-        <h1>{channel.name}</h1>
+        <h1 class:long={channel.name.length > 14}>{channel.name}</h1>
         <ul class="chips">
           {#each meta as item (item)}
             <li>{item}</li>
@@ -166,13 +185,9 @@
   {/key}
 </section>
 
-<section
-  class="shelf"
-  class:dimmed={zone !== 'channels'}
-  style:gap="{SHELF_GAP}px"
-  style:--tile="{tileSize}px"
->
+<section class="shelf" class:dimmed={zone !== 'channels'} class:sliding style:--tile="{tileSize}px">
   <div class="tray"></div>
+  <div class="track" style:gap="{SHELF_GAP}px" style:transform="translateX({-shelfOffset}px)">
   {#each shelf.channels as ch, i (ch.id)}
     {@const focused = zone === 'channels' && i === index}
     <button
@@ -204,6 +219,7 @@
     </span>
     <span class="label">Opciones</span>
   </button>
+  </div>
 </section>
 
 {#if recent.length > 0}
@@ -288,6 +304,11 @@
     font-size: 124px;
     line-height: 0.95;
     letter-spacing: -0.03em;
+    white-space: nowrap;
+  }
+  /* "PlayStation Portable", "Game Boy Advance": en una línea, sin tocar el abanico */
+  h1.long {
+    font-size: 88px;
   }
   .chips {
     display: flex;
@@ -363,11 +384,27 @@
     left: 112px;
     right: 112px;
     top: 520px;
-    display: flex;
-    /* de izquierda a derecha: con pocas consolas no quedan separadas a los extremos */
-    gap: 52px;
-    padding: 30px 48px 0;
+    padding-top: 30px;
     transition: opacity 200ms ease;
+  }
+  /* de izquierda a derecha: con pocas consolas no quedan separadas a los extremos */
+  .track {
+    position: relative;
+    display: flex;
+    padding: 0 48px;
+    transition: transform 320ms var(--spring);
+  }
+  /* al deslizarse, los canales se cortan en los bordes de la bandeja (eso
+     avisa que hay más); arriba y abajo hay espacio para el aro y la sombra */
+  .shelf.sliding {
+    clip-path: inset(-80px 0 -120px 0);
+  }
+  .shelf.sliding .channel {
+    width: var(--tile);
+    flex: none;
+  }
+  .shelf.sliding .channel.options {
+    width: calc(var(--tile) * 0.85);
   }
   .shelf.dimmed {
     opacity: 0.6;

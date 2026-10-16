@@ -29,6 +29,8 @@ export const SYNCED_KEYS = /** @type {const} */ ([
   'coverSkipped',
   'coverResults',
   'settings',
+  'emulators',
+  'gameEmulators',
 ])
 
 /** Una partida de menos de esto no cuenta (el emulador no abrió, o fue un vistazo) */
@@ -55,6 +57,8 @@ const CHECKS = {
   coverSkipped: isStringArray,
   coverResults: isObject,
   settings: isObject,
+  emulators: isObject,
+  gameEmulators: isObject,
 }
 
 /**
