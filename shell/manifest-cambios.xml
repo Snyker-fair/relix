@@ -19,6 +19,14 @@
   <uap:Capability Name="removableStorage" />
 </Capabilities>
 
+<!-- 2b. Nombre del autor, dentro de <Properties>. Solo se muestra:
+     no cambia la identidad del paquete ni obliga a reinstalar. -->
+<Properties>
+  <DisplayName>Relix</DisplayName>
+  <PublisherDisplayName>snyker-fair</PublisherDisplayName>
+  <Logo>Assets\StoreLogo.png</Logo>
+</Properties>
+
 <!-- 3. Colores en <uap:VisualElements> y <uap:SplashScreen> -->
 <uap:VisualElements
   DisplayName="Relix"

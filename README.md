@@ -179,3 +179,7 @@ En el navegador: flechas, Enter, Esc, X, Y, Q/E, Z/C, V y M.
    interfaz en inglés.
 
 Más adelante: RetroAchievements, administrar la biblioteca desde el celular, perfiles.
+
+---
+
+Creado por **snyker-fair** ([GitHub](https://github.com/snyker-fair)).

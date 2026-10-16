@@ -86,6 +86,7 @@
     <article class="card">
       <h3>Créditos</h3>
       <ul class="credits">
+        <li class="author"><strong>Creado por:</strong> snyker-fair</li>
         <li><strong>Portadas:</strong> libretro-thumbnails</li>
         <li><strong>Formato:</strong> compatible con ES-DE</li>
         <li><strong>Letras:</strong> Baloo 2 y Nunito (SIL OFL)</li>
@@ -229,6 +230,12 @@
     color: var(--ink-soft);
   }
   .credits strong {
+    color: var(--ink);
+  }
+  .credits .author {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 23px;
     color: var(--ink);
   }
 </style>

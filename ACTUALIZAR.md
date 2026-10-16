@@ -80,7 +80,13 @@ una versión grande para TV 4K.
    ```
    Si dentro de `<uap:DefaultTile>` hay un bloque `<uap:ShowNameOnTiles>`, bórralo:
    las imágenes ya traen el nombre y la Xbox lo pondría dos veces.
-4. Guarda (**Ctrl + S**).
+4. En el mismo XML, dentro de `<Properties>`, cambia el publicador por tu alias:
+   ```xml
+   <PublisherDisplayName>snyker-fair</PublisherDisplayName>
+   ```
+   Es solo el nombre que se muestra: no cambia la identidad de la app ni hace
+   falta desinstalarla.
+5. Guarda (**Ctrl + S**).
 
 ## 5. Compila la interfaz y cópiala al proyecto
 
@@ -132,6 +138,7 @@ npm run build:shell -- "C:\ProyectosVisual\RelixShell"
 ### Acerca de
 - [ ] **≡ → RB hasta Acerca de** muestra la versión 0.4.0, la fecha de compilación y "Xbox · Modo Desarrollador".
 - [ ] La tarjeta **Emuladores** dice qué abre cada consola, y **En tu USB** muestra tu letra de disco real.
+- [ ] **Créditos** empieza con "Creado por: snyker-fair".
 
 Si algo falla, la tabla **Si algo falla** de [`shell/README.md`](shell/README.md) tiene las causas más comunes.
 
