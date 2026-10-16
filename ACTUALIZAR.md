@@ -47,6 +47,13 @@ Copiar un `.cs` a la carpeta no basta: Visual Studio solo compila los que están
 Al final, la carpeta **Shell** debe tener cinco archivos: `CollectionStore.cs`,
 `CoverService.cs`, `GamepadInput.cs`, `LibraryReader.cs` y `LocalServer.cs`.
 
+> **Ojo:** si un archivo ya aparece en **Shell**, no lo agregues otra vez. Y haz
+> el clic derecho sobre la carpeta **Shell**, no sobre el proyecto: si no, Visual
+> Studio deja una segunda copia en la raíz y la compilación falla con
+> `CS0101: El espacio de nombres 'RelixShell' ya contiene una definición para...`.
+> Para revisarlo, escribe el nombre del archivo en el buscador del Explorador de
+> soluciones: debe aparecer **una sola vez**, dentro de **Shell**.
+
 ## 4. Revisa el manifiesto
 
 Doble clic en `Package.appxmanifest` → pestaña **Funcionalidades**. Deben estar marcadas:
