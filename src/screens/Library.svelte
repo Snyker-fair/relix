@@ -28,8 +28,9 @@
   let { systemId, onBack, onSwitch, onLaunch, onOptions, onMenu, onSearch } = $props()
 
   const COLUMNS = 5
-  const COVER_W = 184
-  const ROW_H = Math.round(COVER_W / TILE_ASPECT) + 34 // alto de portada + separación
+  const COVER_W = 178
+  const ROW_GAP = 44
+  const ROW_H = Math.round(COVER_W / TILE_ASPECT) + ROW_GAP // alto de portada + separación
 
   let index = $state(0)
 
@@ -524,8 +525,8 @@
   }
   .grid {
     display: grid;
-    grid-template-columns: repeat(5, 184px);
-    gap: 34px 28px;
+    grid-template-columns: repeat(5, 178px);
+    gap: 44px 35px; /* filas, columnas: ver la regla de espacio en app.css */
     transition: transform 320ms var(--spring);
   }
   .cell {

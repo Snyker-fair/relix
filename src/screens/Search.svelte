@@ -33,8 +33,8 @@
   let { onBack, onLaunch, onMenu } = $props()
 
   const COLUMNS = 5
-  const COVER_W = 184
-  const ROW_H = Math.round(COVER_W / TILE_ASPECT) + 34 + 34 // portada + nombre + separación
+  const COVER_W = 178
+  const ROW_H = Math.round(COVER_W / TILE_ASPECT) + 36 + 44 // portada + nombre + separación
 
   let query = $state(lastQuery)
   /** 'keys' (teclado) o 'results' */
@@ -114,8 +114,9 @@
 
 <section class="panel">
   <p class="field" class:empty={!query}>
+    <span class="lens"><ChannelIcon id="search" color="currentColor" size={30} /></span>
     {#if !query}<span class="caret" aria-hidden="true"></span>{/if}
-    {query || 'Escribe un nombre'}
+    <span class="text">{query || 'Escribe un nombre'}</span>
     {#if query}<span class="caret" aria-hidden="true"></span>{/if}
   </p>
   <Keyboard bind:this={keyboard} bind:value={query} active={zone === 'keys'} />
@@ -222,23 +223,38 @@
     background: var(--cloud);
     box-shadow: 0 30px 60px -40px rgb(35 48 74 / 0.5);
   }
+  /* el campo es blanco con borde: no se confunde con las teclas celestes */
   .field {
     display: flex;
     align-items: center;
-    min-height: 76px;
-    margin: 0 0 26px;
-    padding: 6px 24px;
-    border-radius: 22px;
-    background: var(--sky);
+    gap: 6px;
+    height: 76px;
+    margin: 0 0 38px;
+    padding: 0 22px 0 18px;
+    border-radius: 24px;
+    border: 4px solid var(--sky-deep);
+    background: var(--cloud);
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: 36px;
+    font-size: 34px;
     white-space: nowrap;
     overflow: hidden;
   }
+  .field .text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-top: 4px;
+  }
   .field.empty {
     color: var(--ink-soft);
-    font-size: 30px;
+    font-size: 28px;
+  }
+  .lens {
+    display: grid;
+    place-items: center;
+    flex: none;
+    margin-right: 8px;
+    color: var(--ink-soft);
   }
   .caret {
     flex: none;
@@ -250,7 +266,7 @@
     animation: blink 1s steps(2, start) infinite;
   }
   .scope {
-    margin: 26px 0 0;
+    margin: 30px 0 0;
     font-size: 22px;
     color: var(--ink-soft);
   }
@@ -268,6 +284,7 @@
     font-family: var(--font-display);
     font-weight: 800;
     font-size: 38px;
+    line-height: 1.1;
   }
   .empty {
     margin: 14px 0 0;
@@ -276,26 +293,27 @@
     line-height: 1.45;
     color: var(--ink-soft);
   }
+  /* el aro del resultado enfocado no toca el título: 44 px libres arriba */
   .grid-window {
     position: absolute;
-    top: 52px;
+    top: 48px;
     left: -20px;
     right: -20px;
     bottom: 0;
-    padding: 28px 20px 0;
+    padding: 44px 20px 0;
     overflow: hidden;
   }
   .grid {
     display: grid;
-    grid-template-columns: repeat(5, 184px);
-    gap: 34px 28px;
+    grid-template-columns: repeat(5, 178px);
+    gap: 44px 35px;
     transition: transform 320ms var(--spring);
   }
   .cell {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    width: 184px;
+    gap: 10px;
+    width: 178px;
     text-align: left;
   }
   .cover {

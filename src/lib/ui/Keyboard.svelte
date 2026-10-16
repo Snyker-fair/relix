@@ -140,15 +140,16 @@
 <style>
   .keyboard {
     display: grid;
-    gap: 10px;
+    gap: 12px;
   }
   .row {
     display: grid;
-    grid-template-columns: repeat(7, 66px);
-    gap: 10px;
+    grid-template-columns: repeat(7, 64px);
+    gap: 12px;
+    justify-content: center;
   }
   .key {
-    height: 62px;
+    height: 60px;
     border-radius: 18px;
     background: var(--sky);
     font-family: var(--font-display);
@@ -168,11 +169,13 @@
     background: var(--ink);
     color: var(--cloud);
   }
+  /* la tecla enfocada cambia de color y sube un poco, sin crecer:
+     así nunca pisa a sus vecinas, ni las anchas */
   .key.focused {
     background: var(--pop);
     color: var(--cloud);
-    transform: scale(1.12);
-    box-shadow: 0 10px 22px -10px var(--pop);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 18px -8px var(--pop);
   }
   .keyboard:not(.active) {
     opacity: 0.7;

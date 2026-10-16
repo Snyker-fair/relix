@@ -377,7 +377,7 @@
     top: 170px;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 28px;
+    gap: 48px 40px;
     align-content: start;
   }
   .card {

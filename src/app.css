@@ -69,11 +69,17 @@ button {
     transform 260ms var(--spring),
     box-shadow 200ms ease;
 }
+/*
+ * Foco: el elemento sube, crece un poco y gana un aro rosado.
+ * Regla de espacio: entre el aro y cualquier vecino quedan al menos 16 px.
+ * El aro ocupa 11 px y el agrandado ~2,5 % por lado, así que las grillas
+ * usan separaciones de 35 px (lados) y 44 px (filas) con portadas de 178 px.
+ */
 .focus-ring.focused {
-  transform: translateY(-10px) scale(1.08);
+  transform: translateY(-8px) scale(1.05);
   box-shadow:
-    0 0 0 6px var(--cloud),
-    0 0 0 13px var(--pop),
+    0 0 0 5px var(--cloud),
+    0 0 0 11px var(--pop),
     0 28px 40px -14px color-mix(in oklab, var(--tint, var(--ink)) 70%, transparent);
 }
 

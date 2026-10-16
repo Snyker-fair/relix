@@ -47,11 +47,17 @@
   const games = $derived(onOptionsTile ? [] : shelf.gamesFor(channel.id))
   const optionsFocused = $derived(zone === 'channels' && onOptionsTile)
   const emptyLibrary = $derived(library.all.length === 0)
-  const recent = $derived(library.recent.slice(0, 4))
-  // Con Favoritos, Colecciones y las cinco consolas la fila se aprieta un poco
-  // (1600 px útiles: canales de 184 px y Opciones de 156 px)
-  const shelfGap = $derived(
-    Math.max(18, Math.min(52, Math.floor((1600 - shelf.channels.length * 184 - 156) / shelf.channels.length))),
+  // Tres juegos: así "Seguir jugando" nunca llega hasta la barra de pistas
+  const recent = $derived(library.recent.slice(0, 3))
+
+  // Fila de canales: con muchos canales (Favoritos, Colecciones y cinco
+  // consolas) se achican los íconos, nunca el espacio entre ellos. El canal
+  // enfocado crece 10 % y suma un aro de 15 px: con 48 px de separación quedan
+  // al menos 20 px libres hasta el vecino. 1600 px útiles; Opciones mide 0,85.
+  const SHELF_WIDTH = 1600
+  const SHELF_GAP = 48
+  const tileSize = $derived(
+    Math.min(184, Math.floor((SHELF_WIDTH - shelf.channels.length * SHELF_GAP) / (shelf.channels.length + 0.85))),
   )
 
   // Tres portadas en abanico para el canal enfocado: favoritos primero
@@ -160,7 +166,12 @@
   {/key}
 </section>
 
-<section class="shelf" class:dimmed={zone !== 'channels'} style:gap="{shelfGap}px">
+<section
+  class="shelf"
+  class:dimmed={zone !== 'channels'}
+  style:gap="{SHELF_GAP}px"
+  style:--tile="{tileSize}px"
+>
   <div class="tray"></div>
   {#each shelf.channels as ch, i (ch.id)}
     {@const focused = zone === 'channels' && i === index}
@@ -174,7 +185,7 @@
       onclick={() => (sound.select(), onOpen(ch.id))}
     >
       <span class="tile focus-ring" class:focused style:background={ch.color}>
-        <ChannelIcon id={ch.id} color={ch.ink} size={86} />
+        <ChannelIcon id={ch.id} color={ch.ink} size={Math.round(tileSize * 0.47)} />
       </span>
       <span class="label">{ch.shortName}</span>
     </button>
@@ -189,7 +200,7 @@
     onclick={() => (sound.select(), onOptions())}
   >
     <span class="tile round focus-ring" class:focused={optionsFocused}>
-      <ChannelIcon id="options" color="#23304A" size={78} />
+      <ChannelIcon id="options" color="#23304A" size={Math.round(tileSize * 0.42)} />
     </span>
     <span class="label">Opciones</span>
   </button>
@@ -208,7 +219,7 @@
           onmouseenter={() => ((zone = 'recent'), (recentIndex = i))}
           onclick={() => onLaunch(game)}
         >
-          <CoverArt {game} {platform} width={64} showTitle={false} thumb />
+          <CoverArt {game} {platform} width={56} showTitle={false} thumb />
           <span class="recent-text">
             <strong>{game.name}</strong>
             <span>{platform.shortName}</span>
@@ -244,7 +255,7 @@
     align-items: center;
   }
   .kbd-help {
-    max-width: 640px;
+    max-width: 880px;
     margin: 0;
     padding: 12px 24px;
     border-radius: 24px;
@@ -393,16 +404,16 @@
   .tile {
     display: grid;
     place-items: center;
-    width: 184px;
-    height: 184px;
-    border-radius: 56px;
+    width: var(--tile);
+    height: var(--tile);
+    border-radius: calc(var(--tile) * 0.3);
     box-shadow: inset 0 -10px 0 rgb(0 0 0 / 0.1);
   }
   /* Opciones: redondo y blanco, para que se lea como herramienta y no como consola */
   .tile.round {
-    width: 156px;
-    height: 156px;
-    margin: 14px 0;
+    width: calc(var(--tile) * 0.85);
+    height: calc(var(--tile) * 0.85);
+    margin: calc(var(--tile) * 0.075) 0;
     border-radius: 50%;
     background: var(--cloud);
     box-shadow: inset 0 -8px 0 rgb(35 48 74 / 0.08);
@@ -410,7 +421,9 @@
   .label {
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: 30px;
+    /* se achica junto con los íconos cuando hay muchos canales */
+    font-size: min(30px, calc(var(--tile) * 0.163));
+    white-space: nowrap;
     padding-bottom: 6px;
   }
   .channel.boot {
@@ -422,29 +435,34 @@
   .recent {
     position: absolute;
     left: 112px;
-    top: 862px;
-    right: 700px;
+    top: 830px;
+    right: 600px;
   }
   .recent h2 {
-    margin: 0 0 30px;
+    margin: 0 0 32px;
     font-family: var(--font-display);
     font-weight: 700;
     font-size: 28px;
     color: var(--ink-soft);
   }
+  /* el aro del enfocado (11 px + 2,5 %) deja 20 px libres hasta el vecino */
   .recent-row {
     display: flex;
-    gap: 22px;
+    gap: 40px;
   }
   .recent-item {
     display: flex;
     align-items: center;
     gap: 16px;
-    width: 340px;
-    padding: 10px 20px 10px 10px;
+    width: 330px;
+    padding: 8px 20px 8px 8px;
     border-radius: 28px;
     background: var(--cloud);
     text-align: left;
+  }
+  /* abajo de todo no hay espacio para subir: solo crece un poco y gana el aro */
+  .recent-item.focus-ring.focused {
+    transform: scale(1.04);
   }
   .recent-item :global(.cover) {
     border-radius: 16px;

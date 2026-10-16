@@ -46,6 +46,7 @@
   </section>
 
   <HintBar
+    surface
     hints={[
       { button: 'a', label: 'Escribir' },
       { button: 'x', label: 'Borrar' },
@@ -83,11 +84,12 @@
   .field {
     display: flex;
     align-items: center;
-    min-height: 72px;
-    margin: 22px 0 26px;
-    padding: 6px 24px;
-    border-radius: 22px;
-    background: var(--sky);
+    height: 76px;
+    margin: 24px 0 38px;
+    padding: 0 24px;
+    border-radius: 24px;
+    border: 4px solid var(--sky-deep);
+    background: var(--cloud);
     font-family: var(--font-display);
     font-weight: 700;
     font-size: 34px;

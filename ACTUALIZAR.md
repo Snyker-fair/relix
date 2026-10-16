@@ -93,6 +93,11 @@ npm run build:shell -- "C:\ProyectosVisual\RelixShell"
 - [ ] **Y → Ordenar biblioteca**: A–Z → Recientes (→ Año, si tus juegos traen año de ES-DE).
 - [ ] **Y → Ocultar juego** y luego **≡ → Biblioteca → Juegos ocultos** para recuperarlo.
 
+### Ajustes visuales (entre el paso 3 y el 4)
+- [ ] En el inicio, al moverte entre canales el enfocado ya no toca a sus vecinos.
+- [ ] En la búsqueda, el campo (blanco, con lupa) queda separado del teclado.
+- [ ] En las grillas, el aro rosado del juego enfocado no toca la fila de arriba ni las portadas de al lado.
+
 Si algo falla, la tabla **Si algo falla** de [`shell/README.md`](shell/README.md) tiene las causas más comunes.
 
 ---

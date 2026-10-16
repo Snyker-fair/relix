@@ -605,38 +605,39 @@
   }
 
   /* ── Filas ───────────────────────────── */
+  /* El aro del foco (11 px) deja al menos 16 px libres hasta la fila vecina */
   .rows {
     position: absolute;
     left: 776px;
-    right: 112px;
+    right: 124px;
     top: 170px;
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 30px;
   }
   .row {
     display: flex;
     align-items: center;
     gap: 24px;
-    height: 112px;
+    height: 108px;
     padding: 0 30px 0 18px;
     border-radius: 34px;
     background: var(--cloud);
     text-align: left;
   }
-  /* las filas son anchas: el foco salta menos que una portada */
+  /* las filas son anchas: no se mueven ni crecen (se saldrían del borde), solo el aro */
   .row.focus-ring.focused {
-    transform: translateX(10px) scale(1.02);
+    transform: none;
   }
   .row.all {
     margin-top: 10px;
   }
-  /* Portadas tiene más filas: un poco más bajas para que quepan */
+  /* Biblioteca y Portadas tienen siete filas: un poco más bajas para que quepan */
   .rows.compact {
-    gap: 14px;
+    gap: 30px;
   }
   .rows.compact .row {
-    height: 92px;
+    height: 82px;
   }
   .rows.compact .badge {
     width: 68px;
