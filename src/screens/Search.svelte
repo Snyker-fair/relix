@@ -133,7 +133,7 @@
   </h2>
 
   {#if results.length === 0}
-    <p class="empty">
+    <p class="no-results">
       {searching
         ? 'Prueba con el comienzo de una palabra: "kin" encuentra Kingdom Hearts.'
         : 'Con el teclado de la izquierda. Los resultados aparecen mientras escribes.'}
@@ -286,7 +286,9 @@
     font-size: 38px;
     line-height: 1.1;
   }
-  .empty {
+  /* "Nada con…" bajo el título de resultados. Ojo: no llamarla .empty, que es
+     la clase del campo vacío y le quitaba el espacio sobre el teclado */
+  .no-results {
     margin: 14px 0 0;
     max-width: 820px;
     font-size: 26px;
