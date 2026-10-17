@@ -44,10 +44,11 @@ Copiar un `.cs` a la carpeta no basta: Visual Studio solo compila los que están
 | `CoverService.cs` | Paso 2 de la hoja de ruta (portadas) |
 | `CollectionStore.cs` | Paso 3 (colecciones) |
 | `UserDataStore.cs` | Paso 4 (tus datos en el USB y tiempo de juego) |
+| `SystemCheck.cs` | Paso 6 (revisión del sistema) |
 
-Al final, la carpeta **Shell** debe tener seis archivos: `CollectionStore.cs`,
-`CoverService.cs`, `GamepadInput.cs`, `LibraryReader.cs`, `LocalServer.cs` y
-`UserDataStore.cs`.
+Al final, la carpeta **Shell** debe tener siete archivos: `CollectionStore.cs`,
+`CoverService.cs`, `GamepadInput.cs`, `LibraryReader.cs`, `LocalServer.cs`,
+`SystemCheck.cs` y `UserDataStore.cs`.
 
 > **Ojo:** si un archivo ya aparece en **Shell**, no lo agregues otra vez. Y haz
 > el clic derecho sobre la carpeta **Shell**, no sobre el proyecto: si no, Visual
@@ -100,8 +101,8 @@ npm install
 npm run build:shell -- "C:\ProyectosVisual\RelixShell"
 ```
 
-`npm install` hace falta esta vez: se agregó `uqr` (los códigos QR de las guías).
-Correrlo de más no hace daño.
+`npm install` solo hace falta cuando cambian las dependencias (la última vez fue
+`uqr`, los códigos QR de las guías, en la 0.6.0). Correrlo de más no hace daño.
 
 ## 6. Despliega en la Xbox
 
@@ -118,6 +119,9 @@ Correrlo de más no hace daño.
 Si esto anda, lo demás casi seguro también. Si algo falla aquí, avísame antes de
 seguir con el resto.
 
+Desde la 0.7.0, al abrir aparece una vez el **recorrido de bienvenida**: recórrelo
+(son cinco pantallas) o sáltalo con **≡**; después sigue con la lista.
+
 1. [ ] Relix abre y muestra tus juegos. La primera vez escanea las consolas nuevas
        (verás el avance en la pantalla de carga).
 2. [ ] **≡ → RB hasta Acerca de → En tu USB** dice "Guardado hace…", y en el PC existe
@@ -129,6 +133,8 @@ seguir con el resto.
 6. [ ] Resident Evil 3 europeo con `scph5502.bin` donde dice la guía de PS1
        (**≡ → Consolas → PlayStation → Y**): ¿abre? Si no, ¿aparece "se cerró enseguida"?
 7. [ ] **≡ → RB hasta Portadas → A** en una consola: baja portadas y se ven en la grilla.
+8. [ ] **≡ → RB hasta Revisión**: saca una foto de la lista (baja con ↓ hasta el final).
+       Con eso veo de una vez qué emuladores, BIOS y permisos detecta tu Xbox.
 
 **Para contarme qué pasó:** una foto de la pantalla y qué hiciste justo antes. Si
 Visual Studio se detiene con un error, copia el mensaje de la ventana **Salida**.
@@ -159,7 +165,7 @@ Visual Studio se detiene con un error, copia el mensaje de la ventana **Salida**
 - [ ] En las grillas, el aro rosado del juego enfocado no toca la fila de arriba ni las portadas de al lado.
 
 ### Acerca de
-- [ ] **≡ → RB hasta Acerca de** muestra la versión 0.6.0, la fecha de compilación y "Xbox · Modo Desarrollador".
+- [ ] **≡ → RB hasta Acerca de** muestra la versión 0.7.0, la fecha de compilación y "Xbox · Modo Desarrollador".
 - [ ] **En tu USB** muestra tu letra de disco real.
 - [ ] Al pie del panel izquierdo dice **Creado por snyker-fair**.
 
@@ -197,6 +203,27 @@ Visual Studio se detiene con un error, copia el mensaje de la ventana **Salida**
 - [ ] El QR se abre con la cámara del celular (lleva a DevStore › Emuladores).
 - [ ] En una consola sin juegos (con **Consolas sin juegos: Visibles** en Preferencias), **Y** abre su guía.
 
+### Paso 6 · Revisión y primer uso
+- [ ] La primera vez que abres la 0.7.0 aparece **Primeros pasos**: Hola, Tu USB,
+      Emuladores, Portadas y Botones. **A** avanza, **B** vuelve, **≡** salta.
+- [ ] **Tu USB** dice si Relix puede guardar, cuánto espacio queda y qué carpetas de
+      `E:\roms` no usa (por ejemplo `nes`).
+- [ ] **Emuladores**: tus consolas con juegos, cada una con **Instalado** / **Sin instalar**
+      y la BIOS. **↑** elige una, **A** abre su guía y **B** vuelve al mismo paso.
+- [ ] **Portadas → Buscar ahora**: puedes pasar a **Botones** mientras sigue buscando.
+- [ ] Al terminar (o saltarlo), cierra y abre Relix: el recorrido **no** vuelve a aparecer.
+- [ ] Si algo está por arreglar, al abrir aparece "Relix encontró N cosas por arreglar"
+      y el ícono de **Opciones** en el inicio lleva un número rosado.
+- [ ] **≡ → RB hasta Revisión**: primero lo que falta (✗ rosado), después los avisos
+      (! amarillo), la información (i) y lo que está bien (✓ verde).
+- [ ] Con tu RE3 europeo: si `scph5502.bin` está en `E:\RetroArch\system`, dice
+      **BIOS de PS1 en su lugar**; si no, **falta scph5502.bin** y **A** abre la guía de PS1.
+      Al volver con **B**, el foco queda en la misma fila.
+- [ ] Si usas DuckStation y pusiste la BIOS dentro del emulador, dice "no la veo en el USB"
+      como información, no como error.
+- [ ] **Revisar de nuevo** vuelve a medir (tarda unos segundos si no hay internet).
+- [ ] **Recorrido de bienvenida** lo muestra otra vez; al terminar vuelves a Revisión.
+
 Si algo falla, la tabla **Si algo falla** de [`shell/README.md`](shell/README.md) tiene las causas más comunes.
 
 ---
@@ -216,3 +243,5 @@ Si algo falla, la tabla **Si algo falla** de [`shell/README.md`](shell/README.md
 | 4 | `Shell/UserDataStore.cs` | **Nuevo.** `E:\relix\datos.json`, copia anterior y respaldos diarios |
 | 4 | `MainPage.xaml.cs` | Mensajes `loadUserData`, `saveUserData`; evento `visible` al volver a primer plano |
 | 5 | `MainPage.xaml.cs` | Mensaje `emulatorStatus` (qué emuladores tiene la consola) |
+| 6 | `Shell/SystemCheck.cs` | **Nuevo.** Permisos de escritura, espacio libre, carpetas de `roms`, archivos de BIOS e internet |
+| 6 | `MainPage.xaml.cs` | Mensaje `systemCheck`; responde un error a los mensajes que no conoce (antes la interfaz quedaba esperando) |

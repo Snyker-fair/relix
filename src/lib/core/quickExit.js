@@ -11,7 +11,7 @@ import { regionsOf } from './coverMatch.js'
 export const QUICK_EXIT_SECONDS = 15
 
 /** BIOS de PS1 que busca SwanStation en la carpeta system de RetroArch */
-const PS1_BIOS = {
+export const PS1_BIOS = {
   japan: { file: 'scph5500.bin', label: 'japonesa' },
   usa: { file: 'scph5501.bin', label: 'de EE. UU.' },
   europe: { file: 'scph5502.bin', label: 'europea' },

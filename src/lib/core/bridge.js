@@ -32,6 +32,10 @@
  *        -> { id, ok: true, result: true }                       (text vacío = borrar)
  *     { id, type: 'emulatorStatus', payload: { protocols: ['retroarch', 'duckstation'] } }
  *        -> { id, ok: true, result: { status: { retroarch: true, duckstation: false } } }
+ *     { id, type: 'systemCheck', payload: { folders: ['RetroArch\\system', ...] } }
+ *        -> { id, ok: true, result: { drive, writable, space: { free, total } | null,
+ *             romFolders: ['psx', 'nes'], folders: { 'RetroArch\\system': ['scph5501.bin'] | null },
+ *             internet } }                       (Opciones › Revisión)
  *     { id, type: 'loadUserData' }
  *        -> { id, ok: true, result: { driveId, text, source } }  (E:\relix\datos.json;
  *             text null si aún no hay; source: 'datos.json', 'datos.anterior.json' o un respaldo)
@@ -110,12 +114,22 @@ if (webview()) {
   })
 }
 
-/** @param {string} type @param {any} [payload] */
-function request(type, payload) {
+/**
+ * @param {string} type @param {any} [payload]
+ * @param {{ timeout?: number }} [options]  timeout (ms): para mensajes que un
+ *   shell anterior no conoce y nunca respondería
+ */
+function request(type, payload, { timeout = 0 } = {}) {
   return new Promise((resolve, reject) => {
     const id = nextId++
     pending.set(id, { resolve, reject })
     webview().postMessage({ id, type, payload })
+    if (timeout > 0) {
+      setTimeout(() => {
+        if (!pending.delete(id)) return
+        reject(new ShellError('El shell no respondió a tiempo.', 'timeout'))
+      }, timeout)
+    }
   })
 }
 
@@ -384,6 +398,30 @@ export async function emulatorStatus(protocols) {
   // Demo: una Xbox con RetroArch, PPSSPP, XBSX2 y Xenia Canary
   const demo = new Set(['retroarch', 'ppsspp', 'xbsx2', 'xeniacanary'])
   return Object.fromEntries(protocols.map((p) => [p, demo.has(p)]))
+}
+
+// ── Revisión del sistema ─────────────────────────────────────────────────
+
+/**
+ * Mide el USB y la consola (ver SystemCheck.cs).
+ * @param {string[]} folders  carpetas de BIOS a listar, relativas al USB
+ * @returns {Promise<import('./systemCheck.js').ShellCheck>}
+ */
+export async function systemCheck(folders) {
+  // La prueba de internet espera hasta 6 s; un shell anterior al paso 6 no responde
+  if (mode === 'xbox') return request('systemCheck', { folders }, { timeout: 15_000 })
+  // Demo: un USB de 465 GB con la BIOS de EE. UU. de PS1 (falta la europea) y una carpeta de NES
+  await new Promise((resolve) => setTimeout(resolve, 300))
+  return {
+    drive: 'E:\\',
+    writable: true,
+    space: { free: 182 * 1024 ** 3, total: 465 * 1024 ** 3 },
+    romFolders: [...PLATFORMS.map((p) => p.id), 'nes'],
+    folders: Object.fromEntries(
+      folders.map((f) => [f, f === 'RetroArch\\system' ? ['scph5501.bin'] : f === 'XBSX2\\BIOS' ? ['SCPH-70012_BIOS_V12_USA_200.BIN'] : null]),
+    ),
+    internet: true,
+  }
 }
 
 // ── Tus datos (E:\relix\datos.json) ─────────────────────────────────────

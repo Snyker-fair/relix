@@ -18,24 +18,28 @@
   import { settings } from '../lib/ui/settings.svelte.js'
   import { shelf } from '../lib/ui/shelf.svelte.js'
   import { sound } from '../lib/ui/sound.js'
+  import { systemStatus } from '../lib/ui/systemStatus.svelte.js'
 
   /**
    * @type {{
    *   onBack: () => void,
    *   onToast: (message: string) => void,
    *   onPickCovers: () => void,
-   *   onGuide: (systemId: string) => void,
+   *   onGuide: (systemId: string, from: { section: string, row: string }) => void,
+   *   onWelcome: () => void,
    *   initialSection?: string,
    *   initialRow?: string,
    * }}
-   *   initialRow: fila con el foco al abrir (p. ej. la consola de la guía de la que vuelves)
+   *   initialRow: fila con el foco al abrir (p. ej. la consola de la guía de la que vuelves).
+   *   En Revisión basta la consola: "psx" enfoca su primer chequeo ("emu:psx").
    */
-  let { onBack, onToast, onPickCovers, onGuide, initialSection = 'library', initialRow } = $props()
+  let { onBack, onToast, onPickCovers, onGuide, onWelcome, initialSection = 'library', initialRow } = $props()
 
   // Secciones: se cambian con LB/RB, igual que las consolas en la biblioteca
   const SECTIONS = [
     { id: 'library', name: 'Biblioteca' },
     { id: 'consoles', name: 'Consolas' },
+    { id: 'check', name: 'Revisión' },
     { id: 'covers', name: 'Portadas' },
     { id: 'preferences', name: 'Preferencias' },
     { id: 'about', name: 'Acerca de' },
@@ -61,6 +65,16 @@
   })
   const COVER_ROWS = $derived([...coverPlatforms.map((p) => p.id), 'all', 'choose'])
 
+  // Revisión: primero lo que hay que arreglar, después los avisos y lo que está bien
+  const STATE_ORDER = { error: 0, warn: 1, info: 2, ok: 3 }
+  const sortedChecks = $derived(
+    [...systemStatus.checks].sort((a, b) => STATE_ORDER[a.state] - STATE_ORDER[b.state]),
+  )
+  const checkById = $derived(new Map(sortedChecks.map((c) => [c.id, c])))
+  const CHECK_ROWS = $derived([...sortedChecks.map((c) => c.id), 'recheck', 'welcome'])
+  const MARKS = { ok: '✓', warn: '!', error: '✗', info: 'i' }
+  const STATE_TINTS = { ok: '#3FAE49', warn: '#F2B705', error: 'var(--pop)', info: '#8FA3BF' }
+
   // Solo importa al abrir (p. ej. volver a Portadas desde "Elegir a mano")
   // svelte-ignore state_referenced_locally
   let section = $state(initialSection)
@@ -69,11 +83,13 @@
       ? LIBRARY_ROWS
       : section === 'consoles'
         ? CONSOLE_ROWS
-        : section === 'covers'
-          ? COVER_ROWS
-          : section === 'preferences'
-            ? PREFERENCE_ROWS
-            : [], // Acerca de: solo para leer
+        : section === 'check'
+          ? CHECK_ROWS
+          : section === 'covers'
+            ? COVER_ROWS
+            : section === 'preferences'
+              ? PREFERENCE_ROWS
+              : [], // Acerca de: solo para leer
   )
 
   // Lista que se desliza: el desplazamiento justo para que la fila enfocada
@@ -101,16 +117,46 @@
   $effect(() => {
     if (section === 'consoles') untrack(() => emulators.check())
   })
+  // Al entrar a Revisión se revisa de nuevo, salvo que se haya hecho recién
+  // (p. ej. al volver de una guía)
+  $effect(() => {
+    if (section !== 'check') return
+    untrack(() => {
+      if (Date.now() - systemStatus.checkedAt > 20_000) systemStatus.run().then(() => (now = Date.now()))
+    })
+  })
   /** "2026-10-16" -> "16 oct 2026" */
   const buildDate = BUILD_DATE
     ? new Date(`${BUILD_DATE}T12:00:00`).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })
     : ''
-  // svelte-ignore state_referenced_locally
-  let index = $state(Math.max(0, initialRow ? ROWS.indexOf(initialRow) : 0))
+  /** La fila de initialRow: exacta o, en Revisión, el primer chequeo de esa consola */
+  function initialIndex() {
+    if (!initialRow) return 0
+    const exact = ROWS.indexOf(initialRow)
+    if (exact >= 0) return exact
+    return Math.max(0, ROWS.findIndex((id) => id.endsWith(`:${initialRow}`)))
+  }
+  let index = $state(initialIndex())
+
+  // En Revisión las filas cambian al revisar de nuevo (aparecen, se arreglan):
+  // el foco sigue a la fila que tenía y no a su posición
+  let focusedKey = ''
+  $effect.pre(() => {
+    const rows = ROWS
+    untrack(() => {
+      if (section !== 'check' || !focusedKey.startsWith('check/')) return
+      const i = rows.indexOf(focusedKey.slice(6))
+      if (i >= 0 && i !== index) index = i
+      else if (i < 0 && index >= rows.length) index = rows.length - 1
+    })
+  })
+  $effect(() => {
+    focusedKey = `${section}/${ROWS[index] ?? ''}`
+  })
   /** true mientras corre "Escanear todo" (las filas muestran cuál va) */
   let scanningAll = $state(false)
   /** true mientras corre "Buscar en todas" */
-  let searchingAll = $state(false)
+  const searchingAll = $derived(covers.all !== null)
   /** Para refrescar los "hace X min" mientras la pantalla está abierta */
   let now = $state(Date.now())
 
@@ -138,9 +184,17 @@
         : 'Escanear'
       : section === 'preferences' || section === 'consoles'
         ? 'Cambiar'
-        : ROWS[index] === 'choose'
-          ? 'Elegir'
-          : 'Buscar',
+        : section === 'check'
+          ? ROWS[index] === 'recheck'
+            ? 'Revisar'
+            : ROWS[index] === 'welcome'
+              ? 'Ver'
+              : checkById.get(ROWS[index])?.action
+                ? 'Ver guía'
+                : ''
+          : ROWS[index] === 'choose'
+            ? 'Elegir'
+            : 'Buscar',
   )
 
   /** @param {string} id */
@@ -225,22 +279,7 @@
         onToast(coverSummary(getPlatform(id)?.shortName ?? id, await covers.find(id)))
       } else {
         // Una consola tras otra, solo las que tienen juegos sin portada
-        const total = { saved: 0, failed: 0, toChoose: 0, notFound: 0 }
-        searchingAll = true
-        try {
-          for (const p of coverPlatforms) {
-            const count = library.coverCount(p.id)
-            if (count.withCover === count.total) continue
-            const result = await covers.find(p.id)
-            total.saved += result.saved
-            total.failed += result.failed
-            total.toChoose += result.toChoose
-            total.notFound += result.notFound
-          }
-        } finally {
-          searchingAll = false
-        }
-        onToast(coverSummary('Listo', total))
+        onToast(coverSummary('Listo', await covers.findAll()))
       }
       now = Date.now()
       sound.favorite()
@@ -267,6 +306,33 @@
     const next = emulators.cyclePlatform(platform)
     sound.select()
     if (next?.note) onToast(`${next.name}: ${next.note}.`)
+  }
+
+  /** Revisión: A abre la guía del chequeo, revisa de nuevo o abre el recorrido */
+  async function checkRow() {
+    const id = ROWS[index]
+    if (id === 'welcome') {
+      sound.select()
+      onWelcome()
+      return
+    }
+    if (id === 'recheck') {
+      if (systemStatus.running) return
+      sound.select()
+      await systemStatus.run()
+      now = Date.now()
+      const { errors, warnings } = systemStatus.summary
+      onToast(
+        errors + warnings === 0
+          ? 'Listo: todo en orden'
+          : `Listo: ${[errors > 0 ? plural(errors, 'cosa por arreglar', 'cosas por arreglar') : '', warnings > 0 ? plural(warnings, 'aviso', 'avisos') : ''].filter(Boolean).join(' y ')}`,
+      )
+      return
+    }
+    const check = checkById.get(id)
+    if (!check?.action) return sound.error()
+    sound.select()
+    onGuide(check.action.systemId, { section, row: id })
   }
 
   function toggleRow() {
@@ -309,15 +375,17 @@
       else if (action === 'down') move(index + 1)
       else if (action === 'lb') switchSection(-1)
       else if (action === 'rb') switchSection(1)
-      else if (action === 'y' && section === 'consoles') (sound.select(), onGuide(ROWS[index]))
+      else if (action === 'y' && section === 'consoles') (sound.select(), onGuide(ROWS[index], { section, row: ROWS[index] }))
       else if (action === 'a' && section !== 'about')
         section === 'library'
           ? scanRow()
           : section === 'consoles'
             ? consoleRow()
-            : section === 'covers'
-              ? coverRow()
-              : toggleRow()
+            : section === 'check'
+              ? checkRow()
+              : section === 'covers'
+                ? coverRow()
+                : toggleRow()
       else if (action === 'b' || action === 'start') (sound.back(), onBack())
     }),
   )
@@ -375,6 +443,27 @@
         <li>{plural(installedApps, 'emulador instalado', 'emuladores instalados')}</li>
       {/if}
     </ul>
+  {:else if section === 'check'}
+    {@const { errors, warnings } = systemStatus.summary}
+    <h2>Revisión</h2>
+    <p>
+      Relix revisa tu USB, los emuladores y las BIOS. Si algo falta, <PadButton name="a" size={26} />
+      abre la guía que explica cómo dejarlo listo.
+    </p>
+    <ul class="chips">
+      {#if systemStatus.running && !systemStatus.checkedAt}
+        <li>Revisando…</li>
+      {:else if errors + warnings === 0}
+        <li class="ok">Todo en orden</li>
+      {:else}
+        {#if errors > 0}<li class="error">{plural(errors, 'cosa por arreglar', 'cosas por arreglar')}</li>{/if}
+        {#if warnings > 0}<li class="warn">{plural(warnings, 'aviso', 'avisos')}</li>{/if}
+      {/if}
+    </ul>
+    <p class="note">
+      Relix solo ve el USB: si pusiste una BIOS dentro del emulador con el Device Portal, aquí sale
+      como aviso aunque funcione.
+    </p>
   {:else if section === 'covers'}
     <h2>Portadas</h2>
     <p>
@@ -526,6 +615,64 @@
     </button>
   {/each}
 </section>
+{:else if section === 'check'}
+<section class="rows review" aria-label="Revisión del sistema" bind:this={rowsEl} style:transform="translateY({-rowsScroll}px)">
+  {#each ROWS as id, i (id)}
+    {@const check = checkById.get(id)}
+    {@const focused = i === index}
+    <button
+      class="row focus-ring"
+      class:focused
+      class:all={id === 'recheck'}
+      style:--tint={check ? STATE_TINTS[check.state] : 'var(--pop)'}
+      onmouseenter={() => move(i)}
+      onclick={() => (i === index ? checkRow() : move(i))}
+    >
+      {#if check}
+        <span class="badge mark {check.state}" aria-hidden="true">{MARKS[check.state]}</span>
+        <span class="text">
+          <strong>{check.title}</strong>
+          <span class="explain">{check.detail}</span>
+        </span>
+        <span class="state">
+          {#if focused && check.action}<PadButton name="a" size={30} /> Guía{/if}
+        </span>
+      {:else if id === 'recheck'}
+        <span class="badge refresh">
+          <ChannelIcon id="refresh" color="#FFFFFF" size={46} />
+        </span>
+        <span class="text">
+          <strong>Revisar de nuevo</strong>
+          <span>
+            {systemStatus.running
+              ? 'Revisando el USB, los emuladores y la conexión…'
+              : systemStatus.checkedAt
+                ? `Última revisión ${timeAgo(systemStatus.checkedAt, now)}`
+                : 'Todavía no se revisa'}
+          </span>
+        </span>
+        <span class="state">
+          {#if systemStatus.running}
+            <span class="spinner" aria-hidden="true"></span> Revisando…
+          {:else if focused}
+            <PadButton name="a" size={30} /> Revisar
+          {/if}
+        </span>
+      {:else}
+        <span class="badge neutral">
+          <ChannelIcon id="flag" color="#23304A" size={46} />
+        </span>
+        <span class="text">
+          <strong>Recorrido de bienvenida</strong>
+          <span>Los primeros pasos de Relix, otra vez</span>
+        </span>
+        <span class="state">
+          {#if focused}<PadButton name="a" size={30} /> Ver{/if}
+        </span>
+      {/if}
+    </button>
+  {/each}
+</section>
 {:else if section === 'covers'}
 <section class="rows compact" aria-label="Portadas" bind:this={rowsEl} style:transform="translateY({-rowsScroll}px)">
   {#each ROWS as id, i (id)}
@@ -579,7 +726,8 @@
         </span>
         <span class="state">
           {#if searchingAll}
-            <span class="spinner" aria-hidden="true"></span> Buscando…
+            <span class="spinner" aria-hidden="true"></span>
+            {covers.all && covers.all.total > 1 ? `Consola ${Math.min(covers.all.done + 1, covers.all.total)} de ${covers.all.total}` : 'Buscando…'}
           {:else if focused && !coverBusy}
             <PadButton name="a" size={30} /> Buscar
           {/if}
@@ -666,8 +814,9 @@
         { button: 'b', label: 'Volver' },
       ]
     : [
-        { button: 'a', label: hintA },
-        ...(section === 'consoles' ? [{ button: 'y', label: 'Guía' }] : []),
+        ...(hintA ? [{ button: /** @type {const} */ ('a'), label: hintA }] : []),
+        ...(section === 'consoles' ? [{ button: /** @type {const} */ ('y'), label: 'Guía' }] : []),
+        { button: 'lb', also: 'rb', label: 'Secciones' },
         { button: 'b', label: 'Volver' },
       ]}
 />
@@ -773,6 +922,29 @@
     font-weight: 700;
     font-size: 22px;
   }
+  .chips li.ok {
+    background: #d9f2dc;
+    color: #1d5a27;
+  }
+  .chips li.error {
+    background: var(--pop);
+    color: var(--cloud);
+  }
+  .chips li.warn {
+    background: var(--sun);
+  }
+  .intro p :global(.pad) {
+    vertical-align: -4px;
+    margin: 0 2px;
+  }
+  /* nota al pie del panel de Revisión */
+  .intro p.note {
+    margin-top: 26px;
+    padding-top: 18px;
+    border-top: 3px dashed var(--sky);
+    font-size: 20px;
+    line-height: 1.4;
+  }
   /* créditos, al pie del panel de Acerca de */
   .credits {
     margin-top: 18px;
@@ -847,6 +1019,60 @@
   }
   .badge.pick {
     background: var(--sun);
+  }
+  /* Revisión: el detalle puede ocupar dos líneas, así que la fila crece */
+  .rows.review {
+    gap: 30px;
+  }
+  .rows.review .row {
+    height: auto;
+    min-height: 96px;
+    padding: 14px 30px 14px 18px;
+  }
+  .rows.review .badge {
+    width: 68px;
+    height: 68px;
+    border-radius: 22px;
+  }
+  .rows.review .badge.refresh {
+    border-radius: 50%;
+  }
+  .rows.review .text strong {
+    font-size: 29px;
+  }
+  .rows.review .text .explain {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.35;
+    font-size: 21px;
+  }
+  .badge.mark {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 40px;
+    line-height: 1;
+    padding-top: 4px;
+  }
+  .badge.mark.ok {
+    background: #d9f2dc;
+    color: #1d5a27;
+  }
+  .badge.mark.warn {
+    background: var(--sun);
+    color: var(--ink);
+  }
+  .badge.mark.error {
+    background: var(--pop);
+    color: var(--cloud);
+  }
+  .badge.mark.info {
+    background: var(--sky);
+    color: var(--ink-soft);
+    font-family: Georgia, serif;
+    font-style: italic;
   }
   .text .count {
     display: flex;

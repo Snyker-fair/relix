@@ -34,6 +34,9 @@ class Covers {
   busy = $state(null)
   /** @type {CoverProgress|null} */
   progress = $state(null)
+  /** "Buscar en todas" en curso: cuántas consolas van de cuántas */
+  /** @type {{ done: number, total: number } | null} */
+  all = $state(null)
   /** Juegos que esperan que el jugador elija su portada, por consola */
   /** @type {Record<string, string[]>} */
   choices = $state(load('coverChoices', {}))
@@ -133,6 +136,33 @@ class Covers {
       this.busy = null
       this.progress = null
     }
+  }
+
+  /**
+   * Busca en todas las consolas a las que les faltan portadas, una tras otra
+   * (Opciones › Portadas y el primer uso).
+   */
+  async findAll() {
+    const ids = PLATFORMS.map((p) => p.id).filter((id) => {
+      const count = library.coverCount(id)
+      return count.withCover < count.total
+    })
+    const total = { saved: 0, failed: 0, toChoose: 0, notFound: 0 }
+    if (this.busy !== null || this.all !== null) return total
+    this.all = { done: 0, total: ids.length }
+    try {
+      for (const [i, id] of ids.entries()) {
+        const result = await this.find(id)
+        total.saved += result.saved
+        total.failed += result.failed
+        total.toChoose += result.toChoose
+        total.notFound += result.notFound
+        this.all = { done: i + 1, total: ids.length }
+      }
+    } finally {
+      this.all = null
+    }
+    return total
   }
 
   /**

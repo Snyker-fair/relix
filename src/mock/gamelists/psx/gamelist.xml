@@ -83,6 +83,16 @@
 		<players>1</players>
 	</game>
 	<game>
+		<path>./Resident Evil 3 - Nemesis (Europe) (En,Fr,De,Es,It).chd</path>
+		<name>Resident Evil 3: Nemesis</name>
+		<desc>Jill Valentine intenta escapar de Raccoon City mientras la persigue Nemesis.</desc>
+		<releasedate>20000218T000000</releasedate>
+		<developer>Capcom</developer>
+		<publisher>Eidos</publisher>
+		<genre>Survival horror</genre>
+		<players>1</players>
+	</game>
+	<game>
 		<path>./BIOS Tool (Hidden).chd</path>
 		<name>Herramienta oculta</name>
 		<hidden>true</hidden>

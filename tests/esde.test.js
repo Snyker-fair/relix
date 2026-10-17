@@ -13,7 +13,7 @@ describe('parseGamelist', () => {
   const games = parseGamelist(psxXml, 'psx')
 
   it('lee los juegos y omite los ocultos', () => {
-    expect(games).toHaveLength(8)
+    expect(games).toHaveLength(9)
     expect(games.some((g) => g.name === 'Herramienta oculta')).toBe(false)
   })
 

@@ -24,6 +24,8 @@ class Settings {
   /** Orden de la biblioteca (se cambia desde el menú del juego) */
   /** @type {SortOrder} */
   sortOrder = $state('az')
+  /** Ya pasó (o saltó) el recorrido de bienvenida */
+  onboarded = $state(false)
 
   constructor() {
     this.#restore()
@@ -36,6 +38,7 @@ class Settings {
     this.sounds = saved.sounds ?? true
     this.coverRegion = REGIONS.includes(saved.coverRegion) ? saved.coverRegion : 'usa'
     this.sortOrder = SORTS.includes(saved.sortOrder) ? saved.sortOrder : 'az'
+    this.onboarded = saved.onboarded === true
     sound.setMuted(!this.sounds)
   }
 
@@ -66,12 +69,20 @@ class Settings {
     this.#save()
   }
 
+  /** Terminó o saltó el recorrido de bienvenida */
+  markOnboarded() {
+    if (this.onboarded) return
+    this.onboarded = true
+    this.#save()
+  }
+
   #save() {
     save(KEY, {
       showEmptyConsoles: this.showEmptyConsoles,
       sounds: this.sounds,
       coverRegion: this.coverRegion,
       sortOrder: this.sortOrder,
+      onboarded: this.onboarded,
     })
   }
 }

@@ -9,9 +9,11 @@
   import { emulators } from './lib/ui/emulators.svelte.js'
   import { dispatch, startInput } from './lib/ui/input.js'
   import { library } from './lib/ui/library.svelte.js'
+  import { settings } from './lib/ui/settings.svelte.js'
   import { sound } from './lib/ui/sound.js'
+  import { systemStatus } from './lib/ui/systemStatus.svelte.js'
   import { userData } from './lib/ui/userData.svelte.js'
-  import { formatPlaytime } from './lib/ui/format.js'
+  import { formatPlaytime, plural } from './lib/ui/format.js'
   import Stage from './lib/ui/Stage.svelte'
   import CoverPicker from './screens/CoverPicker.svelte'
   import GameMenu from './screens/GameMenu.svelte'
@@ -22,6 +24,7 @@
   import Options from './screens/Options.svelte'
   import Search from './screens/Search.svelte'
   import Status from './screens/Status.svelte'
+  import Welcome from './screens/Welcome.svelte'
 
   /**
    * Pantallas. Las que se abren "encima" recuerdan desde dónde, para volver con B.
@@ -30,7 +33,9 @@
    *   | { name: 'search', from: any }
    *   | { name: 'options', from: any, section?: string, row?: string }
    *   | { name: 'coverPicker', back: any, gameId?: string }
-   *   | { name: 'guide', systemId: string, back: any }} Screen
+   *   | { name: 'guide', systemId: string, back: any }
+   *   | { name: 'welcome', step: number, row?: string, back: any, auto?: boolean }} Screen
+   *   welcome.auto: se abrió solo la primera vez (no desde Opciones)
    */
   /** @type {Screen} */
   let screen = $state({ name: 'home' })
@@ -67,20 +72,48 @@
   library.load().finally(notifyReady)
 
   // Al tener la biblioteca: colecciones del USB, tus datos (si el USB apareció
-  // recién, con Reintentar) y el aviso de la partida que quedó pendiente
+  // recién, con Reintentar), la revisión del sistema (que también pregunta qué
+  // emuladores hay), el aviso de la partida que quedó pendiente y, la primera
+  // vez, el recorrido de bienvenida
   $effect(() => {
     if (library.status !== 'ready') return
     untrack(() => {
       collections.load()
       userData.resync()
-      emulators.check()
+      systemStatus.run().then(warnSystem)
       if (finishedWhileClosed) {
         announcePlaytime(finishedWhileClosed)
         finishedWhileClosed = null
       }
       if (userData.recoveredFrom) showToast(`Tus datos se recuperaron de relix\\${userData.recoveredFrom}`)
+      if (!settings.onboarded && screen.name === 'home') {
+        screen = { name: 'welcome', step: 0, back: { name: 'home' }, auto: true }
+      }
     })
   })
+
+  // Tus datos llegaron después desde el USB y ahí ya habías hecho el recorrido
+  $effect(() => {
+    if (screen.name === 'welcome' && screen.auto && screen.step === 0 && settings.onboarded) {
+      untrack(() => (screen = { name: 'home' }))
+    }
+  })
+
+  /**
+   * Al abrir, si la revisión encontró algo por arreglar, se avisa una vez
+   * (no durante el recorrido de bienvenida, que ya lo muestra).
+   */
+  let warnedSystem = false
+  function warnSystem() {
+    const { errors } = systemStatus.summary
+    if (warnedSystem || errors === 0 || screen.name === 'welcome') return
+    warnedSystem = true
+    // Si hay otro aviso en pantalla (el tiempo jugado, p. ej.), va después
+    setTimeout(
+      () => showToast(`Relix encontró ${plural(errors, 'cosa por arreglar', 'cosas por arreglar')}: ≡ › Revisión`, 6000),
+      toast ? 3600 : 0,
+    )
+  }
 
   // Si el USB no deja guardar tus datos, se avisa una vez
   let warnedSave = false
@@ -266,14 +299,36 @@
       onBack={() => (screen = from)}
       onToast={showToast}
       onPickCovers={() => (screen = { name: 'coverPicker', back: { ...options, section: 'covers' } })}
-      onGuide={(systemId) => (screen = { name: 'guide', systemId, back: { ...options, section: 'consoles' } })}
+      onGuide={(systemId, from) => (screen = { name: 'guide', systemId, back: { ...options, ...from } })}
+      onWelcome={() => (screen = { name: 'welcome', step: 0, back: { ...options, section: 'check', row: 'welcome' } })}
     />
   {:else if screen.name === 'guide'}
     {@const back = screen.back}
-    <!-- Al volver a Consolas, el foco queda en la consola de la guía (aunque cambiaras con LB/RB) -->
+    <!-- Al volver, el foco queda en la consola de la guía (aunque cambiaras con LB/RB).
+         En Revisión, si no cambiaste, en el mismo chequeo ("bios:psx") -->
     <Guide
       systemId={screen.systemId}
-      onBack={(systemId) => (screen = back.name === 'options' ? { ...back, row: systemId } : back)}
+      onBack={(systemId) =>
+        (screen =
+          back.name === 'options' || back.name === 'welcome'
+            ? { ...back, row: back.row?.endsWith(`:${systemId}`) ? back.row : systemId }
+            : back)}
+    />
+  {:else if screen.name === 'welcome'}
+    {@const welcome = screen}
+    {@const back = screen.back}
+    <Welcome
+      initialStep={screen.step}
+      initialRow={screen.row}
+      onGuide={(systemId, from) => (screen = { name: 'guide', systemId, back: { ...welcome, ...from } })}
+      onDone={() => {
+        const to = back // {@const} sigue a `screen`: se guarda antes de cambiarla
+        settings.markOnboarded()
+        screen = to
+        // Si quedó algo por arreglar (o saltaste el recorrido), se avisa una vez
+        if (to.name === 'home') warnSystem()
+      }}
+      onToast={showToast}
     />
   {:else}
     {@const back = screen.back}

@@ -72,6 +72,16 @@ manejarse con el control. Logo, colores, tipografía y voz de la marca están en
   juego que no abrió y dice qué revisar: en PS1, la BIOS exacta según la región
   del archivo (`scph5500.bin` Japón, `scph5501.bin` EE. UU., `scph5502.bin` Europa)
   en la carpeta `system` de RetroArch.
+- **Revisión del sistema.** Al abrir, Relix revisa que el USB deje guardar, el
+  espacio libre, las carpetas de `roms` que no reconoce, qué emuladores faltan para
+  las consolas con juegos, las BIOS en las carpetas de las guías
+  (`E:\RetroArch\system`, `E:\DuckStation\bios`, `E:\XBSX2\BIOS`, según la región
+  de tus juegos de PS1) y si llega al servidor de portadas. Si algo falta, avisa una
+  vez y lo muestra en **Opciones › Revisión**, con la guía que lo arregla. Una BIOS
+  puesta dentro del emulador no se puede ver desde Relix: sale como información.
+- **Primer uso guiado.** La primera vez aparece un recorrido de cinco pantallas
+  (hola, tu USB, emuladores, portadas, botones). Se salta con ≡ y se repite desde
+  Opciones › Revisión.
 
 ## Estructura
 
@@ -88,10 +98,12 @@ src/
     userData.js      formato de datos.json, qué copia manda y tiempo de cada partida
     quickExit.js     aviso cuando un juego se cierra al abrir (BIOS según la región)
     guides.js        guías de instalación por consola y emulador (DevStore, BIOS, carpetas)
+    systemCheck.js   revisión del sistema: qué está bien, qué falta y qué guía lo arregla
     collections.js   lee y escribe colecciones en el formato de ES-DE
     bridge.js        habla con el shell en C# (o usa datos de prueba en el navegador)
   lib/ui/            piezas de interfaz: entrada del control, sonidos, portadas…
-  screens/           Home, Library (grilla), Search, GameMenu (Y), Options, CoverPicker, LaunchOverlay
+  screens/           Home, Library (grilla), Search, GameMenu (Y), Options, Guide, Welcome
+                     (primer uso), CoverPicker, LaunchOverlay
   mock/gamelists/    gamelists de ejemplo con el formato real de ES-DE
   mock/libretro-names.json  nombres reales de libretro (demo y tests)
 tests/               tests de la lógica y del puente con el shell (vitest)
@@ -202,6 +214,10 @@ versión pública. Se suma como una consola más cuando madure.
       qué archivos pide y dónde van, dónde van los juegos y cómo probar; con lo que
       Relix ya sabe (emulador instalado, juegos encontrados) y un QR a DevStore.
       Se abren con Y en Opciones › Consolas o desde una consola sin juegos.
+- [x] **Revisión del sistema y primer uso:** Opciones › Revisión (USB, espacio,
+      carpetas, emuladores, BIOS por región, internet y respaldo) con la guía de cada
+      cosa; aviso al abrir y número en el ícono de Opciones; recorrido de bienvenida
+      de cinco pantallas que se puede saltar y repetir.
 
 ## Controles
 
@@ -225,7 +241,7 @@ En el navegador: flechas, Enter, Esc, X, Y, Q/E, Z/C, V y M.
 3. ~~Encontrar juegos~~ (hecho; filtros por género/jugadores quedan para el paso 7)
 4. ~~Respaldo en el USB y tiempo de juego~~ (hecho)
 5. ~~Más consolas y elegir emulador~~ (hecho; Switch cuando NXbox sea jugable)
-6. **Revisión del sistema** (USB, carpetas, emuladores instalados) y **primer uso guiado**.
+6. ~~Revisión del sistema y primer uso guiado~~ (hecho)
 7. **Ficha más viva:** fanart de fondo, video de vista previa, protector de pantalla.
    Con ScreenScraper, que además completa las portadas de PSP que libretro no tiene.
 8. **Portafolio:** GitHub público, tests en GitHub Actions, releases instalables,

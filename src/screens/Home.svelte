@@ -13,6 +13,7 @@
   import Logo from '../lib/ui/Logo.svelte'
   import { shelf } from '../lib/ui/shelf.svelte.js'
   import { sound } from '../lib/ui/sound.js'
+  import { systemStatus } from '../lib/ui/systemStatus.svelte.js'
 
   /**
    * @type {{
@@ -82,7 +83,12 @@
   const meta = $derived.by(() => {
     if (onOptionsTile) {
       const consoles = shelf.channels.filter((c) => c.id !== 'favorites' && c.id !== 'collections').length
-      return [plural(library.all.length, 'juego', 'juegos'), plural(consoles, 'consola', 'consolas'), 'Escaneo y preferencias']
+      const { errors } = systemStatus.summary
+      return [
+        plural(library.all.length, 'juego', 'juegos'),
+        plural(consoles, 'consola', 'consolas'),
+        errors > 0 ? `${plural(errors, 'cosa', 'cosas')} por arreglar en Revisión` : 'Escaneo, emuladores y revisión',
+      ]
     }
     if (channel.id === 'favorites') {
       const systems = new Set(games.map((g) => g.system)).size
@@ -217,6 +223,12 @@
     <span class="tile round focus-ring" class:focused={optionsFocused}>
       <ChannelIcon id="options" color="#23304A" size={Math.round(tileSize * 0.42)} />
     </span>
+    {#if systemStatus.summary.errors > 0}
+      <!-- algo por arreglar: se ve en Opciones › Revisión -->
+      <span class="alert" aria-label="{plural(systemStatus.summary.errors, 'cosa por arreglar', 'cosas por arreglar')}">
+        {systemStatus.summary.errors}
+      </span>
+    {/if}
     <span class="label">Opciones</span>
   </button>
   </div>
@@ -446,6 +458,25 @@
     height: var(--tile);
     border-radius: calc(var(--tile) * 0.3);
     box-shadow: inset 0 -10px 0 rgb(0 0 0 / 0.1);
+  }
+  /* cosas por arreglar (Opciones › Revisión), sobre el borde del ícono */
+  .alert {
+    position: absolute;
+    top: calc(var(--tile) * 0.03);
+    right: calc(var(--tile) * -0.04);
+    display: grid;
+    place-items: center;
+    min-width: 46px;
+    height: 46px;
+    padding: 3px 10px 0;
+    border-radius: 999px;
+    border: 4px solid var(--cloud);
+    background: var(--pop);
+    color: var(--cloud);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 24px;
+    line-height: 1;
   }
   /* Opciones: redondo y blanco, para que se lea como herramienta y no como consola */
   .tile.round {

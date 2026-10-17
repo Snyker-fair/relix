@@ -157,5 +157,25 @@
     <!-- globo: región -->
     <circle cx="48" cy="48" r="34" />
     <path d="M14 48h68M48 14c-13 10-13 58 0 68M48 14c13 10 13 58 0 68" />
+  {:else if id === 'check'}
+    <!-- portapapeles con visto bueno: revisión -->
+    <rect x="20" y="16" width="56" height="70" rx="10" />
+    <rect x="34" y="9" width="28" height="15" rx="6" fill={color} />
+    <path d="M34 54l10 10 19-21" stroke-width="7" />
+  {:else if id === 'flag'}
+    <!-- banderín: primeros pasos -->
+    <path d="M26 86V12" />
+    <path d="M26 16h44l-9 15 9 15H26Z" fill={color} />
+  {:else if id === 'usb'}
+    <!-- pendrive -->
+    <rect x="28" y="36" width="40" height="50" rx="10" fill={color} />
+    <path d="M37 36V12h22v24" />
+    <path d="M43 20v6M53 20v6" stroke-width="5" />
+  {:else if id === 'gamepad'}
+    <!-- control -->
+    <path d="M30 28h36c11 0 17 8 19 20l3 17c1 9-9 13-15 6l-8-9H31l-8 9c-6 7-16 3-15-6l3-17c2-12 8-20 19-20Z" />
+    <path d="M31 40v14M24 47h14" />
+    <circle cx="64" cy="43" r="3.5" fill={color} />
+    <circle cx="71" cy="51" r="3.5" fill={color} />
   {/if}
 </svg>

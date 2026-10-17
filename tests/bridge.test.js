@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 /**
  * Simula el shell en C#: guarda lo que la interfaz envía y permite responder
@@ -159,6 +159,26 @@ describe('bridge con el shell de Xbox', () => {
     expect(msg).toMatchObject({ type: 'saveUserData', payload: { text: '{"app":"relix"}' } })
     shell.emit({ id: msg.id, ok: false, error: 'No pude guardar tus datos en el USB.', code: 'usb-readonly' })
     await expect(saving).rejects.toMatchObject({ code: 'usb-readonly' })
+  })
+
+  it('revisa el sistema y no se queda esperando a un shell anterior', async () => {
+    vi.useFakeTimers()
+    try {
+      const checking = bridge.systemCheck(['RetroArch\\system'])
+      const msg = shell.sent.at(-1)
+      expect(msg).toMatchObject({ type: 'systemCheck', payload: { folders: ['RetroArch\\system'] } })
+      const result = { drive: 'E:\\', writable: true, space: null, romFolders: [], folders: { 'RetroArch\\system': null }, internet: true }
+      shell.emit({ id: msg.id, ok: true, result })
+      await expect(checking).resolves.toEqual(result)
+
+      // Un shell que no conoce el mensaje no responde: a los 15 s se rinde
+      const silent = bridge.systemCheck([])
+      const assertion = expect(silent).rejects.toMatchObject({ code: 'timeout' })
+      await vi.advanceTimersByTimeAsync(15_000)
+      await assertion
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('arma las URLs de la portada y su miniatura', () => {

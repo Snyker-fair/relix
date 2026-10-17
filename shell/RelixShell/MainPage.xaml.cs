@@ -192,6 +192,11 @@ namespace RelixShell
                         Reply(id, await EmulatorStatusAsync(payload));
                         break;
 
+                    case "systemCheck":
+                        await EnsurePathsAsync(refresh: false);
+                        Reply(id, await SystemCheck.RunAsync(paths, payload.GetNamedArray("folders", new JsonArray())));
+                        break;
+
                     case "loadUserData":
                         Reply(id, await LoadUserDataAsync());
                         break;
@@ -200,6 +205,12 @@ namespace RelixShell
                         await EnsurePathsAsync(refresh: false);
                         await UserDataStore.SaveAsync(paths, payload.GetNamedString("text"));
                         Reply(id, JsonValue.CreateBooleanValue(true));
+                        break;
+
+                    default:
+                        // Un mensaje de una interfaz más nueva que este shell: se
+                        // responde para que la interfaz no se quede esperando
+                        if (id != 0) ReplyError(id, "Esta versión del shell no conoce \"" + type + "\". Actualiza el proyecto C#.", "unknown-message");
                         break;
                 }
             }
