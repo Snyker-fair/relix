@@ -493,8 +493,8 @@
   {:else if section === 'about'}
     <h2>Acerca de</h2>
     <p>
-      Tus reliquias, listas para jugar. Un lanzador hecho a la medida para tus emuladores en la
-      Xbox, que lee tu USB tal como lo deja ES-DE.
+      Tus reliquias, listas para jugar: un lanzador para tus emuladores en la Xbox que lee tu USB
+      como lo deja ES-DE.
     </p>
     <ul class="chips">
       <li>Versión {VERSION}</li>
@@ -502,11 +502,13 @@
       <li>{mode === 'xbox' ? 'Xbox · Modo Desarrollador' : 'Demo en el navegador'}</li>
     </ul>
     <div class="credits">
-      <strong>Creado por snyker-fair</strong>
-      <p>
-        Portadas de libretro-thumbnails · formato de ES-DE · letras Baloo 2 y Nunito (SIL OFL) ·
-        hecho con Svelte, C# y WebView2
+      <strong>© 2026 snyker-fair</strong>
+      <!-- Aviso que pide la GPL en un programa interactivo: autor, licencia, sin garantía y dónde leerla -->
+      <p class="legal">
+        Licencia GPL-3.0 o posterior, sin garantía: compártelo y modifícalo bajo sus términos (ver
+        LICENSE).
       </p>
+      <p>Portadas de libretro · formato de ES-DE · letras SIL OFL</p>
     </div>
   {:else}
     <h2>Preferencias</h2>
@@ -1033,6 +1035,9 @@
     margin: 4px 0 0;
     font-size: 19px;
     line-height: 1.4;
+  }
+  .intro .credits p.legal {
+    color: var(--ink);
   }
 
   /* ── Filas ───────────────────────────── */
