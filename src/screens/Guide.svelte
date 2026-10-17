@@ -21,6 +21,7 @@
   import PadButton from '../lib/ui/PadButton.svelte'
   import QrCode from '../lib/ui/QrCode.svelte'
   import { sound } from '../lib/ui/sound.js'
+  import { t } from '../lib/i18n/i18n.svelte.js'
 
   /** @type {{ systemId: string, onBack: (systemId: string) => void }} */
   let { systemId, onBack } = $props()
@@ -103,15 +104,15 @@
     <Logo size={34} />
   </button>
 
-  <nav class="switcher" aria-label="Consola">
-    <button class="bumper" onclick={() => dispatch('lb')} aria-label="Consola anterior">
+  <nav class="switcher" aria-label={t('Consola')}>
+    <button class="bumper" onclick={() => dispatch('lb')} aria-label={t('Consola anterior')}>
       <PadButton name="lb" size={30} />
     </button>
     <span class="title" style:--c={platform.color} style:--ink-c={platform.ink}>
       <span class="dot"><ChannelIcon id={platform.id} color={platform.ink} size={30} /></span>
-      Guía de {platform.shortName}
+      {t('Guía de {console}', { console: platform.shortName })}
     </span>
-    <button class="bumper" onclick={() => dispatch('rb')} aria-label="Consola siguiente">
+    <button class="bumper" onclick={() => dispatch('rb')} aria-label={t('Consola siguiente')}>
       <PadButton name="rb" size={30} />
     </button>
   </nav>
@@ -126,41 +127,42 @@
     </span>
     <h1 class:long={platform.name.length > 13}>{platform.name}</h1>
     {#if emulator}
-      <p class="with">Con <strong>{emulator.name}</strong></p>
+      <p class="with">{t('Con')} <strong>{emulator.name}</strong></p>
       {#if others.length > 0}
         <p class="others">
-          También: {others.map((e) => e.name).join(' · ')}. Se cambia en <strong>≡ › Consolas</strong>.
+          {t('También: {emulators}. Se cambia en', { emulators: others.map((e) => e.name).join(' · ') })}
+          <strong>{t('≡ › Consolas')}</strong>.
         </p>
       {/if}
     {:else}
-      <p class="with">Con <strong>Cemu</strong>, desde Dev Home</p>
+      <p class="with">{t('Con')} <strong>Cemu</strong>{t(', desde Dev Home')}</p>
     {/if}
 
     <ul class="checks">
       <li class={emulator ? stateOf(installed) : 'info'}>
         <span class="mark" aria-hidden="true">{emulator && installed === true ? '✓' : emulator && installed === false ? '✗' : '?'}</span>
         {#if !emulator}
-          Relix aún no puede abrirlo
+          {t('Relix aún no puede abrirlo')}
         {:else if installed === true}
-          Emulador instalado
+          {t('Emulador instalado')}
         {:else if installed === false}
-          Emulador sin instalar
+          {t('Emulador sin instalar')}
         {:else}
-          Se revisa en la Xbox
+          {t('Se revisa en la Xbox')}
         {/if}
       </li>
       <li class={games > 0 ? 'ok' : 'missing'}>
         <span class="mark" aria-hidden="true">{games > 0 ? '✓' : '✗'}</span>
-        {games > 0 ? `${plural(games, 'juego', 'juegos')} en el USB` : 'Aún no hay juegos'}
+        {games > 0 ? t('{games} en el USB', { games: plural(games, 'juego', 'juegos') }) : t('Aún no hay juegos')}
       </li>
     </ul>
 
     <div class="qr">
       <QrCode text={DEVSTORE_URL} size={150} />
       <p>
-        Descárgalo en el PC desde
-        <strong>{DEVSTORE_LABEL}</strong>
-        <span>Escanea para abrirlo en el celular</span>
+        {t('Descárgalo en el PC desde')}
+        <strong>{t(DEVSTORE_LABEL)}</strong>
+        <span>{t('Escanea para abrirlo en el celular')}</span>
       </p>
     </div>
   </section>
@@ -174,7 +176,9 @@
           <div class="body">
             <h2>
               {step.title}
-              {#if state === 'ok'}<span class="chip ok">Listo</span>{:else if state === 'missing'}<span class="chip missing">Falta</span>{/if}
+              {#if state === 'ok'}<span class="chip ok">{t('Listo')}</span>{:else if state === 'missing'}<span
+                  class="chip missing">{t('Falta')}</span
+                >{/if}
             </h2>
             <ul>
               {#each step.lines.filter(Boolean) as line, j (j)}
@@ -194,8 +198,8 @@
 
 <HintBar
   hints={[
-    { button: 'lb', also: 'rb', label: 'Otra consola' },
-    { button: 'b', label: 'Volver' },
+    { button: 'lb', also: 'rb', label: t('Otra consola') },
+    { button: 'b', label: t('Volver') },
   ]}
 />
 

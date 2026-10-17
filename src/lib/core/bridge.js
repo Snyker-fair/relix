@@ -56,10 +56,12 @@
  * el lanzamiento solo se muestra en pantalla.
  */
 
+import { i18n, t } from '../i18n/i18n.svelte.js'
 import { remoteCoverUrl } from './coverMatch.js'
 import { MEDIA_LISTED } from './media.js'
 import { getPlatform, PLATFORMS } from './platforms.js'
 import mockCoverNames from '../../mock/libretro-names.json'
+import mockEnglish from '../../mock/en.json'
 import psx from '../../mock/gamelists/psx/gamelist.xml?raw'
 import psp from '../../mock/gamelists/psp/gamelist.xml?raw'
 import ps2 from '../../mock/gamelists/ps2/gamelist.xml?raw'
@@ -74,6 +76,23 @@ import dreamcast from '../../mock/gamelists/dreamcast/gamelist.xml?raw'
 import xbox360 from '../../mock/gamelists/xbox360/gamelist.xml?raw'
 
 const MOCK_GAMELISTS = { psx, psp, ps2, gc, wiiu, snes, n64, gba, n3ds, megadrive, dreamcast, xbox360 }
+
+/**
+ * Los gamelists de prueba de la demo. En inglés, con sus descripciones y
+ * géneros en inglés (src/mock/en.json): con tu USB, Relix muestra lo que dejó ES-DE.
+ * @returns {Record<string, string>}
+ */
+function demoGamelists() {
+  if (i18n.current !== 'en') return MOCK_GAMELISTS
+  /** @type {{ descriptions: Record<string, string>, genres: Record<string, string> }} */
+  const english = mockEnglish
+  /** @param {string} xml */
+  const swap = (xml) =>
+    xml
+      .replace(/<desc>(.*?)<\/desc>/g, (_, text) => `<desc>${english.descriptions[text] ?? text}</desc>`)
+      .replace(/<genre>(.*?)<\/genre>/g, (_, text) => `<genre>${english.genres[text] ?? text}</genre>`)
+  return Object.fromEntries(Object.entries(MOCK_GAMELISTS).map(([id, xml]) => [id, swap(xml)]))
+}
 
 /** @returns {any} */
 function webview() {
@@ -122,7 +141,7 @@ if (webview()) {
     if (!waiter) return
     pending.delete(msg.id)
     if (msg.ok) waiter.resolve(msg.result)
-    else waiter.reject(reportError(waiter.type, new ShellError(msg.error ?? 'El shell no respondió.', msg.code)))
+    else waiter.reject(reportError(waiter.type, new ShellError(msg.error ?? t('El shell no respondió.'), msg.code)))
   })
 }
 
@@ -139,7 +158,7 @@ function request(type, payload, { timeout = 0 } = {}) {
     if (timeout > 0) {
       setTimeout(() => {
         if (!pending.delete(id)) return
-        reject(reportError(type, new ShellError('El shell no respondió a tiempo.', 'timeout')))
+        reject(reportError(type, new ShellError(t('El shell no respondió a tiempo.'), 'timeout')))
       }, timeout)
     }
   })
@@ -209,6 +228,16 @@ export async function readLog(count) {
 }
 
 /**
+ * El idioma de la interfaz ('es' o 'en'), para que el shell escriba sus
+ * mensajes en el mismo. Sin respuesta: un shell anterior lo ignora.
+ * @param {'es'|'en'} language
+ */
+export function setShellLanguage(language) {
+  if (mode !== 'xbox') return
+  webview().postMessage({ type: 'setLanguage', payload: { language } })
+}
+
+/**
  * Color de fondo del shell la próxima vez que abra (el del tema, AARRGGBB).
  * Sin respuesta: si el shell es anterior, simplemente no lo usa.
  * @param {string} color
@@ -242,7 +271,7 @@ export async function loadLibrary() {
     driveId: 'demo',
     mediaBase: null,
     thumbBase: null,
-    gamelists: MOCK_GAMELISTS,
+    gamelists: demoGamelists(),
     covers: demoCoverFiles(PLATFORMS.map((p) => p.id)),
   }
 }
@@ -504,9 +533,13 @@ export async function saveCollection(file, text) {
 
 const DEMO_COLLECTIONS_KEY = 'relix:demo-collections'
 
-/** En la demo hay una colección de ejemplo (con un juego de una consola que Relix no maneja) */
-const DEMO_SEED = {
-  'custom-Con amigos.cfg': [
+/**
+ * En la demo hay una colección de ejemplo (con un juego de una consola que Relix
+ * no maneja). Su nombre, en el idioma con que se abrió la demo por primera vez.
+ * @returns {Record<string, string>}
+ */
+const demoSeed = () => ({
+  [`custom-${t('Con amigos')}.cfg`]: [
     '%ROMPATH%/ps2/Burnout 3 - Takedown (USA).chd',
     '%ROMPATH%/gc/F-Zero GX (USA).rvz',
     '%ROMPATH%/wiiu/Splatoon (USA).wua',
@@ -514,15 +547,15 @@ const DEMO_SEED = {
     '%ROMPATH%/snes/Super Mario Kart (USA).sfc',
     '',
   ].join('\n'),
-}
+})
 
 /** @returns {Record<string, string>} */
 function demoCollections() {
   try {
     const saved = localStorage.getItem(DEMO_COLLECTIONS_KEY)
-    return saved ? JSON.parse(saved) : { ...DEMO_SEED }
+    return saved ? JSON.parse(saved) : demoSeed()
   } catch {
-    return { ...DEMO_SEED }
+    return demoSeed()
   }
 }
 

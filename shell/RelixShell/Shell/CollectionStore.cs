@@ -45,7 +45,7 @@ namespace RelixShell
         {
             if (!IsCollectionFile(fileName))
             {
-                throw new UserFacingException("error", "Nombre de colección no válido: " + fileName);
+                throw new UserFacingException("error", Text.Pick("Nombre de colección no válido: ", "Invalid collection name: ") + fileName);
             }
 
             try
@@ -69,7 +69,9 @@ namespace RelixShell
             {
                 throw new UserFacingException(
                     "usb-readonly",
-                    "No pude guardar la colección en el USB. Conecta el disco al PC y vuelve a aplicarle los permisos con la herramienta de DevStore.");
+                    Text.Pick(
+                        "No pude guardar la colección en el USB. Conecta el disco al PC y vuelve a aplicarle los permisos con la herramienta de DevStore.",
+                        "I couldn't save the collection to the USB drive. Plug the drive into the PC and apply the permissions again with the DevStore tool."));
             }
         }
 

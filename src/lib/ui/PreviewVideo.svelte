@@ -20,8 +20,8 @@
     src
     waited = false
     playing = false
-    const t = setTimeout(() => (waited = true), delay)
-    return () => clearTimeout(t)
+    const timer = setTimeout(() => (waited = true), delay)
+    return () => clearTimeout(timer)
   })
 
   // El sonido se puede cambiar sin volver a cargar el video

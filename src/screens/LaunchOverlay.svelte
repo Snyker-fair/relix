@@ -1,6 +1,7 @@
 <script>
   import { mode } from '../lib/core/bridge.js'
   import { getPlatform } from '../lib/core/platforms.js'
+  import { t } from '../lib/i18n/i18n.svelte.js'
   import CoverArt from '../lib/ui/CoverArt.svelte'
   import HintBar from '../lib/ui/HintBar.svelte'
   import { pushHandler } from '../lib/ui/input.js'
@@ -24,27 +25,28 @@
   // evento 'resumed' y App.svelte cierra este overlay.
 </script>
 
-<div class="overlay" role="dialog" aria-modal="true" aria-label="Abriendo {game.name}">
+<div class="overlay" role="dialog" aria-modal="true" aria-label={t('Abriendo {game}', { game: game.name })}>
   <div class="card" style:--tint={platform.color}>
     <div class="cover">
       <CoverArt {game} {platform} width={260} />
     </div>
     <div class="text">
-      <p class="kicker">Abriendo {emulatorName}</p>
+      <p class="kicker">{t('Abriendo {emulator}', { emulator: emulatorName })}</p>
       <h1>{game.name}</h1>
 
       {#if mode === 'browser'}
         <p class="explain">
-          Esto es una vista previa en el navegador. En la Xbox, Relix abriría esta dirección y la
-          consola volvería aquí al cerrar el emulador:
+          {t(
+            'Esto es una vista previa en el navegador. En la Xbox, Relix abriría esta dirección y la consola volvería aquí al cerrar el emulador:',
+          )}
         </p>
         <code>{uri}</code>
       {:else}
-        <p class="explain">Al cerrar el emulador vuelves aquí.</p>
+        <p class="explain">{t('Al cerrar el emulador vuelves aquí.')}</p>
       {/if}
     </div>
   </div>
-  <HintBar hints={[{ button: 'b', label: 'Volver' }]} />
+  <HintBar hints={[{ button: 'b', label: t('Volver') }]} />
 </div>
 
 <style>

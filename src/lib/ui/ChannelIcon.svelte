@@ -178,6 +178,10 @@
     <!-- hoja con renglones: registro -->
     <rect x="22" y="12" width="52" height="72" rx="10" />
     <path d="M34 34h28M34 48h28M34 62h16" />
+  {:else if id === 'language'}
+    <!-- globo de diálogo con una A: idioma -->
+    <path d="M24 14h48a12 12 0 0 1 12 12v32a12 12 0 0 1-12 12H44L28 82V70h-4a12 12 0 0 1-12-12V26a12 12 0 0 1 12-12Z" />
+    <path d="M36 58l12-30 12 30M41 47h14" />
   {:else if id === 'theme'}
     <!-- círculo mitad lleno: tema claro u oscuro -->
     <circle cx="48" cy="48" r="32" />

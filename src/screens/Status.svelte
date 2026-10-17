@@ -8,6 +8,7 @@
   import { library } from '../lib/ui/library.svelte.js'
   import Logo from '../lib/ui/Logo.svelte'
   import { sound } from '../lib/ui/sound.js'
+  import { t } from '../lib/i18n/i18n.svelte.js'
 
   $effect(() =>
     pushHandler((action) => {
@@ -23,26 +24,32 @@
   <Logo size={72} />
 
   {#if library.status === 'loading'}
-    <h1>Desempolvando tus reliquias…</h1>
+    <h1>{t('Desempolvando tus reliquias…')}</h1>
     {#if library.progress}
-      <p>Escaneando {library.progress.name} ({library.progress.current} de {library.progress.total})</p>
+      <p>
+        {t('Escaneando {console} ({n} de {total})', {
+          console: library.progress.name,
+          n: library.progress.current,
+          total: library.progress.total,
+        })}
+      </p>
       <div class="bar" aria-hidden="true">
         <span style:width="{(library.progress.current / library.progress.total) * 100}%"></span>
       </div>
     {/if}
   {:else}
-    <h1>No pude leer tu biblioteca</h1>
+    <h1>{t('No pude leer tu biblioteca')}</h1>
     <p class="error">{library.error}</p>
     <ol>
-      <li>Conecta el disco USB a la Xbox.</li>
-      <li>Revisa que tenga la carpeta <code>roms</code> en la raíz.</li>
-      <li>Presiona <strong>A</strong> para volver a intentar.</li>
+      <li>{t('Conecta el disco USB a la Xbox.')}</li>
+      <li>{t('Revisa que tenga la carpeta')} <code>roms</code> {t('en la raíz.')}</li>
+      <li>{t('Presiona')} <strong>A</strong> {t('para volver a intentar.')}</li>
     </ol>
   {/if}
 </div>
 
 {#if library.status === 'error'}
-  <HintBar hints={[{ button: 'a', label: 'Reintentar' }]} />
+  <HintBar hints={[{ button: 'a', label: t('Reintentar') }]} />
 {/if}
 
 <style>

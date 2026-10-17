@@ -1,13 +1,18 @@
 <script>
+  import { i18n } from '../i18n/i18n.svelte.js'
+
   let now = $state(new Date())
 
   $effect(() => {
-    const t = setInterval(() => (now = new Date()), 15_000)
-    return () => clearInterval(t)
+    const timer = setInterval(() => (now = new Date()), 15_000)
+    return () => clearInterval(timer)
   })
 
-  const time = $derived(now.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }))
-  const date = $derived(now.toLocaleDateString('es-CL', { weekday: 'short', day: 'numeric', month: 'short' }))
+  // "06:07 a. m." y "sáb, 17 oct" en español; "6:07 AM" y "Sat, Oct 17" en inglés
+  const time = $derived(
+    now.toLocaleTimeString(i18n.dateLocale, { hour: i18n.current === 'es' ? '2-digit' : 'numeric', minute: '2-digit' }),
+  )
+  const date = $derived(now.toLocaleDateString(i18n.dateLocale, { weekday: 'short', day: 'numeric', month: 'short' }))
 </script>
 
 <div class="clock">

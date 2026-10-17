@@ -9,20 +9,22 @@
   import { collections } from '../lib/ui/collections.svelte.js'
   import { emulators } from '../lib/ui/emulators.svelte.js'
   import { formatPlaytime, plural, timeAgo } from '../lib/ui/format.js'
+  import { t } from '../lib/i18n/i18n.svelte.js'
   import { library } from '../lib/ui/library.svelte.js'
   import { userData } from '../lib/ui/userData.svelte.js'
 
   /** "E:\roms" -> "E:" */
   const drive = $derived(library.romRoot.replace(/[\\/]+roms[\\/]*$/i, '') || 'E:')
 
+  // Los nombres de archivos y carpetas del USB son los mismos en cualquier idioma
   const paths = $derived([
-    { label: 'Juegos', path: `${library.romRoot}\\<consola>` },
-    { label: 'Portadas', path: `${drive}\\ES-DE\\downloaded_media` },
-    { label: 'Colecciones', path: `${drive}\\ES-DE\\collections` },
-    { label: 'Tus datos', path: `${drive}\\relix\\datos.json` },
-    { label: 'Respaldos', path: `${drive}\\relix\\respaldos (7 días)` },
-    { label: 'Registro', path: `${drive}\\relix\\registro.txt` },
-    { label: 'Caché', path: `${drive}\\relix\\cache (se puede borrar)` },
+    { label: t('Juegos'), path: `${library.romRoot}\\${t('<consola>')}` },
+    { label: t('Portadas'), path: `${drive}\\ES-DE\\downloaded_media` },
+    { label: t('Colecciones'), path: `${drive}\\ES-DE\\collections` },
+    { label: t('Tus datos'), path: `${drive}\\relix\\datos.json` },
+    { label: t('Respaldos'), path: `${drive}\\relix\\respaldos ${t('(7 días)')}` },
+    { label: t('Registro'), path: `${drive}\\relix\\registro.txt` },
+    { label: t('Caché'), path: `${drive}\\relix\\cache ${t('(se puede borrar)')}` },
   ])
 
   /** Solo cuentan los juegos que siguen en el USB */
@@ -42,21 +44,24 @@
     const covers = PLATFORMS.reduce((n, p) => n + library.coverCount(p.id).withCover, 0)
     const consoles = PLATFORMS.filter((p) => library.gamesFor(p.id).length > 0).length
     return [
-      { value: library.all.length, label: library.all.length === 1 ? 'juego' : 'juegos' },
-      { value: consoles, label: consoles === 1 ? 'consola' : 'consolas' },
-      { value: covers, label: 'con portada' },
-      { value: library.favorites.length, label: library.favorites.length === 1 ? 'favorito' : 'favoritos' },
-      { value: collections.visible.length, label: collections.visible.length === 1 ? 'colección' : 'colecciones' },
-      { value: library.hiddenCount(), label: library.hiddenCount() === 1 ? 'oculto' : 'ocultos' },
+      { value: library.all.length, label: library.all.length === 1 ? t('juego') : t('juegos') },
+      { value: consoles, label: consoles === 1 ? t('consola') : t('consolas') },
+      { value: covers, label: t('con portada') },
+      { value: library.favorites.length, label: library.favorites.length === 1 ? t('favorito') : t('favoritos') },
+      { value: collections.visible.length, label: collections.visible.length === 1 ? t('colección') : t('colecciones') },
+      { value: library.hiddenCount(), label: library.hiddenCount() === 1 ? t('oculto') : t('ocultos') },
     ]
   })
 
   /** Cómo va el respaldo en el USB */
   const saveState = $derived.by(() => {
-    if (userData.status === 'error') return { tone: 'bad', text: 'No se pudo guardar' }
-    if (userData.status === 'off') return { tone: 'muted', text: 'Solo en la app' }
-    if (userData.status === 'pending') return { tone: 'muted', text: 'Guardando…' }
-    return { tone: 'ok', text: userData.savedAt ? `Guardado ${timeAgo(userData.savedAt)}` : 'Al día' }
+    if (userData.status === 'error') return { tone: 'bad', text: t('No se pudo guardar') }
+    if (userData.status === 'off') return { tone: 'muted', text: t('Solo en la app') }
+    if (userData.status === 'pending') return { tone: 'muted', text: t('Guardando…') }
+    return {
+      tone: 'ok',
+      text: userData.savedAt ? t('Guardado {when}', { when: timeAgo(userData.savedAt) }) : t('Al día'),
+    }
   })
 
   /**
@@ -78,10 +83,10 @@
   })
 </script>
 
-<section class="about" aria-label="Acerca de Relix">
+<section class="about" aria-label={t('Acerca de Relix')}>
   <div class="column">
     <article class="card">
-      <h3>Emuladores en la consola</h3>
+      <h3>{t('Emuladores en la consola')}</h3>
       <ul class="apps">
         {#each apps as app (app.protocol)}
           <li class:on={app.installed === true} class:off={app.installed === false}>
@@ -92,18 +97,21 @@
       </ul>
       <p class="hint">
         {emulators.installed
-          ? `${plural(apps.filter((a) => a.installed).length, 'instalado', 'instalados')} de ${apps.length}.`
-          : 'Relix lo revisa al abrir en la Xbox.'}
-        Cuál usa cada consola se elige en <strong>Opciones › Consolas</strong>.
+          ? t('{installed} de {total}.', {
+              installed: plural(apps.filter((a) => a.installed).length, 'instalado', 'instalados'),
+              total: apps.length,
+            })
+          : t('Relix lo revisa al abrir en la Xbox.')}
+        {t('Cuál usa cada consola se elige en')} <strong>{t('Opciones › Consolas')}</strong>.
       </p>
     </article>
 
     <article class="card">
-      <h3>Tiempo de juego</h3>
+      <h3>{t('Tiempo de juego')}</h3>
       {#if total > 0}
         <p class="total">
           <strong>{formatPlaytime(total)}</strong>
-          <span>en {plural(plays, 'partida', 'partidas')}</span>
+          <span>{t('en {sessions}', { sessions: plural(plays, 'partida', 'partidas') })}</span>
         </p>
         <ol class="top">
           {#each top as entry, i (entry.id)}
@@ -116,7 +124,7 @@
         </ol>
       {:else}
         <p class="empty">
-          Aún no hay partidas contadas. El tiempo se suma solo cuando vuelves de un juego.
+          {t('Aún no hay partidas contadas. El tiempo se suma solo cuando vuelves de un juego.')}
         </p>
       {/if}
     </article>
@@ -124,7 +132,7 @@
 
   <div class="column">
     <article class="card">
-      <h3>Tu biblioteca</h3>
+      <h3>{t('Tu biblioteca')}</h3>
       <ul class="stats">
         {#each stats as s (s.label)}
           <li><strong>{s.value}</strong><span>{s.label}</span></li>
@@ -134,7 +142,7 @@
 
     <article class="card">
       <div class="head">
-        <h3>En tu USB</h3>
+        <h3>{t('En tu USB')}</h3>
         <span class="state {saveState.tone}">{saveState.text}</span>
       </div>
       <ul class="paths">

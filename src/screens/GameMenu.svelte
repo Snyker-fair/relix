@@ -13,6 +13,7 @@
   import { emulators } from '../lib/ui/emulators.svelte.js'
   import { activeFilters } from '../lib/ui/filters.svelte.js'
   import { plural } from '../lib/ui/format.js'
+  import { t } from '../lib/i18n/i18n.svelte.js'
   import HintBar from '../lib/ui/HintBar.svelte'
   import { pushHandler } from '../lib/ui/input.js'
   import { library } from '../lib/ui/library.svelte.js'
@@ -58,38 +59,51 @@
   const consoleEmulator = $derived(emulators.forPlatform(platform))
 
   /** "No instalado" si la Xbox dice que no lo tiene @param {import('../lib/core/platforms.js').Emulator} e */
-  const installTag = (e) => (emulators.isInstalled(e) === false ? 'No instalado' : undefined)
+  const installTag = (e) => (emulators.isInstalled(e) === false ? t('No instalado') : undefined)
 
   /** @type {Item[]} */
   const mainItems = $derived([
-    { id: 'play', icon: 'play', label: 'Jugar', disabled: !emulator },
+    { id: 'play', icon: 'play', label: t('Jugar'), disabled: !emulator },
     // Solo si la consola tiene más de un emulador para elegir
     ...(platform && platform.emulators.length > 1
-      ? [{ id: 'emulator', icon: 'swap', label: 'Abrir con…', value: shortName(emulator?.name ?? '') }]
+      ? [{ id: 'emulator', icon: 'swap', label: t('Abrir con…'), value: shortName(emulator?.name ?? '') }]
       : []),
-    { id: 'favorite', icon: 'favorites', label: favorite ? 'Quitar de favoritos' : 'Agregar a favoritos' },
+    { id: 'favorite', icon: 'favorites', label: favorite ? t('Quitar de favoritos') : t('Agregar a favoritos') },
     {
       id: 'collections',
       icon: 'collections',
-      label: 'Colecciones',
-      value: inCollections.length === 0 ? 'Ninguna' : inCollections.length === 1 ? inCollections[0] : `En ${inCollections.length}`,
+      label: t('Colecciones'),
+      value:
+        inCollections.length === 0
+          ? t('Ninguna')
+          : inCollections.length === 1
+            ? inCollections[0]
+            : t('En {n}', { n: inCollections.length }),
     },
-    { id: 'cover', icon: 'cover', label: 'Cambiar portada' },
-    { id: 'hide', icon: 'hide', label: 'Ocultar juego' },
+    { id: 'cover', icon: 'cover', label: t('Cambiar portada') },
+    { id: 'hide', icon: 'hide', label: t('Ocultar juego') },
     ...(sortOptions
-      ? [{ id: 'sort', icon: 'sort', label: 'Ordenar biblioteca', value: SORT_NAMES[settings.sortOrder] }]
+      ? [{ id: 'sort', icon: 'sort', label: t('Ordenar biblioteca'), value: t(SORT_NAMES[settings.sortOrder]) }]
       : []),
     ...(canFilter
-      ? [{ id: 'filter', icon: 'filter', label: 'Filtrar', value: currentFilter ? filterLabel(currentFilter) : 'Todos' }]
+      ? [{ id: 'filter', icon: 'filter', label: t('Filtrar'), value: currentFilter ? filterLabel(currentFilter) : t('Todos') }]
       : []),
   ])
 
   /** Todos, 2 o más jugadores y cada género, con cuántos juegos */
   /** @type {Item[]} */
   const filterItems = $derived([
-    { id: 'f:all', icon: 'collections', label: 'Todos los juegos', tag: `${filterGames.length}`, checked: !currentFilter },
+    { id: 'f:all', icon: 'collections', label: t('Todos los juegos'), tag: `${filterGames.length}`, checked: !currentFilter },
     ...(filters.multiplayer > 0
-      ? [{ id: 'f:players', icon: 'gamepad', label: '2 o más jugadores', tag: `${filters.multiplayer}`, checked: currentFilter?.kind === 'players' }]
+      ? [
+          {
+            id: 'f:players',
+            icon: 'gamepad',
+            label: t('2 o más jugadores'),
+            tag: `${filters.multiplayer}`,
+            checked: currentFilter?.kind === 'players',
+          },
+        ]
       : []),
     ...filters.genres.map((g) => ({
       id: `f:g:${g.name}`,
@@ -102,7 +116,7 @@
 
   /** @type {Item[]} */
   const collectionItems = $derived([
-    { id: 'new', icon: 'plus', label: 'Nueva colección…' },
+    { id: 'new', icon: 'plus', label: t('Nueva colección…') },
     ...collections.list.map((c) => ({
       id: `c:${c.name}`,
       icon: 'collections',
@@ -117,15 +131,15 @@
     {
       id: 'e:',
       icon: platform?.id ?? 'play',
-      label: 'Como la consola',
-      tag: consoleEmulator ? `Ahora: ${consoleEmulator.name}` : undefined,
+      label: t('Como la consola'),
+      tag: consoleEmulator ? t('Ahora: {emulator}', { emulator: consoleEmulator.name }) : undefined,
       checked: !emulators.hasOwn(game),
     },
     ...(platform?.emulators ?? []).map((e) => ({
       id: `e:${e.id}`,
       icon: 'play',
       label: e.name,
-      tag: installTag(e) ?? e.note,
+      tag: installTag(e) ?? (e.note ? t(e.note) : undefined),
       checked: emulators.hasOwn(game) && emulator?.id === e.id,
     })),
   ])
@@ -175,7 +189,7 @@
     if (!item || busy) return
     if (item.disabled) {
       sound.error()
-      onToast(platform?.noEmulatorNote ?? 'Este juego todavía no se puede abrir.')
+      onToast(platform?.noEmulatorNote ? t(platform.noEmulatorNote) : t('Este juego todavía no se puede abrir.'))
       return
     }
 
@@ -197,8 +211,11 @@
       sound.favorite()
       onToast(
         chosen
-          ? `${current.name} se abrirá con ${item.label}`
-          : `${current.name} vuelve a abrirse como su consola (${shortName(consoleEmulator?.name ?? '')})`,
+          ? t('{game} se abrirá con {emulator}', { game: current.name, emulator: item.label })
+          : t('{game} vuelve a abrirse como su consola ({emulator})', {
+              game: current.name,
+              emulator: shortName(consoleEmulator?.name ?? ''),
+            }),
       )
       show('main')
     } else if (item.id === 'cover') {
@@ -208,7 +225,7 @@
     } else if (item.id === 'hide') {
       library.hide(current)
       sound.back()
-      onToast(`${current.name} quedó oculto. Lo recuperas en Opciones › Biblioteca.`)
+      onToast(t('{game} quedó oculto. Lo recuperas en Opciones › Biblioteca.', { game: current.name }))
       onClose()
     } else if (item.id === 'sort') {
       settings.cycleSortOrder(sortOptions)
@@ -225,8 +242,8 @@
       sound.favorite()
       onToast(
         chosen
-          ? `Mostrando: ${filterLabel(chosen)} (${plural(Number(item.tag), 'juego', 'juegos')})`
-          : 'Mostrando todos los juegos',
+          ? t('Mostrando: {filter} ({games})', { filter: filterLabel(chosen), games: plural(Number(item.tag), 'juego', 'juegos') })
+          : t('Mostrando todos los juegos'),
       )
       onClose()
     } else if (item.id === 'new') {
@@ -236,7 +253,7 @@
       await run(async () => {
         const name = item.id.slice(2)
         const added = await collections.toggle(current, name)
-        onToast(added ? `Agregado a ${name}` : `Quitado de ${name}`)
+        onToast(added ? t('Agregado a {collection}', { collection: name }) : t('Quitado de {collection}', { collection: name }))
       })
     }
   }
@@ -249,7 +266,7 @@
       sound.favorite()
     } catch (e) {
       sound.error()
-      onToast(e instanceof Error ? e.message : 'No se pudo guardar.')
+      onToast(e instanceof Error ? e.message : t('No se pudo guardar.'))
     } finally {
       busy = false
     }
@@ -260,7 +277,7 @@
     naming = false
     await run(async () => {
       const saved = await collections.create(name, game)
-      onToast(`Agregado a la colección ${saved}`)
+      onToast(t('Agregado a la colección {collection}', { collection: saved }))
     })
   }
 
@@ -281,7 +298,7 @@
 
 <div class="backdrop" role="presentation" onclick={() => !naming && onClose()}></div>
 
-<aside class="sheet" aria-label="Menú del juego">
+<aside class="sheet" aria-label={t('Menú del juego')}>
   <header class="game">
     {#if platform}
       <CoverArt {game} {platform} width={112} height={150} showTitle={false} real thumb />
@@ -293,11 +310,11 @@
   </header>
 
   {#if view === 'collections'}
-    <h3>Colecciones</h3>
+    <h3>{t('Colecciones')}</h3>
   {:else if view === 'emulators'}
-    <h3>Abrir con</h3>
+    <h3>{t('Abrir con')}</h3>
   {:else if view === 'filters'}
-    <h3>Filtrar</h3>
+    <h3>{t('Filtrar')}</h3>
   {/if}
 
   <ul class="items" bind:this={list}>
@@ -316,7 +333,7 @@
             {#if item.tag}<small>{item.tag}</small>{/if}
           </span>
           {#if item.checked !== undefined}
-            <span class="check" class:on={item.checked} aria-label={item.checked ? 'En la colección' : 'Fuera'}>
+            <span class="check" class:on={item.checked} aria-label={item.checked ? t('Elegido') : t('Sin elegir')}>
               {item.checked ? '✓' : ''}
             </span>
           {:else if item.value}
@@ -329,7 +346,7 @@
   </ul>
 
   {#if view === 'collections' && collections.list.length === 0}
-    <p class="note">Crea tu primera colección: se guarda en el USB y ES-DE también la ve.</p>
+    <p class="note">{t('Crea tu primera colección: se guarda en el USB y ES-DE también la ve.')}</p>
   {/if}
 </aside>
 
@@ -337,8 +354,8 @@
   <div class="hints-layer">
     <HintBar
       hints={[
-        { button: 'a', label: 'Elegir' },
-        { button: 'b', label: view === 'main' ? 'Cerrar' : 'Volver' },
+        { button: 'a', label: t('Elegir') },
+        { button: 'b', label: view === 'main' ? t('Cerrar') : t('Volver') },
       ]}
     />
   </div>
@@ -346,8 +363,8 @@
 
 {#if naming}
   <TextPrompt
-    title="Nueva colección"
-    placeholder="Por ejemplo: Con amigos"
+    title={t('Nueva colección')}
+    placeholder={t('Por ejemplo: Con amigos')}
     onSubmit={createCollection}
     onCancel={() => (naming = false)}
   />

@@ -21,6 +21,7 @@ import {
 } from '../core/coverMatch.js'
 import { getPlatform, PLATFORMS } from '../core/platforms.js'
 import { diagnostics } from './diagnostics.svelte.js'
+import { t } from '../i18n/i18n.svelte.js'
 import { library } from './library.svelte.js'
 import { settings } from './settings.svelte.js'
 import { load, onReplaced, save } from './storage.js'
@@ -95,7 +96,7 @@ class Covers {
    */
   async find(systemId) {
     const platform = getPlatform(systemId)
-    if (!platform) throw new Error(`Consola desconocida: ${systemId}`)
+    if (!platform) throw new Error(t('Consola desconocida: {id}', { id: systemId }))
     const missing = library.gamesFor(systemId).filter((g) => !g.cover)
     const withoutBackground = this.#withoutBackground(systemId)
 
@@ -167,7 +168,14 @@ class Covers {
       this.results = { ...this.results, [systemId]: result }
       save('coverResults', this.results)
       if (result.failed > 0) {
-        diagnostics.log('covers', `${platform.shortName}: ${result.failed} no se pudieron bajar (de ${result.failed + result.saved})`)
+        diagnostics.log(
+          'covers',
+          t('{console}: {n} no se pudieron bajar (de {total})', {
+            console: platform.shortName,
+            n: result.failed,
+            total: result.failed + result.saved,
+          }),
+        )
       }
       return result
     } finally {
@@ -245,7 +253,7 @@ class Covers {
     if (!platform) return
     const key = coverKey(game)
     const result = await downloadCovers(platform, [{ key, remote: remoteName }])
-    if (result.failed.length > 0) throw new Error(result.failed[0].error || 'No se pudo descargar la portada.')
+    if (result.failed.length > 0) throw new Error(result.failed[0].error || t('No se pudo descargar la portada.'))
     await library.refreshCovers([game.system], [key])
   }
 

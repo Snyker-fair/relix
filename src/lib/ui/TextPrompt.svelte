@@ -7,6 +7,7 @@
   import { pushHandler } from './input.js'
   import Keyboard from './Keyboard.svelte'
   import { sound } from './sound.js'
+  import { t } from '../i18n/i18n.svelte.js'
 
   /**
    * @type {{
@@ -48,11 +49,11 @@
   <HintBar
     surface
     hints={[
-      { button: 'a', label: 'Escribir' },
-      { button: 'x', label: 'Borrar' },
-      { button: 'y', label: 'Espacio' },
-      { button: 'start', label: 'Listo' },
-      { button: 'b', label: 'Cancelar' },
+      { button: 'a', label: t('Escribir') },
+      { button: 'x', label: t('Borrar') },
+      { button: 'y', label: t('Espacio') },
+      { button: 'start', label: t('Listo') },
+      { button: 'b', label: t('Cancelar') },
     ]}
   />
 </div>

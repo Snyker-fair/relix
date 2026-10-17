@@ -6,6 +6,7 @@
 import { systemCheck } from '../core/bridge.js'
 import { PLATFORMS } from '../core/platforms.js'
 import { buildChecks, CHECK_FOLDERS, summarize } from '../core/systemCheck.js'
+import { plural, t } from '../i18n/i18n.svelte.js'
 import { diagnostics } from './diagnostics.svelte.js'
 import { emulators } from './emulators.svelte.js'
 import { library } from './library.svelte.js'
@@ -75,8 +76,12 @@ class SystemStatus {
     const problems = this.checks.filter((c) => c.state === 'error' || c.state === 'warn').map((c) => c.title)
     const text =
       errors + warnings === 0
-        ? 'Todo en orden'
-        : `${errors} por arreglar, ${warnings} ${warnings === 1 ? 'aviso' : 'avisos'}: ${problems.join(' · ')}`
+        ? t('Todo en orden')
+        : t('{errors} por arreglar, {warnings}: {problems}', {
+            errors,
+            warnings: plural(warnings, 'aviso', 'avisos'),
+            problems: problems.join(' · '),
+          })
     if (text === this.#logged) return
     this.#logged = text
     diagnostics.log('check', text)

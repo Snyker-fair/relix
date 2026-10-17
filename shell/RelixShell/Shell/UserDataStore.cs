@@ -73,7 +73,7 @@ namespace RelixShell
         {
             if (!IsRelixData(text))
             {
-                throw new UserFacingException("error", "Los datos para guardar no son válidos.");
+                throw new UserFacingException("error", Text.Pick("Los datos para guardar no son válidos.", "The data to save isn't valid."));
             }
 
             try
@@ -97,7 +97,9 @@ namespace RelixShell
             {
                 throw new UserFacingException(
                     "usb-readonly",
-                    "No pude guardar tus datos en el USB. Conecta el disco al PC y vuelve a aplicarle los permisos con la herramienta de DevStore.");
+                    Text.Pick(
+                        "No pude guardar tus datos en el USB. Conecta el disco al PC y vuelve a aplicarle los permisos con la herramienta de DevStore.",
+                        "I couldn't save your data to the USB drive. Plug the drive into the PC and apply the permissions again with the DevStore tool."));
             }
         }
 

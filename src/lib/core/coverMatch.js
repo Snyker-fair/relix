@@ -13,6 +13,7 @@
  *      ofrecen las más parecidas para que el jugador elija.
  */
 
+import { t } from '../i18n/i18n.svelte.js'
 import { fileStem, titleStem } from './esde.js'
 
 export const THUMBNAILS_SERVER = 'https://thumbnails.libretro.com'
@@ -230,7 +231,7 @@ const REGION_LABELS = /** @type {Record<string, string>} */ ({
 /** "Okami (Europe, Australia) (En,Fr)" -> "Europa" */
 export function regionLabel(/** @type {string} */ name) {
   const region = regionsOf(name)[0]
-  return region ? (REGION_LABELS[region] ?? region) : ''
+  return region ? (REGION_LABELS[region] ? t(REGION_LABELS[region]) : region) : ''
 }
 
 /**

@@ -8,7 +8,11 @@
  *
  * La BIOS, las llaves y los juegos deben salir de tus propias consolas y
  * discos: las guías no enlazan sitios para bajarlos.
+ *
+ * Los textos se escriben en español con {system} y {tool} en vez de las rutas;
+ * guideSteps() los traduce (t) y pone las rutas.
  */
+import { t } from '../i18n/i18n.svelte.js'
 
 /** Lista de emuladores de DevStore: de ahí se descargan (el QR de cada guía) */
 export const DEVSTORE_URL = 'https://xbdev.store/category/4/'
@@ -19,9 +23,11 @@ export const USB_TOOL = 'Xbox USB Permissions Tool'
 /** RetroArch con los núcleos incluidos (la versión Lite viene sin núcleos) */
 const RETROARCH = 'RetroArch Full (Series S/X)'
 const RA_SYSTEM = 'E:\\RetroArch\\system'
+/** Lo que reemplaza a {system} y {tool} en los textos de las guías */
+const PATHS = { system: RA_SYSTEM, tool: USB_TOOL }
 /** Para que RetroArch busque la BIOS en el USB y se pueda copiar desde el PC */
 const RA_SETUP = [
-  `En RetroArch: **Settings › Directory › System/BIOS** → elige \`${RA_SYSTEM}\` (créala desde el PC si no existe).`,
+  'En RetroArch: **Settings › Directory › System/BIOS** → elige `{system}` (créala desde el PC si no existe).',
   'Luego **Main Menu › Configuration File › Save Current Configuration**.',
 ]
 
@@ -40,14 +46,14 @@ export const EMULATOR_GUIDES = {
     download: RETROARCH,
     setup: RA_SETUP,
     files: [
-      `BIOS de PS1, copiada de tu consola, en \`${RA_SYSTEM}\`: **scph5501.bin** (EE. UU.), **scph5502.bin** (Europa) o **scph5500.bin** (Japón).`,
+      'BIOS de PS1, copiada de tu consola, en `{system}`: **scph5501.bin** (EE. UU.), **scph5502.bin** (Europa) o **scph5500.bin** (Japón).',
     ],
   },
   'beetle-psx': {
     download: RETROARCH,
     setup: RA_SETUP,
     files: [
-      `BIOS de PS1, copiada de tu consola, en \`${RA_SYSTEM}\`: **scph5501.bin** (EE. UU.), **scph5502.bin** (Europa) o **scph5500.bin** (Japón).`,
+      'BIOS de PS1, copiada de tu consola, en `{system}`: **scph5501.bin** (EE. UU.), **scph5502.bin** (Europa) o **scph5500.bin** (Japón).',
     ],
   },
   duckstation: {
@@ -83,12 +89,12 @@ export const EMULATOR_GUIDES = {
   mgba: {
     download: RETROARCH,
     setup: RA_SETUP,
-    files: [`Opcional: **gba_bios.bin** en \`${RA_SYSTEM}\`. Sin ella también funciona.`],
+    files: ['Opcional: **gba_bios.bin** en `{system}`. Sin ella también funciona.'],
   },
   gpsp: {
     download: RETROARCH,
     setup: RA_SETUP,
-    files: [`Opcional: **gba_bios.bin** en \`${RA_SYSTEM}\`. Sin ella también funciona.`],
+    files: ['Opcional: **gba_bios.bin** en `{system}`. Sin ella también funciona.'],
   },
   vbam: { download: RETROARCH, files: [] },
   // GameCube
@@ -117,7 +123,7 @@ export const EMULATOR_GUIDES = {
     download: RETROARCH,
     setup: RA_SETUP,
     files: [
-      `Opcional: **dc_boot.bin** y **dc_flash.bin** en \`${RA_SYSTEM}\\dc\`. Flycast trae una BIOS de reemplazo.`,
+      'Opcional: **dc_boot.bin** y **dc_flash.bin** en `{system}\\dc`. Flycast trae una BIOS de reemplazo.',
     ],
   },
   flycast: {
@@ -127,12 +133,12 @@ export const EMULATOR_GUIDES = {
   // Xbox 360
   'xenia-canary': {
     download: 'Xenia Canary',
-    setup: [`Dale permisos al USB con **${USB_TOOL}** (DevStore): sin ellos Xenia no ve los juegos.`],
+    setup: ['Dale permisos al USB con **{tool}** (DevStore): sin ellos Xenia no ve los juegos.'],
     files: [],
   },
   xenia: {
     download: 'Xenia',
-    setup: [`Dale permisos al USB con **${USB_TOOL}** (DevStore): sin ellos Xenia no ve los juegos.`],
+    setup: ['Dale permisos al USB con **{tool}** (DevStore): sin ellos Xenia no ve los juegos.'],
     files: [],
     note: 'Versión anterior: DevStore recomienda Xenia Canary.',
   },
@@ -178,51 +184,56 @@ const CEMU = {
 export function guideSteps(platform, emulator, status) {
   const guide = emulator ? EMULATOR_GUIDES[emulator.id] : CEMU
   if (!guide) return []
+  /** Un texto de las tablas de arriba, traducido y con sus rutas @param {string} line */
+  const tr = (line) => t(line, PATHS)
 
   /** @type {GuideStep[]} */
   const steps = [
     {
       id: 'install',
-      title: `Instala ${guide.download === RETROARCH ? 'RetroArch' : guide.download}`,
+      title: t('Instala {emulator}', { emulator: guide.download === RETROARCH ? 'RetroArch' : guide.download }),
       lines: [
-        `En el PC, entra a **${DEVSTORE_LABEL}** y descarga **${guide.download}**.`,
-        'Abre el Device Portal (la dirección que muestra Dev Home) › **My games & apps › Add** y elige el archivo.',
-        'En Dev Home, sobre el emulador: botón Vista ⧉ › **View details** › cambia el tipo de **App** a **Game**: así tiene más memoria.',
+        t('En el PC, entra a **{store}** y descarga **{emulator}**.', { store: t(DEVSTORE_LABEL), emulator: guide.download }),
+        t('Abre el Device Portal (la dirección que muestra Dev Home) › **My games & apps › Add** y elige el archivo.'),
+        t(
+          'En Dev Home, sobre el emulador: botón Vista ⧉ › **View details** › cambia el tipo de **App** a **Game**: así tiene más memoria.',
+        ),
       ],
       done: status.installed,
     },
   ]
 
-  const setup = [...(guide.setup ?? []), ...guide.files]
+  const setup = [...(guide.setup ?? []), ...guide.files].map(tr)
   steps.push({
     id: 'files',
-    title: guide.files.length > 0 || guide.setup ? 'Archivos y ajustes' : 'Archivos extra',
-    lines: setup.length > 0 ? setup : ['No necesita nada más: ni BIOS ni ajustes.'],
+    title: guide.files.length > 0 || guide.setup ? t('Archivos y ajustes') : t('Archivos extra'),
+    lines: setup.length > 0 ? setup : [t('No necesita nada más: ni BIOS ni ajustes.')],
     done: setup.length > 0 ? null : true,
   })
 
+  const tip = GAME_TIPS[platform.id]
   steps.push({
     id: 'games',
-    title: 'Tus juegos',
+    title: t('Tus juegos'),
     lines: [
-      `Desde el PC, copia tus juegos en \`${status.folder}\` (créala si no existe).`,
-      `Formatos: ${platform.extensions.map((e) => `.${e}`).join(' ')}. ${GAME_TIPS[platform.id] ?? ''}`.trim(),
-      `En Relix: **≡ › Biblioteca › ${platform.name}** para escanear la carpeta.`,
-      `¿Relix no ve el USB? Dale permisos con **${USB_TOOL}** (DevStore, para Windows).`,
+      t('Desde el PC, copia tus juegos en `{folder}` (créala si no existe).', { folder: status.folder }),
+      `${t('Formatos: {formats}.', { formats: platform.extensions.map((e) => `.${e}`).join(' ') })} ${tip ? tr(tip) : ''}`.trim(),
+      t('En Relix: **≡ › Biblioteca › {console}** para escanear la carpeta.', { console: platform.name }),
+      t('¿Relix no ve el USB? Dale permisos con **{tool}** (DevStore, para Windows).', { tool: USB_TOOL }),
     ],
     done: status.games > 0,
   })
 
   steps.push({
     id: 'play',
-    title: emulator ? 'Prueba' : 'Juega',
+    title: emulator ? t('Prueba') : t('Juega'),
     lines: emulator
       ? [
-          'Elige un juego y pulsa A.',
-          'Si vuelves a Relix enseguida, Relix te dice qué revisar.',
-          ...(guide.note ? [guide.note] : []),
+          t('Elige un juego y pulsa A.'),
+          t('Si vuelves a Relix enseguida, Relix te dice qué revisar.'),
+          ...(guide.note ? [tr(guide.note)] : []),
         ]
-      : [guide.note ?? '', 'Relix igual muestra tus juegos, sus portadas y el tiempo jugado.'],
+      : [guide.note ? tr(guide.note) : '', t('Relix igual muestra tus juegos, sus portadas y el tiempo jugado.')],
     done: null,
   })
 

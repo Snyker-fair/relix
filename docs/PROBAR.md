@@ -56,7 +56,7 @@ con un error, copia el mensaje de la ventana **Salida**.
 - [ ] En las grillas, el aro rosado del juego enfocado no toca la fila de arriba ni las portadas de al lado.
 
 ## Acerca de
-- [ ] **≡ → RB hasta Acerca de** muestra la versión 0.8.2, la fecha de compilación y "Xbox · Modo Desarrollador".
+- [ ] **≡ → RB hasta Acerca de** muestra la versión 0.9.0, la fecha de compilación y "Xbox · Modo Desarrollador".
 - [ ] **En tu USB** muestra tu letra de disco real.
 - [ ] Al pie del panel izquierdo dice **Creado por snyker-fair**.
 
@@ -147,6 +147,19 @@ con un error, copia el mensaje de la ventana **Salida**.
 - [ ] Cierra Relix con el tema en **Oscuro** y ábrelo de nuevo: arranca en azul noche,
       sin el destello celeste (desde la segunda vez, cuando el shell ya lo recuerda).
 - [ ] **Automático** dice "Oscuro de 20:00 a 7:00 · ahora …" y cambia solo a esa hora.
+
+## Idioma (0.9.0)
+- [ ] **≡ → Preferencias → Idioma · Language** (la primera fila): con la Xbox en
+      español dice "Automático … ahora Español". **A** pasa a Español, English y de
+      vuelta a Automático; el cambio se ve en el acto, también la hora y la fecha.
+- [ ] Con **English**, recorre inicio, una consola, el menú **Y**, la búsqueda,
+      Opciones, una guía y Revisión: no queda texto en español (salvo las rutas y
+      los nombres de archivo del USB, que son los mismos en los dos idiomas).
+- [ ] Con **English**, abre un juego cuyo emulador no tengas: el aviso sale en inglés
+      (viene del shell).
+- [ ] **≡ → Revisión → Recorrido de bienvenida**: en el saludo, **Y** cambia de
+      idioma.
+- [ ] Cierra y abre Relix: sigue en el idioma que elegiste.
 
 ## Registro de diagnóstico (0.8.2)
 - [ ] Abre un juego, juega un rato y vuelve. Abre otro y vuelve enseguida (o uno que

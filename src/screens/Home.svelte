@@ -5,6 +5,7 @@
   import Clock from '../lib/ui/Clock.svelte'
   import CoverArt from '../lib/ui/CoverArt.svelte'
   import { formatPlaytime, plural } from '../lib/ui/format.js'
+  import { t } from '../lib/i18n/i18n.svelte.js'
   import HintBar from '../lib/ui/HintBar.svelte'
   import { pushHandler } from '../lib/ui/input.js'
   import { collections } from '../lib/ui/collections.svelte.js'
@@ -29,7 +30,7 @@
    */
   let { focusedId, boot, onOpen, onLaunch, onFocusChange, onOptions, onSearch, onMenu } = $props()
 
-  const OPTIONS = { id: 'options', name: 'Opciones', shortName: 'Opciones' }
+  const OPTIONS = $derived({ id: 'options', name: t('Opciones'), shortName: t('Opciones') })
 
   /** @type {'channels'|'recent'} */
   let zone = $state('channels')
@@ -87,7 +88,9 @@
       return [
         plural(library.all.length, 'juego', 'juegos'),
         plural(consoles, 'consola', 'consolas'),
-        errors > 0 ? `${plural(errors, 'cosa', 'cosas')} por arreglar en Revisión` : 'Escaneo, emuladores y revisión',
+        errors > 0
+          ? t('{things} por arreglar en Revisión', { things: plural(errors, 'cosa', 'cosas') })
+          : t('Escaneo, emuladores y revisión'),
       ]
     }
     if (channel.id === 'favorites') {
@@ -106,7 +109,7 @@
       channel.maker,
       String(channel.year),
       plural(games.length, 'juego', 'juegos'),
-      emulators.forPlatform(channel)?.name ?? 'Sin emulador todavía',
+      emulators.forPlatform(channel)?.name ?? t('Sin emulador todavía'),
     ]
   })
 
@@ -154,8 +157,9 @@
   <Logo size={64} {boot} />
   {#if mode === 'browser'}
     <p class="kbd-help">
-      Sin control: flechas, Enter elige, Esc vuelve, X favorito, Y menú del juego, Q/E cambian de
-      consola, Z/C saltan de letra, V busca, M abre Opciones. También sirve el mouse.
+      {t(
+        'Sin control: flechas, Enter elige, Esc vuelve, X favorito, Y menú del juego, Q/E cambian de consola, Z/C saltan de letra, V busca, M abre Opciones. También sirve el mouse.',
+      )}
     </p>
   {/if}
   <Clock />
@@ -165,10 +169,11 @@
   {#key channel.id}
     <div class="hero-text">
       {#if emptyLibrary && onOptionsTile}
-        <h1 class="long">Aún no hay juegos</h1>
+        <h1 class="long">{t('Aún no hay juegos')}</h1>
         <p class="first-steps">
-          Copia tus juegos a <code>{library.romRoot}\&lt;consola&gt;</code> en el USB, por ejemplo
-          <code>{library.romFolderPath('ps2')}</code>, y escanéalos desde Opciones.
+          {t('Copia tus juegos a')} <code>{library.romRoot}\{t('<consola>')}</code>
+          {t('en el USB, por ejemplo')}
+          <code>{library.romFolderPath('ps2')}</code>{t(', y escanéalos desde Opciones.')}
         </p>
       {:else}
         <h1 class:long={channel.name.length > 14}>{channel.name}</h1>
@@ -185,7 +190,7 @@
           <CoverArt {game} platform={getPlatform(game.system)} width={210} thumb />
         </div>
       {:else}
-        <p class="empty">Todavía no hay juegos aquí.</p>
+        <p class="empty">{t('Todavía no hay juegos aquí.')}</p>
       {/each}
     </div>
   {/key}
@@ -225,18 +230,18 @@
     </span>
     {#if systemStatus.summary.errors > 0}
       <!-- algo por arreglar: se ve en Opciones › Revisión -->
-      <span class="alert" aria-label="{plural(systemStatus.summary.errors, 'cosa por arreglar', 'cosas por arreglar')}">
+      <span class="alert" aria-label={plural(systemStatus.summary.errors, 'cosa por arreglar', 'cosas por arreglar')}>
         {systemStatus.summary.errors}
       </span>
     {/if}
-    <span class="label">Opciones</span>
+    <span class="label">{t('Opciones')}</span>
   </button>
   </div>
 </section>
 
 {#if recent.length > 0}
   <section class="recent">
-    <h2>Seguir jugando</h2>
+    <h2>{t('Seguir jugando')}</h2>
     <div class="recent-row">
       {#each recent as game, i (game.id)}
         {@const platform = getPlatform(game.system)}
@@ -251,7 +256,11 @@
           <CoverArt {game} {platform} width={56} showTitle={false} thumb />
           <span class="recent-text">
             <strong>{game.name}</strong>
-            <span>{played ? `${platform.shortName} · Jugado ${formatPlaytime(played.seconds)}` : platform.shortName}</span>
+            <span
+              >{played
+                ? `${platform.shortName} · ${t('Jugado {time}', { time: formatPlaytime(played.seconds) })}`
+                : platform.shortName}</span
+            >
           </span>
         </button>
       {/each}
@@ -262,14 +271,14 @@
 <HintBar
   hints={zone === 'channels'
     ? [
-        { button: 'a', label: 'Abrir' },
-        { button: 'view', label: 'Buscar' },
-        { button: 'start', label: 'Opciones' },
+        { button: 'a', label: t('Abrir') },
+        { button: 'view', label: t('Buscar') },
+        { button: 'start', label: t('Opciones') },
       ]
     : [
-        { button: 'a', label: 'Jugar' },
-        { button: 'y', label: 'Menú' },
-        { button: 'b', label: 'Volver' },
+        { button: 'a', label: t('Jugar') },
+        { button: 'y', label: t('Menú') },
+        { button: 'b', label: t('Volver') },
       ]}
 />
 

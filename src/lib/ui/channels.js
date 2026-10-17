@@ -1,10 +1,16 @@
 import { PLATFORMS } from '../core/platforms.js'
+import { t } from '../i18n/i18n.svelte.js'
 
 /** Canal especial que junta los favoritos de todas las consolas */
 export const FAVORITES = {
   id: 'favorites',
-  name: 'Favoritos',
-  shortName: 'Favoritos',
+  // Getters: el nombre sigue al idioma activo
+  get name() {
+    return t('Favoritos')
+  },
+  get shortName() {
+    return t('Favoritos')
+  },
   color: '#FF4F87',
   ink: '#4A0A20',
 }
@@ -15,8 +21,12 @@ export const FAVORITES = {
  */
 export const COLLECTIONS = {
   id: 'collections',
-  name: 'Colecciones',
-  shortName: 'Colecciones',
+  get name() {
+    return t('Colecciones')
+  },
+  get shortName() {
+    return t('Colecciones')
+  },
   color: '#5BBF6A',
   ink: '#0E3A16',
 }

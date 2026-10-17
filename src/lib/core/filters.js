@@ -3,6 +3,7 @@
  * Usan los datos de ES-DE (gamelist.xml); los juegos sin datos no entran en
  * ningún filtro, y si una consola no tiene datos, el menú no ofrece la opción.
  */
+import { t } from '../i18n/i18n.svelte.js'
 
 /** @typedef {{ kind: 'genre', value: string } | { kind: 'players' }} GameFilter */
 /** @typedef {{ genre?: string, players?: string }} FilterableGame */
@@ -79,7 +80,7 @@ export function applyFilter(games, filter) {
 
 /** Cómo se lee el filtro en pantalla @param {GameFilter} filter */
 export function filterLabel(filter) {
-  return filter.kind === 'players' ? '2 o más jugadores' : filter.value
+  return filter.kind === 'players' ? t('2 o más jugadores') : filter.value
 }
 
 /** @param {GameFilter | null | undefined} a @param {GameFilter | null | undefined} b */

@@ -29,8 +29,8 @@ class Theme {
       $effect(() => {
         if (settings.theme !== 'auto') return
         this.now = Date.now()
-        const t = setInterval(() => (this.now = Date.now()), 60_000)
-        return () => clearInterval(t)
+        const timer = setInterval(() => (this.now = Date.now()), 60_000)
+        return () => clearInterval(timer)
       })
     })
   }

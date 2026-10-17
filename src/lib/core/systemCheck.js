@@ -7,10 +7,8 @@
  * las guías. Si la pusiste dentro del emulador (Device Portal), Relix no la ve
  * y lo dice sin marcarlo como error.
  */
+import { i18n, listJoin, plural, t } from '../i18n/i18n.svelte.js'
 import { PS1_BIOS, ps1BiosRegion } from './quickExit.js'
-
-/** "1 juego", "3 juegos" @param {number} n @param {string} one @param {string} many */
-const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`
 
 /** Carpetas de BIOS en el USB, las mismas de las guías (relativas a la raíz) */
 export const BIOS_FOLDERS = {
@@ -46,11 +44,11 @@ const REGION_NAMES = { japan: 'Japón', usa: 'EE. UU.', europe: 'Europa' }
  * @property {boolean | null} installed
  */
 
-/** "182 GB" @param {number} bytes */
+/** "182 GB", "1,5 GB" ("1.5 GB" en inglés) @param {number} bytes */
 export function formatBytes(bytes) {
   const gb = bytes / 1024 ** 3
   if (gb >= 10) return `${Math.round(gb)} GB`
-  if (gb >= 1) return `${gb.toFixed(1).replace('.', ',')} GB`
+  if (gb >= 1) return `${i18n.current === 'es' ? gb.toFixed(1).replace('.', ',') : gb.toFixed(1)} GB`
   return `${Math.round(bytes / 1024 ** 2)} MB`
 }
 
@@ -79,8 +77,8 @@ function ps1Bios(info, folders, driveRoot) {
     return {
       id: 'bios:psx',
       state: 'info',
-      title: 'BIOS de PS1: no la veo en el USB',
-      detail: `No existe ${where}. Si la pusiste dentro del emulador con el Device Portal, Relix no puede verla.`,
+      title: t('BIOS de PS1: no la veo en el USB'),
+      detail: t('No existe {where}. Si la pusiste dentro del emulador con el Device Portal, Relix no puede verla.', { where }),
       action,
     }
   }
@@ -97,8 +95,14 @@ function ps1Bios(info, folders, driveRoot) {
 
   if (regions.length === 0) {
     return anyBios
-      ? { id: 'bios:psx', state: 'ok', title: 'BIOS de PS1 en su lugar', detail: where, action }
-      : { id: 'bios:psx', state: 'warn', title: 'BIOS de PS1: falta', detail: `Copia scph5501.bin (o la de tu región) en ${where}.`, action }
+      ? { id: 'bios:psx', state: 'ok', title: t('BIOS de PS1 en su lugar'), detail: where, action }
+      : {
+          id: 'bios:psx',
+          state: 'warn',
+          title: t('BIOS de PS1: falta'),
+          detail: t('Copia scph5501.bin (o la de tu región) en {where}.', { where }),
+          action,
+        }
   }
 
   const missing = regions.filter((r) => !hasFile(files, PS1_BIOS[r].file))
@@ -106,16 +110,22 @@ function ps1Bios(info, folders, driveRoot) {
     return {
       id: 'bios:psx',
       state: 'ok',
-      title: 'BIOS de PS1 en su lugar',
-      detail: `${regions.map((r) => PS1_BIOS[r].file).join(', ')} en ${where}`,
+      title: t('BIOS de PS1 en su lugar'),
+      detail: t('{files} en {where}', { files: regions.map((r) => PS1_BIOS[r].file).join(', '), where }),
       action,
     }
   }
+  const needing = listJoin(
+    missing.map((r) => t('{games} de {region}', { games: plural(byRegion[r], 'juego', 'juegos'), region: t(REGION_NAMES[r]) })),
+  )
   return {
     id: 'bios:psx',
     state: 'warn',
-    title: `BIOS de PS1: falta ${missing.map((r) => PS1_BIOS[r].file).join(' y ')}`,
-    detail: `${missing.map((r) => `${plural(byRegion[r], 'juego', 'juegos')} de ${REGION_NAMES[r]}`).join(' y ')} ${missing.length === 1 && byRegion[missing[0]] === 1 ? 'la necesita' : 'la necesitan'}. Va en ${where}.`,
+    title: t('BIOS de PS1: falta {files}', { files: listJoin(missing.map((r) => PS1_BIOS[r].file)) }),
+    detail:
+      missing.length === 1 && byRegion[missing[0]] === 1
+        ? t('{games} la necesita. Va en {where}.', { games: needing, where })
+        : t('{games} la necesitan. Va en {where}.', { games: needing, where }),
     action,
   }
 }
@@ -148,23 +158,23 @@ function ps2Bios(info, folders, driveRoot) {
     return {
       id: 'bios:ps2',
       state: 'info',
-      title: 'BIOS de PS2: no la veo en el USB',
-      detail: `No existe ${where}. Si la elegiste desde otra carpeta en XBSX2, Relix no puede verla.`,
+      title: t('BIOS de PS2: no la veo en el USB'),
+      detail: t('No existe {where}. Si la elegiste desde otra carpeta en XBSX2, Relix no puede verla.', { where }),
       action,
     }
   }
   const visible = files.filter((f) => !f.startsWith('.'))
   const bios = visible.filter((f) => !PS2_COMPANION.test(f) && !ARCHIVE.test(f))
   if (bios.length > 0) {
-    return { id: 'bios:ps2', state: 'ok', title: 'BIOS de PS2 en su lugar', detail: `${bios[0]} en ${where}`, action }
+    return { id: 'bios:ps2', state: 'ok', title: t('BIOS de PS2 en su lugar'), detail: t('{files} en {where}', { files: bios[0], where }), action }
   }
   const zipped = visible.find((f) => ARCHIVE.test(f))
   if (zipped) {
     return {
       id: 'bios:ps2',
       state: 'warn',
-      title: 'BIOS de PS2: está comprimida',
-      detail: `XBSX2 no lee ${zipped}: descomprímela en el PC y deja el archivo de la BIOS en ${where}.`,
+      title: t('BIOS de PS2: está comprimida'),
+      detail: t('XBSX2 no lee {file}: descomprímela en el PC y deja el archivo de la BIOS en {where}.', { file: zipped, where }),
       action,
     }
   }
@@ -172,12 +182,21 @@ function ps2Bios(info, folders, driveRoot) {
     return {
       id: 'bios:ps2',
       state: 'warn',
-      title: 'BIOS de PS2: falta el archivo principal',
-      detail: `En ${where} solo hay archivos de apoyo (${visible.slice(0, 2).join(', ')}). Falta la BIOS, el archivo de unos 4 MB.`,
+      title: t('BIOS de PS2: falta el archivo principal'),
+      detail: t('En {where} solo hay archivos de apoyo ({files}). Falta la BIOS, el archivo de unos 4 MB.', {
+        where,
+        files: visible.slice(0, 2).join(', '),
+      }),
       action,
     }
   }
-  return { id: 'bios:ps2', state: 'warn', title: 'BIOS de PS2: la carpeta está vacía', detail: `Copia la BIOS de tu consola en ${where}.`, action }
+  return {
+    id: 'bios:ps2',
+    state: 'warn',
+    title: t('BIOS de PS2: la carpeta está vacía'),
+    detail: t('Copia la BIOS de tu consola en {where}.', { where }),
+    action,
+  }
 }
 
 /**
@@ -201,29 +220,36 @@ export function buildChecks({ shell, romRoot, consoles, knownFolders, dataStatus
   checks.push({
     id: 'usb',
     state: withGames.length > 0 ? 'ok' : 'warn',
-    title: withGames.length > 0 ? 'USB con tus juegos' : 'El USB no tiene juegos todavía',
+    title: withGames.length > 0 ? t('USB con tus juegos') : t('El USB no tiene juegos todavía'),
     detail:
       withGames.length > 0
-        ? `${plural(withGames.reduce((n, c) => n + c.games.length, 0), 'juego', 'juegos')} en ${romRoot}`
-        : `Crea una carpeta por consola en ${romRoot} (psx, ps2, snes…) y copia ahí tus juegos.`,
+        ? t('{files} en {where}', {
+            files: plural(withGames.reduce((n, c) => n + c.games.length, 0), 'juego', 'juegos'),
+            where: romRoot,
+          })
+        : t('Crea una carpeta por consola en {where} (psx, ps2, snes…) y copia ahí tus juegos.', { where: romRoot }),
   })
   if (!shell && shellFailed) {
     checks.push({
       id: 'shell',
       state: 'warn',
-      title: 'No se pudo revisar el USB a fondo',
-      detail: 'El shell no respondió a tiempo: faltan permisos, espacio y BIOS. Si actualizaste solo la interfaz, actualiza también el proyecto C#.',
+      title: t('No se pudo revisar el USB a fondo'),
+      detail: t(
+        'El shell no respondió a tiempo: faltan permisos, espacio y BIOS. Si actualizaste solo la interfaz, actualiza también el proyecto C#.',
+      ),
     })
   }
   if (shell) {
     checks.push(
       shell.writable
-        ? { id: 'write', state: 'ok', title: 'Relix puede guardar en el USB', detail: 'Portadas, colecciones y tus datos.' }
+        ? { id: 'write', state: 'ok', title: t('Relix puede guardar en el USB'), detail: t('Portadas, colecciones y tus datos.') }
         : {
             id: 'write',
             state: 'error',
-            title: 'El USB no deja guardar',
-            detail: 'Sin permisos no se guardan portadas, colecciones ni tus datos. En el PC, aplícale Xbox USB Permissions Tool (DevStore).',
+            title: t('El USB no deja guardar'),
+            detail: t(
+              'Sin permisos no se guardan portadas, colecciones ni tus datos. En el PC, aplícale Xbox USB Permissions Tool (DevStore).',
+            ),
           },
     )
     if (shell.space) {
@@ -232,8 +258,13 @@ export function buildChecks({ shell, romRoot, consoles, knownFolders, dataStatus
       checks.push({
         id: 'space',
         state: low ? 'warn' : 'ok',
-        title: low ? 'Queda poco espacio en el USB' : 'Espacio en el USB',
-        detail: `${formatBytes(free)} libres de ${formatBytes(total)}.${low ? ' Las portadas y los juegos nuevos pueden no caber.' : ''}`,
+        title: low ? t('Queda poco espacio en el USB') : t('Espacio en el USB'),
+        detail: low
+          ? t('{free} libres de {total}. Las portadas y los juegos nuevos pueden no caber.', {
+              free: formatBytes(free),
+              total: formatBytes(total),
+            })
+          : t('{free} libres de {total}.', { free: formatBytes(free), total: formatBytes(total) }),
       })
     }
     const known = new Set(knownFolders.map((f) => f.toLowerCase()))
@@ -242,8 +273,10 @@ export function buildChecks({ shell, romRoot, consoles, knownFolders, dataStatus
       checks.push({
         id: 'folders',
         state: 'info',
-        title: `Carpetas que Relix no usa: ${unknown.slice(0, 4).join(', ')}${unknown.length > 4 ? '…' : ''}`,
-        detail: 'Sus juegos no aparecen: Relix todavía no abre esas consolas, o el nombre de la carpeta es otro.',
+        title: t('Carpetas que Relix no usa: {folders}', {
+          folders: `${unknown.slice(0, 4).join(', ')}${unknown.length > 4 ? '…' : ''}`,
+        }),
+        detail: t('Sus juegos no aparecen: Relix todavía no abre esas consolas, o el nombre de la carpeta es otro.'),
       })
     }
   }
@@ -257,8 +290,8 @@ export function buildChecks({ shell, romRoot, consoles, knownFolders, dataStatus
       checks.push({
         id: `emu:${platform.id}`,
         state: 'info',
-        title: `${platform.name}: se abre desde Dev Home`,
-        detail: `${count}. ${platform.noEmulatorNote ?? 'Relix todavía no puede abrir esta consola.'}`,
+        title: t('{console}: se abre desde Dev Home', { console: platform.name }),
+        detail: `${count}. ${platform.noEmulatorNote ? t(platform.noEmulatorNote) : t('Relix todavía no puede abrir esta consola.')}`,
         action,
       })
       continue
@@ -268,15 +301,15 @@ export function buildChecks({ shell, romRoot, consoles, knownFolders, dataStatus
         ? {
             id: `emu:${platform.id}`,
             state: 'error',
-            title: `${platform.name}: falta ${emulator.name}`,
-            detail: `Tienes ${count} y el emulador no está instalado. La guía explica cómo.`,
+            title: t('{console}: falta {emulator}', { console: platform.name, emulator: emulator.name }),
+            detail: t('Tienes {games} y el emulador no está instalado. La guía explica cómo.', { games: count }),
             action,
           }
         : {
             id: `emu:${platform.id}`,
             state: installed === true ? 'ok' : 'info',
             title: `${platform.name}: ${emulator.name}`,
-            detail: installed === true ? `${count}. Instalado.` : `${count}. Se revisa en la Xbox.`,
+            detail: installed === true ? t('{games}. Instalado.', { games: count }) : t('{games}. Se revisa en la Xbox.', { games: count }),
             action,
           },
     )
@@ -290,21 +323,31 @@ export function buildChecks({ shell, romRoot, consoles, knownFolders, dataStatus
   if (shell) {
     checks.push(
       shell.internet
-        ? { id: 'internet', state: 'ok', title: 'Conexión a internet', detail: 'Para bajar portadas.' }
+        ? { id: 'internet', state: 'ok', title: t('Conexión a internet'), detail: t('Para bajar portadas.') }
         : {
             id: 'internet',
             state: 'warn',
-            title: 'Sin conexión al servidor de portadas',
-            detail: 'Revisa la red de la Xbox. Lo demás funciona igual.',
+            title: t('Sin conexión al servidor de portadas'),
+            detail: t('Revisa la red de la Xbox. Lo demás funciona igual.'),
           },
     )
   }
   checks.push(
     dataStatus === 'error'
-      ? { id: 'data', state: 'error', title: 'Tus datos no se pueden guardar en el USB', detail: 'Quedan solo en la app hasta que el USB tenga permisos.' }
+      ? {
+          id: 'data',
+          state: 'error',
+          title: t('Tus datos no se pueden guardar en el USB'),
+          detail: t('Quedan solo en la app hasta que el USB tenga permisos.'),
+        }
       : dataStatus === 'off'
-        ? { id: 'data', state: 'warn', title: 'Tus datos solo están en la app', detail: 'No se encontró el USB al abrir Relix.' }
-        : { id: 'data', state: 'ok', title: 'Tus datos se respaldan en el USB', detail: `${drive}relix\\datos.json y una copia por día.` },
+        ? { id: 'data', state: 'warn', title: t('Tus datos solo están en la app'), detail: t('No se encontró el USB al abrir Relix.') }
+        : {
+            id: 'data',
+            state: 'ok',
+            title: t('Tus datos se respaldan en el USB'),
+            detail: t('{file} y una copia por día.', { file: `${drive}relix\\datos.json` }),
+          },
   )
   return checks
 }

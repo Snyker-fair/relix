@@ -48,10 +48,11 @@ Copiar un `.cs` a la carpeta no basta: Visual Studio solo compila los que están
 | `UserDataStore.cs` | Paso 4 (tus datos en el USB y tiempo de juego) |
 | `SystemCheck.cs` | Paso 6 (revisión del sistema) |
 | `DiagnosticLog.cs` | 0.8.2 (registro de diagnóstico) |
+| `Text.cs` | 0.9.0 (mensajes del shell en español o inglés) |
 
-Al final, la carpeta **Shell** debe tener ocho archivos: `CollectionStore.cs`,
+Al final, la carpeta **Shell** debe tener nueve archivos: `CollectionStore.cs`,
 `CoverService.cs`, `DiagnosticLog.cs`, `GamepadInput.cs`, `LibraryReader.cs`,
-`LocalServer.cs`, `SystemCheck.cs` y `UserDataStore.cs`.
+`LocalServer.cs`, `SystemCheck.cs`, `Text.cs` y `UserDataStore.cs`.
 
 > **Ojo:** si un archivo ya aparece en **Shell**, no lo agregues otra vez. Y haz
 > el clic derecho sobre la carpeta **Shell**, no sobre el proyecto: si no, Visual
@@ -138,3 +139,6 @@ Después, la lista de [`PROBAR.md`](PROBAR.md) dice qué revisar en la TV.
 | 7 · tema | `MainPage.xaml.cs` | Mensaje `setBackground`: guarda el fondo del tema y lo usa al abrir (página y WebView2) |
 | 0.8.2 | `Shell/DiagnosticLog.cs` | **Nuevo.** `E:\relix\registro.txt`: agrega líneas, lee las últimas y rota a `registro.anterior.txt` pasados 256 KB |
 | 0.8.2 | `MainPage.xaml.cs` | Mensajes `appendLog` y `readLog`; anota cuando la interfaz se cae y se recarga |
+| 0.9.0 | `Shell/Text.cs` | **Nuevo.** Idioma de los mensajes del shell (lo guarda en LocalSettings; la primera vez, el de la consola) |
+| 0.9.0 | `MainPage.xaml.cs` | Mensaje `setLanguage`; sus mensajes de error en español o inglés |
+| 0.9.0 | `Shell/CoverService.cs`, `CollectionStore.cs`, `UserDataStore.cs` | Mensajes de error en español o inglés |

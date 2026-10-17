@@ -1,12 +1,16 @@
 <script>
   /** Ícono de un botón del control de Xbox (A, B, X, Y, LB, RB, LT, RT, Menú, Vista). */
+  import { t } from '../i18n/i18n.svelte.js'
+
   let { name, size = 34 } = $props()
   const COLORS = { a: 'var(--btn-a)', b: 'var(--btn-b)', x: 'var(--btn-x)', y: 'var(--btn-y)' }
   const isBumper = $derived(name === 'lb' || name === 'rb')
   const isTrigger = $derived(name === 'lt' || name === 'rt')
   const isMenu = $derived(name === 'start')
   const isView = $derived(name === 'view')
-  const LABELS = { start: 'Botón Menú', view: 'Botón Vista' }
+  const label = $derived(
+    name === 'start' ? t('Botón Menú') : name === 'view' ? t('Botón Vista') : t('Botón {name}', { name: name.toUpperCase() }),
+  )
 </script>
 
 <span
@@ -16,7 +20,7 @@
   style:--c={COLORS[name] ?? 'var(--ink)'}
   style:--t={COLORS[name] ? '#ffffff' : 'var(--cloud)'}
   style:--s="{size}px"
-  aria-label={LABELS[name] ?? `Botón ${name.toUpperCase()}`}
+  aria-label={label}
 >
   {#if isMenu}
     <!-- el botón Menú del control tiene tres rayas -->

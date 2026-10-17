@@ -6,6 +6,7 @@
    *
    *   A  siguiente / la opción enfocada    B  pantalla anterior    ≡  saltar
    *   ↑ ↓  elegir (consolas en Emuladores, "Buscar ahora" en Portadas)
+   *   Y  (en el saludo) cambia entre español e inglés
    */
   import { untrack } from 'svelte'
   import { DEVSTORE_LABEL, DEVSTORE_URL } from '../lib/core/guides.js'
@@ -22,6 +23,9 @@
   import QrCode from '../lib/ui/QrCode.svelte'
   import { sound } from '../lib/ui/sound.js'
   import { systemStatus } from '../lib/ui/systemStatus.svelte.js'
+  import { settings } from '../lib/ui/settings.svelte.js'
+  import { LANGUAGE_NAMES } from '../lib/core/language.js'
+  import { i18n, t } from '../lib/i18n/i18n.svelte.js'
 
   /**
    * @type {{
@@ -134,11 +138,11 @@
     // La búsqueda sigue aunque pases a la pantalla siguiente; el foco pasa a "Siguiente"
     try {
       const result = await covers.findAll()
-      coverDone = coverSummary('Listo', result)
+      coverDone = coverSummary(t('Listo'), result)
       if (stepId !== 'covers') onToast(coverDone)
     } catch (e) {
       sound.error()
-      onToast(e instanceof Error ? e.message : 'No se pudieron buscar las portadas.')
+      onToast(e instanceof Error ? e.message : t('No se pudieron buscar las portadas.'))
     }
   }
 
@@ -169,33 +173,38 @@
       else if (action === 'a') activate()
       else if (action === 'b') step > 0 ? (sound.back(), goTo(step - 1)) : sound.error()
       else if (action === 'start') finish()
+      // En el saludo, Y cambia de idioma: lo primero que necesita quien no lee el que se ve
+      else if (action === 'y' && stepId === 'hello') (sound.select(), settings.switchLanguage())
     }),
   )
 
-  const primaryLabel = $derived(step === 0 ? 'Empezar' : step === STEPS.length - 1 ? '¡A jugar!' : 'Siguiente')
+  /** El idioma al que lleva Y en el saludo, escrito en ese idioma */
+  const otherLanguage = $derived(LANGUAGE_NAMES[i18n.current === 'es' ? 'en' : 'es'])
+
+  const primaryLabel = $derived(step === 0 ? t('Empezar') : step === STEPS.length - 1 ? t('¡A jugar!') : t('Siguiente'))
   const hintA = $derived(
-    focusedItem === 'next' ? primaryLabel : focusedItem === 'search' ? 'Buscar portadas' : 'Ver guía',
+    focusedItem === 'next' ? primaryLabel : focusedItem === 'search' ? t('Buscar portadas') : t('Ver guía'),
   )
 
-  const BUTTONS = [
-    { button: 'a', label: 'Jugar o elegir', detail: 'Abre la consola, el juego o la opción enfocada' },
-    { button: 'b', label: 'Volver', detail: 'A la pantalla anterior' },
-    { button: 'y', label: 'Menú del juego', detail: 'Abrir con…, portada, filtrar, ocultar' },
-    { button: 'x', label: 'Favorito', detail: 'Marca el juego con una estrella' },
-    { button: 'lb', also: 'rb', label: 'Otra consola', detail: 'La anterior o la siguiente' },
-    { button: 'view', label: 'Buscar', detail: 'En todas las consolas a la vez' },
-    { button: 'start', label: 'Opciones', detail: 'Escanear, emuladores, revisión' },
-    { button: 'lt', also: 'rt', label: 'Saltar de letra', detail: 'En listas largas' },
-  ]
+  const BUTTONS = $derived([
+    { button: 'a', label: t('Jugar o elegir'), detail: t('Abre la consola, el juego o la opción enfocada') },
+    { button: 'b', label: t('Volver'), detail: t('A la pantalla anterior') },
+    { button: 'y', label: t('Menú del juego'), detail: t('Abrir con…, portada, filtrar, ocultar') },
+    { button: 'x', label: t('Favorito'), detail: t('Lo guarda en Favoritos') },
+    { button: 'lb', also: 'rb', label: t('Otra consola'), detail: t('La anterior o la siguiente') },
+    { button: 'view', label: t('Buscar'), detail: t('En todas las consolas a la vez') },
+    { button: 'start', label: t('Opciones'), detail: t('Escanear, emuladores, revisión') },
+    { button: 'lt', also: 'rt', label: t('Saltar de letra'), detail: t('En listas largas') },
+  ])
 </script>
 
 <header class="top">
   <span class="brand">
     <Logo size={34} />
-    <span>Primeros pasos</span>
+    <span>{t('Primeros pasos')}</span>
   </span>
 
-  <ol class="dots" aria-label="Paso {step + 1} de {STEPS.length}">
+  <ol class="dots" aria-label={t('Paso {n} de {total}', { n: step + 1, total: STEPS.length })}>
     {#each STEPS as id, i (id)}
       <li class:done={i < step} class:current={i === step}></li>
     {/each}
@@ -208,54 +217,56 @@
   <section class="intro">
     {#if stepId === 'hello'}
       <span class="hello-logo"><Logo size={92} /></span>
-      <h1>¡Hola!</h1>
+      <h1>{t('¡Hola!')}</h1>
       <p>
-        Relix es la repisa de tus juegos en la Xbox: lee tu USB, abre cada juego con su emulador y
-        lleva la cuenta de cuánto juegas.
+        {t(
+          'Relix es la repisa de tus juegos en la Xbox: lee tu USB, abre cada juego con su emulador y lleva la cuenta de cuánto juegas.',
+        )}
       </p>
       <p class="small">
-        Son cuatro pasos cortos. Puedes saltarlos con <PadButton name="start" size={26} /> y verlos de
-        nuevo en <strong>Opciones › Revisión</strong>.
+        {t('Son cuatro pasos cortos. Puedes saltarlos con')} <PadButton name="start" size={26} />
+        {t('y verlos de nuevo en')} <strong>{t('Opciones › Revisión')}</strong>.
       </p>
     {:else if stepId === 'usb'}
       <span class="intro-icon"><ChannelIcon id="usb" color="currentColor" size={76} /></span>
-      <h1>Tu USB</h1>
+      <h1>{t('Tu USB')}</h1>
       <p>
-        Relix lee tus juegos de la carpeta <strong>roms</strong> del USB, una carpeta por consola,
-        igual que ES-DE.
+        {t('Relix lee tus juegos de la carpeta')} <strong>roms</strong>
+        {t('del USB, una carpeta por consola, igual que ES-DE.')}
       </p>
       <pre class="tree"><strong>{library.romRoot}</strong>
 {#each exampleFolders as id (id)}├ <b>{library.folderOf(id)}</b>   {getPlatform(id)?.shortName}
 {/each}└ …</pre>
     {:else if stepId === 'emulators'}
       <span class="intro-icon"><ChannelIcon id="play" color="currentColor" size={70} /></span>
-      <h1>Emuladores</h1>
+      <h1>{t('Emuladores')}</h1>
       <p>
-        Cada consola se abre con su emulador. Si algo falta, elige la consola y abre su guía con
-        <PadButton name="a" size={26} />: explica qué instalar y dónde va cada archivo.
+        {t('Cada consola se abre con su emulador. Si algo falta, elige la consola y abre su guía con')}
+        <PadButton name="a" size={26} />{t(': explica qué instalar y dónde va cada archivo.')}
       </p>
       <div class="qr">
         <QrCode text={DEVSTORE_URL} size={130} />
         <p>
-          Los emuladores se bajan en el PC desde
-          <strong>{DEVSTORE_LABEL}</strong>
+          {t('Los emuladores se bajan en el PC desde')}
+          <strong>{t(DEVSTORE_LABEL)}</strong>
         </p>
       </div>
     {:else if stepId === 'covers'}
       <span class="intro-icon"><ChannelIcon id="cover" color="currentColor" size={76} /></span>
-      <h1>Portadas</h1>
+      <h1>{t('Portadas')}</h1>
       <p>
-        Relix baja las portadas de libretro, las mismas de RetroArch, y una captura de cada juego
-        para el fondo de su ficha. Todo queda en tu USB junto a lo de ES-DE.
+        {t(
+          'Relix baja las portadas de libretro, las mismas de RetroArch, y una captura de cada juego para el fondo de su ficha. Todo queda en tu USB junto a lo de ES-DE.',
+        )}
       </p>
       <p class="small">
-        Si duda de cuál es la de un juego, te deja elegirla en <strong>Opciones › Portadas</strong>.
+        {t('Si duda de cuál es la de un juego, te deja elegirla en')} <strong>{t('Opciones › Portadas')}</strong>.
       </p>
     {:else}
       <span class="intro-icon"><ChannelIcon id="gamepad" color="currentColor" size={80} /></span>
-      <h1>Los botones</h1>
-      <p>Lo justo para moverte. La barra de abajo siempre dice qué hace cada botón en esa pantalla.</p>
-      <p class="small">¿Usas teclado? Flechas, Enter, Esc, X, Y, Q/E, V y M.</p>
+      <h1>{t('Los botones')}</h1>
+      <p>{t('Lo justo para moverte. La barra de abajo siempre dice qué hace cada botón en esa pantalla.')}</p>
+      <p class="small">{t('¿Usas teclado? Flechas, Enter, Esc, X, Y, Q/E, V y M.')}</p>
     {/if}
   </section>
 
@@ -263,10 +274,10 @@
     {#if stepId === 'hello'}
       <ol class="cards">
         {#each [
-          { icon: 'usb', title: 'Tu USB', text: 'Dónde van los juegos y si Relix puede guardar en él' },
-          { icon: 'play', title: 'Emuladores', text: 'Qué necesita cada consola, con su guía paso a paso' },
-          { icon: 'cover', title: 'Portadas', text: 'Bajarlas todas de una vez' },
-          { icon: 'gamepad', title: 'Botones', text: 'Lo justo para moverte por Relix' },
+          { icon: 'usb', title: t('Tu USB'), text: t('Dónde van los juegos y si Relix puede guardar en él') },
+          { icon: 'play', title: t('Emuladores'), text: t('Qué necesita cada consola, con su guía paso a paso') },
+          { icon: 'cover', title: t('Portadas'), text: t('Bajarlas todas de una vez') },
+          { icon: 'gamepad', title: t('Botones'), text: t('Lo justo para moverte por Relix') },
         ] as card, i (card.icon)}
           <li class="card">
             <span class="num">{i + 1}</span>
@@ -283,7 +294,7 @@
         {#if usbChecks.length <= 1 && systemStatus.running}
           <li class="line">
             <span class="mark info"><span class="spinner" aria-hidden="true"></span></span>
-            <span class="text"><strong>Revisando el USB…</strong></span>
+            <span class="text"><strong>{t('Revisando el USB…')}</strong></span>
           </li>
         {/if}
         {#each usbChecks as check (check.id)}
@@ -297,7 +308,7 @@
         {/each}
       </ul>
       {#if withGames.length > 0}
-        <h2>Consolas con juegos</h2>
+        <h2>{t('Consolas con juegos')}</h2>
         <ul class="consoles">
           {#each withGames as p (p.id)}
             <li style:background={p.color} style:color={p.ink}>
@@ -309,15 +320,16 @@
         </ul>
       {:else}
         <p class="empty">
-          Copia tus juegos en el PC, por ejemplo en <code>{library.romFolderPath('ps2')}</code>, y
-          escanéalos en <strong>Opciones › Biblioteca</strong>.
+          {t('Copia tus juegos en el PC, por ejemplo en')} <code>{library.romFolderPath('ps2')}</code>{t(', y escanéalos en')}
+          <strong>{t('Opciones › Biblioteca')}</strong>.
         </p>
       {/if}
     {:else if stepId === 'emulators'}
       {#if shownConsoles.length === 0}
         <p class="empty">
-          Cuando copies juegos, aquí verás qué necesita cada consola. Mientras, todas las guías están
-          en <strong>Opciones › Consolas</strong> con <PadButton name="y" size={26} />.
+          {t('Cuando copies juegos, aquí verás qué necesita cada consola. Mientras, todas las guías están en')}
+          <strong>{t('Opciones › Consolas')}</strong>
+          {t('con')} <PadButton name="y" size={26} />.
         </p>
       {:else}
         <div class="list" role="list">
@@ -337,42 +349,42 @@
               </span>
               <span class="text">
                 <strong>{p.name}</strong>
-                <span>{plural(row.games, 'juego', 'juegos')} · {row.emulator?.name ?? 'Cemu, desde Dev Home'}</span>
+                <span>{plural(row.games, 'juego', 'juegos')} · {row.emulator?.name ?? t('Cemu, desde Dev Home')}</span>
               </span>
               <span class="chips">
                 {#if row.emu}
                   <span class="chip {row.emu.state}">
                     {row.emu.state === 'ok'
-                      ? 'Instalado'
+                      ? t('Instalado')
                       : row.emu.state === 'error'
-                        ? 'Sin instalar'
+                        ? t('Sin instalar')
                         : p.emulators.length
-                          ? 'Se revisa en la Xbox'
+                          ? t('Se revisa en la Xbox')
                           : 'Dev Home'}
                   </span>
                 {/if}
                 {#if row.bios}
                   <span class="chip {row.bios.state}">
-                    {row.bios.state === 'ok' ? 'BIOS lista' : row.bios.state === 'warn' ? 'Falta BIOS' : 'BIOS: no la veo'}
+                    {row.bios.state === 'ok' ? t('BIOS lista') : row.bios.state === 'warn' ? t('Falta BIOS') : t('BIOS: no la veo')}
                   </span>
                 {/if}
-                {#if focused}<span class="go"><PadButton name="a" size={28} /> Guía</span>{/if}
+                {#if focused}<span class="go"><PadButton name="a" size={28} /> {t('Guía')}</span>{/if}
               </span>
             </button>
           {/each}
         </div>
         {#if consoleRows.length > MAX_CONSOLES}
           <p class="more">
-            Y {plural(consoleRows.length - MAX_CONSOLES, 'consola más', 'consolas más')}: las ves todas en
-            <strong>Opciones › Revisión</strong>.
+            {t('Y {consoles}: las ves todas en', { consoles: plural(consoleRows.length - MAX_CONSOLES, 'consola más', 'consolas más') })}
+            <strong>{t('Opciones › Revisión')}</strong>.
           </p>
         {/if}
       {/if}
     {:else if stepId === 'covers'}
       {@const ratio = coverTotals.total > 0 ? coverTotals.withCover / coverTotals.total : 0}
       <div class="cover-card">
-        <strong class="big">{coverTotals.withCover} de {coverTotals.total}</strong>
-        <span>juegos con portada</span>
+        <strong class="big">{t('{n} de {total}', { n: coverTotals.withCover, total: coverTotals.total })}</strong>
+        <span>{t('juegos con portada')}</span>
         <i class="meter" aria-hidden="true"><i style:width="{ratio * 100}%"></i></i>
         <p class="status">
           {#if searching}
@@ -380,28 +392,28 @@
             {#if covers.progress}
               {getPlatform(covers.progress.system)?.shortName}:
               {covers.progress.phase === 'download'
-                ? `bajando ${covers.progress.done} de ${covers.progress.total}`
+                ? t('bajando {n} de {total}', { n: covers.progress.done, total: covers.progress.total })
                 : covers.progress.phase === 'shots'
-                  ? `capturas ${covers.progress.done} de ${covers.progress.total}`
-                  : 'buscando…'}
+                  ? t('capturas {n} de {total}', { n: covers.progress.done, total: covers.progress.total })
+                  : t('buscando…')}
             {:else}
-              Buscando…
+              {t('Buscando…')}
             {/if}
-            <small>Puedes seguir: la búsqueda continúa.</small>
+            <small>{t('Puedes seguir: la búsqueda continúa.')}</small>
           {:else if coverDone}
             {coverDone}
           {:else if coverTotals.total === 0}
-            Cuando tengas juegos, las portadas se buscan en <strong>Opciones › Portadas</strong>.
+            {t('Cuando tengas juegos, las portadas se buscan en')} <strong>{t('Opciones › Portadas')}</strong>.
           {:else if missingCovers === 0 && !needsSearch}
-            ¡Ya están todas!
+            {t('¡Ya están todas!')}
           {:else if missingCovers === 0}
-            Tienes todas las portadas. A algunos juegos les falta la captura del fondo.
+            {t('Tienes todas las portadas. A algunos juegos les falta la captura del fondo.')}
           {:else}
-            Faltan {missingCovers}. Bajarlas toma unos minutos.
+            {t('Faltan {n}. Bajarlas toma unos minutos.', { n: missingCovers })}
           {/if}
         </p>
         {#if checkById.get('internet')?.state === 'warn'}
-          <p class="warn-note">Relix no llega al servidor de portadas: revisa la red de la Xbox.</p>
+          <p class="warn-note">{t('Relix no llega al servidor de portadas: revisa la red de la Xbox.')}</p>
         {/if}
       </div>
       {#if items.includes('search')}
@@ -412,7 +424,7 @@
           onclick={() => (index === 0 ? activate() : move(0))}
         >
           <ChannelIcon id="download" color="currentColor" size={40} />
-          Buscar ahora
+          {t('Buscar ahora')}
         </button>
       {/if}
     {:else}
@@ -448,8 +460,9 @@
 <HintBar
   hints={[
     { button: 'a', label: hintA },
-    ...(step > 0 ? [{ button: /** @type {const} */ ('b'), label: 'Atrás' }] : []),
-    ...(step < STEPS.length - 1 ? [{ button: /** @type {const} */ ('start'), label: 'Saltar' }] : []),
+    ...(step > 0 ? [{ button: /** @type {const} */ ('b'), label: t('Atrás') }] : []),
+    ...(stepId === 'hello' ? [{ button: /** @type {const} */ ('y'), label: otherLanguage }] : []),
+    ...(step < STEPS.length - 1 ? [{ button: /** @type {const} */ ('start'), label: t('Saltar') }] : []),
   ]}
 />
 

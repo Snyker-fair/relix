@@ -5,6 +5,7 @@
    * las cámaras aunque la TV brille.
    */
   import { encode } from 'uqr'
+  import { t } from '../i18n/i18n.svelte.js'
 
   /** @type {{ text: string, size?: number }} */
   let { text, size = 180 } = $props()
@@ -22,7 +23,7 @@
   viewBox="0 0 {qr.size} {qr.size}"
   shape-rendering="crispEdges"
   role="img"
-  aria-label="Código QR: {text}"
+  aria-label={t('Código QR: {text}', { text })}
 >
   <rect width={qr.size} height={qr.size} fill="#FFFFFF" />
   <path d={path} fill="#23304A" />

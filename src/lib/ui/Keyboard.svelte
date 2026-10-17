@@ -9,6 +9,7 @@
    * el borde derecho hacia los resultados de la búsqueda).
    */
   import { sound } from './sound.js'
+  import { t } from '../i18n/i18n.svelte.js'
 
   /**
    * @type {{
@@ -30,13 +31,13 @@
     ...LETTERS.map((r) => [...r].map((ch) => /** @type {Key} */ ({ id: ch, label: ch, span: 1, kind: 'char' }))),
     onSubmit
       ? [
-          { id: 'space', label: 'Espacio', span: 3, kind: 'space' },
-          { id: 'del', label: 'Borrar', span: 2, kind: 'del' },
-          { id: 'ok', label: 'Listo', span: 2, kind: 'ok' },
+          { id: 'space', label: t('Espacio'), span: 3, kind: 'space' },
+          { id: 'del', label: t('Borrar'), span: 2, kind: 'del' },
+          { id: 'ok', label: t('Listo'), span: 2, kind: 'ok' },
         ]
       : [
-          { id: 'space', label: 'Espacio', span: 4, kind: 'space' },
-          { id: 'del', label: 'Borrar', span: 3, kind: 'del' },
+          { id: 'space', label: t('Espacio'), span: 4, kind: 'space' },
+          { id: 'del', label: t('Borrar'), span: 3, kind: 'del' },
         ],
   ])
 
@@ -118,7 +119,7 @@
   }
 </script>
 
-<div class="keyboard" class:active role="group" aria-label="Teclado">
+<div class="keyboard" class:active role="group" aria-label={t('Teclado')}>
   {#each rows as keys, r (r)}
     <div class="row">
       {#each keys as key (key.id)}

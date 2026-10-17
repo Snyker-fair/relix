@@ -10,6 +10,7 @@
  *           Los saltos van de año en año.
  */
 
+import { t } from '../i18n/i18n.svelte.js'
 import { bySortName } from './esde.js'
 
 /** @typedef {'az'|'recent'|'played'|'year'} SortOrder */
@@ -56,7 +57,7 @@ export function sortGames(games, order, lastPlayed = {}, playtime = {}) {
  */
 export function sectionOf(game, order) {
   if (order === 'az') return letterOf(game.sortName)
-  if (order === 'year') return game.year ? String(game.year) : 'Sin año'
+  if (order === 'year') return game.year ? String(game.year) : t('Sin año')
   return null
 }
 

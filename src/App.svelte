@@ -19,6 +19,7 @@
   import { systemStatus } from './lib/ui/systemStatus.svelte.js'
   import { userData } from './lib/ui/userData.svelte.js'
   import { formatPlaytime, plural } from './lib/ui/format.js'
+  import { i18n, t } from './lib/i18n/i18n.svelte.js'
   import Stage from './lib/ui/Stage.svelte'
   import CoverPicker from './screens/CoverPicker.svelte'
   import GameMenu from './screens/GameMenu.svelte'
@@ -99,11 +100,17 @@
       library.loadMedia()
       systemStatus.run().then(warnSystem)
       if (finishedWhileClosed) {
-        diagnostics.log('back', `${gameLabel(finishedWhileClosed.id)} tras ${shortDuration(finishedWhileClosed.elapsed)} (Relix estaba cerrado)`)
+        diagnostics.log(
+          'back',
+          t('{game} tras {time} (Relix estaba cerrado)', {
+            game: gameLabel(finishedWhileClosed.id),
+            time: shortDuration(finishedWhileClosed.elapsed),
+          }),
+        )
         announcePlaytime(finishedWhileClosed)
         finishedWhileClosed = null
       }
-      if (userData.recoveredFrom) showToast(`Tus datos se recuperaron de relix\\${userData.recoveredFrom}`)
+      if (userData.recoveredFrom) showToast(t('Tus datos se recuperaron de {file}', { file: `relix\\${userData.recoveredFrom}` }))
       if (!settings.onboarded && screen.name === 'home') {
         screen = { name: 'welcome', step: 0, back: { name: 'home' }, auto: true }
       }
@@ -128,7 +135,8 @@
     warnedSystem = true
     // Si hay otro aviso en pantalla (el tiempo jugado, p. ej.), va después
     setTimeout(
-      () => showToast(`Relix encontró ${plural(errors, 'cosa por arreglar', 'cosas por arreglar')}: ≡ › Revisión`, 6000),
+      () =>
+        showToast(t('Relix encontró {found}: ≡ › Revisión', { found: plural(errors, 'cosa por arreglar', 'cosas por arreglar') }), 6000),
       toast ? 3600 : 0,
     )
   }
@@ -147,20 +155,33 @@
     })
   })
 
+  // Demo en el navegador: al cambiar de idioma, las descripciones de prueba también
+  let demoLanguage = i18n.current
+  $effect(() => {
+    const language = i18n.current
+    if (mode !== 'browser' || language === demoLanguage) return
+    demoLanguage = language
+    untrack(() => library.status === 'ready' && library.reloadDemoGamelists())
+  })
+
   // Sin USB (o sin la carpeta roms): se anota lo que dijo la pantalla de carga
   $effect(() => {
     if (library.status === 'error') untrack(() => diagnostics.log('usb', library.error))
   })
 
-  /** "Relix 0.8.2 · Xbox · E:\roms · 57 juegos en 12 consolas · tema claro" */
+  /** "Relix 0.9.0 · Xbox · E:\roms · 57 juegos en 12 consolas · tema claro · español" */
   function startSummary() {
     const consoles = new Set(library.all.map((g) => g.system)).size
     return [
       `Relix ${VERSION}`,
-      mode === 'xbox' ? 'Xbox' : 'navegador',
+      mode === 'xbox' ? 'Xbox' : t('navegador'),
       library.romRoot,
-      `${plural(library.all.length, 'juego', 'juegos')} en ${plural(consoles, 'consola', 'consolas')}`,
-      `tema ${theme.current === 'dark' ? 'oscuro' : 'claro'}`,
+      t('{games} en {consoles}', {
+        games: plural(library.all.length, 'juego', 'juegos'),
+        consoles: plural(consoles, 'consola', 'consolas'),
+      }),
+      theme.current === 'dark' ? t('tema oscuro') : t('tema claro'),
+      t('español'),
     ].join(' · ')
   }
 
@@ -184,11 +205,16 @@
     const quick = fromEmulator && finished.elapsed < QUICK_EXIT_SECONDS
     const game = library.byId.get(finished.id)
     const emulatorName = game ? (emulators.forGame(game)?.name ?? '') : ''
+    const label = gameLabel(finished.id)
     diagnostics.log(
       quick ? 'quickExit' : 'back',
       quick
-        ? `${gameLabel(finished.id)} con ${emulatorName}: volvió a Relix a los ${finished.elapsed} s`
-        : `${gameLabel(finished.id)} tras ${shortDuration(finished.elapsed)}${fromEmulator ? '' : ' (cerraste el aviso "Abriendo…")'}${finished.seconds > 0 ? '' : ' · no se cuenta (menos de 1 min)'}`,
+        ? t('{game} con {emulator}: volvió a Relix a los {n} s', { game: label, emulator: emulatorName, n: finished.elapsed })
+        : [
+            t('{game} tras {time}', { game: label, time: shortDuration(finished.elapsed) }),
+            fromEmulator ? '' : ` ${t('(cerraste el aviso "Abriendo…")')}`,
+            finished.seconds > 0 ? '' : ` · ${t('no se cuenta (menos de 1 min)')}`,
+          ].join(''),
     )
     if (quick) warnQuickExit(finished.id)
     else announcePlaytime(finished)
@@ -211,14 +237,18 @@
     if (!game || seconds <= 0) return
     showToast(
       total > seconds
-        ? `${game.name}: ${formatPlaytime(seconds)} jugados · ${formatPlaytime(total)} en total`
-        : `${game.name}: ${formatPlaytime(seconds)} jugados`,
+        ? t('{game}: {time} jugados · {total} en total', {
+            game: game.name,
+            time: formatPlaytime(seconds),
+            total: formatPlaytime(total),
+          })
+        : t('{game}: {time} jugados', { game: game.name, time: formatPlaytime(seconds) }),
     )
   }
 
   $effect(() => {
-    const t = setTimeout(() => (boot = false), 1400)
-    return () => clearTimeout(t)
+    const timer = setTimeout(() => (boot = false), 1400)
+    return () => clearTimeout(timer)
   })
 
   // Los videos de vista previa se detienen mientras se abre un juego
@@ -231,11 +261,11 @@
   $effect(() => {
     const minutes = settings.screensaverMinutes
     if (!minutes || library.status !== 'ready') return
-    const t = setInterval(() => {
+    const timer = setInterval(() => {
       if (activity.screensaver || launching || screen.name === 'welcome' || document.hidden) return
       if (idleFor() >= minutes * 60_000) activity.screensaver = true
     }, 5000)
-    return () => clearInterval(t)
+    return () => clearInterval(timer)
   })
 
   function closeScreensaver() {
@@ -300,7 +330,11 @@
     const emulator = emulators.forGame(game)
     if (!platform || !emulator) {
       sound.error()
-      showToast(platform?.noEmulatorNote ?? 'Esta consola todavía no tiene un emulador para abrir juegos.')
+      showToast(
+        platform?.noEmulatorNote
+          ? t(platform.noEmulatorNote)
+          : t('Esta consola todavía no tiene un emulador para abrir juegos.'),
+      )
       return
     }
     let uri
@@ -309,7 +343,10 @@
     } catch (e) {
       sound.error()
       const message = e instanceof Error ? e.message : String(e)
-      diagnostics.log('error', `No se pudo armar la URI de ${gameLabel(game.id)} con ${emulator.name}: ${message}`)
+      diagnostics.log(
+        'error',
+        t('No se pudo armar la URI de {game} con {emulator}: {message}', { game: gameLabel(game.id), emulator: emulator.name, message }),
+      )
       showToast(message)
       return
     }
@@ -317,7 +354,7 @@
     launching = { game, uri, emulatorName: emulator.name }
     // La partida empieza a contar y queda en el USB antes de que la Xbox pase al emulador
     library.startSession(game)
-    diagnostics.log('launch', `${gameLabel(game.id)} con ${emulator.name} · ${uri}`)
+    diagnostics.log('launch', t('{game} con {emulator} · {uri}', { game: gameLabel(game.id), emulator: emulator.name, uri }))
     diagnostics.flush()
     await userData.flush()
     try {
@@ -328,7 +365,14 @@
       library.endSession(false)
       sound.error()
       const code = e instanceof ShellError ? ` [${e.code}]` : ''
-      diagnostics.log('error', `No se pudo abrir ${gameLabel(game.id)} con ${emulator.name}: ${e instanceof Error ? e.message : String(e)}${code}`)
+      diagnostics.log(
+        'error',
+        t('No se pudo abrir {game} con {emulator}: {message}', {
+          game: gameLabel(game.id),
+          emulator: emulator.name,
+          message: (e instanceof Error ? e.message : String(e)) + code,
+        }),
+      )
       diagnostics.flush()
       showToast(launchErrorMessage(e, emulator.name, platform.emulators.length > 1))
     }
@@ -339,12 +383,12 @@
     if (e instanceof ShellError) {
       if (e.code === 'emulator-missing') {
         return hasOthers
-          ? `${emulatorName} no está instalado en la consola. Instálalo, o elige otro en Opciones › Consolas.`
-          : `${emulatorName} no está instalado en la consola. Instálalo desde el Device Portal.`
+          ? t('{emulator} no está instalado en la consola. Instálalo, o elige otro en Opciones › Consolas.', { emulator: emulatorName })
+          : t('{emulator} no está instalado en la consola. Instálalo desde el Device Portal.', { emulator: emulatorName })
       }
       return e.message
     }
-    return `No se pudo abrir ${emulatorName}. Revisa que esté instalado en la consola.`
+    return t('No se pudo abrir {emulator}. Revisa que esté instalado en la consola.', { emulator: emulatorName })
   }
 </script>
 

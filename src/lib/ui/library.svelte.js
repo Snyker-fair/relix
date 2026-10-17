@@ -172,6 +172,22 @@ class Library {
   }
 
   /**
+   * Demo en el navegador: vuelve a leer los gamelists de prueba, que traen sus
+   * descripciones en el idioma activo (con tu USB, los gamelists son los de ES-DE
+   * y no cambian con el idioma).
+   */
+  async reloadDemoGamelists() {
+    const raw = await loadLibrary()
+    this.#listed = Object.fromEntries(
+      PLATFORMS.map((p) => {
+        const xml = raw.gamelists[p.id]
+        return [p.id, xml ? parseGamelist(xml, p.id, { includeHidden: true }) : []]
+      }),
+    )
+    this.#rebuild()
+  }
+
+  /**
    * Vuelve a escanear consolas y cuenta qué cambió en cada una.
    * @param {string[]} systemIds
    * @returns {Promise<ScanChange[]>}

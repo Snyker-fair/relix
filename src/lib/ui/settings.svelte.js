@@ -2,8 +2,10 @@
  * Preferencias del jugador, guardadas en el almacenamiento de la app.
  */
 import { REGION_PREFERENCES } from '../core/coverMatch.js'
+import { LANGUAGES } from '../core/language.js'
 import { SORT_NAMES } from '../core/sorting.js'
 import { THEMES } from '../core/theme.js'
+import { i18n } from '../i18n/i18n.svelte.js'
 import { sound } from './sound.js'
 import { load, onReplaced, save } from './storage.js'
 
@@ -31,6 +33,13 @@ class Settings {
   /** Claro, Oscuro o Automático (oscuro de noche) */
   /** @type {import('../core/theme.js').ThemeChoice} */
   theme = $state('light')
+  /**
+   * Automático (el de la Xbox), Español o English. Lo guarda i18n, que no
+   * depende de nada más, así cualquier módulo puede traducir.
+   */
+  get language() {
+    return i18n.choice
+  }
   /** Ya pasó (o saltó) el recorrido de bienvenida */
   onboarded = $state(false)
   /** Los videos de vista previa suenan (por defecto, sin sonido) */
@@ -51,6 +60,7 @@ class Settings {
     this.sortOrder = SORTS.includes(saved.sortOrder) ? saved.sortOrder : 'az'
     this.onboarded = saved.onboarded === true
     this.theme = THEMES.includes(saved.theme) ? saved.theme : 'light'
+    i18n.choice = LANGUAGES.includes(saved.language) ? saved.language : 'auto'
     this.videoSound = saved.videoSound === true
     this.screensaverMinutes = SCREENSAVER_CHOICES.includes(saved.screensaverMinutes) ? saved.screensaverMinutes : 5
     sound.setMuted(!this.sounds)
@@ -101,6 +111,20 @@ class Settings {
     this.#save()
   }
 
+  /** Automático -> Español -> English -> Automático */
+  cycleLanguage() {
+    i18n.choice = LANGUAGES[(LANGUAGES.indexOf(i18n.choice) + 1) % LANGUAGES.length]
+    this.#save()
+  }
+
+  /**
+   * El otro idioma, el que no se ve (Primeros pasos: Y cambia entre español e inglés).
+   */
+  switchLanguage() {
+    i18n.choice = i18n.current === 'es' ? 'en' : 'es'
+    this.#save()
+  }
+
   /** Terminó o saltó el recorrido de bienvenida */
   markOnboarded() {
     if (this.onboarded) return
@@ -116,6 +140,7 @@ class Settings {
       sortOrder: this.sortOrder,
       onboarded: this.onboarded,
       theme: this.theme,
+      language: i18n.choice,
       videoSound: this.videoSound,
       screensaverMinutes: this.screensaverMinutes,
     })

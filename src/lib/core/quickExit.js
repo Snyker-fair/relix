@@ -5,6 +5,7 @@
  * Relix (se cierra y la Xbox vuelve sola), así que Relix lo deduce por el
  * tiempo y te dice qué revisar.
  */
+import { t } from '../i18n/i18n.svelte.js'
 import { regionsOf } from './coverMatch.js'
 
 /** Volver antes de esto cuenta como "se cerró al abrir" */
@@ -45,23 +46,42 @@ export function ps1BiosRegion(fileName) {
  * @param {import('./platforms.js').Emulator} emulator  con el que se intentó abrir
  */
 export function quickExitMessage(game, platform, emulator) {
-  const intro = `${game.name} se cerró enseguida.`
   const { launcher } = emulator
   if (platform.id === 'psx') {
     const region = ps1BiosRegion(game.path.split('/').pop() ?? '')
     const bios = region
-      ? `${PS1_BIOS[region].file} (BIOS de PS1 ${PS1_BIOS[region].label})`
-      : 'la BIOS de PS1 (scph5500, scph5501 o scph5502.bin)'
-    const where = launcher.kind === 'retroarch' ? 'la carpeta system de RetroArch' : `la carpeta bios de ${emulator.name}`
-    return `${intro} Revisa que ${bios} esté en ${where}, o que el archivo no esté dañado.`
+      ? t('{file} (BIOS de PS1 {label})', { file: PS1_BIOS[region].file, label: t(PS1_BIOS[region].label) })
+      : t('la BIOS de PS1 (scph5500, scph5501 o scph5502.bin)')
+    const where =
+      launcher.kind === 'retroarch'
+        ? t('la carpeta system de RetroArch')
+        : t('la carpeta bios de {emulator}', { emulator: emulator.name })
+    return t('{game} se cerró enseguida. Revisa que {bios} esté en {where}, o que el archivo no esté dañado.', {
+      game: game.name,
+      bios,
+      where,
+    })
   }
   if (platform.id === 'ps2') {
-    return `${intro} Revisa que ${emulator.name} tenga una BIOS de PS2 configurada, o que el archivo no esté dañado.`
+    return t(
+      '{game} se cerró enseguida. Revisa que {emulator} tenga una BIOS de PS2 configurada, o que el archivo no esté dañado.',
+      { game: game.name, emulator: emulator.name },
+    )
   }
   // Con otra opción a mano, cambiar de emulador suele ser la solución más rápida
-  const tryOther = platform.emulators.length > 1 ? ' También puedes probar otro con Y › Abrir con…' : ''
+  const tryOther = platform.emulators.length > 1 ? ` ${t('También puedes probar otro con Y › Abrir con…')}` : ''
   if (launcher.kind === 'retroarch') {
-    return `${intro} Revisa que tu RetroArch traiga el núcleo ${launcher.core}, o que el archivo no esté dañado.${tryOther}`
+    return (
+      t('{game} se cerró enseguida. Revisa que tu RetroArch traiga el núcleo {core}, o que el archivo no esté dañado.', {
+        game: game.name,
+        core: launcher.core,
+      }) + tryOther
+    )
   }
-  return `${intro} Revisa que ${emulator.name} esté instalado y al día, o que el archivo no esté dañado.${tryOther}`
+  return (
+    t('{game} se cerró enseguida. Revisa que {emulator} esté instalado y al día, o que el archivo no esté dañado.', {
+      game: game.name,
+      emulator: emulator.name,
+    }) + tryOther
+  )
 }

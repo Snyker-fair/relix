@@ -18,6 +18,7 @@
   import Logo from '../lib/ui/Logo.svelte'
   import PadButton from '../lib/ui/PadButton.svelte'
   import { sound } from '../lib/ui/sound.js'
+  import { t } from '../lib/i18n/i18n.svelte.js'
 
   /**
    * gameId: cambiar la portada de un solo juego (desde el menú Y), aunque ya tenga
@@ -67,7 +68,7 @@
       .catch((e) => {
         if (cancelled) return
         candidates = []
-        loadError = e instanceof Error ? e.message : 'No se pudieron cargar las portadas.'
+        loadError = e instanceof Error ? e.message : t('No se pudieron cargar las portadas.')
       })
     return () => (cancelled = true)
   })
@@ -104,12 +105,12 @@
     try {
       await covers.choose(current, candidate.name)
       sound.favorite()
-      onToast(`Portada guardada: ${current.name}`)
+      onToast(t('Portada guardada: {game}', { game: current.name }))
       if (single) onBack()
       // Si no, el juego sale de la lista: el que sigue queda en la misma posición
     } catch (e) {
       sound.error()
-      onToast(e instanceof Error ? e.message : 'No se pudo guardar la portada.')
+      onToast(e instanceof Error ? e.message : t('No se pudo guardar la portada.'))
     } finally {
       saving = -1
     }
@@ -121,23 +122,23 @@
     try {
       await covers.useColor(current)
       sound.back()
-      onToast(`${current.name} queda con su portada de color`)
+      onToast(t('{game} queda con su portada de color', { game: current.name }))
       if (single) onBack()
     } catch (e) {
       sound.error()
-      onToast(e instanceof Error ? e.message : 'No se pudo quitar la portada.')
+      onToast(e instanceof Error ? e.message : t('No se pudo quitar la portada.'))
     }
   }
 
   /** @type {Array<{ button: import('../lib/ui/input.js').Action, label: string }>} */
   const hints = $derived.by(() => {
-    if (!game) return [{ button: 'b', label: 'Volver' }]
+    if (!game) return [{ button: 'b', label: t('Volver') }]
     /** @type {Array<{ button: import('../lib/ui/input.js').Action, label: string }>} */
     const list = []
-    if (candidates && candidates.length > 0) list.push({ button: 'a', label: 'Usar esta' })
-    list.push({ button: 'x', label: 'Dejar la de color' })
-    if (pending.length > 1) list.push({ button: 'rb', label: 'Otro juego' })
-    list.push({ button: 'b', label: 'Volver' })
+    if (candidates && candidates.length > 0) list.push({ button: 'a', label: t('Usar esta') })
+    list.push({ button: 'x', label: t('Dejar la de color') })
+    if (pending.length > 1) list.push({ button: 'rb', label: t('Otro juego') })
+    list.push({ button: 'b', label: t('Volver') })
     return list
   })
 
@@ -165,18 +166,18 @@
 
   <div class="title-pill">
     {#if pending.length > 1}
-      <button class="bumper" onclick={() => dispatch('lb')} aria-label="Juego anterior">
+      <button class="bumper" onclick={() => dispatch('lb')} aria-label={t('Juego anterior')}>
         <PadButton name="lb" size={30} />
       </button>
     {/if}
     <span class="pill-text">
-      {single ? 'Cambiar portada' : 'Elegir portada'}
+      {single ? t('Cambiar portada') : t('Elegir portada')}
       {#if pending.length > 1 || (!single && pending.length > 0)}
-        <span class="counter">{Math.min(gameIndex, pending.length - 1) + 1} de {pending.length}</span>
+        <span class="counter">{t('{n} de {total}', { n: Math.min(gameIndex, pending.length - 1) + 1, total: pending.length })}</span>
       {/if}
     </span>
     {#if pending.length > 1}
-      <button class="bumper" onclick={() => dispatch('rb')} aria-label="Juego siguiente">
+      <button class="bumper" onclick={() => dispatch('rb')} aria-label={t('Juego siguiente')}>
         <PadButton name="rb" size={30} />
       </button>
     {/if}
@@ -188,8 +189,8 @@
 {#if !game || !platform}
   <section class="done">
     <span class="done-icon"><ChannelIcon id="pick" color="currentColor" size={110} /></span>
-    <h1>¡Listo!</h1>
-    <p>No quedan portadas por elegir. Cuando agregues juegos, búscalas de nuevo desde Opciones.</p>
+    <h1>{t('¡Listo!')}</h1>
+    <p>{t('No quedan portadas por elegir. Cuando agregues juegos, búscalas de nuevo desde Opciones.')}</p>
   </section>
 {:else}
   <section class="detail" style:--tint={platform.color}>
@@ -204,15 +205,15 @@
       <p class="file">{fileName}</p>
       <p class="ask">
         {#if single}
-          Elige la portada correcta, o presiona <PadButton name="x" size={28} /> para usar la de color.
+          {t('Elige la portada correcta, o presiona')} <PadButton name="x" size={28} /> {t('para usar la de color.')}
         {:else}
-          No encontré una portada segura para este archivo. ¿Es alguna de estas?
+          {t('No encontré una portada segura para este archivo. ¿Es alguna de estas?')}
         {/if}
       </p>
     {/key}
   </section>
 
-  <section class="choices" aria-label="Portadas parecidas" style:--box-w="{box.w}px" style:--box-h="{box.h}px">
+  <section class="choices" aria-label={t('Portadas parecidas')} style:--box-w="{box.w}px" style:--box-h="{box.h}px">
     {#if candidates === null}
       {#each { length: 6 } as _, i (i)}
         <div class="card skeleton" style:--tint={platform.color}>
@@ -222,8 +223,11 @@
       {/each}
     {:else if candidates.length === 0}
       <div class="nothing">
-        <h2>{loadError ? 'No pude cargar las portadas' : 'No encontré portadas parecidas'}</h2>
-        <p>{loadError || 'Presiona X para dejarle la portada de color, o cambia el nombre del archivo y vuelve a escanear.'}</p>
+        <h2>{loadError ? t('No pude cargar las portadas') : t('No encontré portadas parecidas')}</h2>
+        <p>
+          {loadError ||
+            t('Presiona X para dejarle la portada de color, o cambia el nombre del archivo y vuelve a escanear.')}
+        </p>
       </div>
     {:else}
       {#each candidates as c, i (c.name)}
@@ -236,7 +240,7 @@
         >
           <span class="image">
             {#if broken.includes(c.url)}
-              <span class="no-image">Sin vista previa</span>
+              <span class="no-image">{t('Sin vista previa')}</span>
             {:else}
               <img
                 src={c.url}
@@ -247,7 +251,7 @@
             {/if}
             {#if c.region}<span class="region">{c.region}</span>{/if}
             {#if saving === i}
-              <span class="saving"><span class="spinner" aria-hidden="true"></span> Guardando…</span>
+              <span class="saving"><span class="spinner" aria-hidden="true"></span> {t('Guardando…')}</span>
             {/if}
           </span>
           <span class="name">{c.title}</span>

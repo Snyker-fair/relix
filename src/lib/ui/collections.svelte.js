@@ -6,6 +6,7 @@
  * reconozca; las líneas de otras consolas se conservan al guardar.
  */
 import { listCollections, saveCollection } from '../core/bridge.js'
+import { t } from '../i18n/i18n.svelte.js'
 import {
   cleanCollectionName,
   collectionFileName,
@@ -92,7 +93,7 @@ class Collections {
    */
   async create(rawName, game) {
     const name = cleanCollectionName(rawName)
-    if (!name) throw new Error('Escribe un nombre para la colección.')
+    if (!name) throw new Error(t('Escribe un nombre para la colección.'))
     const existing = this.list.find((c) => c.name.toLowerCase() === name.toLowerCase())
     const collection = existing ?? { name, file: collectionFileName(name), lines: [] }
     await this.#save(collection, this.#withGame(collection.lines, game, true))

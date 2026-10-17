@@ -122,7 +122,7 @@ namespace RelixShell
                 List<string> names = ParseIndex(await Http.GetStringAsync(url));
                 if (names.Count == 0)
                 {
-                    throw new InvalidOperationException("La lista llegó vacía.");
+                    throw new InvalidOperationException(Text.Pick("La lista llegó vacía.", "The list came back empty."));
                 }
 
                 try
@@ -144,7 +144,9 @@ namespace RelixShell
             {
                 throw new UserFacingException(
                     "no-internet",
-                    "No pude conectarme al servidor de portadas (thumbnails.libretro.com). Revisa la conexión a internet de la Xbox.");
+                    Text.Pick(
+                        "No pude conectarme al servidor de portadas (thumbnails.libretro.com). Revisa la conexión a internet de la Xbox.",
+                        "I couldn't connect to the cover server (thumbnails.libretro.com). Check the Xbox's internet connection."));
             }
         }
 
@@ -189,7 +191,9 @@ namespace RelixShell
         {
             if (!LibretroFolders.ContainsKey(kind))
             {
-                throw new UserFacingException("bad-kind", "Relix no sabe bajar imágenes de tipo \"" + kind + "\".");
+                throw new UserFacingException("bad-kind", Text.Pick(
+                    "Relix no sabe bajar imágenes de tipo \"" + kind + "\".",
+                    "Relix doesn't know how to download images of type \"" + kind + "\"."));
             }
 
             StorageFolder covers;
@@ -203,7 +207,9 @@ namespace RelixShell
             {
                 throw new UserFacingException(
                     "usb-readonly",
-                    "No pude guardar en el USB. Conecta el disco al PC y vuelve a aplicarle los permisos con la herramienta de DevStore.");
+                    Text.Pick(
+                        "No pude guardar en el USB. Conecta el disco al PC y vuelve a aplicarle los permisos con la herramienta de DevStore.",
+                        "I couldn't save to the USB drive. Plug the drive into the PC and apply the permissions again with the DevStore tool."));
             }
 
             // Sin Task.Run: todo sigue en el hilo de la interfaz, así onProgress
@@ -251,7 +257,7 @@ namespace RelixShell
             byte[] bytes = await Http.GetByteArrayAsync(url);
             if (!IsImage(bytes))
             {
-                throw new InvalidOperationException("El servidor no devolvió una imagen.");
+                throw new InvalidOperationException(Text.Pick("El servidor no devolvió una imagen.", "The server didn't return an image."));
             }
 
             // La clave puede traer carpetas: "Final Fantasy VII (USA)/Final Fantasy VII (USA)"
@@ -288,11 +294,11 @@ namespace RelixShell
         {
             if (ex is HttpRequestException)
             {
-                return "No se pudo descargar.";
+                return Text.Pick("No se pudo descargar.", "Couldn't download.");
             }
             if (ex is TaskCanceledException)
             {
-                return "El servidor tardó demasiado.";
+                return Text.Pick("El servidor tardó demasiado.", "The server took too long.");
             }
             return ex.Message;
         }

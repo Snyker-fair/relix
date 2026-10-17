@@ -11,7 +11,8 @@
   import { parseLogLine } from '../lib/core/diagnostics.js'
   import ChannelIcon from '../lib/ui/ChannelIcon.svelte'
   import { diagnostics } from '../lib/ui/diagnostics.svelte.js'
-  import { plural } from '../lib/ui/format.js'
+  import { formatDate, plural } from '../lib/ui/format.js'
+  import { t } from '../lib/i18n/i18n.svelte.js'
   import HintBar from '../lib/ui/HintBar.svelte'
   import { pushHandler } from '../lib/ui/input.js'
   import { library } from '../lib/ui/library.svelte.js'
@@ -54,19 +55,28 @@
     const [day, clock] = time.split(' ')
     if (day === todayKey) return clock.slice(0, 5)
     const date = new Date(`${day}T12:00:00`)
-    return `${date.toLocaleDateString('es-CL', { day: 'numeric', month: 'short' }).replace('.', '')} ${clock.slice(0, 5)}`
+    return `${formatDate(date, { day: 'numeric', month: 'short' })} ${clock.slice(0, 5)}`
   }
 
-  /** Color de cada tipo: lo que falló en rosa, lo que hay que mirar en amarillo */
+  /**
+   * Color de cada tipo: lo que falló en rosa, lo que hay que mirar en amarillo.
+   * En los dos idiomas: el registro puede tener líneas anotadas en cada uno.
+   */
   const TONES = {
     ERROR: 'bad',
     'NO ABRIÓ': 'bad',
+    'NO START': 'bad',
     DATOS: 'warn',
+    DATA: 'warn',
     USB: 'warn',
     PORTADAS: 'warn',
+    COVERS: 'warn',
     LANZAR: 'go',
+    LAUNCH: 'go',
     'VOLVIÓ': 'ok',
+    RETURNED: 'ok',
     INICIO: 'start',
+    START: 'start',
   }
 
   // Lista que se desliza: la entrada enfocada siempre a la vista
@@ -110,29 +120,30 @@
 
 <div class="backdrop" role="presentation" onclick={onClose}></div>
 
-<section class="panel" aria-label="Registro de diagnóstico">
+<section class="panel" aria-label={t('Registro de diagnóstico')}>
   <header>
     <span class="badge"><ChannelIcon id="log" color="currentColor" size={52} /></span>
     <div class="title">
-      <h2>Registro de diagnóstico</h2>
+      <h2>{t('Registro de diagnóstico')}</h2>
       <p>
-        En el PC: <code>{drive}relix\registro.txt</code>
-        {#if status === 'ready' && entries.length > 0}· las últimas {plural(entries.length, 'entrada', 'entradas')}{/if}
+        {t('En el PC:')} <code>{drive}relix\registro.txt</code>
+        {#if status === 'ready' && entries.length > 0}· {t('las últimas {entries}', { entries: plural(entries.length, 'entrada', 'entradas') })}{/if}
       </p>
     </div>
   </header>
 
   {#if status === 'loading'}
-    <p class="empty"><span class="spinner" aria-hidden="true"></span> Leyendo el registro…</p>
+    <p class="empty"><span class="spinner" aria-hidden="true"></span> {t('Leyendo el registro…')}</p>
   {:else if status === 'error'}
     <p class="empty">
-      No se pudo leer el registro. Si actualizaste solo la interfaz, actualiza también el proyecto C#
-      (falta <code>DiagnosticLog.cs</code>).
+      {t('No se pudo leer el registro. Si actualizaste solo la interfaz, actualiza también el proyecto C# (falta')}
+      <code>DiagnosticLog.cs</code>).
     </p>
   {:else if entries.length === 0}
     <p class="empty">
-      Todavía no hay nada anotado. Relix anota cada juego que abres, cómo volvió y los errores, para
-      revisarlos aquí o en el PC.
+      {t(
+        'Todavía no hay nada anotado. Relix anota cada juego que abres, cómo volvió y los errores, para revisarlos aquí o en el PC.',
+      )}
     </p>
   {:else}
     <div class="window">
@@ -153,8 +164,8 @@
   <HintBar
     surface
     hints={[
-      ...(entries.length > PAGE ? [{ button: /** @type {const} */ ('lt'), also: /** @type {const} */ ('rt'), label: 'Página' }] : []),
-      { button: 'b', label: 'Volver' },
+      ...(entries.length > PAGE ? [{ button: /** @type {const} */ ('lt'), also: /** @type {const} */ ('rt'), label: t('Página') }] : []),
+      { button: 'b', label: t('Volver') },
     ]}
   />
 </div>

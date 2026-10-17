@@ -9,7 +9,7 @@
   import Clock from '../lib/ui/Clock.svelte'
   import { covers } from '../lib/ui/covers.svelte.js'
   import { emulators } from '../lib/ui/emulators.svelte.js'
-  import { coverSummary, plural, scanSummary, timeAgo } from '../lib/ui/format.js'
+  import { coverSummary, formatDate, formatHour, plural, scanSummary, timeAgo } from '../lib/ui/format.js'
   import HintBar from '../lib/ui/HintBar.svelte'
   import { dispatch, pushHandler } from '../lib/ui/input.js'
   import { library } from '../lib/ui/library.svelte.js'
@@ -23,6 +23,8 @@
   import LogViewer from './LogViewer.svelte'
   import { NIGHT, THEME_NAMES } from '../lib/core/theme.js'
   import { theme } from '../lib/ui/theme.svelte.js'
+  import { LANGUAGE_NAMES } from '../lib/core/language.js'
+  import { i18n, t, tn } from '../lib/i18n/i18n.svelte.js'
 
   /**
    * @type {{
@@ -40,17 +42,17 @@
   let { onBack, onToast, onPickCovers, onGuide, onWelcome, initialSection = 'library', initialRow } = $props()
 
   // Secciones: se cambian con LB/RB, igual que las consolas en la biblioteca
-  const SECTIONS = [
-    { id: 'library', name: 'Biblioteca' },
-    { id: 'consoles', name: 'Consolas' },
-    { id: 'check', name: 'Revisión' },
-    { id: 'covers', name: 'Portadas' },
-    { id: 'preferences', name: 'Preferencias' },
-    { id: 'about', name: 'Acerca de' },
-  ]
+  const SECTIONS = $derived([
+    { id: 'library', name: t('Biblioteca') },
+    { id: 'consoles', name: t('Consolas') },
+    { id: 'check', name: t('Revisión') },
+    { id: 'covers', name: t('Portadas') },
+    { id: 'preferences', name: t('Preferencias') },
+    { id: 'about', name: t('Acerca de') },
+  ])
   // Biblioteca: una fila por consola, "Escanear todo" y los juegos ocultos
   const LIBRARY_ROWS = [...PLATFORMS.map((p) => p.id), 'all', 'hidden']
-  const PREFERENCE_ROWS = ['theme', 'empty', 'sounds', 'region', 'video', 'screensaver']
+  const PREFERENCE_ROWS = ['language', 'theme', 'empty', 'sounds', 'region', 'video', 'screensaver']
   // Consolas: con qué emulador se abre cada una
   const CONSOLE_ROWS = PLATFORMS.map((p) => p.id)
   /** Cuántas apps de emulador distintas tiene la Xbox (RetroArch cuenta una vez) */
@@ -132,10 +134,10 @@
       if (Date.now() - systemStatus.checkedAt > 20_000) systemStatus.run().then(() => (now = Date.now()))
     })
   })
-  /** "2026-10-16" -> "16 oct 2026" */
-  const buildDate = BUILD_DATE
-    ? new Date(`${BUILD_DATE}T12:00:00`).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })
-    : ''
+  /** "2026-10-16" -> "16 oct 2026" ("Oct 16, 2026" en inglés) */
+  const buildDate = $derived(
+    BUILD_DATE ? formatDate(new Date(`${BUILD_DATE}T12:00:00`), { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+  )
   /** La fila de initialRow: exacta o, en Revisión, el primer chequeo de esa consola */
   function initialIndex() {
     if (!initialRow) return 0
@@ -168,8 +170,8 @@
   let now = $state(Date.now())
 
   $effect(() => {
-    const t = setInterval(() => (now = Date.now()), 30_000)
-    return () => clearInterval(t)
+    const timer = setInterval(() => (now = Date.now()), 30_000)
+    return () => clearInterval(timer)
   })
 
   const busy = $derived(library.scanning.length > 0)
@@ -187,28 +189,28 @@
   const hintA = $derived(
     section === 'library'
       ? ROWS[index] === 'hidden'
-        ? 'Mostrar'
-        : 'Escanear'
+        ? t('Mostrar')
+        : t('Escanear')
       : section === 'preferences' || section === 'consoles'
-        ? 'Cambiar'
+        ? t('Cambiar')
         : section === 'check'
           ? ROWS[index] === 'recheck'
-            ? 'Revisar'
+            ? t('Revisar')
             : ROWS[index] === 'welcome' || ROWS[index] === 'log'
-              ? 'Ver'
+              ? t('Ver')
               : checkById.get(ROWS[index])?.action
-                ? 'Ver guía'
+                ? t('Ver guía')
                 : ''
           : ROWS[index] === 'choose'
-            ? 'Elegir'
-            : 'Buscar',
+            ? t('Elegir')
+            : t('Buscar'),
   )
 
   /** @param {string} id */
   function rowMeta(id) {
     const scan = library.scans[id]
     const count = plural(library.gamesFor(id).length, 'juego', 'juegos')
-    return { count, where: library.romFolderPath(id), when: scan ? timeAgo(scan.scannedAt, now) : 'sin escanear' }
+    return { count, where: library.romFolderPath(id), when: scan ? timeAgo(scan.scannedAt, now) : t('sin escanear') }
   }
 
   /** @param {string} id */
@@ -244,14 +246,17 @@
         now = Date.now()
         onToast(
           added + removed === 0
-            ? `Listo: sin cambios (${plural(totalGames, 'juego', 'juegos')} en ${PLATFORMS.length} consolas)`
-            : scanSummary('Listo', { added, removed, total: totalGames }),
+            ? t('Listo: sin cambios ({games} en {consoles} consolas)', {
+                games: plural(totalGames, 'juego', 'juegos'),
+                consoles: PLATFORMS.length,
+              })
+            : scanSummary(t('Listo'), { added, removed, total: totalGames }),
         )
       }
       sound.favorite()
     } catch (e) {
       sound.error()
-      onToast(e instanceof Error ? e.message : 'No se pudo escanear. Revisa que el USB esté conectado.')
+      onToast(e instanceof Error ? e.message : t('No se pudo escanear. Revisa que el USB esté conectado.'))
     }
   }
 
@@ -259,12 +264,12 @@
     const count = library.hiddenCount()
     if (count === 0) {
       sound.error()
-      onToast('No hay juegos ocultos. Se ocultan desde el menú del juego (Y).')
+      onToast(t('No hay juegos ocultos. Se ocultan desde el menú del juego (Y).'))
       return
     }
     library.unhideAll()
     sound.favorite()
-    onToast(`Listo: ${plural(count, 'juego vuelve', 'juegos vuelven')} a la biblioteca`)
+    onToast(tn(count, 'Listo: {n} juego vuelve a la biblioteca', 'Listo: {n} juegos vuelven a la biblioteca'))
   }
 
   async function coverRow() {
@@ -272,7 +277,7 @@
     if (id === 'choose') {
       if (covers.pending.length === 0) {
         sound.error()
-        onToast('No hay portadas por elegir. Primero busca en una consola.')
+        onToast(t('No hay portadas por elegir. Primero busca en una consola.'))
         return
       }
       sound.select()
@@ -286,13 +291,13 @@
         onToast(coverSummary(getPlatform(id)?.shortName ?? id, await covers.find(id)))
       } else {
         // Una consola tras otra, solo las que tienen juegos sin portada
-        onToast(coverSummary('Listo', await covers.findAll()))
+        onToast(coverSummary(t('Listo'), await covers.findAll()))
       }
       now = Date.now()
       sound.favorite()
     } catch (e) {
       sound.error()
-      onToast(e instanceof Error ? e.message : 'No se pudieron buscar las portadas.')
+      onToast(e instanceof Error ? e.message : t('No se pudieron buscar las portadas.'))
     }
   }
 
@@ -302,17 +307,21 @@
     if (!platform) return
     if (platform.emulators.length === 0) {
       sound.error()
-      onToast(platform.noEmulatorNote ?? `${platform.name} todavía no tiene un emulador para abrir juegos.`)
+      onToast(
+        platform.noEmulatorNote
+          ? t(platform.noEmulatorNote)
+          : t('{console} todavía no tiene un emulador para abrir juegos.', { console: platform.name }),
+      )
       return
     }
     if (platform.emulators.length === 1) {
       sound.error()
-      onToast(`Por ahora ${platform.name} se abre solo con ${platform.emulators[0].name}.`)
+      onToast(t('Por ahora {console} se abre solo con {emulator}.', { console: platform.name, emulator: platform.emulators[0].name }))
       return
     }
     const next = emulators.cyclePlatform(platform)
     sound.select()
-    if (next?.note) onToast(`${next.name}: ${next.note}.`)
+    if (next?.note) onToast(`${next.name}: ${t(next.note)}.`)
   }
 
   /** Revisión: A abre la guía del chequeo, revisa de nuevo o abre el recorrido */
@@ -334,10 +343,14 @@
       await systemStatus.run()
       now = Date.now()
       const { errors, warnings } = systemStatus.summary
+      const found = [
+        errors > 0 ? plural(errors, 'cosa por arreglar', 'cosas por arreglar') : '',
+        warnings > 0 ? plural(warnings, 'aviso', 'avisos') : '',
+      ].filter(Boolean)
       onToast(
-        errors + warnings === 0
-          ? 'Listo: todo en orden'
-          : `Listo: ${[errors > 0 ? plural(errors, 'cosa por arreglar', 'cosas por arreglar') : '', warnings > 0 ? plural(warnings, 'aviso', 'avisos') : ''].filter(Boolean).join(' y ')}`,
+        found.length === 0
+          ? t('Listo: todo en orden')
+          : t('Listo: {found}', { found: found.length === 2 ? t('{a} y {b}', { a: found[0], b: found[1] }) : found[0] }),
       )
       return
     }
@@ -355,6 +368,7 @@
     else if (id === 'video') settings.toggleVideoSound()
     else if (id === 'screensaver') settings.cycleScreensaver()
     else if (id === 'theme') settings.cycleTheme()
+    else if (id === 'language') settings.cycleLanguage()
     sound.select() // con los sonidos recién apagados, este ya no suena
   }
 
@@ -362,7 +376,7 @@
   function coverMeta(/** @type {string} */ id) {
     const { withCover, total } = library.coverCount(id)
     return {
-      text: `${withCover} de ${total} con portada`,
+      text: t('{n} de {total} con portada', { n: withCover, total }),
       full: total > 0 && withCover === total,
       ratio: total > 0 ? withCover / total : 0,
     }
@@ -412,8 +426,8 @@
     <Logo size={34} />
   </button>
 
-  <nav class="tabs" aria-label="Secciones">
-    <button class="bumper" onclick={() => dispatch('lb')} aria-label="Sección anterior">
+  <nav class="tabs" aria-label={t('Secciones')}>
+    <button class="bumper" onclick={() => dispatch('lb')} aria-label={t('Sección anterior')}>
       <PadButton name="lb" size={30} />
     </button>
     {#each SECTIONS as s (s.id)}
@@ -425,7 +439,7 @@
         {s.name}
       </button>
     {/each}
-    <button class="bumper" onclick={() => dispatch('rb')} aria-label="Sección siguiente">
+    <button class="bumper" onclick={() => dispatch('rb')} aria-label={t('Sección siguiente')}>
       <PadButton name="rb" size={30} />
     </button>
   </nav>
@@ -435,22 +449,23 @@
 
 <section class="intro">
   <span class="intro-icon"><ChannelIcon id="options" color="currentColor" size={84} /></span>
-  <h1>Opciones</h1>
+  <h1>{t('Opciones')}</h1>
   {#if section === 'library'}
-    <h2>Biblioteca</h2>
+    <h2>{t('Biblioteca')}</h2>
     <p>
-      Relix guarda la lista de juegos de cada consola para abrir al instante. Escanea una consola
-      cuando agregues o quites juegos de su carpeta.
+      {t(
+        'Relix guarda la lista de juegos de cada consola para abrir al instante. Escanea una consola cuando agregues o quites juegos de su carpeta.',
+      )}
     </p>
     <ul class="chips">
       <li>{plural(totalGames, 'juego', 'juegos')}</li>
       <li>{library.romRoot}</li>
     </ul>
   {:else if section === 'consoles'}
-    <h2>Consolas</h2>
+    <h2>{t('Consolas')}</h2>
     <p>
-      Con qué emulador se abre cada consola. Para un juego puntual, en la biblioteca usa
-      <strong>Y › Abrir con…</strong>
+      {t('Con qué emulador se abre cada consola. Para un juego puntual, en la biblioteca usa')}
+      <strong>{t('Y › Abrir con…')}</strong>
     </p>
     <ul class="chips">
       <li>{plural(PLATFORMS.length, 'consola', 'consolas')}</li>
@@ -460,61 +475,61 @@
     </ul>
   {:else if section === 'check'}
     {@const { errors, warnings } = systemStatus.summary}
-    <h2>Revisión</h2>
+    <h2>{t('Revisión')}</h2>
     <p>
-      Relix revisa tu USB, los emuladores y las BIOS. Si algo falta, <PadButton name="a" size={26} />
-      abre la guía que explica cómo dejarlo listo.
+      {t('Relix revisa tu USB, los emuladores y las BIOS. Si algo falta,')} <PadButton name="a" size={26} />
+      {t('abre la guía que explica cómo dejarlo listo.')}
     </p>
     <ul class="chips">
       {#if systemStatus.running && !systemStatus.checkedAt}
-        <li>Revisando…</li>
+        <li>{t('Revisando…')}</li>
       {:else if errors + warnings === 0}
-        <li class="ok">Todo en orden</li>
+        <li class="ok">{t('Todo en orden')}</li>
       {:else}
         {#if errors > 0}<li class="error">{plural(errors, 'cosa por arreglar', 'cosas por arreglar')}</li>{/if}
         {#if warnings > 0}<li class="warn">{plural(warnings, 'aviso', 'avisos')}</li>{/if}
       {/if}
     </ul>
     <p class="note">
-      Relix solo ve el USB: si pusiste una BIOS dentro del emulador con el Device Portal, aquí sale
-      como aviso aunque funcione.
+      {t(
+        'Relix solo ve el USB: si pusiste una BIOS dentro del emulador con el Device Portal, aquí sale como aviso aunque funcione.',
+      )}
     </p>
   {:else if section === 'covers'}
-    <h2>Portadas</h2>
+    <h2>{t('Portadas')}</h2>
     <p>
-      Relix las busca en libretro, las mismas de RetroArch, y las guarda en el USB junto a las de
-      ES-DE. Si no está seguro de cuál es, te deja elegir. También baja una captura de cada juego
-      para el fondo de su ficha.
+      {t(
+        'Relix las busca en libretro, las mismas de RetroArch, y las guarda en el USB junto a las de ES-DE. Si no está seguro de cuál es, te deja elegir. También baja una captura de cada juego para el fondo de su ficha.',
+      )}
     </p>
     <ul class="chips">
-      <li>{coverTotals.withCover} de {coverTotals.total} con portada</li>
-      <li>Región: {REGION_NAMES[settings.coverRegion]}</li>
+      <li>{t('{n} de {total} con portada', { n: coverTotals.withCover, total: coverTotals.total })}</li>
+      <li>{t('Región: {region}', { region: t(REGION_NAMES[settings.coverRegion]) })}</li>
     </ul>
   {:else if section === 'about'}
-    <h2>Acerca de</h2>
+    <h2>{t('Acerca de')}</h2>
     <p>
-      Tus reliquias, listas para jugar: un lanzador para tus emuladores en la Xbox que lee tu USB
-      como lo deja ES-DE.
+      {t('Tus reliquias, listas para jugar: un lanzador para tus emuladores en la Xbox que lee tu USB como lo deja ES-DE.')}
     </p>
     <ul class="chips">
-      <li>Versión {VERSION}</li>
-      {#if buildDate}<li>Compilada el {buildDate}</li>{/if}
-      <li>{mode === 'xbox' ? 'Xbox · Modo Desarrollador' : 'Demo en el navegador'}</li>
+      <li>{t('Versión {version}', { version: VERSION })}</li>
+      {#if buildDate}<li>{t('Compilada el {date}', { date: buildDate })}</li>{/if}
+      <li>{mode === 'xbox' ? t('Xbox · Modo Desarrollador') : t('Demo en el navegador')}</li>
     </ul>
     <div class="credits">
       <strong>© 2026 snyker-fair</strong>
       <!-- Aviso que pide la GPL en un programa interactivo: autor, licencia, sin garantía y dónde leerla -->
       <p class="legal">
-        Licencia GPL-3.0 o posterior, sin garantía: compártelo y modifícalo bajo sus términos (ver
-        LICENSE).
+        {t('Licencia GPL-3.0 o posterior, sin garantía: compártelo y modifícalo bajo sus términos (ver LICENSE).')}
       </p>
-      <p>Portadas de libretro · formato de ES-DE · letras SIL OFL</p>
+      <p>{t('Portadas de libretro · formato de ES-DE · letras SIL OFL')}</p>
     </div>
   {:else}
-    <h2>Preferencias</h2>
+    <h2>{t('Preferencias')}</h2>
     <p>
-      El tema claro u oscuro, qué se ve en el inicio, cómo suena Relix, qué portadas prefieres y
-      cuándo aparece el protector de pantalla. Los cambios se guardan solos.
+      {t(
+        'El idioma, el tema claro u oscuro, qué se ve en el inicio, cómo suena Relix, qué portadas prefieres y cuándo aparece el protector de pantalla. Los cambios se guardan solos.',
+      )}
     </p>
   {/if}
 </section>
@@ -525,7 +540,7 @@
 <!-- Con doce consolas las filas no caben: la lista se desliza para mostrar la enfocada -->
 <div class="rows-window">
 {#if section === 'library'}
-<section class="rows compact" aria-label="Escanear consolas" bind:this={rowsEl} style:transform="translateY({-rowsScroll}px)">
+<section class="rows compact" aria-label={t('Escanear consolas')} bind:this={rowsEl} style:transform="translateY({-rowsScroll}px)">
   {#each ROWS as id, i (id)}
     {@const platform = PLATFORMS.find((p) => p.id === id)}
     {@const focused = i === index}
@@ -545,13 +560,13 @@
         </span>
         <span class="text">
           <strong>{platform.name}</strong>
-          <span>{meta.count} en <code>{meta.where}</code></span>
+          <span>{t('{games} en', { games: meta.count })} <code>{meta.where}</code></span>
         </span>
         <span class="state">
           {#if scanning}
-            <span class="spinner" aria-hidden="true"></span> Escaneando…
+            <span class="spinner" aria-hidden="true"></span> {t('Escaneando…')}
           {:else if focused && !busy}
-            <PadButton name="a" size={30} /> Escanear
+            <PadButton name="a" size={30} /> {t('Escanear')}
           {:else}
             {meta.when}
           {/if}
@@ -562,16 +577,16 @@
           <ChannelIcon id="hide" color="currentColor" size={46} />
         </span>
         <span class="text">
-          <strong>Juegos ocultos</strong>
+          <strong>{t('Juegos ocultos')}</strong>
           <span>
             {hiddenCount > 0
-              ? `${plural(hiddenCount, 'juego oculto', 'juegos ocultos')} con Y › Ocultar juego`
-              : 'Ninguno. Se ocultan desde el menú del juego (Y)'}
+              ? tn(hiddenCount, '{n} juego oculto con Y › Ocultar juego', '{n} juegos ocultos con Y › Ocultar juego')
+              : t('Ninguno. Se ocultan desde el menú del juego (Y)')}
           </span>
         </span>
         <span class="state">
           {#if focused && hiddenCount > 0}
-            <PadButton name="a" size={30} /> Mostrar de nuevo
+            <PadButton name="a" size={30} /> {t('Mostrar de nuevo')}
           {:else if hiddenCount > 0}
             <span class="value on">{hiddenCount}</span>
           {/if}
@@ -581,14 +596,14 @@
           <ChannelIcon id="refresh" color="#FFFFFF" size={46} />
         </span>
         <span class="text">
-          <strong>Escanear todo</strong>
-          <span>Las {PLATFORMS.length} consolas, una tras otra</span>
+          <strong>{t('Escanear todo')}</strong>
+          <span>{t('Las {n} consolas, una tras otra', { n: PLATFORMS.length })}</span>
         </span>
         <span class="state">
           {#if scanningAll}
-            <span class="spinner" aria-hidden="true"></span> Escaneando…
+            <span class="spinner" aria-hidden="true"></span> {t('Escaneando…')}
           {:else if focused && !busy}
-            <PadButton name="a" size={30} /> Escanear
+            <PadButton name="a" size={30} /> {t('Escanear')}
           {/if}
         </span>
       {/if}
@@ -596,7 +611,7 @@
   {/each}
 </section>
 {:else if section === 'consoles'}
-<section class="rows compact" aria-label="Emulador de cada consola" bind:this={rowsEl} style:transform="translateY({-rowsScroll}px)">
+<section class="rows compact" aria-label={t('Emulador de cada consola')} bind:this={rowsEl} style:transform="translateY({-rowsScroll}px)">
   {#each ROWS as id, i (id)}
     {@const platform = /** @type {import('../lib/core/platforms.js').Platform} */ (getPlatform(id))}
     {@const focused = i === index}
@@ -618,17 +633,22 @@
         {#if emulator}
           <span>{emulator.name} · <code>{launcherDetail(emulator.launcher)}</code></span>
         {:else}
-          <span>Sin emulador: Cemu aún no se abre desde otra app</span>
+          <span>{t('Sin emulador: Cemu aún no se abre desde otra app')}</span>
         {/if}
       </span>
       <span class="state">
         {#if focused && platform.emulators.length > 1}
-          <PadButton name="a" size={30} /> Cambiar
-          <span class="value">{platform.emulators.findIndex((e) => e.id === emulator?.id) + 1} de {platform.emulators.length}</span>
+          <PadButton name="a" size={30} /> {t('Cambiar')}
+          <span class="value"
+            >{t('{n} de {total}', {
+              n: platform.emulators.findIndex((e) => e.id === emulator?.id) + 1,
+              total: platform.emulators.length,
+            })}</span
+          >
         {:else if installed === true}
-          <span class="value ok">Instalado</span>
+          <span class="value ok">{t('Instalado')}</span>
         {:else if installed === false}
-          <span class="value missing">No instalado</span>
+          <span class="value missing">{t('No instalado')}</span>
         {:else if !emulator}
           <span class="value">—</span>
         {/if}
@@ -637,7 +657,7 @@
   {/each}
 </section>
 {:else if section === 'check'}
-<section class="rows review" aria-label="Revisión del sistema" bind:this={rowsEl} style:transform="translateY({-rowsScroll}px)">
+<section class="rows review" aria-label={t('Revisión del sistema')} bind:this={rowsEl} style:transform="translateY({-rowsScroll}px)">
   {#each ROWS as id, i (id)}
     {@const check = checkById.get(id)}
     {@const focused = i === index}
@@ -656,27 +676,27 @@
           <span class="explain">{check.detail}</span>
         </span>
         <span class="state">
-          {#if focused && check.action}<PadButton name="a" size={30} /> Guía{/if}
+          {#if focused && check.action}<PadButton name="a" size={30} /> {t('Guía')}{/if}
         </span>
       {:else if id === 'recheck'}
         <span class="badge refresh">
           <ChannelIcon id="refresh" color="#FFFFFF" size={46} />
         </span>
         <span class="text">
-          <strong>Revisar de nuevo</strong>
+          <strong>{t('Revisar de nuevo')}</strong>
           <span>
             {systemStatus.running
-              ? 'Revisando el USB, los emuladores y la conexión…'
+              ? t('Revisando el USB, los emuladores y la conexión…')
               : systemStatus.checkedAt
-                ? `Última revisión ${timeAgo(systemStatus.checkedAt, now)}`
-                : 'Todavía no se revisa'}
+                ? t('Última revisión {when}', { when: timeAgo(systemStatus.checkedAt, now) })
+                : t('Todavía no se revisa')}
           </span>
         </span>
         <span class="state">
           {#if systemStatus.running}
-            <span class="spinner" aria-hidden="true"></span> Revisando…
+            <span class="spinner" aria-hidden="true"></span> {t('Revisando…')}
           {:else if focused}
-            <PadButton name="a" size={30} /> Revisar
+            <PadButton name="a" size={30} /> {t('Revisar')}
           {/if}
         </span>
       {:else if id === 'log'}
@@ -684,32 +704,34 @@
           <ChannelIcon id="log" color="currentColor" size={46} />
         </span>
         <span class="text">
-          <strong>Registro de diagnóstico</strong>
+          <strong>{t('Registro de diagnóstico')}</strong>
           <span>
             <code>{logDrive}relix\registro.txt</code> ·
-            {diagnostics.lastAt ? `última entrada ${timeAgo(diagnostics.lastAt, now)}` : 'cada juego que abres y cada error'}
+            {diagnostics.lastAt
+              ? t('última entrada {when}', { when: timeAgo(diagnostics.lastAt, now) })
+              : t('cada juego que abres y cada error')}
           </span>
         </span>
         <span class="state">
-          {#if focused}<PadButton name="a" size={30} /> Ver{/if}
+          {#if focused}<PadButton name="a" size={30} /> {t('Ver')}{/if}
         </span>
       {:else}
         <span class="badge neutral">
           <ChannelIcon id="flag" color="currentColor" size={46} />
         </span>
         <span class="text">
-          <strong>Recorrido de bienvenida</strong>
-          <span>Los primeros pasos de Relix, otra vez</span>
+          <strong>{t('Recorrido de bienvenida')}</strong>
+          <span>{t('Los primeros pasos de Relix, otra vez')}</span>
         </span>
         <span class="state">
-          {#if focused}<PadButton name="a" size={30} /> Ver{/if}
+          {#if focused}<PadButton name="a" size={30} /> {t('Ver')}{/if}
         </span>
       {/if}
     </button>
   {/each}
 </section>
 {:else if section === 'covers'}
-<section class="rows compact" aria-label="Portadas" bind:this={rowsEl} style:transform="translateY({-rowsScroll}px)">
+<section class="rows compact" aria-label={t('Portadas')} bind:this={rowsEl} style:transform="translateY({-rowsScroll}px)">
   {#each ROWS as id, i (id)}
     {@const platform = PLATFORMS.find((p) => p.id === id)}
     {@const focused = i === index}
@@ -739,18 +761,18 @@
           {#if covers.busy === id}
             <span class="spinner" aria-hidden="true"></span>
             {covers.progress?.phase === 'download'
-              ? `Bajando ${covers.progress.done} de ${covers.progress.total}`
+              ? t('Bajando {n} de {total}', { n: covers.progress.done, total: covers.progress.total })
               : covers.progress?.phase === 'shots'
-                ? `Capturas ${covers.progress.done} de ${covers.progress.total}`
-                : 'Buscando…'}
+                ? t('Capturas {n} de {total}', { n: covers.progress.done, total: covers.progress.total })
+                : t('Buscando…')}
           {:else if focused && !coverBusy}
-            <PadButton name="a" size={30} /> Buscar
+            <PadButton name="a" size={30} /> {t('Buscar')}
           {:else if meta.full}
-            <span class="value on">Completa</span>
+            <span class="value on">{t('Completa')}</span>
           {:else if covers.results[id]}
             {timeAgo(covers.results[id].at, now)}
           {:else}
-            sin buscar
+            {t('sin buscar')}
           {/if}
         </span>
       {:else if id === 'all'}
@@ -758,15 +780,17 @@
           <ChannelIcon id="download" color="#FFFFFF" size={46} />
         </span>
         <span class="text">
-          <strong>Buscar en todas</strong>
-          <span>Solo las consolas a las que les faltan portadas</span>
+          <strong>{t('Buscar en todas')}</strong>
+          <span>{t('Solo las consolas a las que les faltan portadas')}</span>
         </span>
         <span class="state">
           {#if searchingAll}
             <span class="spinner" aria-hidden="true"></span>
-            {covers.all && covers.all.total > 1 ? `Consola ${Math.min(covers.all.done + 1, covers.all.total)} de ${covers.all.total}` : 'Buscando…'}
+            {covers.all && covers.all.total > 1
+              ? t('Consola {n} de {total}', { n: Math.min(covers.all.done + 1, covers.all.total), total: covers.all.total })
+              : t('Buscando…')}
           {:else if focused && !coverBusy}
-            <PadButton name="a" size={30} /> Buscar
+            <PadButton name="a" size={30} /> {t('Buscar')}
           {/if}
         </span>
       {:else}
@@ -774,16 +798,16 @@
           <ChannelIcon id="pick" color="currentColor" size={46} />
         </span>
         <span class="text">
-          <strong>Elegir a mano</strong>
+          <strong>{t('Elegir a mano')}</strong>
           <span>
             {covers.pending.length > 0
-              ? `${plural(covers.pending.length, 'juego espera', 'juegos esperan')} que elijas su portada`
-              : 'Nada pendiente: aquí llegan los juegos con nombres dudosos'}
+              ? tn(covers.pending.length, '{n} juego espera que elijas su portada', '{n} juegos esperan que elijas su portada')
+              : t('Nada pendiente: aquí llegan los juegos con nombres dudosos')}
           </span>
         </span>
         <span class="state">
           {#if focused}
-            <PadButton name="a" size={30} /> Elegir
+            <PadButton name="a" size={30} /> {t('Elegir')}
           {:else if covers.pending.length > 0}
             <span class="value on">{covers.pending.length}</span>
           {/if}
@@ -793,7 +817,7 @@
   {/each}
 </section>
 {:else}
-<section class="rows" aria-label="Preferencias" bind:this={rowsEl} style:transform="translateY({-rowsScroll}px)">
+<section class="rows" aria-label={t('Preferencias')} bind:this={rowsEl} style:transform="translateY({-rowsScroll}px)">
   {#each ROWS as id, i (id)}
     {@const focused = i === index}
     {@const on =
@@ -807,7 +831,9 @@
               ? settings.screensaverMinutes > 0
               : id === 'theme'
                 ? settings.theme !== 'light'
-                : true}
+                : id === 'language'
+                  ? false
+                  : true}
     <button
       class="row focus-ring"
       class:focused
@@ -817,57 +843,73 @@
     >
       <span class="badge neutral">
         <ChannelIcon
-          id={id === 'theme' ? 'theme' : id === 'empty' ? 'eye' : id === 'sounds' ? 'sound' : id === 'video' ? 'video' : id === 'screensaver' ? 'moon' : 'globe'}
+          id={id === 'language' ? 'language' : id === 'theme' ? 'theme' : id === 'empty' ? 'eye' : id === 'sounds' ? 'sound' : id === 'video' ? 'video' : id === 'screensaver' ? 'moon' : 'globe'}
           color="currentColor"
           size={52}
         />
       </span>
       <span class="text">
-        {#if id === 'theme'}
-          <strong>Tema</strong>
+        {#if id === 'language'}
+          <!-- En los dos idiomas a la vez, así lo encuentra quien no lee el que se ve -->
+          <strong>{t('Idioma · Language')}</strong>
+          <span>
+            {settings.language === 'auto'
+              ? t('Automático usa el de la Xbox · ahora {language}', { language: LANGUAGE_NAMES[i18n.current] })
+              : t('Automático, español o inglés')}
+          </span>
+        {:else if id === 'theme'}
+          <strong>{t('Tema')}</strong>
           <span>
             {settings.theme === 'auto'
-              ? `Oscuro de ${NIGHT.from}:00 a ${NIGHT.to}:00 · ahora ${theme.current === 'dark' ? 'oscuro' : 'claro'}`
-              : 'Claro, oscuro o automático según la hora'}
+              ? t('Oscuro de {from} a {to} · ahora {now}', {
+                  from: formatHour(NIGHT.from),
+                  to: formatHour(NIGHT.to),
+                  now: theme.current === 'dark' ? t('oscuro') : t('claro'),
+                })
+              : t('Claro, oscuro o automático según la hora')}
           </span>
         {:else if id === 'empty'}
-          <strong>Consolas sin juegos</strong>
+          <strong>{t('Consolas sin juegos')}</strong>
           <span>
             {on
-              ? 'Se muestran en el inicio aunque estén vacías'
+              ? t('Se muestran en el inicio aunque estén vacías')
               : shelf.hiddenCount > 0
-                ? `Ocultas en el inicio (ahora ${plural(shelf.hiddenCount, 'canal oculto', 'canales ocultos')})`
-                : 'Ocultas en el inicio'}
+                ? t('Ocultas en el inicio (ahora {channels})', {
+                    channels: plural(shelf.hiddenCount, 'canal oculto', 'canales ocultos'),
+                  })
+                : t('Ocultas en el inicio')}
           </span>
         {:else if id === 'sounds'}
-          <strong>Sonidos de la interfaz</strong>
-          <span>El tic al moverte y el pop al elegir</span>
+          <strong>{t('Sonidos de la interfaz')}</strong>
+          <span>{t('El tic al moverte y el pop al elegir')}</span>
         {:else if id === 'video'}
-          <strong>Sonido de los videos</strong>
-          <span>La vista previa en la ficha del juego (si escrapeaste videos con ES-DE)</span>
+          <strong>{t('Sonido de los videos')}</strong>
+          <span>{t('La vista previa en la ficha del juego (si escrapeaste videos con ES-DE)')}</span>
         {:else if id === 'screensaver'}
-          <strong>Protector de pantalla</strong>
-          <span>Tus juegos, uno tras otro, cuando dejas el control quieto</span>
+          <strong>{t('Protector de pantalla')}</strong>
+          <span>{t('Tus juegos, uno tras otro, cuando dejas el control quieto')}</span>
         {:else}
-          <strong>Región de las portadas</strong>
-          <span>Para los juegos cuyo archivo no dice la región</span>
+          <strong>{t('Región de las portadas')}</strong>
+          <span>{t('Para los juegos cuyo archivo no dice la región')}</span>
         {/if}
       </span>
       <span class="state">
         {#if focused}<PadButton name="a" size={30} />{/if}
         <span class="value" class:on>
-          {#if id === 'theme'}
-            {THEME_NAMES[settings.theme]}
+          {#if id === 'language'}
+            {settings.language === 'auto' ? t('Automático') : LANGUAGE_NAMES[settings.language]}
+          {:else if id === 'theme'}
+            {t(THEME_NAMES[settings.theme])}
           {:else if id === 'empty'}
-            {on ? 'Visibles' : 'Ocultas'}
+            {on ? t('Visibles') : t('Ocultas')}
           {:else if id === 'sounds'}
-            {on ? 'Activados' : 'Desactivados'}
+            {on ? t('Activados') : t('Desactivados')}
           {:else if id === 'video'}
-            {on ? 'Con sonido' : 'Sin sonido'}
+            {on ? t('Con sonido') : t('Sin sonido')}
           {:else if id === 'screensaver'}
-            {settings.screensaverMinutes > 0 ? `A los ${settings.screensaverMinutes} min` : 'Nunca'}
+            {settings.screensaverMinutes > 0 ? t('A los {n} min', { n: settings.screensaverMinutes }) : t('Nunca')}
           {:else}
-            {REGION_NAMES[settings.coverRegion]}
+            {t(REGION_NAMES[settings.coverRegion])}
           {/if}
         </span>
       </span>
@@ -881,14 +923,14 @@
 <HintBar
   hints={section === 'about'
     ? [
-        { button: 'lb', also: 'rb', label: 'Secciones' },
-        { button: 'b', label: 'Volver' },
+        { button: 'lb', also: 'rb', label: t('Secciones') },
+        { button: 'b', label: t('Volver') },
       ]
     : [
         ...(hintA ? [{ button: /** @type {const} */ ('a'), label: hintA }] : []),
-        ...(section === 'consoles' ? [{ button: /** @type {const} */ ('y'), label: 'Guía' }] : []),
-        { button: 'lb', also: 'rb', label: 'Secciones' },
-        { button: 'b', label: 'Volver' },
+        ...(section === 'consoles' ? [{ button: /** @type {const} */ ('y'), label: t('Guía') }] : []),
+        { button: 'lb', also: 'rb', label: t('Secciones') },
+        { button: 'b', label: t('Volver') },
       ]}
 />
 

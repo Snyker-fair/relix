@@ -15,6 +15,7 @@
   import Clock from '../lib/ui/Clock.svelte'
   import CoverArt, { TILE_ASPECT } from '../lib/ui/CoverArt.svelte'
   import { plural } from '../lib/ui/format.js'
+  import { t } from '../lib/i18n/i18n.svelte.js'
   import HintBar from '../lib/ui/HintBar.svelte'
   import { dispatch, pushHandler } from '../lib/ui/input.js'
   import Keyboard from '../lib/ui/Keyboard.svelte'
@@ -107,7 +108,7 @@
   </button>
   <div class="title-pill">
     <ChannelIcon id="search" color="currentColor" size={30} />
-    Buscar
+    {t('Buscar')}
   </div>
   <Clock />
 </header>
@@ -116,27 +117,27 @@
   <p class="field" class:empty={!query}>
     <span class="lens"><ChannelIcon id="search" color="currentColor" size={30} /></span>
     {#if !query}<span class="caret" aria-hidden="true"></span>{/if}
-    <span class="text">{query || 'Escribe un nombre'}</span>
+    <span class="text">{query || t('Escribe un nombre')}</span>
     {#if query}<span class="caret" aria-hidden="true"></span>{/if}
   </p>
   <Keyboard bind:this={keyboard} bind:value={query} active={zone === 'keys'} />
-  <p class="scope">Busca en tus {plural(library.all.length, 'juego', 'juegos')}, en todas las consolas.</p>
+  <p class="scope">{t('Busca en tus {games}, en todas las consolas.', { games: plural(library.all.length, 'juego', 'juegos') })}</p>
 </section>
 
 <section class="results">
   <h2>
     {#if searching}
-      {results.length === 0 ? `Nada con «${query.trim()}»` : plural(results.length, 'resultado', 'resultados')}
+      {results.length === 0 ? t('Nada con «{query}»', { query: query.trim() }) : plural(results.length, 'resultado', 'resultados')}
     {:else}
-      {results.length > 0 ? 'Jugados hace poco' : 'Escribe para buscar'}
+      {results.length > 0 ? t('Jugados hace poco') : t('Escribe para buscar')}
     {/if}
   </h2>
 
   {#if results.length === 0}
     <p class="no-results">
       {searching
-        ? 'Prueba con el comienzo de una palabra: "kin" encuentra Kingdom Hearts.'
-        : 'Con el teclado de la izquierda. Los resultados aparecen mientras escribes.'}
+        ? t('Prueba con el comienzo de una palabra: "kin" encuentra Kingdom Hearts.')
+        : t('Con el teclado de la izquierda. Los resultados aparecen mientras escribes.')}
     </p>
   {:else}
     <div class="grid-window">
@@ -167,16 +168,16 @@
 <HintBar
   hints={zone === 'keys'
     ? [
-        { button: 'a', label: 'Escribir' },
-        { button: 'x', label: 'Borrar' },
-        { button: 'y', label: 'Espacio' },
-        { button: 'b', label: 'Volver' },
+        { button: 'a', label: t('Escribir') },
+        { button: 'x', label: t('Borrar') },
+        { button: 'y', label: t('Espacio') },
+        { button: 'b', label: t('Volver') },
       ]
     : [
-        { button: 'a', label: 'Jugar' },
-        { button: 'y', label: 'Menú' },
-        { button: 'x', label: 'Borrar' },
-        { button: 'b', label: 'Volver' },
+        { button: 'a', label: t('Jugar') },
+        { button: 'y', label: t('Menú') },
+        { button: 'x', label: t('Borrar') },
+        { button: 'b', label: t('Volver') },
       ]}
 />
 

@@ -85,7 +85,9 @@ namespace RelixShell
                     // La interfaz no alcanza a anotarlo: lo anota el shell
                     var ignored = DiagnosticLog.AppendAsync(paths, new[]
                     {
-                        LogLine("ERROR", "La interfaz se cerró sola (" + failure.ProcessFailedKind + ") y se volvió a cargar"),
+                        LogLine("ERROR", Text.Pick(
+                            "La interfaz se cerró sola (" + failure.ProcessFailedKind + ") y se volvió a cargar",
+                            "The interface closed on its own (" + failure.ProcessFailedKind + ") and was reloaded")),
                     });
                     core.Navigate(Origin + "/index.html");
                 }
@@ -246,6 +248,11 @@ namespace RelixShell
                         Reply(id, log);
                         break;
 
+                    case "setLanguage":
+                        // La interfaz cambió de idioma (o acaba de abrir): los mensajes del shell la siguen
+                        Text.SetLanguage(payload.GetNamedString("language", "es"));
+                        break;
+
                     case "setBackground":
                         // El tema cambió: se usa ese fondo desde ahora y al abrir la próxima vez
                         SaveBackground(payload.GetNamedString("color", DefaultBackground));
@@ -322,7 +329,9 @@ namespace RelixShell
                     default:
                         // Un mensaje de una interfaz más nueva que este shell: se
                         // responde para que la interfaz no se quede esperando
-                        if (id != 0) ReplyError(id, "Esta versión del shell no conoce \"" + type + "\". Actualiza el proyecto C#.", "unknown-message");
+                        if (id != 0) ReplyError(id, Text.Pick(
+                            "Esta versión del shell no conoce \"" + type + "\". Actualiza el proyecto C#.",
+                            "This version of the shell doesn't know \"" + type + "\". Update the C# project."), "unknown-message");
                         break;
                 }
             }
@@ -332,7 +341,7 @@ namespace RelixShell
             }
             catch (Exception ex)
             {
-                ReplyError(id, "Error inesperado en Relix: " + ex.Message, "error");
+                ReplyError(id, Text.Pick("Error inesperado en Relix: ", "Unexpected error in Relix: ") + ex.Message, "error");
             }
         }
 
@@ -581,7 +590,9 @@ namespace RelixShell
             {
                 throw new UserFacingException(
                     "no-library",
-                    "No encontré la carpeta roms en ningún disco USB. Conecta el disco y revisa que tenga la carpeta roms en la raíz.");
+                    Text.Pick(
+                        "No encontré la carpeta roms en ningún disco USB. Conecta el disco y revisa que tenga la carpeta roms en la raíz.",
+                        "I couldn't find a roms folder on any USB drive. Plug in the drive and make sure it has the roms folder at its root."));
             }
         }
 
@@ -623,7 +634,9 @@ namespace RelixShell
             {
                 throw new UserFacingException(
                     "rom-missing",
-                    "No encontré el juego en " + romPath + ". Revisa que esté en el USB.");
+                    Text.Pick(
+                        "No encontré el juego en " + romPath + ". Revisa que esté en el USB.",
+                        "I couldn't find the game at " + romPath + ". Make sure it's on the USB drive."));
             }
 
             var uri = new Uri(uriText);
@@ -639,9 +652,11 @@ namespace RelixShell
             {
                 throw new UserFacingException(
                     "emulator-missing",
-                    "No hay ninguna app instalada que abra " + uri.Scheme + ":");
+                    Text.Pick("No hay ninguna app instalada que abra ", "No installed app opens ") + uri.Scheme + ":");
             }
-            throw new UserFacingException("launch-failed", "La consola no pudo abrir el emulador.");
+            throw new UserFacingException(
+                "launch-failed",
+                Text.Pick("La consola no pudo abrir el emulador.", "The console couldn't open the emulator."));
         }
 
         // ── Envío de mensajes a la interfaz ─────────────────────────────────

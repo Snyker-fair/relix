@@ -13,6 +13,7 @@
   import { untrack } from 'svelte'
   import { fade } from 'svelte/transition'
   import { getPlatform } from '../lib/core/platforms.js'
+  import { t } from '../lib/i18n/i18n.svelte.js'
   import { usableMedia } from '../lib/ui/activity.svelte.js'
   import Clock from '../lib/ui/Clock.svelte'
   import CoverArt from '../lib/ui/CoverArt.svelte'
@@ -53,8 +54,8 @@
 
   $effect(() => {
     if (pool.games.length < 2) return
-    const t = setInterval(() => index++, SLIDE_MS)
-    return () => clearInterval(t)
+    const timer = setInterval(() => index++, SLIDE_MS)
+    return () => clearInterval(timer)
   })
 
   // La imagen siguiente se pide antes, para que entre sin saltos
@@ -113,8 +114,8 @@
 
   <div class="clock"><Clock /></div>
   <div class="hints">
-    {#if game}<span><PadButton name="a" size={34} /> Jugar</span>{/if}
-    <span class="soft">Cualquier botón para volver</span>
+    {#if game}<span><PadButton name="a" size={34} /> {t('Jugar')}</span>{/if}
+    <span class="soft">{t('Cualquier botón para volver')}</span>
   </div>
 </div>
 

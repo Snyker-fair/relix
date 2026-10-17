@@ -11,6 +11,7 @@
   import ChannelIcon from '../lib/ui/ChannelIcon.svelte'
   import { emulators } from '../lib/ui/emulators.svelte.js'
   import { formatPlaytime, plural, timeAgo } from '../lib/ui/format.js'
+  import { listJoin, t } from '../lib/i18n/i18n.svelte.js'
   import { shelf } from '../lib/ui/shelf.svelte.js'
   import Clock from '../lib/ui/Clock.svelte'
   import CoverArt, { TILE_ASPECT } from '../lib/ui/CoverArt.svelte'
@@ -118,8 +119,8 @@
   $effect(() => {
     const next = background ?? usableMedia(game?.thumb) ?? ''
     if (next === untrack(() => ambient)) return
-    const t = setTimeout(() => (ambient = next), 280)
-    return () => clearTimeout(t)
+    const timer = setTimeout(() => (ambient = next), 280)
+    return () => clearTimeout(timer)
   })
   // Sección del juego enfocado: la letra en A–Z, el año en "Año"
   const section = $derived(game ? (sectionOf(game, order) ?? '•') : '')
@@ -181,7 +182,7 @@
       game.year && String(game.year),
       game.developer,
       game.genre,
-      game.players && (game.players === '1' ? '1 jugador' : `${game.players} jugadores`),
+      game.players && (game.players === '1' ? t('1 jugador') : t('{n} jugadores', { n: game.players })),
     ].filter(Boolean)
   })
 
@@ -192,10 +193,12 @@
     sound.move()
   }
 
-  /** ['chd', 'iso', 'cso'] -> ".chd, .iso o .cso" */
+  /** ['chd', 'iso', 'cso'] -> ".chd, .iso o .cso" (".chd, .iso, or .cso") */
   function formatList(/** @type {string[]} */ extensions) {
-    const list = extensions.map((e) => `.${e}`)
-    return list.length > 1 ? `${list.slice(0, -1).join(', ')} o ${list.at(-1)}` : list[0]
+    return listJoin(
+      extensions.map((e) => `.${e}`),
+      'disjunction',
+    )
   }
 
   /** @param {number} delta */
@@ -240,8 +243,8 @@
     <Logo size={34} />
   </button>
 
-  <nav class="tabs" aria-label={inCollection ? 'Colecciones' : 'Consolas'}>
-    <button class="bumper" onclick={() => dispatch('lb')} aria-label="Anterior">
+  <nav class="tabs" aria-label={inCollection ? t('Colecciones') : t('Consolas')}>
+    <button class="bumper" onclick={() => dispatch('lb')} aria-label={t('Anterior')}>
       <PadButton name="lb" size={30} />
     </button>
     <!-- Con muchas consolas, las pestañas se deslizan para mostrar la activa -->
@@ -260,7 +263,7 @@
         {/each}
       </div>
     </div>
-    <button class="bumper" onclick={() => dispatch('rb')} aria-label="Siguiente">
+    <button class="bumper" onclick={() => dispatch('rb')} aria-label={t('Siguiente')}>
       <PadButton name="rb" size={30} />
     </button>
   </nav>
@@ -272,24 +275,28 @@
   <section class="empty">
     <h1>
       {channel.id === 'favorites'
-        ? 'Aún no tienes favoritos'
+        ? t('Aún no tienes favoritos')
         : inCollection
-          ? 'Esta colección quedó vacía'
-          : `No hay juegos de ${channel.name}`}
+          ? t('Esta colección quedó vacía')
+          : t('No hay juegos de {console}', { console: channel.name })}
     </h1>
     {#if channel.id === 'favorites'}
-      <p>En cualquier consola, pon el foco en un juego y presiona <PadButton name="x" size={30} /> para guardarlo aquí.</p>
+      <p>
+        {t('En cualquier consola, pon el foco en un juego y presiona')} <PadButton name="x" size={30} />
+        {t('para guardarlo aquí.')}
+      </p>
     {:else if inCollection}
-      <p>Agrega juegos desde el menú del juego: <PadButton name="y" size={30} /> › Colecciones.</p>
+      <p>{t('Agrega juegos desde el menú del juego:')} <PadButton name="y" size={30} /> › {t('Colecciones')}.</p>
     {:else}
       <p>
-        Copia tus juegos a <code>{library.romFolderPath(channel.id)}</code> y escanéala en
-        <strong>≡ › Biblioteca</strong>.
-        Formatos: {formatList(channel.extensions)}.
+        {t('Copia tus juegos a')} <code>{library.romFolderPath(channel.id)}</code>
+        {t('y escanéala en')}
+        <strong>{t('≡ › Biblioteca')}</strong>.
+        {t('Formatos: {formats}.', { formats: formatList(channel.extensions) })}
       </p>
       <p class="hint">
-        ¿Primera vez con {channel.shortName}? <PadButton name="y" size={28} /> abre la guía: qué emulador
-        instalar, qué archivos pide y dónde van tus juegos.
+        {t('¿Primera vez con {console}?', { console: channel.shortName })} <PadButton name="y" size={28} />
+        {t('abre la guía: qué emulador instalar, qué archivos pide y dónde van tus juegos.')}
       </p>
     {/if}
   </section>
@@ -309,7 +316,7 @@
             <span class="logo-shade"></span>
             <img class="logo" src={logo} alt="" onerror={() => brokenMedia.add(logo)} />
           {/if}
-          {#if favorite}<span class="heart" aria-label="Favorito">♥</span>{/if}
+          {#if favorite}<span class="heart" aria-label={t('Favorito')}>♥</span>{/if}
         </div>
         <div class="headline">
           <div class="mini-cover">
@@ -321,7 +328,7 @@
         <div class="detail-cover">
           <!-- Aquí sí, la caja completa con su forma real -->
           <CoverArt {game} {platform} width={250} height={350} showTitle={false} real />
-          {#if favorite}<span class="heart" aria-label="Favorito">♥</span>{/if}
+          {#if favorite}<span class="heart" aria-label={t('Favorito')}>♥</span>{/if}
         </div>
         <h1 class:long={game.name.length > 24}>{game.name}</h1>
       {/if}
@@ -344,11 +351,13 @@
           <p class="file">{game.path.split('/').pop()}</p>
         {/if}
         <p class="via">
-          Se abre con {emulator.name}{#if emulators.hasOwn(game)}<span class="own">solo este juego</span>{/if}
-          {#if emulators.isInstalled(emulator) === false}<span class="missing">no instalado</span>{/if}
+          {t('Se abre con {emulator}', { emulator: emulator.name })}{#if emulators.hasOwn(game)}<span class="own"
+              >{t('solo este juego')}</span
+            >{/if}
+          {#if emulators.isInstalled(emulator) === false}<span class="missing">{t('no instalado')}</span>{/if}
         </p>
       {:else}
-        <p class="note">{platform.noEmulatorNote}</p>
+        <p class="note">{platform.noEmulatorNote ? t(platform.noEmulatorNote) : ''}</p>
       {/if}
     {/key}
   </section>
@@ -365,7 +374,7 @@
           onclick={() => (i === index ? onLaunch(g) : move(i))}
         >
           <CoverArt game={g} platform={p} width={COVER_W} thumb />
-          {#if library.isFavorite(g)}<span class="mini-heart" aria-label="Favorito">♥</span>{/if}
+          {#if library.isFavorite(g)}<span class="mini-heart" aria-label={t('Favorito')}>♥</span>{/if}
         </button>
       {/each}
     </div>
@@ -375,8 +384,8 @@
 {#if games.length > 0}
   <div class="position" aria-live="polite">
     <span class="letter" class:wide={section.length > 1}>{section}</span>
-    <span>Juego {Math.min(index, games.length - 1) + 1} de {games.length}</span>
-    <span class="order">{SORT_NAMES[order]}</span>
+    <span>{t('Juego {n} de {total}', { n: Math.min(index, games.length - 1) + 1, total: games.length })}</span>
+    <span class="order">{t(SORT_NAMES[order])}</span>
     {#if filterOn && filter}<span class="order filter">{filterLabel(filter)}</span>{/if}
   </div>
 {/if}
@@ -390,17 +399,17 @@
 <HintBar
   hints={games.length > 0
     ? [
-        { button: 'a', label: emulator ? 'Jugar' : 'No disponible' },
-        { button: 'y', label: 'Menú' },
-        { button: 'x', label: 'Favorito' },
-        { button: 'lt', also: 'rt', label: order === 'az' ? 'Letra' : order === 'year' ? 'Año' : 'Página' },
-        { button: 'view', label: 'Buscar' },
-        { button: 'b', label: 'Volver' },
+        { button: 'a', label: emulator ? t('Jugar') : t('No disponible') },
+        { button: 'y', label: t('Menú') },
+        { button: 'x', label: t('Favorito') },
+        { button: 'lt', also: 'rt', label: order === 'az' ? t('Letra') : order === 'year' ? t('Año') : t('Página') },
+        { button: 'view', label: t('Buscar') },
+        { button: 'b', label: t('Volver') },
       ]
     : [
-        ...(guideable ? [{ button: 'y', label: 'Ver guía' }] : []),
-        { button: 'view', label: 'Buscar' },
-        { button: 'b', label: 'Volver' },
+        ...(guideable ? [{ button: 'y', label: t('Ver guía') }] : []),
+        { button: 'view', label: t('Buscar') },
+        { button: 'b', label: t('Volver') },
       ]}
 />
 

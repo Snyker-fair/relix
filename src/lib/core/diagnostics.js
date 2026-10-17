@@ -5,10 +5,12 @@
  *   2026-10-17 06:40:12  LANZAR    Ōkami (PS2) con XBSX2 · xbsx2:?cmd=…
  *
  * El shell escribe la misma forma cuando anota algo por su cuenta
- * (LogLine en MainPage.xaml.cs).
+ * (LogLine en MainPage.xaml.cs). Cada línea queda en el idioma que tenía
+ * Relix al anotarla (el tipo también: LANZAR o LAUNCH).
  */
+import { t } from '../i18n/i18n.svelte.js'
 
-/** Tipos de evento (cada uno ocupa 9 columnas, así el texto queda alineado) */
+/** Tipos de evento (cada uno ocupa 9 columnas, así el texto queda alineado; en inglés también) */
 export const LOG_KINDS = {
   start: 'INICIO',
   launch: 'LANZAR',
@@ -39,7 +41,7 @@ export function logTime(date) {
  */
 export function logLine(kind, text, date = new Date()) {
   const clean = String(text).replace(/[\r\n]+/g, ' ').trim()
-  const line = `${logTime(date)}  ${LOG_KINDS[kind].padEnd(9)} ${clean}`
+  const line = `${logTime(date)}  ${t(LOG_KINDS[kind]).padEnd(9)} ${clean}`
   return line.length > MAX_LINE ? `${line.slice(0, MAX_LINE)}…` : line
 }
 

@@ -106,6 +106,13 @@ manejarse con el control. Logo, colores, tipografía y voz de la marca están en
   del shell y de la interfaz, la revisión del sistema y los problemas al guardar o
   bajar portadas. Se lee en el PC o en **Opciones › Revisión › Registro de
   diagnóstico**. Pasados 256 KB, el archivo pasa a `registro.anterior.txt`.
+- **Español o inglés.** En **Opciones › Preferencias › Idioma · Language**:
+  Automático (el idioma de la Xbox: español si está en español, inglés en
+  cualquier otro caso), Español o English. En la primera pantalla de Primeros
+  pasos, **Y** cambia de idioma. Todo se traduce: pantallas, guías, avisos, la
+  revisión, el registro de diagnóstico y los mensajes de error del shell. Los
+  nombres de archivos y carpetas del USB (`datos.json`, `registro.txt`…) no
+  cambian.
 - **Tema claro u oscuro.** En **Opciones › Preferencias › Tema**: Claro, Oscuro
   ("Noche azul": fondo azul noche y paneles azul pizarra, con el rosa y los colores
   de cada consola de siempre) o Automático, que es oscuro de 20:00 a 7:00. El shell
@@ -129,20 +136,24 @@ src/
     filters.js       filtros por género y jugadores (Y › Filtrar)
     theme.js         tema claro, oscuro o automático (los colores están en app.css)
     diagnostics.js   formato de las líneas del registro de diagnóstico
+    language.js      qué idioma toca (Automático sigue a la Xbox)
     guides.js        guías de instalación por consola y emulador (DevStore, BIOS, carpetas)
     systemCheck.js   revisión del sistema: qué está bien, qué falta y qué guía lo arregla
     collections.js   lee y escribe colecciones en el formato de ES-DE
     bridge.js        habla con el shell en C# (o usa datos de prueba en el navegador)
+  lib/i18n/          traducciones: t() en i18n.svelte.js y el inglés en en.js
   lib/ui/            piezas de interfaz: entrada del control, sonidos, portadas…
   screens/           Home, Library (grilla), Search, GameMenu (Y), Options, Guide, Welcome
                      (primer uso), Screensaver, CoverPicker, LaunchOverlay
   mock/gamelists/    gamelists de ejemplo con el formato real de ES-DE
   mock/libretro-names.json  nombres reales de libretro (demo y tests)
+  mock/en.json       descripciones y géneros de la demo en inglés
 tests/               tests de la lógica y del puente con el shell (vitest)
 brand/               logo, íconos de la app y guía de marca
 shell/               el shell en C# (RelixShell) y la guía para Visual Studio
 docs/                compilar una versión nueva (COMPILAR.md) y qué probar en la TV (PROBAR.md)
-scripts/             copy-to-shell.mjs: copia la interfaz al proyecto de Visual Studio
+scripts/             copy-to-shell.mjs (copia la interfaz a Visual Studio) e
+                     i18n.mjs (textos sin traducir)
 ```
 
 ## Comandos
@@ -289,6 +300,25 @@ versión pública. Se suma como una consola más cuando madure.
 - [x] **Tema oscuro:** Claro, Oscuro o Automático (de noche) en Preferencias.
 - [x] **Registro de diagnóstico:** `E:\relix\registro.txt`, visible en Revisión, y
       una plantilla de *issue* que lo pide.
+- [x] **Interfaz en inglés:** Automático, Español o English, con los mensajes del
+      shell incluidos.
+
+## Traducciones
+
+Los textos se escriben en español en el código y pasan por `t()`
+(`src/lib/i18n/i18n.svelte.js`); `src/lib/i18n/en.js` tiene cada uno en inglés:
+
+```js
+t('Seguir jugando')                        // "Continue playing"
+t('Juego {n} de {total}', { n, total })    // "Game 3 of 9"
+tn(n, '{n} juego nuevo', '{n} juegos nuevos')
+plural(n, 'juego', 'juegos')               // "3 games"
+```
+
+`node scripts/i18n.mjs` lista los textos que todavía no tienen su versión en
+inglés, listos para copiar a `en.js`. `tests/i18n.test.js` falla si falta alguno,
+si los `{nombres}` no coinciden o si una guía, un chequeo de la revisión o un aviso
+queda sin traducir.
 
 ## Controles
 
@@ -315,8 +345,8 @@ En el navegador: flechas, Enter, Esc, X, Y, Q/E, Z/C, V y M.
 6. ~~Revisión del sistema y primer uso guiado~~ (hecho)
 7. ~~Ficha más viva, protector de pantalla y filtros~~ (hecho, con lo que escrapea
    ES-DE en el PC; ScreenScraper directo desde la Xbox queda para más adelante)
-8. **Portafolio:** GitHub público, tests en GitHub Actions, releases instalables,
-   interfaz en inglés.
+8. **Portafolio:** GitHub público, tests en GitHub Actions, releases instalables y
+   README en inglés (la interfaz en inglés ya está).
 
 Más adelante: RetroAchievements, administrar la biblioteca desde el celular, perfiles.
 

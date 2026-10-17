@@ -12,6 +12,7 @@
  * A diferencia del EmulationStation clásico, ES-DE no guarda las rutas de las
  * imágenes en el XML: se encuentran por el nombre del archivo del juego.
  */
+import { t } from '../i18n/i18n.svelte.js'
 
 /**
  * @typedef {Object} Game
@@ -91,7 +92,7 @@ export function titleStem(relPath) {
 export function parseGamelist(xml, system, { includeHidden = false } = {}) {
   const doc = new DOMParser().parseFromString(xml, 'application/xml')
   if (doc.getElementsByTagName('parsererror').length > 0) {
-    throw new Error(`El gamelist.xml de "${system}" no es un XML válido.`)
+    throw new Error(t('El gamelist.xml de "{system}" no es un XML válido.', { system }))
   }
 
   /** @type {Game[]} */

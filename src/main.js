@@ -1,10 +1,14 @@
 import { mount } from 'svelte'
 import './app.css'
 import App from './App.svelte'
+import { startLanguage } from './lib/ui/language.svelte.js'
 import { theme } from './lib/ui/theme.svelte.js'
 import { userData } from './lib/ui/userData.svelte.js'
 
-// El tema primero: si tus datos del USB traen otro, cambia solo
+// Idioma y tema primero: si tus datos del USB traen otros, cambian solos.
+// El idioma va antes que cualquier pedido al shell, así sus errores ya salen
+// en el idioma de la interfaz.
+startLanguage()
 theme.start()
 
 // Primero tus datos del USB (E:\relix\datos.json), así cada pantalla parte con

@@ -12,6 +12,7 @@
  * - El resto de la cadena se deja tal cual; el shell en C# hace `new Uri(...)`
  *   y `Launcher.LaunchUriAsync`, que se encarga de los espacios.
  */
+import { t } from '../i18n/i18n.svelte.js'
 
 export const APP_PROTOCOL = 'relix'
 
@@ -36,10 +37,10 @@ export function escapeDataString(value) {
  */
 export function buildLaunchUri(launcher, romPath, appProtocol = APP_PROTOCOL) {
   if (!launcher) {
-    throw new Error('Esta consola todavía no tiene un emulador configurado para lanzar juegos.')
+    throw new Error(t('Esta consola todavía no tiene un emulador configurado para lanzar juegos.'))
   }
   if (!romPath) {
-    throw new Error('Falta la ruta del juego.')
+    throw new Error(t('Falta la ruta del juego.'))
   }
 
   const game = `"${escapeDataString(romPath)}"`
@@ -51,5 +52,5 @@ export function buildLaunchUri(launcher, romPath, appProtocol = APP_PROTOCOL) {
   if (launcher.kind === 'standalone') {
     return `${launcher.protocol}:?cmd=${launcher.exe} ${game}${back}`
   }
-  throw new Error(`Tipo de lanzador desconocido: ${/** @type {any} */ (launcher).kind}`)
+  throw new Error(t('Tipo de lanzador desconocido: {kind}', { kind: /** @type {any} */ (launcher).kind }))
 }
