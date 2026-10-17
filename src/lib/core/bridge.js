@@ -94,11 +94,22 @@ export class ShellError extends Error {
 }
 
 let nextId = 1
-/** @type {Map<number, {resolve: Function, reject: Function}>} */
+/** @type {Map<number, {resolve: Function, reject: Function, type: string}>} */
 const pending = new Map()
 /** @typedef {{ event: string, action?: string, system?: string, done?: number, total?: number }} ShellEvent */
 /** @type {Set<(e: ShellEvent) => void>} */
 const listeners = new Set()
+
+/**
+ * Quién se entera de los errores del shell (el registro de diagnóstico).
+ * @type {((type: string, error: ShellError) => void) | null}
+ */
+let errorListener = null
+
+/** @param {(type: string, error: ShellError) => void} fn */
+export function onShellError(fn) {
+  errorListener = fn
+}
 
 if (webview()) {
   webview().addEventListener('message', (/** @type {MessageEvent} */ e) => {
@@ -111,7 +122,7 @@ if (webview()) {
     if (!waiter) return
     pending.delete(msg.id)
     if (msg.ok) waiter.resolve(msg.result)
-    else waiter.reject(new ShellError(msg.error ?? 'El shell no respondió.', msg.code))
+    else waiter.reject(reportError(waiter.type, new ShellError(msg.error ?? 'El shell no respondió.', msg.code)))
   })
 }
 
@@ -123,15 +134,25 @@ if (webview()) {
 function request(type, payload, { timeout = 0 } = {}) {
   return new Promise((resolve, reject) => {
     const id = nextId++
-    pending.set(id, { resolve, reject })
+    pending.set(id, { resolve, reject, type })
     webview().postMessage({ id, type, payload })
     if (timeout > 0) {
       setTimeout(() => {
         if (!pending.delete(id)) return
-        reject(new ShellError('El shell no respondió a tiempo.', 'timeout'))
+        reject(reportError(type, new ShellError('El shell no respondió a tiempo.', 'timeout')))
       }, timeout)
     }
   })
+}
+
+/** Avisa del error a quien escucha y lo devuelve @param {string} type @param {ShellError} error */
+function reportError(type, error) {
+  try {
+    errorListener?.(type, error)
+  } catch {
+    // el registro nunca rompe un pedido
+  }
+  return error
 }
 
 /**
@@ -147,6 +168,44 @@ export function onShellEvent(fn) {
 /** Avisa al shell que la interfaz está lista para recibir el control. */
 export function notifyReady() {
   if (mode === 'xbox') webview().postMessage({ type: 'ready' })
+}
+
+// ── Registro de diagnóstico (E:\relix\registro.txt) ─────────────────
+
+const DEMO_LOG_KEY = 'relix:demo-log'
+const DEMO_LOG_MAX = 300
+
+/**
+ * Agrega líneas al registro. Sin respuesta: nunca hace esperar a nadie, y un
+ * shell anterior simplemente las ignora.
+ * @param {string[]} lines
+ */
+export function appendLog(lines) {
+  if (lines.length === 0) return
+  if (mode === 'xbox') {
+    webview().postMessage({ type: 'appendLog', payload: { lines } })
+    return
+  }
+  try {
+    const saved = JSON.parse(localStorage.getItem(DEMO_LOG_KEY) ?? '[]')
+    localStorage.setItem(DEMO_LOG_KEY, JSON.stringify([...saved, ...lines].slice(-DEMO_LOG_MAX)))
+  } catch {
+    // sin almacenamiento: la demo no guarda el registro
+  }
+}
+
+/**
+ * Las últimas líneas del registro, de la más vieja a la más nueva.
+ * @param {number} count
+ * @returns {Promise<string[]>}
+ */
+export async function readLog(count) {
+  if (mode === 'xbox') return (await request('readLog', { count }, { timeout: 10_000 })).lines
+  try {
+    return JSON.parse(localStorage.getItem(DEMO_LOG_KEY) ?? '[]').slice(-count)
+  } catch {
+    return []
+  }
 }
 
 /**

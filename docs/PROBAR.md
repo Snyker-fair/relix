@@ -56,7 +56,7 @@ con un error, copia el mensaje de la ventana **Salida**.
 - [ ] En las grillas, el aro rosado del juego enfocado no toca la fila de arriba ni las portadas de al lado.
 
 ## Acerca de
-- [ ] **≡ → RB hasta Acerca de** muestra la versión 0.8.1, la fecha de compilación y "Xbox · Modo Desarrollador".
+- [ ] **≡ → RB hasta Acerca de** muestra la versión 0.8.2, la fecha de compilación y "Xbox · Modo Desarrollador".
 - [ ] **En tu USB** muestra tu letra de disco real.
 - [ ] Al pie del panel izquierdo dice **Creado por snyker-fair**.
 
@@ -147,5 +147,14 @@ con un error, copia el mensaje de la ventana **Salida**.
 - [ ] Cierra Relix con el tema en **Oscuro** y ábrelo de nuevo: arranca en azul noche,
       sin el destello celeste (desde la segunda vez, cuando el shell ya lo recuerda).
 - [ ] **Automático** dice "Oscuro de 20:00 a 7:00 · ahora …" y cambia solo a esa hora.
+
+## Registro de diagnóstico (0.8.2)
+- [ ] Abre un juego, juega un rato y vuelve. Abre otro y vuelve enseguida (o uno que
+      sepas que no abre).
+- [ ] **≡ → Revisión → Registro de diagnóstico → A**: arriba lo más nuevo. Debe decir
+      **VOLVIÓ** o **NO ABRIÓ** según cada caso, y cada **LANZAR** trae la URI completa.
+      **↑ ↓** recorren; **LT / RT**, de a una página; **B** vuelve.
+- [ ] En el PC existe `E:\relix\registro.txt` con las mismas líneas.
+- [ ] Con un emulador sin instalar, el intento queda como **ERROR** con `[emulator-missing]`.
 
 Si algo falla, la tabla **Si algo falla** de [`shell/README.md`](../shell/README.md) tiene las causas más comunes.

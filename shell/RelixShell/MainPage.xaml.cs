@@ -82,11 +82,46 @@ namespace RelixShell
             {
                 if (failure.ProcessFailedKind == CoreWebView2ProcessFailedKind.RenderProcessExited)
                 {
+                    // La interfaz no alcanza a anotarlo: lo anota el shell
+                    var ignored = DiagnosticLog.AppendAsync(paths, new[]
+                    {
+                        LogLine("ERROR", "La interfaz se cerró sola (" + failure.ProcessFailedKind + ") y se volvió a cargar"),
+                    });
                     core.Navigate(Origin + "/index.html");
                 }
             };
 
             core.Navigate(Origin + "/index.html");
+        }
+
+        // ── Registro de diagnóstico (E:\relix\registro.txt) ─────────────────
+
+        private async Task AppendLogAsync(JsonArray values)
+        {
+            var lines = new List<string>();
+            foreach (IJsonValue value in values)
+            {
+                if (value.ValueType == JsonValueType.String)
+                {
+                    lines.Add(value.GetString());
+                }
+            }
+            try
+            {
+                await EnsurePathsAsync(refresh: false);
+            }
+            catch (UserFacingException)
+            {
+                return; // sin USB no hay dónde anotar
+            }
+            await DiagnosticLog.AppendAsync(paths, lines);
+        }
+
+        /// <summary>Una línea con el mismo formato que arma la interfaz (src/lib/core/diagnostics.js).</summary>
+        private static string LogLine(string kind, string text)
+        {
+            return DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture)
+                + "  " + kind.PadRight(9) + " " + text;
         }
 
         // ── Fondo del tema ──────────────────────────────────────────────────
@@ -197,6 +232,18 @@ namespace RelixShell
                     case "ready":
                         // La interfaz ya está en pantalla: empezamos a leer el control.
                         gamepad.Start();
+                        break;
+
+                    case "appendLog":
+                        // Sin respuesta: el registro nunca hace esperar a la interfaz
+                        await AppendLogAsync(payload.GetNamedArray("lines", new JsonArray()));
+                        break;
+
+                    case "readLog":
+                        await EnsurePathsAsync(refresh: false);
+                        var log = new JsonObject();
+                        log.SetNamedValue("lines", StringArray(await DiagnosticLog.ReadLastAsync(paths, (int)payload.GetNamedNumber("count", 200))));
+                        Reply(id, log);
                         break;
 
                     case "setBackground":

@@ -19,6 +19,8 @@
   import { shelf } from '../lib/ui/shelf.svelte.js'
   import { sound } from '../lib/ui/sound.js'
   import { systemStatus } from '../lib/ui/systemStatus.svelte.js'
+  import { diagnostics } from '../lib/ui/diagnostics.svelte.js'
+  import LogViewer from './LogViewer.svelte'
   import { NIGHT, THEME_NAMES } from '../lib/core/theme.js'
   import { theme } from '../lib/ui/theme.svelte.js'
 
@@ -73,7 +75,10 @@
     [...systemStatus.checks].sort((a, b) => STATE_ORDER[a.state] - STATE_ORDER[b.state]),
   )
   const checkById = $derived(new Map(sortedChecks.map((c) => [c.id, c])))
-  const CHECK_ROWS = $derived([...sortedChecks.map((c) => c.id), 'recheck', 'welcome'])
+  const CHECK_ROWS = $derived([...sortedChecks.map((c) => c.id), 'recheck', 'log', 'welcome'])
+  /** El visor del registro de diagnóstico, encima de Revisión */
+  let showLog = $state(false)
+  const logDrive = $derived(library.romRoot.replace(/roms[\\/]*$/i, '') || 'E:\\')
   const MARKS = { ok: '✓', warn: '!', error: '✗', info: 'i' }
   const STATE_TINTS = { ok: '#3FAE49', warn: '#F2B705', error: 'var(--pop)', info: '#8FA3BF' }
 
@@ -189,7 +194,7 @@
         : section === 'check'
           ? ROWS[index] === 'recheck'
             ? 'Revisar'
-            : ROWS[index] === 'welcome'
+            : ROWS[index] === 'welcome' || ROWS[index] === 'log'
               ? 'Ver'
               : checkById.get(ROWS[index])?.action
                 ? 'Ver guía'
@@ -316,6 +321,11 @@
     if (id === 'welcome') {
       sound.select()
       onWelcome()
+      return
+    }
+    if (id === 'log') {
+      sound.select()
+      showLog = true
       return
     }
     if (id === 'recheck') {
@@ -667,6 +677,20 @@
             <PadButton name="a" size={30} /> Revisar
           {/if}
         </span>
+      {:else if id === 'log'}
+        <span class="badge neutral">
+          <ChannelIcon id="log" color="currentColor" size={46} />
+        </span>
+        <span class="text">
+          <strong>Registro de diagnóstico</strong>
+          <span>
+            <code>{logDrive}relix\registro.txt</code> ·
+            {diagnostics.lastAt ? `última entrada ${timeAgo(diagnostics.lastAt, now)}` : 'cada juego que abres y cada error'}
+          </span>
+        </span>
+        <span class="state">
+          {#if focused}<PadButton name="a" size={30} /> Ver{/if}
+        </span>
       {:else}
         <span class="badge neutral">
           <ChannelIcon id="flag" color="currentColor" size={46} />
@@ -865,6 +889,10 @@
         { button: 'b', label: 'Volver' },
       ]}
 />
+
+{#if showLog}
+  <LogViewer onClose={() => (showLog = false)} />
+{/if}
 
 <style>
   .top {

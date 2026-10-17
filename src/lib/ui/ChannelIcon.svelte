@@ -174,6 +174,10 @@
   {:else if id === 'filter'}
     <!-- embudo: filtrar -->
     <path d="M16 20h64L56 50v24l-16 8V50Z" fill={color} />
+  {:else if id === 'log'}
+    <!-- hoja con renglones: registro -->
+    <rect x="22" y="12" width="52" height="72" rx="10" />
+    <path d="M34 34h28M34 48h28M34 62h16" />
   {:else if id === 'theme'}
     <!-- círculo mitad lleno: tema claro u oscuro -->
     <circle cx="48" cy="48" r="32" />

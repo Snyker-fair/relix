@@ -59,7 +59,7 @@ Visual Studio los recarga solo. Si te pregunta, elige **Sí a todo**.
 1. Haz clic derecho en el proyecto **RelixShell** y elige **Agregar → Nueva carpeta**.
    Llámala `Shell`.
 2. Haz clic derecho en la carpeta **Shell** y elige **Agregar → Elemento existente…**
-3. Selecciona los siete `.cs` de `relix\shell\RelixShell\Shell\`. Visual Studio los copia al proyecto.
+3. Selecciona los ocho `.cs` de `relix\shell\RelixShell\Shell\`. Visual Studio los copia al proyecto.
 
 | Archivo | Qué hace |
 |---|---|
@@ -70,6 +70,7 @@ Visual Studio los recarga solo. Si te pregunta, elige **Sí a todo**.
 | `CollectionStore.cs` | Lee y guarda las colecciones en `ES-DE\collections` |
 | `UserDataStore.cs` | Guarda tus datos en `relix\datos.json`, con copia anterior y respaldos diarios |
 | `SystemCheck.cs` | Revisa permisos, espacio, carpetas, archivos de BIOS e internet (Opciones › Revisión) |
+| `DiagnosticLog.cs` | Escribe y lee el registro de diagnóstico (`relix\registro.txt`) |
 
 ### 4. Ajusta el manifiesto
 
@@ -193,7 +194,7 @@ así el emulador tiene todos los recursos de la consola.
 | Qué ves | Qué revisar |
 |---|---|
 | Error de compilación con `XamlControlsResources` o `WebView2` | Falta el paso 1 (NuGet Microsoft.UI.Xaml) |
-| Error con `GamepadInput`, `LocalServer`, `LibraryReader`, `CoverService`, `CollectionStore`, `UserDataStore` o `SystemCheck` | Falta el paso 3 (carpeta Shell) |
+| Error con `GamepadInput`, `LocalServer`, `LibraryReader`, `CoverService`, `CollectionStore`, `UserDataStore`, `SystemCheck` o `DiagnosticLog` | Falta el paso 3 (carpeta Shell) |
 | Opciones › Revisión dice "No se pudo revisar el USB a fondo" | El shell no respondió en 15 segundos: casi siempre es que se actualizó la interfaz y no el proyecto C# (falta `SystemCheck.cs` o el `MainPage.xaml.cs` nuevo) |
 | "No pude guardar tus datos en el USB" | El USB no deja escribir: vuelve a aplicarle los permisos con la USB Permissions Tool. Mientras, tus datos quedan en la app y pasan al USB cuando se pueda |
 | Pantalla celeste vacía | Falta el paso 6 o el 7: la carpeta `ui` no quedó en el paquete |

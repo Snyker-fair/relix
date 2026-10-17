@@ -1,0 +1,47 @@
+name: Algo no funciona
+description: Un juego que no abre, un error o algo que se ve mal.
+labels: [problema]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por avisar. Con estos datos casi siempre se puede saber qué pasó sin ir y venir.
+  - type: input
+    id: version
+    attributes:
+      label: Versión de Relix
+      description: Está en Opciones › Acerca de.
+      placeholder: "0.8.2"
+    validations:
+      required: true
+  - type: textarea
+    id: que-paso
+    attributes:
+      label: Qué pasó
+      description: Lo que esperabas y lo que viste. Una foto de la pantalla ayuda mucho.
+    validations:
+      required: true
+  - type: textarea
+    id: antes
+    attributes:
+      label: Qué hiciste justo antes
+      placeholder: "Abrí Opciones › Portadas y apreté A en PS2…"
+  - type: input
+    id: consola
+    attributes:
+      label: Consola y emulador
+      description: Si es un juego que no abre.
+      placeholder: "PS1 con RetroArch · SwanStation"
+  - type: textarea
+    id: revision
+    attributes:
+      label: Foto de Opciones › Revisión
+      description: Baja con ↓ hasta el final. Muestra qué emuladores, BIOS y permisos ve tu Xbox. Arrastra la foto aquí.
+  - type: textarea
+    id: registro
+    attributes:
+      label: Registro de diagnóstico
+      description: |
+        Las últimas líneas de `E:\relix\registro.txt` (en el PC), o una foto de Opciones › Revisión › Registro de diagnóstico.
+        Revísalo antes de pegarlo: trae los nombres de tus juegos y las rutas de tu USB.
+      render: text

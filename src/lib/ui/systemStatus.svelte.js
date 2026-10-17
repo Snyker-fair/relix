@@ -6,6 +6,7 @@
 import { systemCheck } from '../core/bridge.js'
 import { PLATFORMS } from '../core/platforms.js'
 import { buildChecks, CHECK_FOLDERS, summarize } from '../core/systemCheck.js'
+import { diagnostics } from './diagnostics.svelte.js'
 import { emulators } from './emulators.svelte.js'
 import { library } from './library.svelte.js'
 import { userData } from './userData.svelte.js'
@@ -62,6 +63,23 @@ class SystemStatus {
       this.running = false
       this.checkedAt = Date.now()
     }
+    this.#log()
+  }
+
+  /** Lo que se anotó la última vez: solo se vuelve a anotar si cambia */
+  #logged = ''
+
+  /** "1 por arreglar, 1 aviso: Nintendo 3DS: falta RetroArch 3DS · BIOS de PS1: falta scph5502.bin" */
+  #log() {
+    const { errors, warnings } = this.summary
+    const problems = this.checks.filter((c) => c.state === 'error' || c.state === 'warn').map((c) => c.title)
+    const text =
+      errors + warnings === 0
+        ? 'Todo en orden'
+        : `${errors} por arreglar, ${warnings} ${warnings === 1 ? 'aviso' : 'avisos'}: ${problems.join(' · ')}`
+    if (text === this.#logged) return
+    this.#logged = text
+    diagnostics.log('check', text)
   }
 }
 

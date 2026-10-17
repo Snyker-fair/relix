@@ -20,6 +20,7 @@ import {
   remoteCoverUrl,
 } from '../core/coverMatch.js'
 import { getPlatform, PLATFORMS } from '../core/platforms.js'
+import { diagnostics } from './diagnostics.svelte.js'
 import { library } from './library.svelte.js'
 import { settings } from './settings.svelte.js'
 import { load, onReplaced, save } from './storage.js'
@@ -165,6 +166,9 @@ class Covers {
       const result = { saved, failed, toChoose: toChoose.length, notFound, shots: shotsSaved, at: Date.now() }
       this.results = { ...this.results, [systemId]: result }
       save('coverResults', this.results)
+      if (result.failed > 0) {
+        diagnostics.log('covers', `${platform.shortName}: ${result.failed} no se pudieron bajar (de ${result.failed + result.saved})`)
+      }
       return result
     } finally {
       this.busy = null

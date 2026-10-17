@@ -4,6 +4,10 @@
   import { buildLaunchUri } from './lib/core/launchUri.js'
   import { getPlatform } from './lib/core/platforms.js'
   import { QUICK_EXIT_SECONDS, quickExitMessage } from './lib/core/quickExit.js'
+  import { shortDuration } from './lib/core/diagnostics.js'
+  import { VERSION } from './lib/core/version.js'
+  import { diagnostics } from './lib/ui/diagnostics.svelte.js'
+  import { theme } from './lib/ui/theme.svelte.js'
   import { COLLECTIONS, COLLECTION_PREFIX, isCollectionId } from './lib/ui/channels.js'
   import { collections } from './lib/ui/collections.svelte.js'
   import { emulators } from './lib/ui/emulators.svelte.js'
@@ -58,6 +62,8 @@
   // En el navegador: teclado y control con la Gamepad API.
   // En la Xbox: el control lo lee el shell en C# y llega como evento 'input'.
   startInput({ keyboard: mode === 'browser', gamepad: mode === 'browser' })
+  // Registro de diagnóstico: errores del shell y de la interfaz, desde ya
+  diagnostics.start()
 
   onShellEvent((e) => {
     if (e.event === 'input' && e.action) dispatch(/** @type {any} */ (e.action))
@@ -80,14 +86,20 @@
   // recién, con Reintentar), la revisión del sistema (que también pregunta qué
   // emuladores hay), el aviso de la partida que quedó pendiente y, la primera
   // vez, el recorrido de bienvenida
+  let loggedStart = false
   $effect(() => {
     if (library.status !== 'ready') return
     untrack(() => {
+      if (!loggedStart) {
+        loggedStart = true
+        diagnostics.log('start', startSummary())
+      }
       collections.load()
       userData.resync()
       library.loadMedia()
       systemStatus.run().then(warnSystem)
       if (finishedWhileClosed) {
+        diagnostics.log('back', `${gameLabel(finishedWhileClosed.id)} tras ${shortDuration(finishedWhileClosed.elapsed)} (Relix estaba cerrado)`)
         announcePlaytime(finishedWhileClosed)
         finishedWhileClosed = null
       }
@@ -121,14 +133,43 @@
     )
   }
 
-  // Si el USB no deja guardar tus datos, se avisa una vez
+  // Si el USB no deja guardar tus datos, se avisa una vez (y se anota cada error distinto)
   let warnedSave = false
   $effect(() => {
-    if (userData.status === 'error' && !warnedSave) {
-      warnedSave = true
-      untrack(() => showToast(userData.error))
-    }
+    if (userData.status !== 'error') return
+    const error = userData.error
+    untrack(() => {
+      diagnostics.log('data', error)
+      if (!warnedSave) {
+        warnedSave = true
+        showToast(error)
+      }
+    })
   })
+
+  // Sin USB (o sin la carpeta roms): se anota lo que dijo la pantalla de carga
+  $effect(() => {
+    if (library.status === 'error') untrack(() => diagnostics.log('usb', library.error))
+  })
+
+  /** "Relix 0.8.2 · Xbox · E:\roms · 57 juegos en 12 consolas · tema claro" */
+  function startSummary() {
+    const consoles = new Set(library.all.map((g) => g.system)).size
+    return [
+      `Relix ${VERSION}`,
+      mode === 'xbox' ? 'Xbox' : 'navegador',
+      library.romRoot,
+      `${plural(library.all.length, 'juego', 'juegos')} en ${plural(consoles, 'consola', 'consolas')}`,
+      `tema ${theme.current === 'dark' ? 'oscuro' : 'claro'}`,
+    ].join(' · ')
+  }
+
+  /** "Ōkami (PS2)" @param {string} id */
+  function gameLabel(id) {
+    const game = library.byId.get(id)
+    if (!game) return id
+    return `${game.name} (${getPlatform(game.system)?.shortName ?? game.system})`
+  }
 
   /**
    * Cierra la partida en curso (si había) y cuenta lo jugado. Si volviste
@@ -140,7 +181,16 @@
     launching = null
     const finished = library.endSession()
     if (!finished) return
-    if (fromEmulator && finished.elapsed < QUICK_EXIT_SECONDS) warnQuickExit(finished.id)
+    const quick = fromEmulator && finished.elapsed < QUICK_EXIT_SECONDS
+    const game = library.byId.get(finished.id)
+    const emulatorName = game ? (emulators.forGame(game)?.name ?? '') : ''
+    diagnostics.log(
+      quick ? 'quickExit' : 'back',
+      quick
+        ? `${gameLabel(finished.id)} con ${emulatorName}: volvió a Relix a los ${finished.elapsed} s`
+        : `${gameLabel(finished.id)} tras ${shortDuration(finished.elapsed)}${fromEmulator ? '' : ' (cerraste el aviso "Abriendo…")'}${finished.seconds > 0 ? '' : ' · no se cuenta (menos de 1 min)'}`,
+    )
+    if (quick) warnQuickExit(finished.id)
     else announcePlaytime(finished)
   }
 
@@ -258,13 +308,17 @@
       uri = buildLaunchUri(emulator.launcher, library.romPath(game))
     } catch (e) {
       sound.error()
-      showToast(e instanceof Error ? e.message : String(e))
+      const message = e instanceof Error ? e.message : String(e)
+      diagnostics.log('error', `No se pudo armar la URI de ${gameLabel(game.id)} con ${emulator.name}: ${message}`)
+      showToast(message)
       return
     }
     sound.select()
     launching = { game, uri, emulatorName: emulator.name }
     // La partida empieza a contar y queda en el USB antes de que la Xbox pase al emulador
     library.startSession(game)
+    diagnostics.log('launch', `${gameLabel(game.id)} con ${emulator.name} · ${uri}`)
+    diagnostics.flush()
     await userData.flush()
     try {
       await launch(uri, library.romPath(game))
@@ -273,6 +327,9 @@
       launching = null
       library.endSession(false)
       sound.error()
+      const code = e instanceof ShellError ? ` [${e.code}]` : ''
+      diagnostics.log('error', `No se pudo abrir ${gameLabel(game.id)} con ${emulator.name}: ${e instanceof Error ? e.message : String(e)}${code}`)
+      diagnostics.flush()
       showToast(launchErrorMessage(e, emulator.name, platform.emulators.length > 1))
     }
   }

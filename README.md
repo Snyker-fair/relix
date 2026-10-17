@@ -101,6 +101,11 @@ manejarse con el control. Logo, colores, tipografía y voz de la marca están en
   con su nombre y consola. **A** juega el que se ve; cualquier otro botón vuelve.
 - **Filtros.** **Y › Filtrar** muestra los géneros de la consola y "2 o más
   jugadores", con los datos de los gamelists de ES-DE. El filtro dura la sesión.
+- **Registro de diagnóstico.** Relix anota en `E:\relix\registro.txt` cada juego
+  que abres (con la URI exacta), cómo volvió (y si se cerró al abrir), los errores
+  del shell y de la interfaz, la revisión del sistema y los problemas al guardar o
+  bajar portadas. Se lee en el PC o en **Opciones › Revisión › Registro de
+  diagnóstico**. Pasados 256 KB, el archivo pasa a `registro.anterior.txt`.
 - **Tema claro u oscuro.** En **Opciones › Preferencias › Tema**: Claro, Oscuro
   ("Noche azul": fondo azul noche y paneles azul pizarra, con el rosa y los colores
   de cada consola de siempre) o Automático, que es oscuro de 20:00 a 7:00. El shell
@@ -123,6 +128,7 @@ src/
     media.js         fondo, logo y video de cada juego (downloaded_media de ES-DE)
     filters.js       filtros por género y jugadores (Y › Filtrar)
     theme.js         tema claro, oscuro o automático (los colores están en app.css)
+    diagnostics.js   formato de las líneas del registro de diagnóstico
     guides.js        guías de instalación por consola y emulador (DevStore, BIOS, carpetas)
     systemCheck.js   revisión del sistema: qué está bien, qué falta y qué guía lo arregla
     collections.js   lee y escribe colecciones en el formato de ES-DE
@@ -172,6 +178,7 @@ se desactiva ese "modo mouse".
 | Colecciones | `E:\ES-DE\collections\custom-<Nombre>.cfg` (las ve también ES-DE) |
 | Tus datos | `E:\relix\datos.json` (y `datos.anterior.json`) |
 | Respaldos diarios | `E:\relix\respaldos\datos-AAAA-MM-DD.json` (los últimos 7) |
+| Registro de diagnóstico | `E:\relix\registro.txt` (y `registro.anterior.txt`) |
 | Caché de Relix | `E:\relix\cache\` (listas de libretro y miniaturas; se puede borrar) |
 
 **Volver a un respaldo:** en el PC, copia el `datos-<día>.json` que quieras
@@ -280,6 +287,8 @@ versión pública. Se suma como una consola más cuando madure.
       del juego (capturas de libretro para los que no tienen fondo), protector de
       pantalla con tus juegos y Y › Filtrar por género o jugadores.
 - [x] **Tema oscuro:** Claro, Oscuro o Automático (de noche) en Preferencias.
+- [x] **Registro de diagnóstico:** `E:\relix\registro.txt`, visible en Revisión, y
+      una plantilla de *issue* que lo pide.
 
 ## Controles
 

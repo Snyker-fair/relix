@@ -21,6 +21,7 @@
     { label: 'Colecciones', path: `${drive}\\ES-DE\\collections` },
     { label: 'Tus datos', path: `${drive}\\relix\\datos.json` },
     { label: 'Respaldos', path: `${drive}\\relix\\respaldos (7 días)` },
+    { label: 'Registro', path: `${drive}\\relix\\registro.txt` },
     { label: 'Caché', path: `${drive}\\relix\\cache (se puede borrar)` },
   ])
 
