@@ -91,6 +91,10 @@ manejarse con el control. Logo, colores, tipografía y voz de la marca están en
   con su nombre y consola. **A** juega el que se ve; cualquier otro botón vuelve.
 - **Filtros.** **Y › Filtrar** muestra los géneros de la consola y "2 o más
   jugadores", con los datos de los gamelists de ES-DE. El filtro dura la sesión.
+- **Tema claro u oscuro.** En **Opciones › Preferencias › Tema**: Claro, Oscuro
+  ("Noche azul": fondo azul noche y paneles azul pizarra, con el rosa y los colores
+  de cada consola de siempre) o Automático, que es oscuro de 20:00 a 7:00. El shell
+  recuerda el fondo del tema, así de noche no hay destello celeste al abrir.
 
 ## Estructura
 
@@ -108,6 +112,7 @@ src/
     quickExit.js     aviso cuando un juego se cierra al abrir (BIOS según la región)
     media.js         fondo, logo y video de cada juego (downloaded_media de ES-DE)
     filters.js       filtros por género y jugadores (Y › Filtrar)
+    theme.js         tema claro, oscuro o automático (los colores están en app.css)
     guides.js        guías de instalación por consola y emulador (DevStore, BIOS, carpetas)
     systemCheck.js   revisión del sistema: qué está bien, qué falta y qué guía lo arregla
     collections.js   lee y escribe colecciones en el formato de ES-DE
@@ -263,6 +268,7 @@ versión pública. Se suma como una consola más cuando madure.
 - [x] **Ficha viva, protector y filtros:** fanart, logo y video de ES-DE en el panel
       del juego (capturas de libretro para los que no tienen fondo), protector de
       pantalla con tus juegos y Y › Filtrar por género o jugadores.
+- [x] **Tema oscuro:** Claro, Oscuro o Automático (de noche) en Preferencias.
 
 ## Controles
 

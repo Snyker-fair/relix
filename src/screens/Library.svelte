@@ -432,7 +432,7 @@
     gap: 10px;
     padding: 8px;
     border-radius: 999px;
-    background: rgb(255 255 255 / 0.65);
+    background: rgb(var(--glass) / 0.65);
   }
   .bumper {
     padding: 0 8px;
@@ -516,7 +516,7 @@
     flex-direction: column;
     border-radius: 48px;
     background: var(--cloud);
-    box-shadow: 0 30px 60px -40px rgb(35 48 74 / 0.5);
+    box-shadow: 0 30px 60px -40px rgb(var(--shadow) / 0.5);
   }
   .detail-cover {
     position: relative;
@@ -651,7 +651,7 @@
   .chips li {
     padding: 4px 16px 6px;
     border-radius: 999px;
-    background: color-mix(in oklab, var(--tint) 18%, white);
+    background: color-mix(in oklab, var(--tint) 18%, var(--cloud));
     font-weight: 700;
     font-size: 21px;
   }
@@ -746,7 +746,7 @@
     height: 200px;
     padding: 12px 40px 0;
     border-radius: 60px;
-    background: rgb(35 48 74 / 0.88);
+    background: color-mix(in oklab, var(--ink) 90%, transparent);
     color: var(--cloud);
     font-family: var(--font-display);
     font-weight: 800;
@@ -800,7 +800,7 @@
   }
   .via .missing {
     background: var(--pop);
-    color: var(--cloud);
+    color: var(--on-color);
   }
   .note {
     margin: 20px 0 0;

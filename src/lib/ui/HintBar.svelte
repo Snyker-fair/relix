@@ -44,8 +44,8 @@
     bottom: 46px;
     padding: 14px 20px;
     border-radius: 999px;
-    background: rgb(255 255 255 / 0.94);
-    box-shadow: 0 16px 34px -20px rgb(35 48 74 / 0.6);
+    background: rgb(var(--glass) / 0.94);
+    box-shadow: 0 16px 34px -20px rgb(var(--shadow) / 0.6);
   }
   .hints {
     position: absolute;

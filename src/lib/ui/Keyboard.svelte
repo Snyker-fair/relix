@@ -173,7 +173,7 @@
      así nunca pisa a sus vecinas, ni las anchas */
   .key.focused {
     background: var(--pop);
-    color: var(--cloud);
+    color: var(--on-color);
     transform: translateY(-3px);
     box-shadow: 0 8px 18px -8px var(--pop);
   }

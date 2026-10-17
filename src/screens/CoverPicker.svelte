@@ -187,7 +187,7 @@
 
 {#if !game || !platform}
   <section class="done">
-    <span class="done-icon"><ChannelIcon id="pick" color="#23304A" size={110} /></span>
+    <span class="done-icon"><ChannelIcon id="pick" color="currentColor" size={110} /></span>
     <h1>¡Listo!</h1>
     <p>No quedan portadas por elegir. Cuando agregues juegos, búscalas de nuevo desde Opciones.</p>
   </section>
@@ -283,7 +283,7 @@
     gap: 10px;
     padding: 8px;
     border-radius: 999px;
-    background: rgb(255 255 255 / 0.65);
+    background: rgb(var(--glass) / 0.65);
   }
   .bumper {
     padding: 0 8px;
@@ -303,7 +303,7 @@
   .counter {
     padding: 2px 12px 0;
     border-radius: 999px;
-    background: rgb(255 255 255 / 0.18);
+    background: color-mix(in oklab, var(--cloud) 18%, transparent);
     font-size: 22px;
   }
 
@@ -319,7 +319,7 @@
     flex-direction: column;
     border-radius: 48px;
     background: var(--cloud);
-    box-shadow: 0 30px 60px -40px rgb(35 48 74 / 0.5);
+    box-shadow: 0 30px 60px -40px rgb(var(--shadow) / 0.5);
   }
   .detail-cover {
     align-self: flex-start;
@@ -349,7 +349,7 @@
   .chips li {
     padding: 4px 16px 6px;
     border-radius: 999px;
-    background: color-mix(in oklab, var(--tint) 18%, white);
+    background: color-mix(in oklab, var(--tint) 18%, var(--cloud));
     font-weight: 700;
     font-size: 21px;
   }
@@ -402,7 +402,7 @@
     height: var(--box-h);
     border-radius: 18px;
     object-fit: cover;
-    background: color-mix(in oklab, var(--tint) 25%, white);
+    background: color-mix(in oklab, var(--tint) 25%, var(--cloud));
   }
   .no-image {
     display: grid;
@@ -430,7 +430,7 @@
     justify-content: center;
     gap: 12px;
     border-radius: 18px;
-    background: rgb(255 255 255 / 0.82);
+    background: color-mix(in oklab, var(--cloud) 82%, transparent);
     font-weight: 700;
     font-size: 22px;
   }
@@ -450,7 +450,7 @@
   }
   .skeleton .image {
     border-radius: 18px;
-    background: color-mix(in oklab, var(--tint) 18%, white);
+    background: color-mix(in oklab, var(--tint) 18%, var(--cloud));
     animation: pulse 900ms ease-in-out infinite alternate;
   }
   .skeleton .line {

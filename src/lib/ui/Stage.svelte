@@ -43,7 +43,7 @@
     /* Trama de puntos tipo papel de cuaderno de dibujo */
     background-color: var(--sky);
     background-image:
-      radial-gradient(circle at 12% -10%, rgb(255 255 255 / 0.85), transparent 42%),
+      radial-gradient(circle at 12% -10%, var(--glow), transparent 42%),
       radial-gradient(circle, var(--sky-deep) 2.5px, transparent 3px);
     background-size:
       100% 100%,

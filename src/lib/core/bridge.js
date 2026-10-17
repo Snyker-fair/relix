@@ -150,6 +150,15 @@ export function notifyReady() {
 }
 
 /**
+ * Color de fondo del shell la próxima vez que abra (el del tema, AARRGGBB).
+ * Sin respuesta: si el shell es anterior, simplemente no lo usa.
+ * @param {string} color
+ */
+export function setShellBackground(color) {
+  if (mode === 'xbox') webview().postMessage({ type: 'setBackground', payload: { color } })
+}
+
+/**
  * @typedef {{folder: string, files: string[]}} RomScan
  *
  * @typedef {Object} RawLibrary

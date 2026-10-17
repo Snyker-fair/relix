@@ -357,7 +357,7 @@
   .backdrop {
     position: absolute;
     inset: 0;
-    background: rgb(35 48 74 / 0.4);
+    background: rgb(var(--shadow) / 0.4);
     z-index: 10;
     animation: fade 180ms ease both;
   }
@@ -372,7 +372,7 @@
     flex-direction: column;
     background: var(--cloud);
     border-radius: 56px 0 0 56px;
-    box-shadow: -30px 0 70px -40px rgb(35 48 74 / 0.6);
+    box-shadow: -30px 0 70px -40px rgb(var(--shadow) / 0.6);
     z-index: 11;
     animation: slide 260ms var(--spring) both;
   }
@@ -461,7 +461,7 @@
   }
   .item.focused .icon {
     background: var(--pop);
-    color: var(--cloud);
+    color: var(--on-color);
   }
   .label {
     flex: 1;
@@ -514,7 +514,7 @@
   .check.on {
     background: var(--pop);
     border-color: var(--pop);
-    color: var(--cloud);
+    color: var(--on-color);
     opacity: 1;
   }
   .note {

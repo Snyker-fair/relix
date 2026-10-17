@@ -210,8 +210,8 @@
     color: var(--ink-soft);
   }
   .apps li.on {
-    background: #d9f2dc;
-    color: #1d5a27;
+    background: var(--ok-bg);
+    color: var(--ok-ink);
   }
   .apps li.off {
     opacity: 0.6;
@@ -336,8 +336,8 @@
     white-space: nowrap;
   }
   .state.ok {
-    background: #d9f2dc;
-    color: #1d5a27;
+    background: var(--ok-bg);
+    color: var(--ok-ink);
   }
   .state.muted {
     background: var(--sky);
@@ -345,7 +345,7 @@
   }
   .state.bad {
     background: var(--pop);
-    color: var(--cloud);
+    color: var(--on-color);
   }
   .paths {
     display: flex;

@@ -218,7 +218,7 @@
         nuevo en <strong>Opciones › Revisión</strong>.
       </p>
     {:else if stepId === 'usb'}
-      <span class="intro-icon"><ChannelIcon id="usb" color="#23304A" size={76} /></span>
+      <span class="intro-icon"><ChannelIcon id="usb" color="currentColor" size={76} /></span>
       <h1>Tu USB</h1>
       <p>
         Relix lee tus juegos de la carpeta <strong>roms</strong> del USB, una carpeta por consola,
@@ -228,7 +228,7 @@
 {#each exampleFolders as id (id)}├ <b>{library.folderOf(id)}</b>   {getPlatform(id)?.shortName}
 {/each}└ …</pre>
     {:else if stepId === 'emulators'}
-      <span class="intro-icon"><ChannelIcon id="play" color="#23304A" size={70} /></span>
+      <span class="intro-icon"><ChannelIcon id="play" color="currentColor" size={70} /></span>
       <h1>Emuladores</h1>
       <p>
         Cada consola se abre con su emulador. Si algo falta, elige la consola y abre su guía con
@@ -242,7 +242,7 @@
         </p>
       </div>
     {:else if stepId === 'covers'}
-      <span class="intro-icon"><ChannelIcon id="cover" color="#23304A" size={76} /></span>
+      <span class="intro-icon"><ChannelIcon id="cover" color="currentColor" size={76} /></span>
       <h1>Portadas</h1>
       <p>
         Relix baja las portadas de libretro, las mismas de RetroArch, y una captura de cada juego
@@ -252,7 +252,7 @@
         Si duda de cuál es la de un juego, te deja elegirla en <strong>Opciones › Portadas</strong>.
       </p>
     {:else}
-      <span class="intro-icon"><ChannelIcon id="gamepad" color="#23304A" size={80} /></span>
+      <span class="intro-icon"><ChannelIcon id="gamepad" color="currentColor" size={80} /></span>
       <h1>Los botones</h1>
       <p>Lo justo para moverte. La barra de abajo siempre dice qué hace cada botón en esa pantalla.</p>
       <p class="small">¿Usas teclado? Flechas, Enter, Esc, X, Y, Q/E, V y M.</p>
@@ -270,7 +270,7 @@
         ] as card, i (card.icon)}
           <li class="card">
             <span class="num">{i + 1}</span>
-            <span class="card-icon"><ChannelIcon id={card.icon} color="#23304A" size={44} /></span>
+            <span class="card-icon"><ChannelIcon id={card.icon} color="currentColor" size={44} /></span>
             <span class="text">
               <strong>{card.title}</strong>
               <span>{card.text}</span>
@@ -411,7 +411,7 @@
           onmouseenter={() => move(0)}
           onclick={() => (index === 0 ? activate() : move(0))}
         >
-          <ChannelIcon id="download" color="#23304A" size={40} />
+          <ChannelIcon id="download" color="currentColor" size={40} />
           Buscar ahora
         </button>
       {/if}
@@ -485,7 +485,7 @@
     margin: 0;
     padding: 14px 18px;
     border-radius: 999px;
-    background: rgb(255 255 255 / 0.65);
+    background: rgb(var(--glass) / 0.65);
   }
   .dots li {
     width: 18px;
@@ -516,7 +516,7 @@
     flex-direction: column;
     border-radius: 48px;
     background: var(--cloud);
-    box-shadow: 0 30px 60px -40px rgb(35 48 74 / 0.5);
+    box-shadow: 0 30px 60px -40px rgb(var(--shadow) / 0.5);
     animation: rise 360ms var(--spring) both;
   }
   .intro-icon {
@@ -653,7 +653,7 @@
     height: 48px;
     border-radius: 50%;
     background: var(--pop);
-    color: var(--cloud);
+    color: var(--on-color);
     font-family: var(--font-display);
     font-weight: 800;
     font-size: 26px;
@@ -725,15 +725,15 @@
     padding-top: 3px;
   }
   .mark.ok {
-    background: #d9f2dc;
-    color: #1d5a27;
+    background: var(--ok-bg);
+    color: var(--ok-ink);
   }
   .mark.warn {
     background: var(--sun);
   }
   .mark.error {
     background: var(--pop);
-    color: var(--cloud);
+    color: var(--on-color);
   }
   .mark.info {
     background: var(--sky);
@@ -764,8 +764,8 @@
     color: var(--ink-soft);
   }
   .chip.ok {
-    background: #d9f2dc;
-    color: #1d5a27;
+    background: var(--ok-bg);
+    color: var(--ok-ink);
   }
   .chip.warn {
     background: var(--sun);
@@ -948,7 +948,7 @@
     padding: 16px 40px 16px 20px;
     border-radius: 999px;
     background: var(--pop);
-    color: var(--cloud);
+    color: var(--on-color);
     font-family: var(--font-display);
     font-weight: 800;
     font-size: 34px;
@@ -957,12 +957,12 @@
   .primary.focus-ring.focused {
     box-shadow:
       inset 0 -6px 0 rgb(0 0 0 / 0.12),
-      0 0 0 5px var(--cloud),
+      0 0 0 5px var(--ring-gap),
       0 0 0 11px var(--pop),
       0 28px 40px -14px color-mix(in oklab, var(--pop) 70%, transparent);
   }
   .primary :global(.pad) {
-    background: var(--cloud);
+    background: var(--on-color);
     color: var(--btn-a);
   }
   .spinner {

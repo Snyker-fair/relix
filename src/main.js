@@ -1,7 +1,11 @@
 import { mount } from 'svelte'
 import './app.css'
 import App from './App.svelte'
+import { theme } from './lib/ui/theme.svelte.js'
 import { userData } from './lib/ui/userData.svelte.js'
+
+// El tema primero: si tus datos del USB traen otro, cambia solo
+theme.start()
 
 // Primero tus datos del USB (E:\relix\datos.json), así cada pantalla parte con
 // ellos. Si el shell tarda, se abre igual: los datos llegan después y cada

@@ -14,19 +14,20 @@
   class:bumper={isBumper}
   class:trigger={isTrigger}
   style:--c={COLORS[name] ?? 'var(--ink)'}
+  style:--t={COLORS[name] ? '#ffffff' : 'var(--cloud)'}
   style:--s="{size}px"
   aria-label={LABELS[name] ?? `Botón ${name.toUpperCase()}`}
 >
   {#if isMenu}
     <!-- el botón Menú del control tiene tres rayas -->
     <svg viewBox="0 0 20 20" width={size * 0.5} height={size * 0.5} aria-hidden="true">
-      <path d="M3 5h14M3 10h14M3 15h14" stroke="white" stroke-width="2.6" stroke-linecap="round" />
+      <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" />
     </svg>
   {:else if isView}
     <!-- el botón Vista: dos ventanas superpuestas -->
     <svg viewBox="0 0 20 20" width={size * 0.55} height={size * 0.55} aria-hidden="true">
-      <rect x="2.5" y="6.5" width="10" height="10" rx="2" fill="none" stroke="white" stroke-width="2.2" />
-      <path d="M7 4.5V4a1.5 1.5 0 0 1 1.5-1.5h8A1.5 1.5 0 0 1 18 4v8a1.5 1.5 0 0 1-1.5 1.5H15" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" />
+      <rect x="2.5" y="6.5" width="10" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2.2" />
+      <path d="M7 4.5V4a1.5 1.5 0 0 1 1.5-1.5h8A1.5 1.5 0 0 1 18 4v8a1.5 1.5 0 0 1-1.5 1.5H15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
     </svg>
   {:else}
     {name.toUpperCase()}
@@ -42,7 +43,8 @@
     height: var(--s);
     border-radius: 50%;
     background: var(--c);
-    color: white;
+    /* blanco sobre A, B, X e Y; sobre los neutros (tinta), el color de la superficie */
+    color: var(--t);
     font-family: var(--font-display);
     font-weight: 800;
     font-size: calc(var(--s) * 0.55);

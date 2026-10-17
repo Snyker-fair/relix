@@ -20,6 +20,16 @@
   --sun: #ffe08a;
   --glint: #ffc23d; /* el destello en X del logo */
 
+  /* Papeles que cambian con el tema (ver el bloque de "Noche azul" más abajo) */
+  --sky-rgb: 221 235 247; /* el fondo, para velos translúcidos */
+  --ok-bg: #d9f2dc; /* "Instalado", "Listo", ✓ */
+  --ok-ink: #1d5a27;
+  --on-color: #ffffff; /* texto sobre el rosa o un color: siempre blanco */
+  --ring-gap: #ffffff; /* el hueco entre lo enfocado y su aro rosado */
+  --shadow: 35 48 74; /* sombras y velos (r g b) */
+  --glass: 255 255 255; /* pastillas translúcidas sobre el fondo (r g b) */
+  --glow: rgb(255 255 255 / 0.85); /* el brillo de arriba a la izquierda */
+
   /* Botones del control de Xbox */
   --btn-a: #3fae49;
   --btn-b: #e5413a;
@@ -33,6 +43,31 @@
   --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
   color-scheme: light;
+}
+
+/*
+ * Tema oscuro "Noche azul" (Opciones › Preferencias › Tema). Los mismos papeles:
+ * el fondo pasa a azul noche, los paneles a azul pizarra y la tinta a casi
+ * blanco. El rosa de la gema, los botones del control y los colores de cada
+ * consola no cambian.
+ */
+:root[data-theme='dark'] {
+  --sky: #0f1524;
+  --sky-rgb: 15 21 36;
+  --sky-deep: #1f2a42;
+  --ink: #eef2fa;
+  --ink-soft: #a3b0c8;
+  --cloud: #1b2438;
+  --pop-soft: #4c2239;
+  --sun: #5e4a17; /* ámbar oscuro: el texto encima es la tinta clara */
+  --ok-bg: #1d3a2a;
+  --ok-ink: #8edb9e;
+  --ring-gap: #0f1524;
+  --shadow: 0 0 0;
+  --glass: 27 36 56;
+  --glow: rgb(74 98 160 / 0.32);
+
+  color-scheme: dark;
 }
 
 * {
@@ -78,7 +113,7 @@ button {
 .focus-ring.focused {
   transform: translateY(-8px) scale(1.05);
   box-shadow:
-    0 0 0 5px var(--cloud),
+    0 0 0 5px var(--ring-gap),
     0 0 0 11px var(--pop),
     0 28px 40px -14px color-mix(in oklab, var(--tint, var(--ink)) 70%, transparent);
 }

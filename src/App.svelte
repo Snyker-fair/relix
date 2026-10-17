@@ -415,7 +415,7 @@
     padding: 18px 32px;
     border-radius: 999px;
     background: var(--ink);
-    color: white;
+    color: var(--cloud);
     font-weight: 700;
     font-size: 24px;
     line-height: 1.3;

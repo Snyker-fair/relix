@@ -221,7 +221,7 @@
     onclick={() => (sound.select(), onOptions())}
   >
     <span class="tile round focus-ring" class:focused={optionsFocused}>
-      <ChannelIcon id="options" color="#23304A" size={Math.round(tileSize * 0.42)} />
+      <ChannelIcon id="options" color="currentColor" size={Math.round(tileSize * 0.42)} />
     </span>
     {#if systemStatus.summary.errors > 0}
       <!-- algo por arreglar: se ve en Opciones › Revisión -->
@@ -288,7 +288,7 @@
     margin: 0;
     padding: 12px 24px;
     border-radius: 24px;
-    background: rgb(255 255 255 / 0.7);
+    background: rgb(var(--glass) / 0.7);
     font-size: 20px;
     line-height: 1.4;
     color: var(--ink-soft);
@@ -372,7 +372,7 @@
     top: 30px;
     transform: translateX(calc(-50% + var(--i) * 165px)) rotate(calc(var(--i) * 8deg));
     transform-origin: 50% 120%;
-    box-shadow: 0 18px 30px -16px rgb(35 48 74 / 0.45);
+    box-shadow: 0 18px 30px -16px rgb(var(--shadow) / 0.45);
     border-radius: 22px;
     animation: deal 380ms var(--spring) both;
     animation-delay: calc((var(--i) + 1) * 50ms);
@@ -425,7 +425,7 @@
     position: absolute;
     inset: 110px 0 -18px;
     border-radius: 56px;
-    background: rgb(255 255 255 / 0.65);
+    background: rgb(var(--glass) / 0.65);
   }
   .channel {
     position: relative;
@@ -447,7 +447,7 @@
     transform: none;
     box-shadow:
       inset 0 -10px 0 rgb(0 0 0 / 0.1),
-      0 0 0 7px var(--cloud),
+      0 0 0 7px var(--ring-gap),
       0 0 0 15px var(--pop),
       0 30px 40px -12px color-mix(in oklab, var(--tint) 75%, transparent);
   }
@@ -472,7 +472,7 @@
     border-radius: 999px;
     border: 4px solid var(--cloud);
     background: var(--pop);
-    color: var(--cloud);
+    color: var(--on-color);
     font-family: var(--font-display);
     font-weight: 800;
     font-size: 24px;
@@ -485,7 +485,7 @@
     margin: calc(var(--tile) * 0.075) 0;
     border-radius: 50%;
     background: var(--cloud);
-    box-shadow: inset 0 -8px 0 rgb(35 48 74 / 0.08);
+    box-shadow: inset 0 -8px 0 rgb(var(--shadow) / 0.08);
   }
   .label {
     font-family: var(--font-display);

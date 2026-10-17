@@ -63,7 +63,7 @@
     inset: 0;
     display: grid;
     place-items: center;
-    background: rgb(35 48 74 / 0.45);
+    background: rgb(var(--shadow) / 0.45);
     z-index: 12;
     animation: fade 160ms ease both;
   }
@@ -72,7 +72,7 @@
     padding: 44px 48px 48px;
     border-radius: 48px;
     background: var(--cloud);
-    box-shadow: 0 40px 80px -40px rgb(35 48 74 / 0.7);
+    box-shadow: 0 40px 80px -40px rgb(var(--shadow) / 0.7);
     animation: pop 260ms var(--spring) both;
   }
   h2 {

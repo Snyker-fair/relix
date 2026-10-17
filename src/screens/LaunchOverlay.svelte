@@ -53,7 +53,7 @@
     inset: 0;
     display: grid;
     place-items: center;
-    background: rgb(221 235 247 / 0.72);
+    background: rgb(var(--sky-rgb) / 0.72);
     backdrop-filter: blur(14px);
     animation: fade 180ms ease both;
     z-index: 10;
@@ -67,8 +67,8 @@
     border-radius: 64px;
     background: var(--cloud);
     box-shadow:
-      0 0 0 10px color-mix(in oklab, var(--tint) 35%, white),
-      0 50px 90px -50px rgb(35 48 74 / 0.6);
+      0 0 0 10px color-mix(in oklab, var(--tint) 35%, var(--cloud)),
+      0 50px 90px -50px rgb(var(--shadow) / 0.6);
     animation: pop 420ms var(--spring) both;
   }
   .cover {

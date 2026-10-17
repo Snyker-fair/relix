@@ -125,7 +125,7 @@
     z-index: 40;
     overflow: hidden;
     background: #10151f;
-    color: var(--cloud);
+    color: #ffffff; /* siempre oscuro: no sigue el tema */
     cursor: none;
   }
   .slide {
@@ -292,6 +292,6 @@
     opacity: 0.5;
   }
   .dim :global(.word) {
-    color: var(--cloud);
+    color: #ffffff; /* siempre oscuro: no sigue el tema */
   }
 </style>

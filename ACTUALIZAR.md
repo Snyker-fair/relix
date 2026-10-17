@@ -165,7 +165,7 @@ Visual Studio se detiene con un error, copia el mensaje de la ventana **Salida**
 - [ ] En las grillas, el aro rosado del juego enfocado no toca la fila de arriba ni las portadas de al lado.
 
 ### Acerca de
-- [ ] **≡ → RB hasta Acerca de** muestra la versión 0.8.0, la fecha de compilación y "Xbox · Modo Desarrollador".
+- [ ] **≡ → RB hasta Acerca de** muestra la versión 0.8.1, la fecha de compilación y "Xbox · Modo Desarrollador".
 - [ ] **En tu USB** muestra tu letra de disco real.
 - [ ] Al pie del panel izquierdo dice **Creado por snyker-fair**.
 
@@ -247,6 +247,16 @@ Visual Studio se detiene con un error, copia el mensaje de la ventana **Salida**
 - [ ] Si un video no se ve, dime su nombre y extensión (`.mp4`, `.webm`…): puede ser un
       formato que la Xbox no reproduce.
 
+### Tema oscuro (0.8.1)
+- [ ] **≡ → Preferencias → Tema** (la primera fila): **A** pasa de Claro a Oscuro y a
+      Automático. El cambio se ve en el acto, en todas las pantallas.
+- [ ] Con **Oscuro**, recorre inicio, una consola, el menú **Y**, la búsqueda, Opciones
+      y una guía: ningún texto queda invisible ni un panel blanco "encandila". Si ves
+      uno, una foto basta.
+- [ ] Cierra Relix con el tema en **Oscuro** y ábrelo de nuevo: arranca en azul noche,
+      sin el destello celeste (desde la segunda vez, cuando el shell ya lo recuerda).
+- [ ] **Automático** dice "Oscuro de 20:00 a 7:00 · ahora …" y cambia solo a esa hora.
+
 Si algo falla, la tabla **Si algo falla** de [`shell/README.md`](shell/README.md) tiene las causas más comunes.
 
 ---
@@ -271,3 +281,4 @@ Si algo falla, la tabla **Si algo falla** de [`shell/README.md`](shell/README.md
 | 7 | `Shell/CoverService.cs` | Baja también capturas (`Named_Snaps`) y pantallas de título de libretro; lista cualquier carpeta de `downloaded_media` |
 | 7 | `Shell/LocalServer.cs` | Videos (`.mp4`, `.webm`, `.m4v`) por partes (Range), para que se repitan sin cargarlos enteros |
 | 7 | `MainPage.xaml.cs` | Mensaje `listMedia`; `downloadCovers` acepta `kind` (portadas, capturas o pantallas de título) |
+| 7 · tema | `MainPage.xaml.cs` | Mensaje `setBackground`: guarda el fondo del tema y lo usa al abrir (página y WebView2) |

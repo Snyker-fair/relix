@@ -3,6 +3,7 @@
  */
 import { REGION_PREFERENCES } from '../core/coverMatch.js'
 import { SORT_NAMES } from '../core/sorting.js'
+import { THEMES } from '../core/theme.js'
 import { sound } from './sound.js'
 import { load, onReplaced, save } from './storage.js'
 
@@ -27,6 +28,9 @@ class Settings {
   /** Orden de la biblioteca (se cambia desde el menú del juego) */
   /** @type {SortOrder} */
   sortOrder = $state('az')
+  /** Claro, Oscuro o Automático (oscuro de noche) */
+  /** @type {import('../core/theme.js').ThemeChoice} */
+  theme = $state('light')
   /** Ya pasó (o saltó) el recorrido de bienvenida */
   onboarded = $state(false)
   /** Los videos de vista previa suenan (por defecto, sin sonido) */
@@ -46,6 +50,7 @@ class Settings {
     this.coverRegion = REGIONS.includes(saved.coverRegion) ? saved.coverRegion : 'usa'
     this.sortOrder = SORTS.includes(saved.sortOrder) ? saved.sortOrder : 'az'
     this.onboarded = saved.onboarded === true
+    this.theme = THEMES.includes(saved.theme) ? saved.theme : 'light'
     this.videoSound = saved.videoSound === true
     this.screensaverMinutes = SCREENSAVER_CHOICES.includes(saved.screensaverMinutes) ? saved.screensaverMinutes : 5
     sound.setMuted(!this.sounds)
@@ -90,6 +95,12 @@ class Settings {
     this.#save()
   }
 
+  /** Claro -> Oscuro -> Automático -> Claro */
+  cycleTheme() {
+    this.theme = THEMES[(THEMES.indexOf(this.theme) + 1) % THEMES.length]
+    this.#save()
+  }
+
   /** Terminó o saltó el recorrido de bienvenida */
   markOnboarded() {
     if (this.onboarded) return
@@ -104,6 +115,7 @@ class Settings {
       coverRegion: this.coverRegion,
       sortOrder: this.sortOrder,
       onboarded: this.onboarded,
+      theme: this.theme,
       videoSound: this.videoSound,
       screensaverMinutes: this.screensaverMinutes,
     })

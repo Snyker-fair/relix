@@ -106,7 +106,7 @@
     <Logo size={34} />
   </button>
   <div class="title-pill">
-    <ChannelIcon id="search" color="#FFFFFF" size={30} />
+    <ChannelIcon id="search" color="currentColor" size={30} />
     Buscar
   </div>
   <Clock />
@@ -221,7 +221,7 @@
     padding: 36px;
     border-radius: 48px;
     background: var(--cloud);
-    box-shadow: 0 30px 60px -40px rgb(35 48 74 / 0.5);
+    box-shadow: 0 30px 60px -40px rgb(var(--shadow) / 0.5);
   }
   /* el campo es blanco con borde: no se confunde con las teclas celestes */
   .field {

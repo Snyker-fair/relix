@@ -224,7 +224,7 @@
     gap: 10px;
     padding: 8px;
     border-radius: 999px;
-    background: rgb(255 255 255 / 0.65);
+    background: rgb(var(--glass) / 0.65);
   }
   .bumper {
     padding: 0 8px;
@@ -263,7 +263,7 @@
     flex-direction: column;
     border-radius: 48px;
     background: var(--cloud);
-    box-shadow: 0 30px 60px -40px rgb(35 48 74 / 0.5);
+    box-shadow: 0 30px 60px -40px rgb(var(--shadow) / 0.5);
   }
   .badge {
     display: grid;
@@ -327,8 +327,8 @@
     font-weight: 800;
   }
   .checks .ok {
-    background: #d9f2dc;
-    color: #1d5a27;
+    background: var(--ok-bg);
+    color: var(--ok-ink);
   }
   .checks .missing {
     background: var(--pop-soft);
@@ -413,12 +413,12 @@
     padding-top: 2px;
   }
   .num.ok {
-    background: #d9f2dc;
-    color: #1d5a27;
+    background: var(--ok-bg);
+    color: var(--ok-ink);
   }
   .num.missing {
     background: var(--pop);
-    color: var(--cloud);
+    color: var(--on-color);
   }
   .body {
     min-width: 0;
@@ -440,8 +440,8 @@
     font-weight: 700;
   }
   .chip.ok {
-    background: #d9f2dc;
-    color: #1d5a27;
+    background: var(--ok-bg);
+    color: var(--ok-ink);
   }
   .chip.missing {
     background: var(--pop-soft);

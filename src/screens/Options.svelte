@@ -19,6 +19,8 @@
   import { shelf } from '../lib/ui/shelf.svelte.js'
   import { sound } from '../lib/ui/sound.js'
   import { systemStatus } from '../lib/ui/systemStatus.svelte.js'
+  import { NIGHT, THEME_NAMES } from '../lib/core/theme.js'
+  import { theme } from '../lib/ui/theme.svelte.js'
 
   /**
    * @type {{
@@ -46,7 +48,7 @@
   ]
   // Biblioteca: una fila por consola, "Escanear todo" y los juegos ocultos
   const LIBRARY_ROWS = [...PLATFORMS.map((p) => p.id), 'all', 'hidden']
-  const PREFERENCE_ROWS = ['empty', 'sounds', 'region', 'video', 'screensaver']
+  const PREFERENCE_ROWS = ['theme', 'empty', 'sounds', 'region', 'video', 'screensaver']
   // Consolas: con qué emulador se abre cada una
   const CONSOLE_ROWS = PLATFORMS.map((p) => p.id)
   /** Cuántas apps de emulador distintas tiene la Xbox (RetroArch cuenta una vez) */
@@ -342,6 +344,7 @@
     else if (id === 'region') settings.cycleCoverRegion()
     else if (id === 'video') settings.toggleVideoSound()
     else if (id === 'screensaver') settings.cycleScreensaver()
+    else if (id === 'theme') settings.cycleTheme()
     sound.select() // con los sonidos recién apagados, este ya no suena
   }
 
@@ -421,7 +424,7 @@
 </header>
 
 <section class="intro">
-  <span class="intro-icon"><ChannelIcon id="options" color="#23304A" size={84} /></span>
+  <span class="intro-icon"><ChannelIcon id="options" color="currentColor" size={84} /></span>
   <h1>Opciones</h1>
   {#if section === 'library'}
     <h2>Biblioteca</h2>
@@ -498,8 +501,8 @@
   {:else}
     <h2>Preferencias</h2>
     <p>
-      Qué se ve en el inicio, cómo suena Relix, qué portadas prefieres y cuándo aparece el protector
-      de pantalla. Los cambios se guardan solos.
+      El tema claro u oscuro, qué se ve en el inicio, cómo suena Relix, qué portadas prefieres y
+      cuándo aparece el protector de pantalla. Los cambios se guardan solos.
     </p>
   {/if}
 </section>
@@ -544,7 +547,7 @@
       {:else if id === 'hidden'}
         {@const hiddenCount = library.hiddenCount()}
         <span class="badge neutral">
-          <ChannelIcon id="hide" color="#23304A" size={46} />
+          <ChannelIcon id="hide" color="currentColor" size={46} />
         </span>
         <span class="text">
           <strong>Juegos ocultos</strong>
@@ -666,7 +669,7 @@
         </span>
       {:else}
         <span class="badge neutral">
-          <ChannelIcon id="flag" color="#23304A" size={46} />
+          <ChannelIcon id="flag" color="currentColor" size={46} />
         </span>
         <span class="text">
           <strong>Recorrido de bienvenida</strong>
@@ -742,7 +745,7 @@
         </span>
       {:else}
         <span class="badge pick">
-          <ChannelIcon id="pick" color="#23304A" size={46} />
+          <ChannelIcon id="pick" color="currentColor" size={46} />
         </span>
         <span class="text">
           <strong>Elegir a mano</strong>
@@ -776,7 +779,9 @@
             ? settings.videoSound
             : id === 'screensaver'
               ? settings.screensaverMinutes > 0
-              : true}
+              : id === 'theme'
+                ? settings.theme !== 'light'
+                : true}
     <button
       class="row focus-ring"
       class:focused
@@ -786,13 +791,20 @@
     >
       <span class="badge neutral">
         <ChannelIcon
-          id={id === 'empty' ? 'eye' : id === 'sounds' ? 'sound' : id === 'video' ? 'video' : id === 'screensaver' ? 'moon' : 'globe'}
-          color="#23304A"
+          id={id === 'theme' ? 'theme' : id === 'empty' ? 'eye' : id === 'sounds' ? 'sound' : id === 'video' ? 'video' : id === 'screensaver' ? 'moon' : 'globe'}
+          color="currentColor"
           size={52}
         />
       </span>
       <span class="text">
-        {#if id === 'empty'}
+        {#if id === 'theme'}
+          <strong>Tema</strong>
+          <span>
+            {settings.theme === 'auto'
+              ? `Oscuro de ${NIGHT.from}:00 a ${NIGHT.to}:00 · ahora ${theme.current === 'dark' ? 'oscuro' : 'claro'}`
+              : 'Claro, oscuro o automático según la hora'}
+          </span>
+        {:else if id === 'empty'}
           <strong>Consolas sin juegos</strong>
           <span>
             {on
@@ -818,7 +830,9 @@
       <span class="state">
         {#if focused}<PadButton name="a" size={30} />{/if}
         <span class="value" class:on>
-          {#if id === 'empty'}
+          {#if id === 'theme'}
+            {THEME_NAMES[settings.theme]}
+          {:else if id === 'empty'}
             {on ? 'Visibles' : 'Ocultas'}
           {:else if id === 'sounds'}
             {on ? 'Activados' : 'Desactivados'}
@@ -868,7 +882,7 @@
     gap: 10px;
     padding: 8px;
     border-radius: 999px;
-    background: rgb(255 255 255 / 0.65);
+    background: rgb(var(--glass) / 0.65);
   }
   .bumper {
     padding: 0 8px;
@@ -907,7 +921,7 @@
     padding: 44px;
     border-radius: 48px;
     background: var(--cloud);
-    box-shadow: 0 30px 60px -40px rgb(35 48 74 / 0.5);
+    box-shadow: 0 30px 60px -40px rgb(var(--shadow) / 0.5);
   }
   .intro-icon {
     display: grid;
@@ -954,12 +968,12 @@
     font-size: 22px;
   }
   .chips li.ok {
-    background: #d9f2dc;
-    color: #1d5a27;
+    background: var(--ok-bg);
+    color: var(--ok-ink);
   }
   .chips li.error {
     background: var(--pop);
-    color: var(--cloud);
+    color: var(--on-color);
   }
   .chips li.warn {
     background: var(--sun);
@@ -1088,8 +1102,8 @@
     padding-top: 4px;
   }
   .badge.mark.ok {
-    background: #d9f2dc;
-    color: #1d5a27;
+    background: var(--ok-bg);
+    color: var(--ok-ink);
   }
   .badge.mark.warn {
     background: var(--sun);
@@ -1097,7 +1111,7 @@
   }
   .badge.mark.error {
     background: var(--pop);
-    color: var(--cloud);
+    color: var(--on-color);
   }
   .badge.mark.info {
     background: var(--sky);
@@ -1143,15 +1157,15 @@
   }
   .value.on {
     background: var(--pop);
-    color: var(--cloud);
+    color: var(--on-color);
   }
   .value.missing {
     background: var(--pop-soft);
     color: var(--ink);
   }
   .value.ok {
-    background: #d9f2dc;
-    color: #1d5a27;
+    background: var(--ok-bg);
+    color: var(--ok-ink);
   }
   /* "PlayStation  12 juegos" en la fila de Consolas */
   .text strong small {

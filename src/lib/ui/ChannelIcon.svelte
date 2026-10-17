@@ -101,7 +101,7 @@
       <path d="M48 26V15" transform="rotate({angle} 48 48)" stroke-width="15" stroke-linecap="butt" />
     {/each}
     <circle cx="48" cy="48" r="23" fill={color} stroke="none" />
-    <circle cx="48" cy="48" r="9" fill="#FFFFFF" stroke="none" />
+    <circle cx="48" cy="48" r="9" stroke="none" style="fill: var(--cloud)" />
   {:else if id === 'eye'}
     <!-- ojo: qué se ve en el inicio -->
     <path d="M10 48s14-22 38-22 38 22 38 22-14 22-38 22S10 48 10 48Z" />
@@ -174,6 +174,10 @@
   {:else if id === 'filter'}
     <!-- embudo: filtrar -->
     <path d="M16 20h64L56 50v24l-16 8V50Z" fill={color} />
+  {:else if id === 'theme'}
+    <!-- círculo mitad lleno: tema claro u oscuro -->
+    <circle cx="48" cy="48" r="32" />
+    <path d="M48 16a32 32 0 0 1 0 64Z" fill={color} />
   {:else if id === 'moon'}
     <!-- luna: protector de pantalla -->
     <path d="M62 14a34 34 0 1 0 20 46A28 28 0 0 1 62 14Z" fill={color} />

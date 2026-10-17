@@ -4,9 +4,11 @@ using System.Threading.Tasks;
 using Microsoft.Web.WebView2.Core;
 using Windows.Data.Json;
 using Windows.System;
+using Windows.Storage;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 
 namespace RelixShell
 {
@@ -34,6 +36,8 @@ namespace RelixShell
         {
             InitializeComponent();
             Current = this;
+            // El fondo del tema que tenía la interfaz la última vez (ver SavedBackground)
+            Background = new SolidColorBrush(ParseColor(SavedBackground()));
 
             gamepad.ActionPressed += action => SendEvent("input", action);
 
@@ -49,9 +53,10 @@ namespace RelixShell
         {
             Focus(FocusState.Programmatic);
 
-            // Fondo celeste mientras carga, sin destello blanco (formato AARRGGBB).
-            // Estas variables deben quedar antes de crear el WebView2.
-            Environment.SetEnvironmentVariable("WEBVIEW2_DEFAULT_BACKGROUND_COLOR", "FFDDEBF7");
+            // Fondo mientras carga, sin destello blanco (formato AARRGGBB): el del
+            // tema que tenía la interfaz la última vez (celeste, o azul noche si
+            // estaba en oscuro). Estas variables deben quedar antes de crear el WebView2.
+            Environment.SetEnvironmentVariable("WEBVIEW2_DEFAULT_BACKGROUND_COLOR", SavedBackground());
 
             // Sonido: el navegador solo deja sonar audio después de un clic o una
             // tecla. En Relix el control llega por mensajes desde C#, que no
@@ -82,6 +87,56 @@ namespace RelixShell
             };
 
             core.Navigate(Origin + "/index.html");
+        }
+
+        // ── Fondo del tema ──────────────────────────────────────────────────
+
+        /// <summary>Celeste de Relix (tema claro), en AARRGGBB.</summary>
+        private const string DefaultBackground = "FFDDEBF7";
+
+        /// <summary>El fondo que pidió la interfaz la última vez, o el celeste.</summary>
+        private static string SavedBackground()
+        {
+            object saved;
+            ApplicationData.Current.LocalSettings.Values.TryGetValue("background", out saved);
+            string color = saved as string;
+            return IsColor(color) ? color : DefaultBackground;
+        }
+
+        private void SaveBackground(string color)
+        {
+            if (!IsColor(color))
+            {
+                return;
+            }
+            ApplicationData.Current.LocalSettings.Values["background"] = color;
+            Background = new SolidColorBrush(ParseColor(color));
+        }
+
+        /// <summary>"FF0F1524": ocho dígitos hexadecimales.</summary>
+        private static bool IsColor(string value)
+        {
+            if (value == null || value.Length != 8)
+            {
+                return false;
+            }
+            foreach (char c in value)
+            {
+                if (!Uri.IsHexDigit(c))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private static Windows.UI.Color ParseColor(string aarrggbb)
+        {
+            return Windows.UI.Color.FromArgb(
+                Convert.ToByte(aarrggbb.Substring(0, 2), 16),
+                Convert.ToByte(aarrggbb.Substring(2, 2), 16),
+                Convert.ToByte(aarrggbb.Substring(4, 2), 16),
+                Convert.ToByte(aarrggbb.Substring(6, 2), 16));
         }
 
         /// <summary>Lo llama App al volver desde un emulador.</summary>
@@ -142,6 +197,11 @@ namespace RelixShell
                     case "ready":
                         // La interfaz ya está en pantalla: empezamos a leer el control.
                         gamepad.Start();
+                        break;
+
+                    case "setBackground":
+                        // El tema cambió: se usa ese fondo desde ahora y al abrir la próxima vez
+                        SaveBackground(payload.GetNamedString("color", DefaultBackground));
                         break;
 
                     case "loadLibrary":
