@@ -91,7 +91,7 @@ Guarda con **Ctrl+S**. En `shell/manifest-cambios.xml` está cómo debe quedar e
 ### 5. Pon los íconos de Relix
 
 Copia todos los PNG de `relix\brand\uwp\` a la carpeta `Assets` del proyecto
-(`C:\ProyectosVisual\RelixShell\Assets\`) y acepta reemplazar.
+(`C:\Proyectos\RelixShell\RelixShell\Assets\`) y acepta reemplazar.
 
 `Square310x310Logo.scale-200.png` no viene en la plantilla: agrégalo al proyecto
 con clic derecho en la carpeta **Assets** → **Agregar → Elemento existente…**, y

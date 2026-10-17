@@ -1,123 +1,13 @@
-# Actualizar Relix en el PC (guía acumulada)
+# Qué probar en la TV
 
-Esta guía junta **todo lo que cambió desde la última vez que actualizaste** el
-proyecto en Visual Studio. Sirve aunque te hayas saltado varias versiones: los
-pasos reemplazan todo el shell y agregan lo nuevo, así que no importa desde qué
-versión vengas.
+Listas para revisar Relix en la Xbox después de compilar ([`COMPILAR.md`](COMPILAR.md)).
+Empieza por la prueba rápida; las demás están ordenadas por el paso de la hoja de
+ruta en que llegó cada función.
 
-Rutas que se usan aquí (las de tu PC):
+## Prueba rápida (lo primero, unos 15 minutos)
 
-| Qué | Dónde |
-|---|---|
-| Proyecto web (este repositorio) | `C:\ProyectosVisual\relix` |
-| Proyecto de Visual Studio | `C:\ProyectosVisual\RelixShell` (donde está `Package.appxmanifest`) |
-
----
-
-## 1. Reemplaza el proyecto web
-
-1. Cierra Visual Studio.
-2. Descomprime `relix.zip` en `C:\ProyectosVisual\` y elige **Reemplazar los archivos en el destino**.
-
-## 2. Copia el shell completo
-
-Desde `C:\ProyectosVisual\relix\shell\RelixShell\`, copia **y reemplaza**:
-
-| Archivo | Va a |
-|---|---|
-| `App.xaml`, `App.xaml.cs` | `C:\ProyectosVisual\RelixShell\` |
-| `MainPage.xaml`, `MainPage.xaml.cs` | `C:\ProyectosVisual\RelixShell\` |
-| Todos los `.cs` de `Shell\` | `C:\ProyectosVisual\RelixShell\Shell\` |
-
-## 3. Agrega los archivos nuevos al proyecto
-
-Copiar un `.cs` a la carpeta no basta: Visual Studio solo compila los que están
-**dentro del proyecto**.
-
-1. Abre la solución en Visual Studio.
-2. En el **Explorador de soluciones**, abre la carpeta **Shell** y revisa qué archivos aparecen.
-3. Por cada uno de esta lista que **no** aparezca: clic derecho en **Shell** →
-   **Agregar → Elemento existente…** → elige el archivo en `C:\ProyectosVisual\RelixShell\Shell\`.
-
-| Archivo | Desde |
-|---|---|
-| `CoverService.cs` | Paso 2 de la hoja de ruta (portadas) |
-| `CollectionStore.cs` | Paso 3 (colecciones) |
-| `UserDataStore.cs` | Paso 4 (tus datos en el USB y tiempo de juego) |
-| `SystemCheck.cs` | Paso 6 (revisión del sistema) |
-
-Al final, la carpeta **Shell** debe tener siete archivos: `CollectionStore.cs`,
-`CoverService.cs`, `GamepadInput.cs`, `LibraryReader.cs`, `LocalServer.cs`,
-`SystemCheck.cs` y `UserDataStore.cs`.
-
-> **Ojo:** si un archivo ya aparece en **Shell**, no lo agregues otra vez. Y haz
-> el clic derecho sobre la carpeta **Shell**, no sobre el proyecto: si no, Visual
-> Studio deja una segunda copia en la raíz y la compilación falla con
-> `CS0101: El espacio de nombres 'RelixShell' ya contiene una definición para...`.
-> Para revisarlo, escribe el nombre del archivo en el buscador del Explorador de
-> soluciones: debe aparecer **una sola vez**, dentro de **Shell**.
-
-## 4. Revisa el manifiesto
-
-Doble clic en `Package.appxmanifest` → pestaña **Funcionalidades**. Deben estar marcadas:
-
-- **Internet (cliente)**: para bajar portadas.
-- **Almacenamiento extraíble**: para leer y escribir en el USB.
-
-## 4b. Íconos nuevos (gema y nombre)
-
-La imagen de la app en la ficha de la Xbox ahora lleva la gema y el nombre, y hay
-una versión grande para TV 4K.
-
-1. Copia **todos** los PNG de `C:\ProyectosVisual\relix\brand\uwp\` a
-   `C:\ProyectosVisual\RelixShell\Assets\` y elige **Reemplazar**.
-2. En el Explorador de soluciones, abre la carpeta **Assets**. Si no aparece
-   `Square310x310Logo.scale-200.png`: clic derecho en **Assets** →
-   **Agregar → Elemento existente…** → elige ese archivo (una sola vez).
-3. Clic derecho en `Package.appxmanifest` → **Ver código**. Busca
-   `<uap:DefaultTile` y déjalo así (agrega el atributo `Square310x310Logo`):
-   ```xml
-   <uap:DefaultTile
-     Wide310x150Logo="Assets\Wide310x150Logo.png"
-     Square310x310Logo="Assets\Square310x310Logo.png" />
-   ```
-   Si dentro de `<uap:DefaultTile>` hay un bloque `<uap:ShowNameOnTiles>`, bórralo:
-   las imágenes ya traen el nombre y la Xbox lo pondría dos veces.
-4. En el mismo XML, dentro de `<Properties>`, cambia el publicador por tu alias:
-   ```xml
-   <PublisherDisplayName>snyker-fair</PublisherDisplayName>
-   ```
-   Es solo el nombre que se muestra: no cambia la identidad de la app ni hace
-   falta desinstalarla.
-5. Guarda (**Ctrl + S**).
-
-## 5. Compila la interfaz y cópiala al proyecto
-
-En `cmd` (no PowerShell):
-
-```
-cd C:\ProyectosVisual\relix
-npm install
-npm run build:shell -- "C:\ProyectosVisual\RelixShell"
-```
-
-`npm install` solo hace falta cuando cambian las dependencias (la última vez fue
-`uqr`, los códigos QR de las guías, en la 0.6.0). Correrlo de más no hace daño.
-
-## 6. Despliega en la Xbox
-
-1. Si la IP de la consola cambió: clic derecho en **RelixShell** → **Propiedades** →
-   **Depurar** → **Máquina remota** (con **Debug** y **x64** arriba).
-2. **F5**.
-
----
-
-## Qué probar en la TV
-
-### Prueba rápida (lo primero, unos 15 minutos)
-
-Si esto anda, lo demás casi seguro también. Si algo falla aquí, avísame antes de
-seguir con el resto.
+Si esto anda, lo demás casi seguro también. Si algo falla aquí, vale la pena
+resolverlo antes de seguir con el resto.
 
 Desde la 0.7.0, al abrir aparece una vez el **recorrido de bienvenida**: recórrelo
 (son cinco pantallas) o sáltalo con **≡**; después sigue con la lista.
@@ -130,23 +20,24 @@ Desde la 0.7.0, al abrir aparece una vez el **recorrido de bienvenida**: recórr
 4. [ ] Abre un juego de PS1 y otro de PS2 o PSP, juega **más de 1 minuto** y sal desde el
        menú del emulador: vuelves a Relix con el aviso "N min jugados".
 5. [ ] Abre otro juego y vuelve con el **botón Xbox** → Relix: también se suma.
-6. [ ] Resident Evil 3 europeo con `scph5502.bin` donde dice la guía de PS1
+6. [ ] Un juego de PS1 europeo con `scph5502.bin` donde dice la guía de PS1
        (**≡ → Consolas → PlayStation → Y**): ¿abre? Si no, ¿aparece "se cerró enseguida"?
 7. [ ] **≡ → RB hasta Portadas → A** en una consola: baja portadas y se ven en la grilla.
 8. [ ] **≡ → RB hasta Revisión**: saca una foto de la lista (baja con ↓ hasta el final).
-       Con eso veo de una vez qué emuladores, BIOS y permisos detecta tu Xbox.
+       Ahí se ve de una vez qué emuladores, BIOS y permisos detecta tu Xbox.
 
-**Para contarme qué pasó:** una foto de la pantalla y qué hiciste justo antes. Si
-Visual Studio se detiene con un error, copia el mensaje de la ventana **Salida**.
+**Para reportar un problema:** abre un *issue* con una foto de la pantalla, qué
+hiciste justo antes y la versión (**≡ → Acerca de**). Si Visual Studio se detiene
+con un error, copia el mensaje de la ventana **Salida**.
 
-### Paso 2 · Portadas
+## Paso 2 · Portadas
 - [ ] **≡ → RB hasta Portadas**: cada consola dice "N de M con portada".
 - [ ] **A** en una consola: "Buscando…", "Bajando X de Y" y el resumen.
 - [ ] La grilla muestra las portadas (la primera vez tardan un poco: se crean las miniaturas).
 - [ ] **Elegir a mano**: A guarda una candidata, X deja la de color.
 - [ ] En el PC: portadas en `E:\ES-DE\downloaded_media\<consola>\covers\` y caché en `E:\relix\cache\`.
 
-### Paso 3 · Encontrar juegos
+## Paso 3 · Encontrar juegos
 - [ ] En una consola, **RT / LT** saltan de letra y aparece la letra grande.
 - [ ] **Y** abre el menú del juego: favorito, colecciones, cambiar portada, ocultar, ordenar.
 - [ ] **Y → Colecciones → Nueva colección…**: escribir un nombre con el teclado y **≡** para terminar.
@@ -156,20 +47,20 @@ Visual Studio se detiene con un error, copia el mensaje de la ventana **Salida**
 - [ ] **Y → Ordenar biblioteca**: A–Z → Recientes (→ Año, si tus juegos traen año de ES-DE).
 - [ ] **Y → Ocultar juego** y luego **≡ → Biblioteca → Juegos ocultos** para recuperarlo.
 
-### Imagen de la app
+## Imagen de la app
 - [ ] En la ficha de Relix de la Xbox (la de **Reanudar**), el cuadro muestra la gema y el nombre.
 
-### Ajustes visuales (entre el paso 3 y el 4)
+## Ajustes visuales (entre el paso 3 y el 4)
 - [ ] En el inicio, al moverte entre canales el enfocado ya no toca a sus vecinos.
 - [ ] En la búsqueda, el campo (blanco, con lupa) queda separado del teclado.
 - [ ] En las grillas, el aro rosado del juego enfocado no toca la fila de arriba ni las portadas de al lado.
 
-### Acerca de
+## Acerca de
 - [ ] **≡ → RB hasta Acerca de** muestra la versión 0.8.1, la fecha de compilación y "Xbox · Modo Desarrollador".
 - [ ] **En tu USB** muestra tu letra de disco real.
 - [ ] Al pie del panel izquierdo dice **Creado por snyker-fair**.
 
-### Paso 4 · Tus datos y tiempo de juego
+## Paso 4 · Tus datos y tiempo de juego
 - [ ] Al abrir la versión nueva, tus favoritos y ocultos de antes siguen ahí, y en el PC
       aparece `E:\relix\datos.json` con ellos.
 - [ ] Juega **más de 1 minuto** y sal desde el menú del emulador: arriba aparece
@@ -186,7 +77,7 @@ Visual Studio se detiene con un error, copia el mensaje de la ventana **Salida**
 - [ ] Prueba fuerte (opcional): desinstala Relix desde Dev Home, vuelve a desplegar
       con **F5** y abre: favoritos y tiempo siguen ahí (vienen del USB).
 
-### Paso 5 · Más consolas y elegir emulador
+## Paso 5 · Más consolas y elegir emulador
 - [ ] Crea en el USB las carpetas de las consolas que quieras (`E:\roms\snes`, `n64`,
       `gba`, `n3ds`, `megadrive`, `dreamcast`, `xbox360`) con algunos juegos. Relix las
       escanea solo la primera vez que abre; después, **≡ → Biblioteca** para re-escanear.
@@ -197,13 +88,13 @@ Visual Studio se detiene con un error, copia el mensaje de la ventana **Salida**
 - [ ] En un juego, **Y → Abrir con…** → elige otro emulador: el panel dice "solo este juego".
 - [ ] Juegos de Xbox 360 en carpeta (`Halo 3 (USA)\default.xex`) aparecen con el nombre de la carpeta.
 
-### Guías por consola
+## Guías por consola
 - [ ] **≡ → Consolas → Y** abre la guía de la consola enfocada; LB/RB pasan a otra y B vuelve a la misma fila.
 - [ ] Arriba a la izquierda dice si el emulador está instalado y cuántos juegos encontró.
 - [ ] El QR se abre con la cámara del celular (lleva a DevStore › Emuladores).
 - [ ] En una consola sin juegos (con **Consolas sin juegos: Visibles** en Preferencias), **Y** abre su guía.
 
-### Paso 6 · Revisión y primer uso
+## Paso 6 · Revisión y primer uso
 - [ ] La primera vez que abres la 0.7.0 aparece **Primeros pasos**: Hola, Tu USB,
       Emuladores, Portadas y Botones. **A** avanza, **B** vuelve, **≡** salta.
 - [ ] **Tu USB** dice si Relix puede guardar, cuánto espacio queda y qué carpetas de
@@ -216,7 +107,7 @@ Visual Studio se detiene con un error, copia el mensaje de la ventana **Salida**
       y el ícono de **Opciones** en el inicio lleva un número rosado.
 - [ ] **≡ → RB hasta Revisión**: primero lo que falta (✗ rosado), después los avisos
       (! amarillo), la información (i) y lo que está bien (✓ verde).
-- [ ] Con tu RE3 europeo: si `scph5502.bin` está en `E:\RetroArch\system`, dice
+- [ ] Con un juego de PS1 europeo: si `scph5502.bin` está en `E:\RetroArch\system`, dice
       **BIOS de PS1 en su lugar**; si no, **falta scph5502.bin** y **A** abre la guía de PS1.
       Al volver con **B**, el foco queda en la misma fila.
 - [ ] Si usas DuckStation y pusiste la BIOS dentro del emulador, dice "no la veo en el USB"
@@ -227,7 +118,7 @@ Visual Studio se detiene con un error, copia el mensaje de la ventana **Salida**
 - [ ] **Revisar de nuevo** vuelve a medir (tarda unos segundos si no hay internet).
 - [ ] **Recorrido de bienvenida** lo muestra otra vez; al terminar vuelves a Revisión.
 
-### Paso 7 · Ficha viva, protector y filtros
+## Paso 7 · Ficha viva, protector y filtros
 - [ ] Prepara fondos, logos y videos con ES-DE en el PC (README › **Fondos, logos y
       videos con ES-DE**). Sin eso también se puede probar: **≡ → Portadas → A** ahora
       baja además una captura para los juegos sin fondo ("N capturas para el fondo").
@@ -244,10 +135,10 @@ Visual Studio se detiene con un error, copia el mensaje de la ventana **Salida**
 - [ ] **Y → Filtrar** (si tus gamelists traen género o jugadores): elige un género; la
       grilla muestra solo esos y arriba aparece el filtro. **Y → Filtrar → Todos los
       juegos** lo quita.
-- [ ] Si un video no se ve, dime su nombre y extensión (`.mp4`, `.webm`…): puede ser un
-      formato que la Xbox no reproduce.
+- [ ] Si un video no se ve, anota su nombre y extensión (`.mp4`, `.webm`…) al
+      reportarlo: puede ser un formato que la Xbox no reproduce.
 
-### Tema oscuro (0.8.1)
+## Tema oscuro (0.8.1)
 - [ ] **≡ → Preferencias → Tema** (la primera fila): **A** pasa de Claro a Oscuro y a
       Automático. El cambio se ve en el acto, en todas las pantallas.
 - [ ] Con **Oscuro**, recorre inicio, una consola, el menú **Y**, la búsqueda, Opciones
@@ -257,28 +148,4 @@ Visual Studio se detiene con un error, copia el mensaje de la ventana **Salida**
       sin el destello celeste (desde la segunda vez, cuando el shell ya lo recuerda).
 - [ ] **Automático** dice "Oscuro de 20:00 a 7:00 · ahora …" y cambia solo a esa hora.
 
-Si algo falla, la tabla **Si algo falla** de [`shell/README.md`](shell/README.md) tiene las causas más comunes.
-
----
-
-## Registro de cambios en el shell (C#)
-
-| Paso | Archivo | Cambio |
-|---|---|---|
-| 2 | `Shell/CoverService.cs` | **Nuevo.** Lista de libretro, descargas, miniaturas |
-| 2 | `Shell/LocalServer.cs` | Rutas `/thumb/` y portadas por nombre exacto |
-| 2 | `Shell/LibraryReader.cs` | `CollectFilesAsync` pasa a `internal` |
-| 2 | `MainPage.xaml.cs` | Mensajes `listCovers`, `coverIndex`, `downloadCovers` |
-| 3 | `Shell/CollectionStore.cs` | **Nuevo.** Colecciones en `ES-DE\collections` |
-| 3 | `Shell/CoverService.cs` | `DeleteCoverAsync` (usar la portada de color) |
-| 3 | `Shell/GamepadInput.cs` | Gatillos LT/RT (con repetición) y botón Vista |
-| 3 | `MainPage.xaml.cs` | Mensajes `deleteCover`, `listCollections`, `saveCollection` |
-| 4 | `Shell/UserDataStore.cs` | **Nuevo.** `E:\relix\datos.json`, copia anterior y respaldos diarios |
-| 4 | `MainPage.xaml.cs` | Mensajes `loadUserData`, `saveUserData`; evento `visible` al volver a primer plano |
-| 5 | `MainPage.xaml.cs` | Mensaje `emulatorStatus` (qué emuladores tiene la consola) |
-| 6 | `Shell/SystemCheck.cs` | **Nuevo.** Permisos de escritura, espacio libre, carpetas de `roms`, archivos de BIOS e internet |
-| 6 | `MainPage.xaml.cs` | Mensaje `systemCheck`; responde un error a los mensajes que no conoce (antes la interfaz quedaba esperando) |
-| 7 | `Shell/CoverService.cs` | Baja también capturas (`Named_Snaps`) y pantallas de título de libretro; lista cualquier carpeta de `downloaded_media` |
-| 7 | `Shell/LocalServer.cs` | Videos (`.mp4`, `.webm`, `.m4v`) por partes (Range), para que se repitan sin cargarlos enteros |
-| 7 | `MainPage.xaml.cs` | Mensaje `listMedia`; `downloadCovers` acepta `kind` (portadas, capturas o pantallas de título) |
-| 7 · tema | `MainPage.xaml.cs` | Mensaje `setBackground`: guarda el fondo del tema y lo usa al abrir (página y WebView2) |
+Si algo falla, la tabla **Si algo falla** de [`shell/README.md`](../shell/README.md) tiene las causas más comunes.

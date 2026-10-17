@@ -1,4 +1,21 @@
-node_modules
-dist
-dist-single
+# Dependencias y compilaciones de la interfaz
+node_modules/
+dist/
+dist-single/
+
+# Proyecto de Visual Studio (si se sube junto al repositorio)
+# El certificado de firma es personal: nunca se sube
+*.pfx
+bin/
+obj/
+.vs/
+AppPackages/
+BundleArtifacts/
+*.user
+*.suo
+
+# Sistema y herramientas
+.DS_Store
+Thumbs.db
 __pycache__/
+*.log

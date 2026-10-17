@@ -1,6 +1,7 @@
 {
   "name": "relix",
   "author": "snyker-fair",
+  "license": "GPL-3.0-or-later",
   "private": true,
   "version": "0.8.1",
   "type": "module",

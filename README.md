@@ -14,6 +14,16 @@ Estilo visual lúdico y redondeado, pensado para verse en una TV a 3 metros y
 manejarse con el control. Logo, colores, tipografía y voz de la marca están en
 [`brand/`](brand/README.md).
 
+> **Antes de usarlo:** Relix no está afiliado a Microsoft, Sony, Nintendo, Sega ni a
+> los autores de los emuladores. No incluye juegos, BIOS ni claves: los juegos y las
+> BIOS deben salir de tus propias consolas. Solo funciona en una Xbox en **Modo
+> Desarrollador**; no es una app de la Microsoft Store.
+
+**Documentación:** armar el proyecto la primera vez en
+[`shell/README.md`](shell/README.md) · compilar una versión nueva en
+[`docs/COMPILAR.md`](docs/COMPILAR.md) · qué probar en la TV en
+[`docs/PROBAR.md`](docs/PROBAR.md).
+
 ## Cómo funciona
 
 ```
@@ -125,6 +135,7 @@ src/
 tests/               tests de la lógica y del puente con el shell (vitest)
 brand/               logo, íconos de la app y guía de marca
 shell/               el shell en C# (RelixShell) y la guía para Visual Studio
+docs/                compilar una versión nueva (COMPILAR.md) y qué probar en la TV (PROBAR.md)
 scripts/             copy-to-shell.mjs: copia la interfaz al proyecto de Visual Studio
 ```
 
@@ -302,6 +313,23 @@ Más adelante: RetroAchievements, administrar la biblioteca desde el celular, pe
 
 ---
 
-Creado por **snyker-fair** ([GitHub](https://github.com/snyker-fair)).
+Creado por **snyker-fair** ([GitHub](https://github.com/Snyker-fair)).
 
-Los códigos QR se generan con [uqr](https://github.com/unjs/uqr) (MIT).
+## Licencia
+
+Relix es software libre con la [licencia GPL-3.0](LICENSE) (o, a tu elección, una
+versión posterior): puedes usarlo, estudiarlo, modificarlo y compartirlo. Si
+distribuyes una versión modificada, debe llevar la misma licencia y su código.
+Se entrega sin garantía.
+
+Usa:
+
+- [uqr](https://github.com/unjs/uqr) para los códigos QR (MIT).
+- Las letras [Baloo 2](https://fonts.google.com/specimen/Baloo+2) y
+  [Nunito](https://fonts.google.com/specimen/Nunito) (SIL Open Font License).
+- Las portadas de [libretro-thumbnails](https://github.com/libretro-thumbnails),
+  que se bajan desde la consola y no vienen en este repositorio.
+
+Los nombres de consolas y emuladores son marcas de sus dueños y se usan solo para
+decir con qué funciona Relix. Los íconos de las consolas están dibujados a mano y
+no usan logos.
