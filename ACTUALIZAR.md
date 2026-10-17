@@ -111,7 +111,27 @@ Correrlo de más no hace daño.
 
 ---
 
-## Qué probar en la TV (por paso)
+## Qué probar en la TV
+
+### Prueba rápida (lo primero, unos 15 minutos)
+
+Si esto anda, lo demás casi seguro también. Si algo falla aquí, avísame antes de
+seguir con el resto.
+
+1. [ ] Relix abre y muestra tus juegos. La primera vez escanea las consolas nuevas
+       (verás el avance en la pantalla de carga).
+2. [ ] **≡ → RB hasta Acerca de → En tu USB** dice "Guardado hace…", y en el PC existe
+       `E:\relix\datos.json`.
+3. [ ] **≡ → Consolas**: los emuladores que tienes dicen **Instalado**.
+4. [ ] Abre un juego de PS1 y otro de PS2 o PSP, juega **más de 1 minuto** y sal desde el
+       menú del emulador: vuelves a Relix con el aviso "N min jugados".
+5. [ ] Abre otro juego y vuelve con el **botón Xbox** → Relix: también se suma.
+6. [ ] Resident Evil 3 europeo con `scph5502.bin` donde dice la guía de PS1
+       (**≡ → Consolas → PlayStation → Y**): ¿abre? Si no, ¿aparece "se cerró enseguida"?
+7. [ ] **≡ → RB hasta Portadas → A** en una consola: baja portadas y se ven en la grilla.
+
+**Para contarme qué pasó:** una foto de la pantalla y qué hiciste justo antes. Si
+Visual Studio se detiene con un error, copia el mensaje de la ventana **Salida**.
 
 ### Paso 2 · Portadas
 - [ ] **≡ → RB hasta Portadas**: cada consola dice "N de M con portada".
