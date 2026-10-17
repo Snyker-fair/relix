@@ -46,7 +46,7 @@
   ]
   // Biblioteca: una fila por consola, "Escanear todo" y los juegos ocultos
   const LIBRARY_ROWS = [...PLATFORMS.map((p) => p.id), 'all', 'hidden']
-  const PREFERENCE_ROWS = ['empty', 'sounds', 'region']
+  const PREFERENCE_ROWS = ['empty', 'sounds', 'region', 'video', 'screensaver']
   // Consolas: con qué emulador se abre cada una
   const CONSOLE_ROWS = PLATFORMS.map((p) => p.id)
   /** Cuántas apps de emulador distintas tiene la Xbox (RetroArch cuenta una vez) */
@@ -340,6 +340,8 @@
     if (id === 'empty') settings.toggleEmptyConsoles()
     else if (id === 'sounds') settings.toggleSounds()
     else if (id === 'region') settings.cycleCoverRegion()
+    else if (id === 'video') settings.toggleVideoSound()
+    else if (id === 'screensaver') settings.cycleScreensaver()
     sound.select() // con los sonidos recién apagados, este ya no suena
   }
 
@@ -468,7 +470,8 @@
     <h2>Portadas</h2>
     <p>
       Relix las busca en libretro, las mismas de RetroArch, y las guarda en el USB junto a las de
-      ES-DE. Si no está seguro de cuál es, te deja elegir.
+      ES-DE. Si no está seguro de cuál es, te deja elegir. También baja una captura de cada juego
+      para el fondo de su ficha.
     </p>
     <ul class="chips">
       <li>{coverTotals.withCover} de {coverTotals.total} con portada</li>
@@ -494,7 +497,10 @@
     </div>
   {:else}
     <h2>Preferencias</h2>
-    <p>Qué se ve en el inicio, cómo suena Relix y qué portadas prefieres. Los cambios se guardan solos.</p>
+    <p>
+      Qué se ve en el inicio, cómo suena Relix, qué portadas prefieres y cuándo aparece el protector
+      de pantalla. Los cambios se guardan solos.
+    </p>
   {/if}
 </section>
 
@@ -705,7 +711,9 @@
             <span class="spinner" aria-hidden="true"></span>
             {covers.progress?.phase === 'download'
               ? `Bajando ${covers.progress.done} de ${covers.progress.total}`
-              : 'Buscando…'}
+              : covers.progress?.phase === 'shots'
+                ? `Capturas ${covers.progress.done} de ${covers.progress.total}`
+                : 'Buscando…'}
           {:else if focused && !coverBusy}
             <PadButton name="a" size={30} /> Buscar
           {:else if meta.full}
@@ -759,7 +767,16 @@
 <section class="rows" aria-label="Preferencias" bind:this={rowsEl} style:transform="translateY({-rowsScroll}px)">
   {#each ROWS as id, i (id)}
     {@const focused = i === index}
-    {@const on = id === 'empty' ? settings.showEmptyConsoles : id === 'sounds' ? settings.sounds : true}
+    {@const on =
+      id === 'empty'
+        ? settings.showEmptyConsoles
+        : id === 'sounds'
+          ? settings.sounds
+          : id === 'video'
+            ? settings.videoSound
+            : id === 'screensaver'
+              ? settings.screensaverMinutes > 0
+              : true}
     <button
       class="row focus-ring"
       class:focused
@@ -768,7 +785,11 @@
       onclick={() => (i === index ? toggleRow() : move(i))}
     >
       <span class="badge neutral">
-        <ChannelIcon id={id === 'empty' ? 'eye' : id === 'sounds' ? 'sound' : 'globe'} color="#23304A" size={52} />
+        <ChannelIcon
+          id={id === 'empty' ? 'eye' : id === 'sounds' ? 'sound' : id === 'video' ? 'video' : id === 'screensaver' ? 'moon' : 'globe'}
+          color="#23304A"
+          size={52}
+        />
       </span>
       <span class="text">
         {#if id === 'empty'}
@@ -783,6 +804,12 @@
         {:else if id === 'sounds'}
           <strong>Sonidos de la interfaz</strong>
           <span>El tic al moverte y el pop al elegir</span>
+        {:else if id === 'video'}
+          <strong>Sonido de los videos</strong>
+          <span>La vista previa en la ficha del juego (si escrapeaste videos con ES-DE)</span>
+        {:else if id === 'screensaver'}
+          <strong>Protector de pantalla</strong>
+          <span>Tus juegos, uno tras otro, cuando dejas el control quieto</span>
         {:else}
           <strong>Región de las portadas</strong>
           <span>Para los juegos cuyo archivo no dice la región</span>
@@ -795,6 +822,10 @@
             {on ? 'Visibles' : 'Ocultas'}
           {:else if id === 'sounds'}
             {on ? 'Activados' : 'Desactivados'}
+          {:else if id === 'video'}
+            {on ? 'Con sonido' : 'Sin sonido'}
+          {:else if id === 'screensaver'}
+            {settings.screensaverMinutes > 0 ? `A los ${settings.screensaverMinutes} min` : 'Nunca'}
           {:else}
             {REGION_NAMES[settings.coverRegion]}
           {/if}

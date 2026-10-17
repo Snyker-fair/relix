@@ -171,6 +171,16 @@
     <rect x="28" y="36" width="40" height="50" rx="10" fill={color} />
     <path d="M37 36V12h22v24" />
     <path d="M43 20v6M53 20v6" stroke-width="5" />
+  {:else if id === 'filter'}
+    <!-- embudo: filtrar -->
+    <path d="M16 20h64L56 50v24l-16 8V50Z" fill={color} />
+  {:else if id === 'moon'}
+    <!-- luna: protector de pantalla -->
+    <path d="M62 14a34 34 0 1 0 20 46A28 28 0 0 1 62 14Z" fill={color} />
+  {:else if id === 'video'}
+    <!-- pantalla con triángulo: video -->
+    <rect x="12" y="22" width="72" height="52" rx="10" />
+    <path d="M42 36v24l20-12Z" fill={color} />
   {:else if id === 'gamepad'}
     <!-- control -->
     <path d="M30 28h36c11 0 17 8 19 20l3 17c1 9-9 13-15 6l-8-9H31l-8 9c-6 7-16 3-15-6l3-17c2-12 8-20 19-20Z" />

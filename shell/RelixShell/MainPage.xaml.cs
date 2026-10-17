@@ -168,6 +168,11 @@ namespace RelixShell
                         Reply(id, await CoverIndexAsync(payload));
                         break;
 
+                    case "listMedia":
+                        await EnsurePathsAsync(refresh: false);
+                        Reply(id, await ListMediaAsync(payload));
+                        break;
+
                     case "downloadCovers":
                         Reply(id, await DownloadCoversAsync(payload));
                         break;
@@ -292,6 +297,33 @@ namespace RelixShell
             return result;
         }
 
+        /// <summary>
+        /// Lo que hay en downloaded_media para cada consola. Pedido:
+        /// { systems: ["psx"], types: ["screenshots", "fanart", "marquees", "videos"] }.
+        /// Respuesta: { media: { psx: { screenshots: ["Okami (USA).png"], videos: [...] } } }.
+        /// </summary>
+        private async Task<IJsonValue> ListMediaAsync(JsonObject payload)
+        {
+            JsonArray types = payload.GetNamedArray("types", new JsonArray());
+            var media = new JsonObject();
+            foreach (string systemId in SystemIds(payload))
+            {
+                var bySystem = new JsonObject();
+                foreach (IJsonValue value in types)
+                {
+                    string type = value.GetString();
+                    if (CoverService.IsMediaType(type))
+                    {
+                        bySystem.SetNamedValue(type, StringArray(await CoverService.ListMediaAsync(paths, systemId, type)));
+                    }
+                }
+                media.SetNamedValue(systemId, bySystem);
+            }
+            var result = new JsonObject();
+            result.SetNamedValue("media", media);
+            return result;
+        }
+
         /// <summary>Lista de portadas de libretro para una consola: { names: [...] }.</summary>
         private async Task<IJsonValue> CoverIndexAsync(JsonObject payload)
         {
@@ -303,7 +335,8 @@ namespace RelixShell
         }
 
         /// <summary>
-        /// Baja portadas al USB. Pedido: { system, libretro, items: [{ key, remote }] }.
+        /// Baja portadas (o capturas) al USB. Pedido: { system, libretro, kind?, items: [{ key, remote }] }.
+        /// kind: "covers" (por defecto), "screenshots" o "titlescreens".
         /// Mientras baja, manda eventos coverProgress { system, done, total }.
         /// </summary>
         private async Task<IJsonValue> DownloadCoversAsync(JsonObject payload)
@@ -319,7 +352,7 @@ namespace RelixShell
             }
 
             CoverDownloadResult download = await covers.DownloadAsync(
-                paths, systemId, payload.GetNamedString("libretro"), items,
+                paths, systemId, payload.GetNamedString("libretro"), payload.GetNamedString("kind", "covers"), items,
                 (done, total) =>
                 {
                     var progress = new JsonObject();

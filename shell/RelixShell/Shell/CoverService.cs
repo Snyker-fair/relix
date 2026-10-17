@@ -36,17 +36,35 @@ namespace RelixShell
     }
 
     /// <summary>
-    /// Portadas de libretro-thumbnails (las mismas de RetroArch):
+    /// Portadas e imágenes de libretro-thumbnails (las mismas de RetroArch):
     ///
     ///   - la lista de nombres de cada consola, guardada un mes en E:\relix\cache\libretro\
     ///   - la descarga al USB, en la carpeta de ES-DE:
-    ///       E:\ES-DE\downloaded_media\&lt;consola&gt;\covers\&lt;juego&gt;.png
+    ///       E:\ES-DE\downloaded_media\&lt;consola&gt;\covers\&lt;juego&gt;.png        (Named_Boxarts)
+    ///       E:\ES-DE\downloaded_media\&lt;consola&gt;\screenshots\&lt;juego&gt;.png   (Named_Snaps)
+    ///       E:\ES-DE\downloaded_media\&lt;consola&gt;\titlescreens\&lt;juego&gt;.png  (Named_Titles)
     ///   - las miniaturas JPG para la grilla, en E:\relix\cache\miniaturas\
     ///     (o en la memoria interna de la app si el USB no deja escribir)
+    ///   - la lista de lo que ES-DE (o Relix) dejó en cada carpeta de downloaded_media
     /// </summary>
     internal sealed class CoverService
     {
         private const string Server = "https://thumbnails.libretro.com/";
+
+        /// <summary>Qué se puede bajar de libretro: carpeta de ES-DE -> carpeta de libretro.</summary>
+        private static readonly Dictionary<string, string> LibretroFolders =
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                { "covers", "Named_Boxarts" },
+                { "screenshots", "Named_Snaps" },
+                { "titlescreens", "Named_Titles" },
+            };
+
+        /// <summary>Carpetas de downloaded_media que la interfaz puede pedir listar.</summary>
+        private static readonly string[] MediaTypes =
+            { "covers", "screenshots", "titlescreens", "fanart", "marquees", "videos" };
+
+        private static readonly string[] VideoExtensions = { ".mp4", ".webm", ".m4v" };
 
         /// <summary>Cada cuánto se vuelve a bajar la lista de nombres de una consola.</summary>
         private static readonly TimeSpan IndexMaxAge = TimeSpan.FromDays(30);
@@ -161,19 +179,25 @@ namespace RelixShell
         // ── Descarga ────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Baja las portadas pedidas y las guarda en la carpeta de ES-DE del USB.
+        /// Baja las imágenes pedidas y las guarda en la carpeta de ES-DE del USB.
+        /// kind: "covers" (portadas), "screenshots" (capturas) o "titlescreens".
         /// Avisa el avance con onProgress(listas, total).
         /// </summary>
         public async Task<CoverDownloadResult> DownloadAsync(
-            LibraryPaths paths, string systemId, string libretroSystem,
+            LibraryPaths paths, string systemId, string libretroSystem, string kind,
             IList<CoverRequest> items, Action<int, int> onProgress)
         {
+            if (!LibretroFolders.ContainsKey(kind))
+            {
+                throw new UserFacingException("bad-kind", "Relix no sabe bajar imágenes de tipo \"" + kind + "\".");
+            }
+
             StorageFolder covers;
             try
             {
                 covers = await CreateFoldersAsync(
                     await StorageFolder.GetFolderFromPathAsync(paths.DriveRoot),
-                    "ES-DE", "downloaded_media", systemId, "covers");
+                    "ES-DE", "downloaded_media", systemId, kind);
             }
             catch (Exception)
             {
@@ -190,7 +214,7 @@ namespace RelixShell
             var tasks = new List<Task>();
             foreach (CoverRequest item in items)
             {
-                tasks.Add(DownloadWithGateAsync(paths, covers, systemId, libretroSystem, item, gate, result,
+                tasks.Add(DownloadWithGateAsync(paths, covers, systemId, libretroSystem, kind, item, gate, result,
                     () => onProgress(++progress[0], items.Count)));
             }
 
@@ -199,13 +223,13 @@ namespace RelixShell
         }
 
         private async Task DownloadWithGateAsync(
-            LibraryPaths paths, StorageFolder covers, string systemId, string libretroSystem,
+            LibraryPaths paths, StorageFolder covers, string systemId, string libretroSystem, string kind,
             CoverRequest item, SemaphoreSlim gate, CoverDownloadResult result, Action onDone)
         {
             await gate.WaitAsync();
             try
             {
-                await DownloadOneAsync(paths, covers, systemId, libretroSystem, item);
+                await DownloadOneAsync(paths, covers, systemId, libretroSystem, kind, item);
                 result.Saved.Add(item.Key);
             }
             catch (Exception ex)
@@ -220,9 +244,9 @@ namespace RelixShell
         }
 
         private async Task DownloadOneAsync(
-            LibraryPaths paths, StorageFolder covers, string systemId, string libretroSystem, CoverRequest item)
+            LibraryPaths paths, StorageFolder covers, string systemId, string libretroSystem, string kind, CoverRequest item)
         {
-            string url = Server + Uri.EscapeDataString(libretroSystem) + "/Named_Boxarts/"
+            string url = Server + Uri.EscapeDataString(libretroSystem) + "/" + LibretroFolders[kind] + "/"
                 + Uri.EscapeDataString(item.Remote + ".png");
             byte[] bytes = await Http.GetByteArrayAsync(url);
             if (!IsImage(bytes))
@@ -235,7 +259,7 @@ namespace RelixShell
             StorageFolder folder = await CreateFoldersAsync(covers, SubArray(parts, 0, parts.Length - 1));
             string stem = parts[parts.Length - 1];
 
-            // Una sola portada por juego: se quitan las de otro formato (p. ej. un .jpg de ES-DE)
+            // Una sola imagen por juego: se quitan las de otro formato (p. ej. un .jpg de ES-DE)
             foreach (string extension in ImageExtensions)
             {
                 if (extension != ".png" && await folder.TryGetItemAsync(stem + extension) is StorageFile old)
@@ -247,7 +271,10 @@ namespace RelixShell
             StorageFile file = await folder.CreateFileAsync(stem + ".png", CreationCollisionOption.ReplaceExisting);
             await FileIO.WriteBytesAsync(file, bytes);
 
-            await DeleteThumbnailAsync(paths, systemId, item.Key);
+            if (kind == "covers")
+            {
+                await DeleteThumbnailAsync(paths, systemId, item.Key);
+            }
         }
 
         private static bool IsImage(byte[] bytes)
@@ -276,26 +303,47 @@ namespace RelixShell
         /// Las portadas de una consola, con su extensión, relativas a covers:
         /// ["Okami (USA).png", "FF7 (USA)/FF7 (USA).jpg"]
         /// </summary>
-        public static async Task<List<string>> ListCoversAsync(LibraryPaths paths, string systemId)
+        public static Task<List<string>> ListCoversAsync(LibraryPaths paths, string systemId)
         {
-            var images = new List<string>();
-            StorageFolder covers = await LibraryReader.TryGetFolderAsync(
-                Path.Combine(paths.MediaRoot, systemId, "covers"));
-            if (covers == null)
+            return ListMediaAsync(paths, systemId, "covers");
+        }
+
+        /// <summary>¿Es una carpeta de downloaded_media que la interfaz puede pedir?</summary>
+        public static bool IsMediaType(string type)
+        {
+            return Array.IndexOf(MediaTypes, type) >= 0;
+        }
+
+        /// <summary>
+        /// Los archivos de una carpeta de downloaded_media (covers, screenshots,
+        /// fanart, marquees, videos…), con su extensión y relativos a ella:
+        /// ["Okami (USA).png", "FF7 (USA)/FF7 (USA).mp4"]
+        /// </summary>
+        public static async Task<List<string>> ListMediaAsync(LibraryPaths paths, string systemId, string type)
+        {
+            var found = new List<string>();
+            if (!IsMediaType(type))
             {
-                return images;
+                return found;
+            }
+            StorageFolder folder = await LibraryReader.TryGetFolderAsync(
+                Path.Combine(paths.MediaRoot, systemId, type));
+            if (folder == null)
+            {
+                return found;
             }
 
+            string[] extensions = type == "videos" ? VideoExtensions : ImageExtensions;
             var files = new List<string>();
-            await LibraryReader.CollectFilesAsync(covers, "", 0, files);
+            await LibraryReader.CollectFilesAsync(folder, "", 0, files);
             foreach (string file in files)
             {
-                if (Array.IndexOf(ImageExtensions, Path.GetExtension(file).ToLowerInvariant()) >= 0)
+                if (Array.IndexOf(extensions, Path.GetExtension(file).ToLowerInvariant()) >= 0)
                 {
-                    images.Add(file);
+                    found.Add(file);
                 }
             }
-            return images;
+            return found;
         }
 
         // ── Miniaturas ──────────────────────────────────────────────────────

@@ -82,6 +82,8 @@
     ),
   )
   const missingCovers = $derived(coverTotals.total - coverTotals.withCover)
+  /** Faltan portadas o capturas para el fondo */
+  const needsSearch = $derived(PLATFORMS.some((p) => covers.needsSearch(p.id)))
   /** Lo que dejó la búsqueda de esta pantalla */
   let coverDone = $state('')
   const searching = $derived(covers.all !== null)
@@ -90,7 +92,7 @@
   const items = $derived(
     stepId === 'emulators'
       ? [...shownConsoles.map((c) => c.platform.id), 'next']
-      : stepId === 'covers' && missingCovers > 0 && !coverDone && !searching
+      : stepId === 'covers' && needsSearch && !coverDone && !searching
         ? ['search', 'next']
         : ['next'],
   )
@@ -178,7 +180,7 @@
   const BUTTONS = [
     { button: 'a', label: 'Jugar o elegir', detail: 'Abre la consola, el juego o la opción enfocada' },
     { button: 'b', label: 'Volver', detail: 'A la pantalla anterior' },
-    { button: 'y', label: 'Menú del juego', detail: 'Abrir con…, portada, colecciones, ocultar' },
+    { button: 'y', label: 'Menú del juego', detail: 'Abrir con…, portada, filtrar, ocultar' },
     { button: 'x', label: 'Favorito', detail: 'Marca el juego con una estrella' },
     { button: 'lb', also: 'rb', label: 'Otra consola', detail: 'La anterior o la siguiente' },
     { button: 'view', label: 'Buscar', detail: 'En todas las consolas a la vez' },
@@ -243,8 +245,8 @@
       <span class="intro-icon"><ChannelIcon id="cover" color="#23304A" size={76} /></span>
       <h1>Portadas</h1>
       <p>
-        Relix baja las portadas de libretro, las mismas de RetroArch, y las guarda en tu USB junto a
-        las de ES-DE.
+        Relix baja las portadas de libretro, las mismas de RetroArch, y una captura de cada juego
+        para el fondo de su ficha. Todo queda en tu USB junto a lo de ES-DE.
       </p>
       <p class="small">
         Si duda de cuál es la de un juego, te deja elegirla en <strong>Opciones › Portadas</strong>.
@@ -379,7 +381,9 @@
               {getPlatform(covers.progress.system)?.shortName}:
               {covers.progress.phase === 'download'
                 ? `bajando ${covers.progress.done} de ${covers.progress.total}`
-                : 'buscando…'}
+                : covers.progress.phase === 'shots'
+                  ? `capturas ${covers.progress.done} de ${covers.progress.total}`
+                  : 'buscando…'}
             {:else}
               Buscando…
             {/if}
@@ -388,8 +392,10 @@
             {coverDone}
           {:else if coverTotals.total === 0}
             Cuando tengas juegos, las portadas se buscan en <strong>Opciones › Portadas</strong>.
-          {:else if missingCovers === 0}
+          {:else if missingCovers === 0 && !needsSearch}
             ¡Ya están todas!
+          {:else if missingCovers === 0}
+            Tienes todas las portadas. A algunos juegos les falta la captura del fondo.
           {:else}
             Faltan {missingCovers}. Bajarlas toma unos minutos.
           {/if}

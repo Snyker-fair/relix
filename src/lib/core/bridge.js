@@ -57,6 +57,7 @@
  */
 
 import { remoteCoverUrl } from './coverMatch.js'
+import { MEDIA_LISTED } from './media.js'
 import { getPlatform, PLATFORMS } from './platforms.js'
 import mockCoverNames from '../../mock/libretro-names.json'
 import psx from '../../mock/gamelists/psx/gamelist.xml?raw'
@@ -243,32 +244,84 @@ export async function coverIndex(platform) {
  */
 
 /**
- * Baja portadas de libretro al USB.
+ * Baja portadas (o capturas) de libretro al USB.
  * @param {import('./platforms.js').Platform} platform
  * @param {CoverDownload[]} items
  * @param {(done: number, total: number) => void} [onProgress]
+ * @param {'covers'|'screenshots'|'titlescreens'} [kind]  carpeta de ES-DE donde se guardan
  * @returns {Promise<CoverDownloadResult>}
  */
-export async function downloadCovers(platform, items, onProgress) {
+export async function downloadCovers(platform, items, onProgress, kind = 'covers') {
   if (mode === 'xbox') {
     const stop = onShellEvent((e) => {
       if (e.event === 'coverProgress' && e.system === platform.id) onProgress?.(e.done ?? 0, e.total ?? 0)
     })
     try {
-      return await request('downloadCovers', { system: platform.id, libretro: platform.libretro, items })
+      // Sin "kind" el shell baja portadas: así un shell anterior sigue sirviendo para ellas
+      const payload = { system: platform.id, libretro: platform.libretro, items }
+      return await request('downloadCovers', kind === 'covers' ? payload : { ...payload, kind })
     } finally {
       stop()
     }
   }
-  // Navegador: "guarda" la portada recordando su nombre en libretro
-  const saved = demoCovers()
+  // Navegador: "guarda" la imagen recordando su nombre en libretro
+  const saved = kind === 'covers' ? demoCovers() : demoMedia()
+  const prefix = kind === 'covers' ? '' : `${kind}/`
   for (const [i, item] of items.entries()) {
-    await new Promise((resolve) => setTimeout(resolve, 90))
-    saved[`${platform.id}/${item.key}`] = item.remote
+    await new Promise((resolve) => setTimeout(resolve, kind === 'covers' ? 90 : 40))
+    saved[`${prefix}${platform.id}/${item.key}`] = item.remote
     onProgress?.(i + 1, items.length)
   }
-  saveDemoCovers(saved)
+  if (kind === 'covers') saveDemoCovers(saved)
+  else saveDemo(DEMO_MEDIA_KEY, saved)
   return { saved: items.map((i) => i.key), failed: [] }
+}
+
+// ── Fondos, logos y videos (ES-DE/downloaded_media) ─────────────────────
+
+/** Carpeta de libretro de cada tipo que se puede bajar (para la demo) */
+const LIBRETRO_FOLDERS = /** @type {Record<string, string>} */ ({ screenshots: 'Named_Snaps', titlescreens: 'Named_Titles' })
+
+/**
+ * Lo que hay en downloaded_media de cada consola: capturas, fanart, logos y videos.
+ * Un shell anterior no lo conoce: responde un error (o no responde) y la
+ * interfaz sigue solo con portadas.
+ * @param {string[]} systemIds
+ * @returns {Promise<Record<string, import('./media.js').MediaFiles>>}
+ */
+export async function listMedia(systemIds) {
+  if (mode === 'xbox') {
+    return (await request('listMedia', { systems: systemIds, types: MEDIA_LISTED }, { timeout: 30_000 })).media
+  }
+  const saved = Object.keys(demoMedia())
+  return Object.fromEntries(
+    systemIds.map((id) => [
+      id,
+      Object.fromEntries(
+        MEDIA_LISTED.map((type) => [
+          type,
+          saved.filter((k) => k.startsWith(`${type}/${id}/`)).map((k) => `${k.slice(type.length + id.length + 2)}.png`),
+        ]),
+      ),
+    ]),
+  )
+}
+
+/**
+ * URL de una imagen o video de downloaded_media.
+ * @param {string} system
+ * @param {string} type   screenshots, fanart, marquees, videos…
+ * @param {string} file   relativo a esa carpeta, con extensión
+ * @param {string|null} mediaBase
+ */
+export function mediaFileUrl(system, type, file, mediaBase) {
+  if (mode === 'browser') {
+    const remote = demoMedia()[`${type}/${system}/${file.replace(/\.[^./]+$/, '')}`]
+    const platform = getPlatform(system)
+    return remote && platform && LIBRETRO_FOLDERS[type] ? remoteCoverUrl(platform.libretro, remote, LIBRETRO_FOLDERS[type]) : ''
+  }
+  if (!mediaBase) return ''
+  return `${mediaBase}/${system}/${type}/${file.split('/').map(encodeURIComponent).join('/')}`
 }
 
 /**
@@ -291,6 +344,25 @@ export function coverUrls(system, file, { mediaBase, thumbBase }) {
 
 // En el navegador las portadas "descargadas" se recuerdan en el navegador
 const DEMO_KEY = 'relix:demo-covers'
+const DEMO_MEDIA_KEY = 'relix:demo-media'
+
+/** @returns {Record<string, string>} "<tipo>/<consola>/<clave>" -> nombre en libretro */
+function demoMedia() {
+  try {
+    return JSON.parse(localStorage.getItem(DEMO_MEDIA_KEY) ?? '{}')
+  } catch {
+    return {}
+  }
+}
+
+/** @param {string} key @param {Record<string, string>} value */
+function saveDemo(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value))
+  } catch {
+    // sin almacenamiento: se olvidan al recargar
+  }
+}
 
 /** @returns {Record<string, string>} "<consola>/<clave>" -> nombre en libretro */
 function demoCovers() {

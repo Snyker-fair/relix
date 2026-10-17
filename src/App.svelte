@@ -7,7 +7,8 @@
   import { COLLECTIONS, COLLECTION_PREFIX, isCollectionId } from './lib/ui/channels.js'
   import { collections } from './lib/ui/collections.svelte.js'
   import { emulators } from './lib/ui/emulators.svelte.js'
-  import { dispatch, startInput } from './lib/ui/input.js'
+  import { activity } from './lib/ui/activity.svelte.js'
+  import { dispatch, idleFor, markActivity, startInput } from './lib/ui/input.js'
   import { library } from './lib/ui/library.svelte.js'
   import { settings } from './lib/ui/settings.svelte.js'
   import { sound } from './lib/ui/sound.js'
@@ -22,6 +23,7 @@
   import LaunchOverlay from './screens/LaunchOverlay.svelte'
   import Library from './screens/Library.svelte'
   import Options from './screens/Options.svelte'
+  import Screensaver from './screens/Screensaver.svelte'
   import Search from './screens/Search.svelte'
   import Status from './screens/Status.svelte'
   import Welcome from './screens/Welcome.svelte'
@@ -40,7 +42,7 @@
   /** @type {Screen} */
   let screen = $state({ name: 'home' })
   /** Menú del juego (Y), encima de la pantalla actual */
-  /** @type {{ game: any, sortOptions?: import('./lib/core/sorting.js').SortOrder[] } | null} */
+  /** @type {{ game: any, sortOptions?: import('./lib/core/sorting.js').SortOrder[], filterChannel?: string } | null} */
   let menu = $state(null)
   /** Canal con el foco en el inicio (id de consola, 'favorites' u 'options'). null = el primero */
   /** @type {string|null} */
@@ -60,7 +62,10 @@
   onShellEvent((e) => {
     if (e.event === 'input' && e.action) dispatch(/** @type {any} */ (e.action))
     // Volviste a Relix: al cerrar el emulador (resumed) o por otro camino, como el botón Xbox (visible)
-    else if (e.event === 'resumed' || e.event === 'visible') backInRelix({ fromEmulator: true })
+    else if (e.event === 'resumed' || e.event === 'visible') {
+      markActivity() // el tiempo jugando no cuenta para el protector de pantalla
+      backInRelix({ fromEmulator: true })
+    }
   })
 
   /**
@@ -80,6 +85,7 @@
     untrack(() => {
       collections.load()
       userData.resync()
+      library.loadMedia()
       systemStatus.run().then(warnSystem)
       if (finishedWhileClosed) {
         announcePlaytime(finishedWhileClosed)
@@ -165,6 +171,28 @@
     return () => clearTimeout(t)
   })
 
+  // Los videos de vista previa se detienen mientras se abre un juego
+  $effect(() => {
+    activity.launching = launching !== null
+  })
+
+  // Protector de pantalla: tras los minutos elegidos sin tocar el control.
+  // No aparece en el recorrido de bienvenida ni mientras se abre un juego
+  $effect(() => {
+    const minutes = settings.screensaverMinutes
+    if (!minutes || library.status !== 'ready') return
+    const t = setInterval(() => {
+      if (activity.screensaver || launching || screen.name === 'welcome' || document.hidden) return
+      if (idleFor() >= minutes * 60_000) activity.screensaver = true
+    }, 5000)
+    return () => clearInterval(t)
+  })
+
+  function closeScreensaver() {
+    activity.screensaver = false
+    markActivity()
+  }
+
   /** @param {string} message @param {number} [duration] ms */
   function showToast(message, duration = 3500) {
     toast = message
@@ -199,9 +227,10 @@
   /**
    * @param {any} game
    * @param {import('./lib/core/sorting.js').SortOrder[]} [sortOptions]
+   * @param {string} [filterChannel]  canal de la biblioteca (para Y › Filtrar)
    */
-  function openMenu(game, sortOptions) {
-    menu = { game, sortOptions }
+  function openMenu(game, sortOptions, filterChannel) {
+    menu = { game, sortOptions, filterChannel }
   }
 
   /** Guía para dejar andando una consola @param {string} systemId */
@@ -339,6 +368,7 @@
     <GameMenu
       game={menu.game}
       sortOptions={menu.sortOptions}
+      filterChannel={menu.filterChannel}
       onClose={() => (menu = null)}
       onLaunch={startGame}
       onChangeCover={changeCover}
@@ -357,6 +387,17 @@
 
   {#if toast}
     <div class="toast" role="status">{toast}</div>
+  {/if}
+
+  {#if activity.screensaver}
+    <Screensaver
+      onClose={closeScreensaver}
+      onPlay={(game) => {
+        closeScreensaver()
+        menu = null
+        startGame(game)
+      }}
+    />
   {/if}
 </Stage>
 

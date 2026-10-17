@@ -14,6 +14,7 @@ namespace RelixShell
     ///   /index.html, /assets/...         archivos de la interfaz (carpeta ui del paquete)
     ///   /media/psx/covers/Juego.png      imágenes de ES-DE en el USB, por su nombre exacto
     ///   /media/psx/covers/Juego          sin extensión: prueba .png, .jpg, .jpeg y .webp
+    ///   /media/psx/videos/Juego.mp4      videos de ES-DE, por partes (Range) para poder repetirlos
     ///   /thumb/psx/Juego.png             miniatura JPG de esa portada (ver CoverService)
     ///
     /// Todo pasa por el mismo origen, así la interfaz no tiene problemas de CORS.
@@ -24,6 +25,13 @@ namespace RelixShell
         private const string ThumbPrefix = "/thumb/";
 
         private static readonly string[] ImageExtensions = { ".png", ".jpg", ".jpeg", ".webp" };
+        private static readonly string[] VideoExtensions = { ".mp4", ".webm", ".m4v" };
+
+        /// <summary>
+        /// Lo más que se manda de un video por pedido. El reproductor pide el resto
+        /// a medida que lo necesita, así no se lee el archivo entero a memoria.
+        /// </summary>
+        private const ulong MaxVideoChunk = 2 * 1024 * 1024;
 
         private static readonly Dictionary<string, string> ContentTypes =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -37,6 +45,9 @@ namespace RelixShell
                 { ".jpg", "image/jpeg" },
                 { ".jpeg", "image/jpeg" },
                 { ".webp", "image/webp" },
+                { ".mp4", "video/mp4" },
+                { ".m4v", "video/mp4" },
+                { ".webm", "video/webm" },
                 { ".woff2", "font/woff2" },
                 { ".woff", "font/woff" },
             };
@@ -72,6 +83,12 @@ namespace RelixShell
                 if (file == null)
                 {
                     args.Response = core.Environment.CreateWebResourceResponse(null, 404, "Not Found", "");
+                    return;
+                }
+
+                if (isMedia && IsVideo(file.FileType))
+                {
+                    args.Response = await VideoResponseAsync(file, args.Request.Headers);
                     return;
                 }
 
@@ -122,15 +139,16 @@ namespace RelixShell
 
             string basePath = Path.Combine(paths.MediaRoot, relative.Replace('/', '\\'));
 
-            // La interfaz ya sabe qué portadas hay (con su extensión): una sola búsqueda
-            if (Array.IndexOf(ImageExtensions, Path.GetExtension(basePath).ToLowerInvariant()) >= 0)
+            // La interfaz ya sabe qué imágenes y videos hay (con su extensión): una sola búsqueda
+            string extension = Path.GetExtension(basePath).ToLowerInvariant();
+            if (Array.IndexOf(ImageExtensions, extension) >= 0 || Array.IndexOf(VideoExtensions, extension) >= 0)
             {
                 return await LibraryReader.TryGetFileAsync(basePath);
             }
 
-            foreach (string extension in ImageExtensions)
+            foreach (string imageExtension in ImageExtensions)
             {
-                StorageFile file = await LibraryReader.TryGetFileAsync(basePath + extension);
+                StorageFile file = await LibraryReader.TryGetFileAsync(basePath + imageExtension);
                 if (file != null)
                 {
                     return file;
@@ -149,6 +167,115 @@ namespace RelixShell
                 return null;
             }
             return await covers.GetThumbnailAsync(paths, relative.Substring(0, slash), relative.Substring(slash + 1));
+        }
+
+        private static bool IsVideo(string extension)
+        {
+            return Array.IndexOf(VideoExtensions, extension.ToLowerInvariant()) >= 0;
+        }
+
+        /// <summary>
+        /// Un video: si el reproductor pide un trozo (Range: bytes=inicio-fin), se
+        /// responde 206 con ese trozo (hasta 2 MB); si no, el archivo entero
+        /// avisando que acepta trozos. Sin esto, el WebView2 no puede volver al
+        /// principio para repetir el video.
+        /// </summary>
+        private async Task<CoreWebView2WebResourceResponse> VideoResponseAsync(
+            StorageFile file, CoreWebView2HttpRequestHeaders requestHeaders)
+        {
+            string contentType;
+            if (!ContentTypes.TryGetValue(file.FileType, out contentType))
+            {
+                contentType = "video/mp4";
+            }
+            ulong size = (await file.GetBasicPropertiesAsync()).Size;
+            string common = "Content-Type: " + contentType + "\r\nAccept-Ranges: bytes\r\nCache-Control: no-cache";
+
+            ulong start;
+            ulong end;
+            if (!TryParseRange(requestHeaders, size, out start, out end))
+            {
+                IRandomAccessStream whole = await file.OpenReadAsync();
+                return core.Environment.CreateWebResourceResponse(
+                    whole, 200, "OK", common + "\r\nContent-Length: " + size);
+            }
+            if (start >= size)
+            {
+                return core.Environment.CreateWebResourceResponse(
+                    null, 416, "Range Not Satisfiable", "Content-Range: bytes */" + size);
+            }
+
+            end = Math.Min(end, start + MaxVideoChunk - 1);
+            uint length = (uint)(end - start + 1);
+            var chunk = new InMemoryRandomAccessStream();
+            uint read;
+            using (IRandomAccessStream input = await file.OpenReadAsync())
+            {
+                input.Seek(start);
+                IBuffer buffer = await input.ReadAsync(new Windows.Storage.Streams.Buffer(length), length, InputStreamOptions.None);
+                read = buffer.Length;
+                await chunk.WriteAsync(buffer);
+            }
+            if (read == 0)
+            {
+                return core.Environment.CreateWebResourceResponse(
+                    null, 416, "Range Not Satisfiable", "Content-Range: bytes */" + size);
+            }
+            chunk.Seek(0);
+            return core.Environment.CreateWebResourceResponse(
+                chunk, 206, "Partial Content",
+                common + "\r\nContent-Range: bytes " + start + "-" + (start + read - 1) + "/" + size
+                    + "\r\nContent-Length: " + read);
+        }
+
+        /// <summary>
+        /// Lee "Range: bytes=inicio-fin" (fin opcional) o "bytes=-N" (los últimos N).
+        /// false si el pedido no trae Range o no se entiende.
+        /// </summary>
+        private static bool TryParseRange(CoreWebView2HttpRequestHeaders headers, ulong size, out ulong start, out ulong end)
+        {
+            start = 0;
+            end = size == 0 ? 0 : size - 1;
+            if (size == 0 || !headers.Contains("Range"))
+            {
+                return false;
+            }
+
+            string value = headers.GetHeader("Range").Trim();
+            if (!value.StartsWith("bytes=", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+            string spec = value.Substring(6).Split(',')[0].Trim();
+            int dash = spec.IndexOf('-');
+            if (dash < 0)
+            {
+                return false;
+            }
+
+            string from = spec.Substring(0, dash).Trim();
+            string to = spec.Substring(dash + 1).Trim();
+            ulong first;
+            ulong last;
+            if (from.Length == 0)
+            {
+                if (!ulong.TryParse(to, out last) || last == 0)
+                {
+                    return false;
+                }
+                start = last >= size ? 0 : size - last;
+                return true;
+            }
+            if (!ulong.TryParse(from, out first))
+            {
+                return false;
+            }
+            start = first;
+            if (to.Length > 0 && ulong.TryParse(to, out last) && last >= first)
+            {
+                end = Math.Min(last, end);
+            }
+            return true;
         }
 
         /// <summary>

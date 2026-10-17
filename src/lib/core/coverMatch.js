@@ -258,7 +258,8 @@ export function coverKey(game) {
  * URL de una portada en el servidor de libretro (para ver las candidatas).
  * @param {string} libretroSystem  p. ej. "Sony - PlayStation 2"
  * @param {string} name            nombre sin ".png"
+ * @param {string} [folder]        Named_Boxarts (portada), Named_Snaps (captura) o Named_Titles
  */
-export function remoteCoverUrl(libretroSystem, name) {
-  return `${THUMBNAILS_SERVER}/${encodeURIComponent(libretroSystem)}/Named_Boxarts/${encodeURIComponent(name)}.png`
+export function remoteCoverUrl(libretroSystem, name, folder = 'Named_Boxarts') {
+  return `${THUMBNAILS_SERVER}/${encodeURIComponent(libretroSystem)}/${folder}/${encodeURIComponent(name)}.png`
 }

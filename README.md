@@ -82,6 +82,15 @@ manejarse con el control. Logo, colores, tipografía y voz de la marca están en
 - **Primer uso guiado.** La primera vez aparece un recorrido de cinco pantallas
   (hola, tu USB, emuladores, portadas, botones). Se salta con ≡ y se repite desde
   Opciones › Revisión.
+- **Ficha viva.** Si ES-DE escrapeó fanart, logo y video en el PC, el panel del juego
+  los muestra: el fanart arriba con el logo encima y, tras 1,5 segundos en el juego,
+  el video sin sonido (se repite; el sonido se activa en Preferencias). A los juegos
+  sin fondo, **Opciones › Portadas** les baja además una captura de libretro.
+- **Protector de pantalla.** Tras 3, 5 o 10 minutos sin tocar el control (o nunca),
+  tus juegos uno tras otro: el fanart a pantalla completa o la captura enmarcada,
+  con su nombre y consola. **A** juega el que se ve; cualquier otro botón vuelve.
+- **Filtros.** **Y › Filtrar** muestra los géneros de la consola y "2 o más
+  jugadores", con los datos de los gamelists de ES-DE. El filtro dura la sesión.
 
 ## Estructura
 
@@ -97,13 +106,15 @@ src/
     sorting.js       orden A–Z / recientes / más jugados / año y saltos con LT/RT
     userData.js      formato de datos.json, qué copia manda y tiempo de cada partida
     quickExit.js     aviso cuando un juego se cierra al abrir (BIOS según la región)
+    media.js         fondo, logo y video de cada juego (downloaded_media de ES-DE)
+    filters.js       filtros por género y jugadores (Y › Filtrar)
     guides.js        guías de instalación por consola y emulador (DevStore, BIOS, carpetas)
     systemCheck.js   revisión del sistema: qué está bien, qué falta y qué guía lo arregla
     collections.js   lee y escribe colecciones en el formato de ES-DE
     bridge.js        habla con el shell en C# (o usa datos de prueba en el navegador)
   lib/ui/            piezas de interfaz: entrada del control, sonidos, portadas…
   screens/           Home, Library (grilla), Search, GameMenu (Y), Options, Guide, Welcome
-                     (primer uso), CoverPicker, LaunchOverlay
+                     (primer uso), Screensaver, CoverPicker, LaunchOverlay
   mock/gamelists/    gamelists de ejemplo con el formato real de ES-DE
   mock/libretro-names.json  nombres reales de libretro (demo y tests)
 tests/               tests de la lógica y del puente con el shell (vitest)
@@ -139,6 +150,9 @@ se desactiva ese "modo mouse".
 | ROMs | `E:\roms\<sistema>\` |
 | Gamelists | `E:\ES-DE\gamelists\<sistema>\gamelist.xml` |
 | Portadas | `E:\ES-DE\downloaded_media\<sistema>\covers\` (las de ES-DE y las que baja Relix) |
+| Fondos | `…\fanart\` (ES-DE); si no hay, `…\screenshots\` (ES-DE o Relix) o `…\titlescreens\` |
+| Logos | `…\marquees\` (ES-DE, "marquee (wheel)") |
+| Videos | `…\videos\` (ES-DE; `.mp4`, `.webm` o `.m4v`) |
 | Colecciones | `E:\ES-DE\collections\custom-<Nombre>.cfg` (las ve también ES-DE) |
 | Tus datos | `E:\relix\datos.json` (y `datos.anterior.json`) |
 | Respaldos diarios | `E:\relix\respaldos\datos-AAAA-MM-DD.json` (los últimos 7) |
@@ -154,6 +168,34 @@ fuera de la app (un respaldo, u otra Xbox), Relix usa el del USB.
 (`Halo 3 (USA)/default.xex`, `Shenmue (USA)/disc.gdi`): el nombre sale de la carpeta.
 Así puedes escanear y descargar portadas con ES-DE en el PC y copiar las
 carpetas tal cual al disco USB, y lo que baja Relix también lo ve ES-DE.
+
+## Fondos, logos y videos con ES-DE (en el PC)
+
+Relix no escrapea por su cuenta (ScreenScraper pide una clave de desarrollador):
+usa lo que ES-DE deja en el USB. Una vez por consola:
+
+1. Instala [ES-DE](https://es-de.org) en el PC y crea una cuenta gratis en
+   [ScreenScraper](https://www.screenscraper.fr): con cuenta, ES-DE escrapea más
+   rápido y con más cupo por día.
+2. Conecta el USB y deja que ES-DE use `E:\roms` como carpeta de ROMs (la pide la
+   primera vez). Así los archivos de ES-DE tienen el mismo nombre que ve la Xbox.
+3. Menú de ES-DE → **SCRAPER**:
+   - **SCRAPE FROM**: ScreenScraper.
+   - **ACCOUNT SETTINGS**: activa **USE THIS ACCOUNT FOR SCREENSCRAPER** y escribe
+     tu usuario y contraseña.
+   - **CONTENT SETTINGS**: deja activados los videos, *fan art*, *marquee (wheel)*
+     (el logo), *screenshots*, *box covers* y *other metadata* (descripción, género
+     y jugadores, que usan los filtros).
+   - **SCRAPE THESE SYSTEMS**: las consolas que quieras → **START**.
+4. Copia al USB, desde la carpeta de datos de ES-DE en el PC (con el instalador,
+   `C:\Users\<tu usuario>\ES-DE`), las carpetas `downloaded_media` y `gamelists`
+   dentro de `E:\ES-DE\`. Si Windows pregunta, combina las carpetas: las portadas
+   que bajó Relix ya están ahí.
+5. Abre Relix: lee los fondos, logos y videos al iniciar.
+
+Los nombres del menú son los de ES-DE en inglés y pueden cambiar un poco entre
+versiones. Cada video pesa entre 5 y 20 MB: si el USB es chico, escrapea videos
+solo de las consolas que más juegas.
 
 ## Emuladores configurados
 
@@ -218,6 +260,9 @@ versión pública. Se suma como una consola más cuando madure.
       carpetas, emuladores, BIOS por región, internet y respaldo) con la guía de cada
       cosa; aviso al abrir y número en el ícono de Opciones; recorrido de bienvenida
       de cinco pantallas que se puede saltar y repetir.
+- [x] **Ficha viva, protector y filtros:** fanart, logo y video de ES-DE en el panel
+      del juego (capturas de libretro para los que no tienen fondo), protector de
+      pantalla con tus juegos y Y › Filtrar por género o jugadores.
 
 ## Controles
 
@@ -226,7 +271,7 @@ versión pública. Se suma como una consola más cuando madure.
 | A | Abrir / jugar |
 | B | Volver |
 | X | Favorito (en la búsqueda: borrar letra) |
-| Y | Menú del juego: jugar, abrir con…, favorito, colecciones, cambiar portada, ocultar, ordenar. En Opciones › Consolas, o en una consola sin juegos: la guía |
+| Y | Menú del juego: jugar, abrir con…, favorito, colecciones, cambiar portada, ocultar, ordenar, filtrar. En Opciones › Consolas, o en una consola sin juegos: la guía |
 | LB / RB | Consola anterior / siguiente (o colección, dentro de Colecciones) |
 | LT / RT | Letra anterior / siguiente (año, si ordenas por año) |
 | Vista ⧉ | Buscar en todas las consolas |
@@ -242,8 +287,8 @@ En el navegador: flechas, Enter, Esc, X, Y, Q/E, Z/C, V y M.
 4. ~~Respaldo en el USB y tiempo de juego~~ (hecho)
 5. ~~Más consolas y elegir emulador~~ (hecho; Switch cuando NXbox sea jugable)
 6. ~~Revisión del sistema y primer uso guiado~~ (hecho)
-7. **Ficha más viva:** fanart de fondo, video de vista previa, protector de pantalla.
-   Con ScreenScraper, que además completa las portadas de PSP que libretro no tiene.
+7. ~~Ficha más viva, protector de pantalla y filtros~~ (hecho, con lo que escrapea
+   ES-DE en el PC; ScreenScraper directo desde la Xbox queda para más adelante)
 8. **Portafolio:** GitHub público, tests en GitHub Actions, releases instalables,
    interfaz en inglés.
 

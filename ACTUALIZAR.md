@@ -165,7 +165,7 @@ Visual Studio se detiene con un error, copia el mensaje de la ventana **Salida**
 - [ ] En las grillas, el aro rosado del juego enfocado no toca la fila de arriba ni las portadas de al lado.
 
 ### Acerca de
-- [ ] **≡ → RB hasta Acerca de** muestra la versión 0.7.1, la fecha de compilación y "Xbox · Modo Desarrollador".
+- [ ] **≡ → RB hasta Acerca de** muestra la versión 0.8.0, la fecha de compilación y "Xbox · Modo Desarrollador".
 - [ ] **En tu USB** muestra tu letra de disco real.
 - [ ] Al pie del panel izquierdo dice **Creado por snyker-fair**.
 
@@ -227,6 +227,26 @@ Visual Studio se detiene con un error, copia el mensaje de la ventana **Salida**
 - [ ] **Revisar de nuevo** vuelve a medir (tarda unos segundos si no hay internet).
 - [ ] **Recorrido de bienvenida** lo muestra otra vez; al terminar vuelves a Revisión.
 
+### Paso 7 · Ficha viva, protector y filtros
+- [ ] Prepara fondos, logos y videos con ES-DE en el PC (README › **Fondos, logos y
+      videos con ES-DE**). Sin eso también se puede probar: **≡ → Portadas → A** ahora
+      baja además una captura para los juegos sin fondo ("N capturas para el fondo").
+- [ ] En una consola, el panel del juego muestra arriba el fanart (o la captura) con el
+      logo encima; la portada queda chica, junto al nombre. Detrás, el color del juego
+      difuminado.
+- [ ] Quédate unos 2 segundos en un juego con video: empieza sin sonido, se repite y el
+      logo se desvanece. Al moverte a otro juego se detiene. **Lo más importante de
+      revisar en la Xbox: que el video se repita sin cortarse.**
+- [ ] **≡ → Preferencias → Sonido de los videos**: con **Activado**, el video suena.
+- [ ] **≡ → Preferencias → Protector de pantalla**: déjalo en 3 minutos y suelta el
+      control. Aparecen tus juegos uno tras otro; **A** juega el que se ve y cualquier
+      otro botón vuelve a donde estabas.
+- [ ] **Y → Filtrar** (si tus gamelists traen género o jugadores): elige un género; la
+      grilla muestra solo esos y arriba aparece el filtro. **Y → Filtrar → Todos los
+      juegos** lo quita.
+- [ ] Si un video no se ve, dime su nombre y extensión (`.mp4`, `.webm`…): puede ser un
+      formato que la Xbox no reproduce.
+
 Si algo falla, la tabla **Si algo falla** de [`shell/README.md`](shell/README.md) tiene las causas más comunes.
 
 ---
@@ -248,3 +268,6 @@ Si algo falla, la tabla **Si algo falla** de [`shell/README.md`](shell/README.md
 | 5 | `MainPage.xaml.cs` | Mensaje `emulatorStatus` (qué emuladores tiene la consola) |
 | 6 | `Shell/SystemCheck.cs` | **Nuevo.** Permisos de escritura, espacio libre, carpetas de `roms`, archivos de BIOS e internet |
 | 6 | `MainPage.xaml.cs` | Mensaje `systemCheck`; responde un error a los mensajes que no conoce (antes la interfaz quedaba esperando) |
+| 7 | `Shell/CoverService.cs` | Baja también capturas (`Named_Snaps`) y pantallas de título de libretro; lista cualquier carpeta de `downloaded_media` |
+| 7 | `Shell/LocalServer.cs` | Videos (`.mp4`, `.webm`, `.m4v`) por partes (Range), para que se repitan sin cargarlos enteros |
+| 7 | `MainPage.xaml.cs` | Mensaje `listMedia`; `downloadCovers` acepta `kind` (portadas, capturas o pantallas de título) |

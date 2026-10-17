@@ -12,7 +12,7 @@ El shell es la parte en C# que corre en la Xbox. Tiene cuatro trabajos:
 ```
 Shell/
   GamepadInput.cs   control de Xbox -> acciones (up, a, b, lb...)
-  LocalServer.cs    sirve la interfaz y las portadas en https://relix.example
+  LocalServer.cs    sirve la interfaz, las imágenes y los videos en https://relix.example
   LibraryReader.cs  encuentra el USB, escanea roms y lee los gamelists
 MainPage.xaml(.cs)  el WebView2 y los mensajes con la interfaz
 App.xaml(.cs)       arranque, sin modo mouse, vuelta desde el emulador (relix:)
@@ -64,9 +64,9 @@ Visual Studio los recarga solo. Si te pregunta, elige **Sí a todo**.
 | Archivo | Qué hace |
 |---|---|
 | `GamepadInput.cs` | Lee el control y lo manda a la interfaz |
-| `LocalServer.cs` | Sirve la interfaz, las portadas y las miniaturas desde `https://relix.example` |
+| `LocalServer.cs` | Sirve la interfaz, las imágenes, las miniaturas y los videos (por partes) desde `https://relix.example` |
 | `LibraryReader.cs` | Encuentra el USB y recorre la carpeta `roms` |
-| `CoverService.cs` | Baja portadas de libretro, crea las miniaturas y las borra si eliges la de color |
+| `CoverService.cs` | Baja portadas y capturas de libretro, crea las miniaturas, lista lo que hay en `downloaded_media` |
 | `CollectionStore.cs` | Lee y guarda las colecciones en `ES-DE\collections` |
 | `UserDataStore.cs` | Guarda tus datos en `relix\datos.json`, con copia anterior y respaldos diarios |
 | `SystemCheck.cs` | Revisa permisos, espacio, carpetas, archivos de BIOS e internet (Opciones › Revisión) |
@@ -205,6 +205,7 @@ así el emulador tiene todos los recursos de la consola.
 | "No pude guardar en el USB" | Vuelve a correr la herramienta de permisos del paso 8 con el disco conectado al PC |
 | Una portada equivocada | Pon al archivo del juego su nombre estándar (p. ej. `Gran Turismo 4 (USA).chd`), borra su portada de `ES-DE\downloaded_media\<consola>\covers\` y busca de nuevo. En el paso 3 de la hoja de ruta, el menú del juego (Y) tendrá "Cambiar portada" |
 | Muchos juegos de PSP sin portada | libretro tiene cerca de la mitad de las portadas de PSP; ES-DE en el PC las completa (paso 7 de la hoja de ruta) |
+| Un video de vista previa no aparece | Revisa que esté en `ES-DE\downloaded_media\<consola>\videos\` con el mismo nombre que el juego y sea `.mp4` (H.264) o `.webm`. Si el resto anda, puede ser un formato que la Xbox no reproduce |
 | Aparece un cursor o B saca a Relix | Avísame: es justo lo que hay que validar en la consola |
 
 ### Ver la consola de la interfaz desde el PC

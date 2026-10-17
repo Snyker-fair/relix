@@ -9,19 +9,25 @@
  *
  * Las portadas están en ES-DE/downloaded_media/<consola>/covers/, con el
  * nombre del juego. El shell dice cuáles hay; así la interfaz solo pide las
- * que existen y sabe cuántas faltan.
+ * que existen y sabe cuántas faltan. Lo mismo con los fondos (fanart,
+ * capturas), los logos y los videos, que se leen después de abrir.
  */
-import { coverUrls, listCovers, loadLibrary, scanRoms } from '../core/bridge.js'
+import { coverUrls, listCovers, listMedia, loadLibrary, mediaFileUrl, scanRoms } from '../core/bridge.js'
 import { coverKey } from '../core/coverMatch.js'
 import { mediaUrl, parseGamelist, romAbsolutePath } from '../core/esde.js'
+import { indexMedia, pickMedia } from '../core/media.js'
 import { getPlatform, PLATFORMS } from '../core/platforms.js'
 import { gamesFromFiles, mergeWithGamelist } from '../core/scan.js'
 import { closeSession } from '../core/userData.js'
 import { load, onReplaced, save } from './storage.js'
 
 /**
- * @typedef {import('../core/esde.js').Game & { cover?: string, thumb?: string }} LibraryGame
- *   cover: portada original (panel de detalle); thumb: miniatura (grilla)
+ * @typedef {import('../core/esde.js').Game & {
+ *   cover?: string, thumb?: string, background?: string, backgroundKind?: string, logo?: string, video?: string
+ * }} LibraryGame
+ *   cover: portada original (panel de detalle); thumb: miniatura (grilla);
+ *   background: fanart o captura (panel y protector); backgroundKind: de qué carpeta salió
+ *   (fanart, screenshots, titlescreens); logo: el de ES-DE; video: vista previa
  */
 /** @typedef {{ folder: string, files: string[], scannedAt: number }} SavedScan */
 /** @typedef {{ driveId: string, systems: Record<string, SavedScan> }} ScanCache */
@@ -54,6 +60,9 @@ class Library {
   /** Portadas que hay en el USB, por consola: ["Okami (USA).png", ...] */
   /** @type {Record<string, string[]>} */
   coverFiles = $state({})
+  /** Fondos, logos y videos en el USB, por consola y tipo (ver core/media.js) */
+  /** @type {Record<string, import('../core/media.js').MediaFiles>} */
+  mediaFiles = $state({})
   /** Juegos ocultos desde el menú del juego (BIOS, demos, duplicados...) */
   /** @type {string[]} */
   hiddenIds = $state(load('hidden', []))
@@ -213,7 +222,8 @@ class Library {
         : listed.filter((g) => !g.hidden)
       // "okami (usa)" -> "Okami (USA).png"
       const covers = new Map((this.coverFiles[p.id] ?? []).map((f) => [f.replace(/\.[^./]+$/, '').toLowerCase(), f]))
-      bySystem[p.id] = games.map((g) => ({ ...g, ...this.#coverFor(g, covers) }))
+      const media = indexMedia(this.mediaFiles[p.id])
+      bySystem[p.id] = games.map((g) => ({ ...g, ...this.#coverFor(g, covers), ...this.#mediaFor(g, media) }))
     }
     this.bySystem = bySystem
   }
@@ -236,6 +246,39 @@ class Library {
     const revision = this.#coverRevisions[`${game.system}/${key}`]
     const suffix = revision ? `?v=${revision}` : ''
     return { cover: urls.cover && urls.cover + suffix, thumb: urls.thumb && urls.thumb + suffix }
+  }
+
+  /**
+   * Fondo, logo y video de un juego (undefined si no tiene).
+   * @param {import('../core/esde.js').Game} game
+   * @param {import('../core/media.js').MediaIndex} index
+   */
+  #mediaFor(game, index) {
+    const { background, logo, video } = pickMedia(coverKey(game), index)
+    /** @param {import('../core/media.js').MediaPick | null} pick */
+    const url = (pick) => (pick ? mediaFileUrl(game.system, pick.type, pick.file, this.#mediaBase) || undefined : undefined)
+    const backgroundUrl = url(background)
+    return {
+      background: backgroundUrl,
+      backgroundKind: backgroundUrl ? background?.type : undefined,
+      logo: url(logo),
+      video: url(video),
+    }
+  }
+
+  /**
+   * Lee qué fondos, logos y videos hay en el USB. Va después de abrir, para no
+   * demorar el inicio; un shell anterior no lo sabe hacer y queda sin ellos.
+   * @param {string[]} [systemIds]
+   */
+  async loadMedia(systemIds = PLATFORMS.map((p) => p.id)) {
+    try {
+      const files = await listMedia(systemIds)
+      this.mediaFiles = { ...this.mediaFiles, ...files }
+      this.#rebuild()
+    } catch {
+      // sin fondos ni videos: el panel muestra la portada, como antes
+    }
   }
 
   /**

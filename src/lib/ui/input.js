@@ -22,8 +22,22 @@ export function pushHandler(fn) {
   }
 }
 
+/** La última vez que se tocó el control, el teclado o el mouse (para el protector) */
+let lastInput = Date.now()
+
+/** Cuenta como actividad (también al volver de un emulador) */
+export function markActivity() {
+  lastInput = Date.now()
+}
+
+/** Cuánto hace que nadie toca nada, en ms */
+export function idleFor() {
+  return Date.now() - lastInput
+}
+
 /** @param {Action} action */
 export function dispatch(action) {
+  lastInput = Date.now()
   handlers.at(-1)?.(action)
 }
 
@@ -125,6 +139,8 @@ export function startInput({ keyboard = true, gamepad = true } = {}) {
   if (started) return
   started = true
   if (keyboard) {
+    // En el navegador, mover el mouse también despierta (no hace nada más)
+    window.addEventListener('pointermove', markActivity, { passive: true })
     window.addEventListener('keydown', (e) => {
       const action = KEYS[e.key] ?? KEYS[e.key.toLowerCase()]
       if (!action) return

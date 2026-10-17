@@ -43,4 +43,8 @@ describe('coverSummary', () => {
       'PSP: 1 portada nueva · 3 sin resultados · 1 no se pudo bajar',
     )
   })
+  it('cuenta las capturas para el fondo', () => {
+    expect(coverSummary('PS1', { ...none, saved: 2, shots: 5 })).toBe('PS1: 2 portadas nuevas · 5 capturas para el fondo')
+    expect(coverSummary('PS1', { ...none, shots: 1 })).toBe('PS1: 1 captura para el fondo')
+  })
 })

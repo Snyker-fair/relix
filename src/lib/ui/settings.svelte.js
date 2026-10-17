@@ -8,6 +8,9 @@ import { load, onReplaced, save } from './storage.js'
 
 const KEY = 'settings'
 
+/** Minutos sin tocar el control antes del protector de pantalla (0 = nunca) */
+export const SCREENSAVER_CHOICES = [3, 5, 10, 0]
+
 /** @typedef {import('../core/coverMatch.js').RegionPreference} RegionPreference */
 const REGIONS = /** @type {RegionPreference[]} */ (Object.keys(REGION_PREFERENCES))
 /** @typedef {import('../core/sorting.js').SortOrder} SortOrder */
@@ -26,6 +29,10 @@ class Settings {
   sortOrder = $state('az')
   /** Ya pasó (o saltó) el recorrido de bienvenida */
   onboarded = $state(false)
+  /** Los videos de vista previa suenan (por defecto, sin sonido) */
+  videoSound = $state(false)
+  /** Minutos para el protector de pantalla (0 = nunca) */
+  screensaverMinutes = $state(5)
 
   constructor() {
     this.#restore()
@@ -39,6 +46,8 @@ class Settings {
     this.coverRegion = REGIONS.includes(saved.coverRegion) ? saved.coverRegion : 'usa'
     this.sortOrder = SORTS.includes(saved.sortOrder) ? saved.sortOrder : 'az'
     this.onboarded = saved.onboarded === true
+    this.videoSound = saved.videoSound === true
+    this.screensaverMinutes = SCREENSAVER_CHOICES.includes(saved.screensaverMinutes) ? saved.screensaverMinutes : 5
     sound.setMuted(!this.sounds)
   }
 
@@ -69,6 +78,18 @@ class Settings {
     this.#save()
   }
 
+  toggleVideoSound() {
+    this.videoSound = !this.videoSound
+    this.#save()
+  }
+
+  /** 3 -> 5 -> 10 -> nunca -> 3 */
+  cycleScreensaver() {
+    const i = SCREENSAVER_CHOICES.indexOf(this.screensaverMinutes)
+    this.screensaverMinutes = SCREENSAVER_CHOICES[(i + 1) % SCREENSAVER_CHOICES.length]
+    this.#save()
+  }
+
   /** Terminó o saltó el recorrido de bienvenida */
   markOnboarded() {
     if (this.onboarded) return
@@ -83,6 +104,8 @@ class Settings {
       coverRegion: this.coverRegion,
       sortOrder: this.sortOrder,
       onboarded: this.onboarded,
+      videoSound: this.videoSound,
+      screensaverMinutes: this.screensaverMinutes,
     })
   }
 }

@@ -1,7 +1,12 @@
 <script>
   import { untrack } from 'svelte'
+  import { fade } from 'svelte/transition'
+  import { applyFilter, filterLabel } from '../lib/core/filters.js'
   import { getPlatform } from '../lib/core/platforms.js'
   import { jumpIndex, sectionOf, SORT_NAMES, sortGames } from '../lib/core/sorting.js'
+  import { brokenMedia, usableMedia } from '../lib/ui/activity.svelte.js'
+  import { activeFilters } from '../lib/ui/filters.svelte.js'
+  import PreviewVideo from '../lib/ui/PreviewVideo.svelte'
   import { isCollectionId } from '../lib/ui/channels.js'
   import ChannelIcon from '../lib/ui/ChannelIcon.svelte'
   import { emulators } from '../lib/ui/emulators.svelte.js'
@@ -24,7 +29,7 @@
    *   onSwitch: (systemId: string) => void,
    *   onLaunch: (game: any) => void,
    *   onOptions: () => void,
-   *   onMenu: (game: any, sortOptions: import('../lib/core/sorting.js').SortOrder[]) => void,
+   *   onMenu: (game: any, sortOptions: import('../lib/core/sorting.js').SortOrder[], filterChannel: string) => void,
    *   onSearch: () => void,
    *   onGuide: (systemId: string) => void,
    * }}
@@ -77,7 +82,14 @@
     ]),
   )
   const order = $derived(sortOptions.includes(settings.sortOrder) ? settings.sortOrder : 'az')
-  const games = $derived(sortGames(unsorted, order, library.lastPlayed, library.playtime))
+  // Filtro de este canal (Y › Filtrar). Si ya no deja ningún juego, se ignora
+  const filter = $derived(activeFilters.get(systemId) ?? null)
+  const filtered = $derived.by(() => {
+    const list = applyFilter(unsorted, filter)
+    return list.length > 0 ? list : unsorted
+  })
+  const filterOn = $derived(Boolean(filter) && filtered !== unsorted)
+  const games = $derived(sortGames(filtered, order, library.lastPlayed, library.playtime))
 
   const game = $derived(games[Math.min(index, games.length - 1)])
   const platform = $derived(game ? getPlatform(game.system) : null)
@@ -86,6 +98,29 @@
   const emulator = $derived(game ? emulators.forGame(game) : null)
   /** Tiempo jugado del juego enfocado (si ya lo jugaste) */
   const played = $derived(game ? library.playtime[game.id] : undefined)
+
+  // Ficha con imagen: fanart o captura arriba, el logo encima y, si te quedas,
+  // el video. Sin nada de eso queda la caja grande, como siempre
+  const background = $derived(usableMedia(game?.background))
+  const logo = $derived(usableMedia(game?.logo))
+  const video = $derived(usableMedia(game?.video))
+  // Con el video andando, el logo se desvanece para no taparlo
+  let videoPlaying = $state(false)
+  $effect(() => {
+    game?.id
+    videoPlaying = false
+  })
+  const framed = $derived(Boolean(background || video))
+
+  // Fondo de la pantalla: la imagen del juego, muy difuminada. Espera un
+  // momento antes de cambiar, para no parpadear al recorrer la grilla rápido
+  let ambient = $state('')
+  $effect(() => {
+    const next = background ?? usableMedia(game?.thumb) ?? ''
+    if (next === untrack(() => ambient)) return
+    const t = setTimeout(() => (ambient = next), 280)
+    return () => clearTimeout(t)
+  })
   // Sección del juego enfocado: la letra en A–Z, el año en "Año"
   const section = $derived(game ? (sectionOf(game, order) ?? '•') : '')
 
@@ -184,7 +219,7 @@
       else if (action === 'rt' && game) jump(1)
       else if (action === 'b') (sound.back(), onBack())
       else if (action === 'x' && game) (library.toggleFavorite(game), sound.favorite())
-      else if (action === 'y' && game) (sound.select(), onMenu(game, sortOptions))
+      else if (action === 'y' && game) (sound.select(), onMenu(game, sortOptions, systemId))
       else if (action === 'y' && guideable) (sound.select(), onGuide(systemId))
       else if (action === 'a' && game) onLaunch(game)
       else if (action === 'view') (sound.select(), onSearch())
@@ -192,6 +227,12 @@
     }),
   )
 </script>
+
+<div class="ambient" aria-hidden="true">
+  {#key ambient}
+    {#if ambient}<img src={ambient} alt="" transition:fade={{ duration: 500 }} />{/if}
+  {/key}
+</div>
 
 <header class="top">
   <button class="back" onclick={() => dispatch('b')}>
@@ -255,12 +296,35 @@
 {:else}
   <section class="detail" style:--tint={platform.color}>
     {#key game.id}
-      <div class="detail-cover">
-        <!-- Aquí sí, la caja completa con su forma real -->
-        <CoverArt {game} {platform} width={250} height={350} showTitle={false} real />
-        {#if favorite}<span class="heart" aria-label="Favorito">♥</span>{/if}
-      </div>
-      <h1 class:long={game.name.length > 24}>{game.name}</h1>
+      {#if framed}
+        <div class="media" class:video-on={videoPlaying}>
+          {#if background}
+            <img class="shot" src={background} alt="" onerror={() => brokenMedia.add(background)} />
+          {:else if game.cover}
+            <!-- Solo video: mientras espera, la portada difuminada -->
+            <img class="shot blurred" src={game.cover} alt="" />
+          {/if}
+          {#if video}<PreviewVideo src={video} sound={settings.videoSound} onplaying={() => (videoPlaying = true)} />{/if}
+          {#if logo}
+            <span class="logo-shade"></span>
+            <img class="logo" src={logo} alt="" onerror={() => brokenMedia.add(logo)} />
+          {/if}
+          {#if favorite}<span class="heart" aria-label="Favorito">♥</span>{/if}
+        </div>
+        <div class="headline">
+          <div class="mini-cover">
+            <CoverArt {game} {platform} width={118} height={150} showTitle={false} real thumb />
+          </div>
+          <h1 class:long={game.name.length > 24}>{game.name}</h1>
+        </div>
+      {:else}
+        <div class="detail-cover">
+          <!-- Aquí sí, la caja completa con su forma real -->
+          <CoverArt {game} {platform} width={250} height={350} showTitle={false} real />
+          {#if favorite}<span class="heart" aria-label="Favorito">♥</span>{/if}
+        </div>
+        <h1 class:long={game.name.length > 24}>{game.name}</h1>
+      {/if}
       <ul class="chips">
         {#each chips as chip (chip)}<li>{chip}</li>{/each}
       </ul>
@@ -274,7 +338,7 @@
       {/if}
       {#if emulator}
         {#if game.description}
-          <p class="desc">{game.description}</p>
+          <p class="desc" class:short={framed}>{game.description}</p>
         {:else}
           <!-- Sin datos de ES-DE: el nombre del archivo dice qué versión es -->
           <p class="file">{game.path.split('/').pop()}</p>
@@ -313,6 +377,7 @@
     <span class="letter" class:wide={section.length > 1}>{section}</span>
     <span>Juego {Math.min(index, games.length - 1) + 1} de {games.length}</span>
     <span class="order">{SORT_NAMES[order]}</span>
+    {#if filterOn && filter}<span class="order filter">{filterLabel(filter)}</span>{/if}
   </div>
 {/if}
 
@@ -405,6 +470,40 @@
     color: var(--ink-c);
   }
 
+  /* ── Fondo difuminado ─────────────────── */
+  /* La imagen se dibuja chica y se agranda 4 veces: el desenfoque cuesta mucho
+     menos que hacerlo a pantalla completa y se ve igual de suave */
+  .ambient {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .ambient img {
+    position: absolute;
+    left: -24px;
+    top: -24px;
+    width: 492px;
+    height: 282px;
+    object-fit: cover;
+    transform: scale(4);
+    transform-origin: 0 0;
+    filter: blur(9px) saturate(1.25);
+    opacity: 0.4;
+  }
+  /* un velo celeste: más fuerte abajo, donde van las pistas y la posición */
+  .ambient::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--sky) 30%, transparent) 0%,
+      color-mix(in oklab, var(--sky) 45%, transparent) 55%,
+      color-mix(in oklab, var(--sky) 85%, transparent) 100%
+    );
+  }
+
   /* ── Panel del juego enfocado ─────────── */
   .detail {
     position: absolute;
@@ -455,6 +554,92 @@
   .detail h1.long {
     font-size: 44px;
   }
+
+  /* ── Ficha con imagen ─────────────────── */
+  .media {
+    position: relative;
+    flex: none;
+    height: 288px;
+    margin: 0 -4px;
+    border-radius: 30px;
+    overflow: hidden;
+    background: color-mix(in oklab, var(--tint) 30%, var(--sky));
+    box-shadow: 0 22px 34px -22px color-mix(in oklab, var(--tint) 80%, black);
+    animation: bob 300ms var(--spring) both;
+  }
+  .media .shot {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .media .shot.blurred {
+    filter: blur(14px) saturate(1.2);
+    transform: scale(1.15);
+  }
+  .logo-shade {
+    position: absolute;
+    inset: 40% 0 0;
+    background: linear-gradient(transparent, rgb(20 26 40 / 0.55));
+  }
+  .media .logo {
+    position: absolute;
+    right: 22px;
+    bottom: 18px;
+    max-width: 290px;
+    max-height: 104px;
+    object-fit: contain;
+    object-position: right bottom;
+    filter: drop-shadow(0 4px 10px rgb(0 0 0 / 0.45));
+  }
+  .media .logo,
+  .media .logo-shade {
+    transition: opacity 600ms ease;
+  }
+  .media.video-on .logo,
+  .media.video-on .logo-shade {
+    opacity: 0;
+    transition-delay: 2.5s;
+  }
+  .media .heart {
+    right: 16px;
+    top: 16px;
+    box-shadow: none;
+  }
+  /* la caja chica se sube sobre la imagen, con un borde blanco */
+  .headline {
+    display: flex;
+    align-items: flex-end;
+    gap: 22px;
+    margin-top: -64px;
+    padding-left: 18px;
+    position: relative;
+  }
+  .mini-cover {
+    flex: none;
+    border-radius: 20px;
+    box-shadow:
+      0 0 0 6px var(--cloud),
+      0 18px 26px -16px color-mix(in oklab, var(--tint) 80%, black);
+  }
+  .mini-cover :global(.cover) {
+    border-radius: 18px;
+  }
+  .headline h1 {
+    margin: 0;
+    padding-bottom: 2px;
+    font-size: 42px;
+    line-height: 1.02;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .headline h1.long {
+    font-size: 36px;
+  }
   .chips {
     display: flex;
     flex-wrap: wrap;
@@ -502,6 +687,13 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+  /* con imagen arriba queda menos lugar: dos líneas */
+  .desc.short {
+    margin-top: 16px;
+    font-size: 23px;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
   /* ── Posición en la lista ─────────────── */
   .position {
     position: absolute;
@@ -537,6 +729,10 @@
     border-radius: 999px;
     background: var(--cloud);
     font-size: 21px;
+  }
+  .order.filter {
+    background: var(--ink);
+    color: var(--cloud);
   }
   /* letra grande al saltar con LT / RT */
   .bubble {

@@ -1,18 +1,23 @@
 <script>
   /**
    * Menú del juego (botón Y): un panel que entra por la derecha con lo que
-   * se puede hacer con el juego enfocado. En la biblioteca suma "Ordenar".
+   * se puede hacer con el juego enfocado. En la biblioteca suma "Ordenar" y,
+   * si los juegos traen datos de ES-DE, "Filtrar".
    */
+  import { filterLabel, filterOptions, sameFilter } from '../lib/core/filters.js'
   import { getPlatform } from '../lib/core/platforms.js'
   import { SORT_NAMES } from '../lib/core/sorting.js'
   import ChannelIcon from '../lib/ui/ChannelIcon.svelte'
   import { collections } from '../lib/ui/collections.svelte.js'
   import CoverArt from '../lib/ui/CoverArt.svelte'
   import { emulators } from '../lib/ui/emulators.svelte.js'
+  import { activeFilters } from '../lib/ui/filters.svelte.js'
+  import { plural } from '../lib/ui/format.js'
   import HintBar from '../lib/ui/HintBar.svelte'
   import { pushHandler } from '../lib/ui/input.js'
   import { library } from '../lib/ui/library.svelte.js'
   import { settings } from '../lib/ui/settings.svelte.js'
+  import { shelf } from '../lib/ui/shelf.svelte.js'
   import { sound } from '../lib/ui/sound.js'
   import TextPrompt from '../lib/ui/TextPrompt.svelte'
 
@@ -20,14 +25,16 @@
    * @type {{
    *   game: import('../lib/ui/library.svelte.js').LibraryGame,
    *   sortOptions?: import('../lib/core/sorting.js').SortOrder[],
+   *   filterChannel?: string,
    *   onClose: () => void,
    *   onLaunch: (game: any) => void,
    *   onChangeCover: (game: any) => void,
    *   onToast: (message: string) => void,
    * }}
    *   sortOptions: órdenes que tienen sentido en esa lista (sin él, no se muestra "Ordenar")
+   *   filterChannel: canal de la biblioteca abierta (sin él, no se muestra "Filtrar")
    */
-  let { game, sortOptions, onClose, onLaunch, onChangeCover, onToast } = $props()
+  let { game, sortOptions, filterChannel, onClose, onLaunch, onChangeCover, onToast } = $props()
 
   /** @typedef {{ id: string, icon: string, label: string, value?: string, checked?: boolean, disabled?: boolean, tag?: string }} Item */
 
@@ -40,6 +47,12 @@
   const platform = $derived(getPlatform(game.system))
   const favorite = $derived(library.isFavorite(game))
   const inCollections = $derived(collections.namesFor(game))
+
+  // Filtros: los géneros y "2 o más jugadores" de los juegos de ese canal
+  const filterGames = $derived(filterChannel ? shelf.gamesFor(filterChannel) : [])
+  const filters = $derived(filterOptions(filterGames))
+  const canFilter = $derived(filterChannel !== undefined && (filters.genres.length > 0 || filters.multiplayer > 0))
+  const currentFilter = $derived(filterChannel ? (activeFilters.get(filterChannel) ?? null) : null)
 
   const emulator = $derived(emulators.forGame(game))
   const consoleEmulator = $derived(emulators.forPlatform(platform))
@@ -66,6 +79,25 @@
     ...(sortOptions
       ? [{ id: 'sort', icon: 'sort', label: 'Ordenar biblioteca', value: SORT_NAMES[settings.sortOrder] }]
       : []),
+    ...(canFilter
+      ? [{ id: 'filter', icon: 'filter', label: 'Filtrar', value: currentFilter ? filterLabel(currentFilter) : 'Todos' }]
+      : []),
+  ])
+
+  /** Todos, 2 o más jugadores y cada género, con cuántos juegos */
+  /** @type {Item[]} */
+  const filterItems = $derived([
+    { id: 'f:all', icon: 'collections', label: 'Todos los juegos', tag: `${filterGames.length}`, checked: !currentFilter },
+    ...(filters.multiplayer > 0
+      ? [{ id: 'f:players', icon: 'gamepad', label: '2 o más jugadores', tag: `${filters.multiplayer}`, checked: currentFilter?.kind === 'players' }]
+      : []),
+    ...filters.genres.map((g) => ({
+      id: `f:g:${g.name}`,
+      icon: 'filter',
+      label: g.name,
+      tag: `${g.count}`,
+      checked: sameFilter(currentFilter, { kind: 'genre', value: g.name }),
+    })),
   ])
 
   /** @type {Item[]} */
@@ -98,7 +130,9 @@
     })),
   ])
 
-  const items = $derived(view === 'main' ? mainItems : view === 'collections' ? collectionItems : emulatorItems)
+  const items = $derived(
+    view === 'main' ? mainItems : view === 'collections' ? collectionItems : view === 'filters' ? filterItems : emulatorItems,
+  )
 
   /**
    * Nombre corto para la fila, que es angosta: "RetroArch · SwanStation" -> "SwanStation".
@@ -179,6 +213,22 @@
     } else if (item.id === 'sort') {
       settings.cycleSortOrder(sortOptions)
       sound.select()
+    } else if (item.id === 'filter') {
+      sound.select()
+      show('filters')
+    } else if (item.id.startsWith('f:') && filterChannel) {
+      /** @type {import('../lib/core/filters.js').GameFilter | null} */
+      const chosen =
+        item.id === 'f:all' ? null : item.id === 'f:players' ? { kind: 'players' } : { kind: 'genre', value: item.id.slice(4) }
+      if (chosen) activeFilters.set(filterChannel, chosen)
+      else activeFilters.delete(filterChannel)
+      sound.favorite()
+      onToast(
+        chosen
+          ? `Mostrando: ${filterLabel(chosen)} (${plural(Number(item.tag), 'juego', 'juegos')})`
+          : 'Mostrando todos los juegos',
+      )
+      onClose()
     } else if (item.id === 'new') {
       sound.select()
       naming = true
@@ -246,6 +296,8 @@
     <h3>Colecciones</h3>
   {:else if view === 'emulators'}
     <h3>Abrir con</h3>
+  {:else if view === 'filters'}
+    <h3>Filtrar</h3>
   {/if}
 
   <ul class="items" bind:this={list}>
@@ -259,7 +311,7 @@
           onclick={() => (i === index ? activate() : move(i))}
         >
           <span class="icon"><ChannelIcon id={item.icon} color="currentColor" size={40} /></span>
-          <span class="label" class:small={view === 'emulators'}>
+          <span class="label" class:small={view === 'emulators'} class:count={view === 'filters'}>
             {item.label}
             {#if item.tag}<small>{item.tag}</small>{/if}
           </span>
@@ -431,6 +483,13 @@
     font-family: var(--font-body);
     font-size: 18px;
     opacity: 0.7;
+  }
+  /* filtros: cuántos juegos, al lado del nombre */
+  .label.count small {
+    display: inline;
+    margin-left: 10px;
+    font-size: 21px;
+    font-weight: 700;
   }
   .value {
     max-width: 210px;

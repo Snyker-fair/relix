@@ -45,11 +45,13 @@ export function scanSummary(consoleName, { added, removed, total }) {
  * Resumen de una búsqueda de portadas para el aviso:
  * "PS2: 7 portadas nuevas · 2 para elegir a mano · 1 sin resultados"
  * @param {string} consoleName
- * @param {{ saved: number, failed: number, toChoose: number, notFound: number }} result
+ * @param {{ saved: number, failed: number, toChoose: number, notFound: number, shots?: number }} result
+ *   shots: capturas de libretro bajadas para el fondo del panel
  */
-export function coverSummary(consoleName, { saved, failed, toChoose, notFound }) {
+export function coverSummary(consoleName, { saved, failed, toChoose, notFound, shots = 0 }) {
   const parts = []
   if (saved > 0) parts.push(saved === 1 ? '1 portada nueva' : `${saved} portadas nuevas`)
+  if (shots > 0) parts.push(shots === 1 ? '1 captura para el fondo' : `${shots} capturas para el fondo`)
   if (toChoose > 0) parts.push(`${toChoose} para elegir a mano`)
   if (notFound > 0) parts.push(`${notFound} sin resultados`)
   if (failed > 0) parts.push(failed === 1 ? '1 no se pudo bajar' : `${failed} no se pudieron bajar`)
