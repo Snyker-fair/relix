@@ -121,7 +121,17 @@ function ps1Bios(info, folders, driveRoot) {
 }
 
 /**
- * La BIOS de PS2 (XBSX2): cualquier .bin en su carpeta sirve.
+ * Archivos que acompañan a una BIOS de PS2 pero no son la BIOS: los que deja el
+ * programa que la copia de tu consola (.nvm, .mec, .rom1, .rom2, .erom) y textos.
+ */
+const PS2_COMPANION = /\.(nvm|mec|rom1|rom2|erom|ini|txt|cfg|json|xml|md|nfo|url|db)$/i
+/** Una BIOS comprimida: XBSX2 no la lee hasta descomprimirla */
+const ARCHIVE = /\.(zip|7z|rar|gz)$/i
+
+/**
+ * La BIOS de PS2 (XBSX2). XBSX2, como PCSX2, la reconoce por su contenido y no
+ * por la extensión (.bin, .rom0, sin extensión…): sirve cualquier archivo que no
+ * sea de apoyo ni esté comprimido.
  * @param {ConsoleInfo} info
  * @param {Record<string, string[] | null>} folders
  * @param {string} driveRoot
@@ -143,10 +153,31 @@ function ps2Bios(info, folders, driveRoot) {
       action,
     }
   }
-  const bios = files.filter((f) => /\.bin$/i.test(f))
-  return bios.length > 0
-    ? { id: 'bios:ps2', state: 'ok', title: 'BIOS de PS2 en su lugar', detail: `${bios[0]} en ${where}`, action }
-    : { id: 'bios:ps2', state: 'warn', title: 'BIOS de PS2: la carpeta está vacía', detail: `Copia la BIOS de tu consola (.bin) en ${where}.`, action }
+  const visible = files.filter((f) => !f.startsWith('.'))
+  const bios = visible.filter((f) => !PS2_COMPANION.test(f) && !ARCHIVE.test(f))
+  if (bios.length > 0) {
+    return { id: 'bios:ps2', state: 'ok', title: 'BIOS de PS2 en su lugar', detail: `${bios[0]} en ${where}`, action }
+  }
+  const zipped = visible.find((f) => ARCHIVE.test(f))
+  if (zipped) {
+    return {
+      id: 'bios:ps2',
+      state: 'warn',
+      title: 'BIOS de PS2: está comprimida',
+      detail: `XBSX2 no lee ${zipped}: descomprímela en el PC y deja el archivo de la BIOS en ${where}.`,
+      action,
+    }
+  }
+  if (visible.length > 0) {
+    return {
+      id: 'bios:ps2',
+      state: 'warn',
+      title: 'BIOS de PS2: falta el archivo principal',
+      detail: `En ${where} solo hay archivos de apoyo (${visible.slice(0, 2).join(', ')}). Falta la BIOS, el archivo de unos 4 MB.`,
+      action,
+    }
+  }
+  return { id: 'bios:ps2', state: 'warn', title: 'BIOS de PS2: la carpeta está vacía', detail: `Copia la BIOS de tu consola en ${where}.`, action }
 }
 
 /**

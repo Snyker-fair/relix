@@ -60,7 +60,7 @@ export const EMULATOR_GUIDES = {
   xbsx2: {
     download: 'XBSX2',
     setup: ['En XBSX2: **Settings › BIOS Settings › Search Directory** → `E:\\XBSX2\\BIOS`.'],
-    files: ['BIOS de PS2, copiada de tu consola (archivo .bin), en `E:\\XBSX2\\BIOS`.'],
+    files: ['BIOS de PS2, copiada de tu consola, en `E:\\XBSX2\\BIOS` (sin comprimir; la extensión da igual: .bin, .rom0…).'],
   },
   // PSP
   ppsspp: {

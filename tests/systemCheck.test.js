@@ -83,6 +83,21 @@ describe('revisión del sistema', () => {
     expect(summarize(checks)).toEqual({ errors: 3, warnings: 3 })
   })
 
+  it('BIOS de PS2: vale cualquier extensión, pero no la comprimida ni los archivos de apoyo', () => {
+    /** @param {string[]} files */
+    const ps2 = (files) =>
+      buildChecks({
+        ...base,
+        shell: { ...shell, folders: { ...shell.folders, 'XBSX2\\BIOS': files } },
+        consoles: [console_('ps2', ['Okami (USA).chd'])],
+      }).find((c) => c.id === 'bios:ps2')
+    expect(ps2(['SCPH-39001.rom0', 'SCPH-39001.NVM'])).toMatchObject({ state: 'ok', detail: 'SCPH-39001.rom0 en E:\\XBSX2\\BIOS' })
+    expect(ps2(['ps2-0230a-20080220'])?.state).toBe('ok')
+    expect(ps2(['SCPH-70012.zip'])?.title).toBe('BIOS de PS2: está comprimida')
+    expect(ps2(['SCPH-70012.NVM', 'SCPH-70012.MEC'])?.title).toBe('BIOS de PS2: falta el archivo principal')
+    expect(ps2(['.DS_Store'])?.title).toBe('BIOS de PS2: la carpeta está vacía')
+  })
+
   it('carpetas que Relix no usa y USB sin juegos', () => {
     const checks = buildChecks({ ...base, shell, consoles: [console_('psx', [])] })
     expect(checks[0].state).toBe('warn')

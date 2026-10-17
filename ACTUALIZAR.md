@@ -165,7 +165,7 @@ Visual Studio se detiene con un error, copia el mensaje de la ventana **Salida**
 - [ ] En las grillas, el aro rosado del juego enfocado no toca la fila de arriba ni las portadas de al lado.
 
 ### Acerca de
-- [ ] **≡ → RB hasta Acerca de** muestra la versión 0.7.0, la fecha de compilación y "Xbox · Modo Desarrollador".
+- [ ] **≡ → RB hasta Acerca de** muestra la versión 0.7.1, la fecha de compilación y "Xbox · Modo Desarrollador".
 - [ ] **En tu USB** muestra tu letra de disco real.
 - [ ] Al pie del panel izquierdo dice **Creado por snyker-fair**.
 
@@ -221,6 +221,9 @@ Visual Studio se detiene con un error, copia el mensaje de la ventana **Salida**
       Al volver con **B**, el foco queda en la misma fila.
 - [ ] Si usas DuckStation y pusiste la BIOS dentro del emulador, dice "no la veo en el USB"
       como información, no como error.
+- [ ] (0.7.1) La BIOS de PS2 en `E:\XBSX2\BIOS` con cualquier extensión (no solo `.bin`):
+      dice **BIOS de PS2 en su lugar** con el nombre de tu archivo. Si está en `.zip`,
+      avisa que hay que descomprimirla.
 - [ ] **Revisar de nuevo** vuelve a medir (tarda unos segundos si no hay internet).
 - [ ] **Recorrido de bienvenida** lo muestra otra vez; al terminar vuelves a Revisión.
 
