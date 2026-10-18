@@ -3,28 +3,28 @@
 	<game>
 		<path>./Crash Bandicoot (USA).chd</path>
 		<name>Crash Bandicoot</name>
-		<desc>Un marsupial anaranjado gira, salta y rompe cajas a lo largo de islas llenas de trampas.</desc>
+		<desc>An orange marsupial spins, jumps and smashes crates across trap-filled islands.</desc>
 		<releasedate>19960909T000000</releasedate>
 		<developer>Naughty Dog</developer>
 		<publisher>Sony</publisher>
-		<genre>Plataformas</genre>
+		<genre>Platform</genre>
 		<players>1</players>
 		<favorite>true</favorite>
 	</game>
 	<game>
 		<path>./Spyro the Dragon (USA).chd</path>
 		<name>Spyro the Dragon</name>
-		<desc>Un dragoncito morado recorre reinos abiertos rescatando a sus mayores, que quedaron convertidos en cristal.</desc>
+		<desc>A little purple dragon roams open realms rescuing his elders, who were turned to crystal.</desc>
 		<releasedate>19980909T000000</releasedate>
 		<developer>Insomniac Games</developer>
 		<publisher>Sony</publisher>
-		<genre>Plataformas</genre>
+		<genre>Platform</genre>
 		<players>1</players>
 	</game>
 	<game>
 		<path>./Final Fantasy VII (USA)/Final Fantasy VII (USA).m3u</path>
 		<name>Final Fantasy VII</name>
-		<desc>Un ex soldado se une a un grupo rebelde contra una corporación que drena la energía del planeta. Viene en tres discos.</desc>
+		<desc>A former soldier joins a rebel group against a corporation draining the planet's energy. It comes on three discs.</desc>
 		<releasedate>19970907T000000</releasedate>
 		<developer>Square</developer>
 		<publisher>Sony</publisher>
@@ -35,47 +35,47 @@
 	<game>
 		<path>./Castlevania - Symphony of the Night (USA).chd</path>
 		<name>Castlevania: Symphony of the Night</name>
-		<desc>Un castillo enorme se va abriendo a medida que consigues nuevas habilidades.</desc>
+		<desc>A huge castle opens up as you gain new abilities.</desc>
 		<releasedate>19971002T000000</releasedate>
 		<developer>Konami</developer>
 		<publisher>Konami</publisher>
-		<genre>Acción / Exploración</genre>
+		<genre>Action / Exploration</genre>
 		<players>1</players>
 	</game>
 	<game>
 		<path>./Tekken 3 (USA).chd</path>
 		<name>Tekken 3</name>
-		<desc>Peleas en 3D con un plantel amplio y un modo de pelota de playa que nadie esperaba.</desc>
+		<desc>3D fighting with a large roster and a beach ball mode nobody expected.</desc>
 		<releasedate>19980429T000000</releasedate>
 		<developer>Namco</developer>
 		<publisher>Namco</publisher>
-		<genre>Lucha</genre>
+		<genre>Fighting</genre>
 		<players>1-2</players>
 	</game>
 	<game>
 		<path>./Metal Gear Solid (USA).m3u</path>
 		<name>Metal Gear Solid</name>
-		<desc>Infiltración en una base en Alaska, con jefes memorables y trucos que rompen la cuarta pared.</desc>
+		<desc>Infiltrate a base in Alaska, with memorable bosses and fourth-wall-breaking tricks.</desc>
 		<releasedate>19981021T000000</releasedate>
 		<developer>Konami</developer>
 		<publisher>Konami</publisher>
-		<genre>Sigilo</genre>
+		<genre>Stealth</genre>
 		<players>1</players>
 	</game>
 	<game>
 		<path>./Gran Turismo 2 (USA).m3u</path>
 		<name>Gran Turismo 2</name>
-		<desc>Cientos de autos reales, licencias que sacar y un garaje que nunca termina de llenarse.</desc>
+		<desc>Hundreds of real cars, licenses to earn and a garage that never fills up.</desc>
 		<releasedate>19991223T000000</releasedate>
 		<developer>Polyphony Digital</developer>
 		<publisher>Sony</publisher>
-		<genre>Carreras</genre>
+		<genre>Racing</genre>
 		<players>1-2</players>
 	</game>
 	<game>
 		<path>./Chrono Cross (USA).m3u</path>
 		<name>Chrono Cross</name>
-		<desc>Un chico salta entre dos mundos paralelos en un archipiélago tropical.</desc>
+		<desc>A boy jumps between two parallel worlds in a tropical archipelago.</desc>
 		<releasedate>20000815T000000</releasedate>
 		<developer>Square</developer>
 		<publisher>Square</publisher>

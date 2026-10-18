@@ -3,72 +3,72 @@
 	<game>
 		<path>./Monster Hunter Freedom Unite (USA).cso</path>
 		<name>Monster Hunter Freedom Unite</name>
-		<desc>Cazas criaturas gigantes, fabricas armaduras con sus materiales y vuelves por otra más grande.</desc>
+		<desc>Hunt giant creatures, craft armor from their materials and go back for a bigger one.</desc>
 		<releasedate>20090623T000000</releasedate>
 		<developer>Capcom</developer>
 		<publisher>Capcom</publisher>
-		<genre>Acción</genre>
+		<genre>Action</genre>
 		<players>1-4</players>
 		<favorite>true</favorite>
 	</game>
 	<game>
 		<path>./God of War - Chains of Olympus (USA).iso</path>
 		<name>God of War: Chains of Olympus</name>
-		<desc>Una precuela con el combate con cadenas de la saga, en formato portátil.</desc>
+		<desc>A prequel with the series' chain-blade combat, in handheld form.</desc>
 		<releasedate>20080304T000000</releasedate>
 		<developer>Ready at Dawn</developer>
 		<publisher>Sony</publisher>
-		<genre>Acción</genre>
+		<genre>Action</genre>
 		<players>1</players>
 	</game>
 	<game>
 		<path>./Patapon (USA).cso</path>
 		<name>Patapon</name>
-		<desc>Diriges un ejército tribal tocando tambores al compás.</desc>
+		<desc>Lead a tribal army by drumming to the beat.</desc>
 		<releasedate>20080226T000000</releasedate>
 		<developer>Pyramid</developer>
 		<publisher>Sony</publisher>
-		<genre>Ritmo / Estrategia</genre>
+		<genre>Rhythm / Strategy</genre>
 		<players>1</players>
 	</game>
 	<game>
 		<path>./Lumines (USA).cso</path>
 		<name>Lumines</name>
-		<desc>Bloques que caen al ritmo de la música; cada piel cambia canción y velocidad.</desc>
+		<desc>Falling blocks set to music; each skin changes the song and the speed.</desc>
 		<releasedate>20050323T000000</releasedate>
 		<developer>Q Entertainment</developer>
 		<publisher>Ubisoft</publisher>
-		<genre>Puzle</genre>
+		<genre>Puzzle</genre>
 		<players>1-2</players>
 	</game>
 	<game>
 		<path>./Crisis Core - Final Fantasy VII (USA).iso</path>
 		<name>Crisis Core: Final Fantasy VII</name>
-		<desc>La historia de Zack, contada años antes de los hechos del clásico de PS1.</desc>
+		<desc>Zack's story, set years before the events of the PS1 classic.</desc>
 		<releasedate>20080324T000000</releasedate>
 		<developer>Square Enix</developer>
 		<publisher>Square Enix</publisher>
-		<genre>RPG de acción</genre>
+		<genre>Action RPG</genre>
 		<players>1</players>
 	</game>
 	<game>
 		<path>./Daxter (USA).cso</path>
 		<name>Daxter</name>
-		<desc>El compañero bocón protagoniza su propia aventura como exterminador de plagas.</desc>
+		<desc>The loudmouth sidekick stars in his own adventure as a pest exterminator.</desc>
 		<releasedate>20060314T000000</releasedate>
 		<developer>Ready at Dawn</developer>
 		<publisher>Sony</publisher>
-		<genre>Plataformas</genre>
+		<genre>Platform</genre>
 		<players>1</players>
 	</game>
 	<game>
 		<path>./LocoRoco (USA).cso</path>
 		<name>LocoRoco</name>
-		<desc>Inclinas el mundo para hacer rodar a una mancha cantarina que crece al comer.</desc>
+		<desc>Tilt the world to roll a singing blob that grows as it eats.</desc>
 		<releasedate>20060905T000000</releasedate>
 		<developer>Japan Studio</developer>
 		<publisher>Sony</publisher>
-		<genre>Plataformas</genre>
+		<genre>Platform</genre>
 		<players>1</players>
 		<favorite>true</favorite>
 	</game>

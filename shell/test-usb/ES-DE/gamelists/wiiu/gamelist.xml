@@ -3,7 +3,7 @@
 	<game>
 		<path>./Xenoblade Chronicles X (USA)/code/game.rpx</path>
 		<name>Xenoblade Chronicles X</name>
-		<desc>Un planeta alienígena gigante para explorar a pie y en robots transformables.</desc>
+		<desc>A giant alien planet to explore on foot and in transforming mechs.</desc>
 		<releasedate>20151204T000000</releasedate>
 		<developer>Monolith Soft</developer>
 		<publisher>Nintendo</publisher>
@@ -13,32 +13,32 @@
 	<game>
 		<path>./Bayonetta 2 (USA).wua</path>
 		<name>Bayonetta 2</name>
-		<desc>Combate acrobático con una bruja que pelea con pistolas en los tacones.</desc>
+		<desc>Acrobatic combat with a witch who fights with guns on her heels.</desc>
 		<releasedate>20141024T000000</releasedate>
 		<developer>PlatinumGames</developer>
 		<publisher>Nintendo</publisher>
-		<genre>Acción</genre>
+		<genre>Action</genre>
 		<players>1-2</players>
 		<favorite>true</favorite>
 	</game>
 	<game>
 		<path>./Pikmin 3 (USA).wua</path>
 		<name>Pikmin 3</name>
-		<desc>Tres exploradores buscan comida para su planeta con ayuda de los Pikmin.</desc>
+		<desc>Three explorers search for food for their planet with the Pikmin's help.</desc>
 		<releasedate>20130804T000000</releasedate>
 		<developer>Nintendo</developer>
 		<publisher>Nintendo</publisher>
-		<genre>Estrategia</genre>
+		<genre>Strategy</genre>
 		<players>1-2</players>
 	</game>
 	<game>
 		<path>./Splatoon (USA).wua</path>
 		<name>Splatoon</name>
-		<desc>Batallas de pintura donde gana el equipo que más terreno cubre.</desc>
+		<desc>Ink battles where the team that covers the most ground wins.</desc>
 		<releasedate>20150529T000000</releasedate>
 		<developer>Nintendo</developer>
 		<publisher>Nintendo</publisher>
-		<genre>Disparos</genre>
+		<genre>Shooter</genre>
 		<players>1</players>
 	</game>
 </gameList>

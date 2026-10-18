@@ -1,6 +1,6 @@
 name: Algo no funciona
 description: Un juego que no abre, un error o algo que se ve mal.
-labels: [problema]
+labels: [bug]
 body:
   - type: markdown
     attributes:
@@ -16,30 +16,30 @@ body:
     validations:
       required: true
   - type: textarea
-    id: que-paso
+    id: what-happened
     attributes:
       label: Qué pasó
       description: Lo que esperabas y lo que viste. Una foto de la pantalla ayuda mucho.
     validations:
       required: true
   - type: textarea
-    id: antes
+    id: before
     attributes:
       label: Qué hiciste justo antes
       placeholder: "Abrí Opciones › Portadas y apreté A en PS2…"
   - type: input
-    id: consola
+    id: console
     attributes:
       label: Consola y emulador
       description: Si es un juego que no abre.
       placeholder: "PS1 con RetroArch · SwanStation"
   - type: textarea
-    id: revision
+    id: checkup
     attributes:
       label: Foto de Opciones › Revisión
       description: Baja con ↓ hasta el final. Muestra qué emuladores, BIOS y permisos ve tu Xbox. Arrastra la foto aquí.
   - type: textarea
-    id: registro
+    id: log
     attributes:
       label: Registro de diagnóstico
       description: |

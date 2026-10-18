@@ -4,11 +4,11 @@
 # borrador. Se publica a mano después de probarlo en la Xbox.
 #
 # Secretos (Settings › Secrets and variables › Actions), una sola vez, con
-# scripts/crear-certificado.ps1:
+# scripts/create-certificate.ps1:
 #   RELIX_CERT            el certificado (.pfx) en base64
 #   RELIX_CERT_PASSWORD   su contraseña
 #
-# Publicar: npm version 1.0.1  ->  git push --follow-tags  (ver docs/COMPILAR.md)
+# Publicar: npm version 1.0.1  ->  git push --follow-tags  (see docs/BUILDING.md)
 #
 # Cada cambio del shell en main (y Actions › Release › Run workflow) arma el
 # mismo paquete como prueba, sin publicarlo: queda como artefacto del flujo.
@@ -66,7 +66,7 @@ jobs:
         run: |
           New-Item -ItemType Directory "$env:RUNNER_TEMP\release" | Out-Null
           if (-not $env:RELIX_CERT) {
-            if ($env:PUBLISH) { throw 'Falta el secreto RELIX_CERT: ver docs/COMPILAR.md' }
+            if ($env:PUBLISH) { throw 'The RELIX_CERT secret is missing: see docs/BUILDING.md' }
             Write-Host '::warning::Sin el secreto RELIX_CERT: el paquete de prueba sale sin firmar'
             "SIGN=false" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
             exit 0

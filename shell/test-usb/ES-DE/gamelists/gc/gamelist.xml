@@ -3,69 +3,69 @@
 	<game>
 		<path>./Metroid Prime (USA).rvz</path>
 		<name>Metroid Prime</name>
-		<desc>Exploración en primera persona en un planeta en ruinas, escaneando todo lo que ves.</desc>
+		<desc>First-person exploration of a ruined planet, scanning everything you see.</desc>
 		<releasedate>20021117T000000</releasedate>
 		<developer>Retro Studios</developer>
 		<publisher>Nintendo</publisher>
-		<genre>Aventura en primera persona</genre>
+		<genre>First-person adventure</genre>
 		<players>1</players>
 		<favorite>true</favorite>
 	</game>
 	<game>
 		<path>./The Legend of Zelda - The Wind Waker (USA).rvz</path>
 		<name>The Legend of Zelda: The Wind Waker</name>
-		<desc>Navegas un mar inmenso en un velero que habla, con un estilo de dibujo animado.</desc>
+		<desc>Sail a vast sea in a talking boat, in a cartoon art style.</desc>
 		<releasedate>20030324T000000</releasedate>
 		<developer>Nintendo</developer>
 		<publisher>Nintendo</publisher>
-		<genre>Aventura</genre>
+		<genre>Adventure</genre>
 		<players>1</players>
 		<favorite>true</favorite>
 	</game>
 	<game>
 		<path>./Super Mario Sunshine (USA).rvz</path>
 		<name>Super Mario Sunshine</name>
-		<desc>Limpias una isla tropical con una mochila que lanza agua.</desc>
+		<desc>Clean up a tropical island with a water-spraying backpack.</desc>
 		<releasedate>20020826T000000</releasedate>
 		<developer>Nintendo</developer>
 		<publisher>Nintendo</publisher>
-		<genre>Plataformas</genre>
+		<genre>Platform</genre>
 		<players>1</players>
 	</game>
 	<game>
 		<path>./F-Zero GX (USA).rvz</path>
 		<name>F-Zero GX</name>
-		<desc>Carreras futuristas a velocidades absurdas sobre pistas que se retuercen.</desc>
+		<desc>Futuristic racing at absurd speeds on twisting tracks.</desc>
 		<releasedate>20030725T000000</releasedate>
 		<developer>Amusement Vision</developer>
 		<publisher>Nintendo</publisher>
-		<genre>Carreras</genre>
+		<genre>Racing</genre>
 		<players>1-4</players>
 	</game>
 	<game>
 		<path>./Pikmin (USA).rvz</path>
 		<name>Pikmin</name>
-		<desc>Un capitán diminuto dirige criaturas planta para reparar su nave antes de que se le acabe el aire.</desc>
+		<desc>A tiny captain leads plant creatures to repair his ship before his air runs out.</desc>
 		<releasedate>20011202T000000</releasedate>
 		<developer>Nintendo</developer>
 		<publisher>Nintendo</publisher>
-		<genre>Estrategia</genre>
+		<genre>Strategy</genre>
 		<players>1</players>
 	</game>
 	<game>
 		<path>./Resident Evil 4 (USA) (Disc 1).rvz</path>
 		<name>Resident Evil 4</name>
-		<desc>Un agente busca a la hija del presidente en un pueblo rural muy poco amistoso.</desc>
+		<desc>An agent searches for the president's daughter in a very unfriendly rural village.</desc>
 		<releasedate>20050111T000000</releasedate>
 		<developer>Capcom</developer>
 		<publisher>Capcom</publisher>
-		<genre>Acción / Terror</genre>
+		<genre>Action / Horror</genre>
 		<players>1</players>
 	</game>
 	<game>
 		<path>./Paper Mario - The Thousand-Year Door (USA).rvz</path>
 		<name>Paper Mario: The Thousand-Year Door</name>
-		<desc>Combates por turnos sobre un escenario de teatro, con un humor de papel.</desc>
+		<desc>Turn-based battles on a theater stage, with paper-thin humor.</desc>
 		<releasedate>20041011T000000</releasedate>
 		<developer>Intelligent Systems</developer>
 		<publisher>Nintendo</publisher>
