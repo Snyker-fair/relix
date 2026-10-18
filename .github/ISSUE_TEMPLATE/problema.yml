@@ -6,12 +6,13 @@ body:
     attributes:
       value: |
         Gracias por avisar. Con estos datos casi siempre se puede saber qué pasó sin ir y venir.
+        Prefer English? Use the "Something isn't working" template.
   - type: input
     id: version
     attributes:
       label: Versión de Relix
       description: Está en Opciones › Acerca de.
-      placeholder: "0.8.2"
+      placeholder: "1.0.0"
     validations:
       required: true
   - type: textarea

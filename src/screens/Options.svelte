@@ -19,6 +19,7 @@
   import { shelf } from '../lib/ui/shelf.svelte.js'
   import { sound } from '../lib/ui/sound.js'
   import { systemStatus } from '../lib/ui/systemStatus.svelte.js'
+  import { updates } from '../lib/ui/updates.svelte.js'
   import { diagnostics } from '../lib/ui/diagnostics.svelte.js'
   import LogViewer from './LogViewer.svelte'
   import { NIGHT, THEME_NAMES } from '../lib/core/theme.js'
@@ -72,7 +73,7 @@
   const COVER_ROWS = $derived([...coverPlatforms.map((p) => p.id), 'all', 'choose'])
 
   // Revisión: primero lo que hay que arreglar, después los avisos y lo que está bien
-  const STATE_ORDER = { error: 0, warn: 1, info: 2, ok: 3 }
+  const STATE_ORDER = { update: -1, error: 0, warn: 1, info: 2, ok: 3 }
   const sortedChecks = $derived(
     [...systemStatus.checks].sort((a, b) => STATE_ORDER[a.state] - STATE_ORDER[b.state]),
   )
@@ -81,8 +82,8 @@
   /** El visor del registro de diagnóstico, encima de Revisión */
   let showLog = $state(false)
   const logDrive = $derived(library.romRoot.replace(/roms[\\/]*$/i, '') || 'E:\\')
-  const MARKS = { ok: '✓', warn: '!', error: '✗', info: 'i' }
-  const STATE_TINTS = { ok: '#3FAE49', warn: '#F2B705', error: 'var(--pop)', info: '#8FA3BF' }
+  const MARKS = { ok: '✓', warn: '!', error: '✗', info: 'i', update: '↑' }
+  const STATE_TINTS = { ok: '#3FAE49', warn: '#F2B705', error: 'var(--pop)', info: '#8FA3BF', update: 'var(--btn-x)' }
 
   // Solo importa al abrir (p. ej. volver a Portadas desde "Elegir a mano")
   // svelte-ignore state_referenced_locally
@@ -340,7 +341,7 @@
     if (id === 'recheck') {
       if (systemStatus.running) return
       sound.select()
-      await systemStatus.run()
+      await systemStatus.run({ forceUpdate: true })
       now = Date.now()
       const { errors, warnings } = systemStatus.summary
       const found = [
@@ -513,7 +514,11 @@
     </p>
     <ul class="chips">
       <li>{t('Versión {version}', { version: VERSION })}</li>
-      {#if buildDate}<li>{t('Compilada el {date}', { date: buildDate })}</li>{/if}
+      {#if updates.available && updates.latest}
+        <li class="new">{t('Hay una versión nueva: {version}', { version: updates.latest.version })}</li>
+      {/if}
+      <!-- Con versión nueva, su aviso ocupa el lugar de la fecha (si no, los créditos no caben) -->
+      {#if buildDate && !updates.available}<li>{t('Compilada el {date}', { date: buildDate })}</li>{/if}
       <li>{mode === 'xbox' ? t('Xbox · Modo Desarrollador') : t('Demo en el navegador')}</li>
     </ul>
     <div class="credits">
@@ -1050,6 +1055,10 @@
   .chips li.warn {
     background: var(--sun);
   }
+  .chips li.new {
+    background: var(--btn-x);
+    color: #ffffff;
+  }
   .intro p :global(.pad) {
     vertical-align: -4px;
     margin: 0 2px;
@@ -1187,6 +1196,10 @@
   .badge.mark.error {
     background: var(--pop);
     color: var(--on-color);
+  }
+  .badge.mark.update {
+    background: var(--btn-x);
+    color: #ffffff;
   }
   .badge.mark.info {
     background: var(--sky);

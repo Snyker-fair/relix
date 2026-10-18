@@ -1,0 +1,48 @@
+name: Something isn't working
+description: A game that won't open, an error or something that looks wrong.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. These details usually make it possible to find the cause without back and forth.
+        ¿Prefieres escribir en español? Usa la plantilla "Algo no funciona".
+  - type: input
+    id: version
+    attributes:
+      label: Relix version
+      description: It's in Options › About.
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected and what you saw. A photo of the screen helps a lot.
+    validations:
+      required: true
+  - type: textarea
+    id: before
+    attributes:
+      label: What you did right before
+      placeholder: "I opened Options › Covers and pressed A on PS2…"
+  - type: input
+    id: console
+    attributes:
+      label: Console and emulator
+      description: If it's a game that won't open.
+      placeholder: "PS1 with RetroArch · SwanStation"
+  - type: textarea
+    id: checkup
+    attributes:
+      label: Photo of Options › Checkup
+      description: Scroll down with ↓ to the end. It shows which emulators, BIOS files and permissions your Xbox sees. Drag the photo here.
+  - type: textarea
+    id: log
+    attributes:
+      label: Diagnostic log
+      description: |
+        The last lines of `E:\relix\registro.txt` (on the PC), or a photo of Options › Checkup › Diagnostic log.
+        Check it before pasting: it includes your game names and USB drive paths.
+      render: text

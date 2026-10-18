@@ -25,7 +25,7 @@ const LOW_SPACE_BYTES = 2 * 1024 ** 3
 const REGION_NAMES = { japan: 'Japón', usa: 'EE. UU.', europe: 'Europa' }
 
 /**
- * @typedef {'ok'|'warn'|'error'|'info'} CheckState
+ * @typedef {'ok'|'warn'|'error'|'info'|'update'} CheckState  update: hay una versión nueva de Relix
  * @typedef {{ kind: 'guide', systemId: string }} CheckAction
  * @typedef {{ id: string, state: CheckState, title: string, detail: string, action?: CheckAction }} Check
  *

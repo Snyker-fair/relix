@@ -11,6 +11,7 @@ import { PS1_BIOS, quickExitMessage } from '../src/lib/core/quickExit.js'
 import { sectionOf, SORT_NAMES } from '../src/lib/core/sorting.js'
 import { buildChecks, formatBytes } from '../src/lib/core/systemCheck.js'
 import { THEME_NAMES } from '../src/lib/core/theme.js'
+import { updateCheck } from '../src/lib/core/updates.js'
 import EN from '../src/lib/i18n/en.js'
 import { i18n, listJoin, plural, t, tn } from '../src/lib/i18n/i18n.svelte.js'
 import { coverSummary, formatHour, formatPlaytime, scanSummary, timeAgo } from '../src/lib/ui/format.js'
@@ -180,6 +181,7 @@ describe('en inglés', () => {
     for (const tag of ['USA', 'Canada', 'Europe', 'Japan', 'World', 'Spain', 'France', 'Germany', 'Italy', 'UK', 'Asia', 'Korea', 'China', 'Australia', 'Brazil']) {
       expect(regionLabel(`Juego (${tag}).chd`)).not.toBe('')
     }
+    updateCheck({ version: '9.9.9' }, '1.0.0')
     filterLabel({ kind: 'players' })
     sectionOf(/** @type {any} */ ({ sortName: 'x', year: undefined }), 'year')
 

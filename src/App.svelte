@@ -18,6 +18,7 @@
   import { sound } from './lib/ui/sound.js'
   import { systemStatus } from './lib/ui/systemStatus.svelte.js'
   import { userData } from './lib/ui/userData.svelte.js'
+  import { updates } from './lib/ui/updates.svelte.js'
   import { formatPlaytime, plural } from './lib/ui/format.js'
   import { i18n, t } from './lib/i18n/i18n.svelte.js'
   import Stage from './lib/ui/Stage.svelte'
@@ -98,7 +99,10 @@
       collections.load()
       userData.resync()
       library.loadMedia()
-      systemStatus.run().then(warnSystem)
+      systemStatus.run().then(() => {
+        warnSystem()
+        notifyUpdate()
+      })
       if (finishedWhileClosed) {
         diagnostics.log(
           'back',
@@ -138,6 +142,17 @@
       () =>
         showToast(t('Relix encontró {found}: ≡ › Revisión', { found: plural(errors, 'cosa por arreglar', 'cosas por arreglar') }), 6000),
       toast ? 3600 : 0,
+    )
+  }
+
+  /** Hay una versión nueva de Relix: se avisa una vez por versión (después de otros avisos) */
+  function notifyUpdate() {
+    if (screen.name === 'welcome') return
+    const version = updates.takeNotice()
+    if (!version) return
+    setTimeout(
+      () => showToast(t('Relix {version} ya está disponible: ≡ › Revisión', { version }), 6000),
+      toast ? 6500 : 0,
     )
   }
 
@@ -456,7 +471,10 @@
         settings.markOnboarded()
         screen = to
         // Si quedó algo por arreglar (o saltaste el recorrido), se avisa una vez
-        if (to.name === 'home') warnSystem()
+        if (to.name === 'home') {
+          warnSystem()
+          notifyUpdate()
+        }
       }}
       onToast={showToast}
     />

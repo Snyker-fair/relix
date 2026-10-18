@@ -614,4 +614,10 @@ export default {
 
   // ── Demo ──
   'Con amigos': 'With friends',
+
+  // ── Versión nueva ──
+  'Relix {version} está disponible': 'Relix {version} is available',
+  'Tienes la {current}. Bájala en el PC desde {url} e instálala con el Device Portal: tus datos quedan en el USB.': 'You have {current}. Download it on the PC from {url} and install it with the Device Portal: your data stays on the USB drive.',
+  'Relix {version} ya está disponible: ≡ › Revisión': 'Relix {version} is out: ≡ › Checkup',
+  'Hay una versión nueva: {version}': 'New version available: {version}',
 }

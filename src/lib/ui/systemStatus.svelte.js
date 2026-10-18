@@ -6,6 +6,9 @@
 import { systemCheck } from '../core/bridge.js'
 import { PLATFORMS } from '../core/platforms.js'
 import { buildChecks, CHECK_FOLDERS, summarize } from '../core/systemCheck.js'
+import { updateCheck } from '../core/updates.js'
+import { VERSION } from '../core/version.js'
+import { updates } from './updates.svelte.js'
 import { plural, t } from '../i18n/i18n.svelte.js'
 import { diagnostics } from './diagnostics.svelte.js'
 import { emulators } from './emulators.svelte.js'
@@ -35,8 +38,10 @@ class SystemStatus {
     }),
   )
 
-  checks = $derived(
-    buildChecks({
+  // La versión nueva de Relix (si hay) va primero; no cuenta como problema
+  checks = $derived([
+    ...[updateCheck(updates.latest, VERSION)].filter((c) => c !== null),
+    ...buildChecks({
       shell: this.shell,
       romRoot: library.romRoot,
       consoles: this.consoles,
@@ -44,16 +49,24 @@ class SystemStatus {
       dataStatus: userData.status,
       shellFailed: this.failed,
     }),
-  )
+  ])
 
   summary = $derived(summarize(this.checks))
 
-  /** Vuelve a medir todo (también qué emuladores hay instalados) */
-  async run() {
+  /**
+   * Vuelve a medir todo (también qué emuladores hay instalados y si hay una
+   * versión nueva de Relix).
+   * @param {{ forceUpdate?: boolean }} [options]  forceUpdate: preguntar a GitHub aunque ya se haya hecho hoy
+   */
+  async run({ forceUpdate = false } = {}) {
     if (this.running) return
     this.running = true
     try {
-      const [shell] = await Promise.all([systemCheck(CHECK_FOLDERS), emulators.check()])
+      const [shell] = await Promise.all([
+        systemCheck(CHECK_FOLDERS),
+        emulators.check(),
+        updates.check({ force: forceUpdate }),
+      ])
       this.shell = shell
       this.failed = false
     } catch {

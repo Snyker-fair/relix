@@ -1,0 +1,28 @@
+# Tests y compilación de la interfaz en cada cambio: los tests de la lógica
+# (vitest), que en.js tenga todos los textos en inglés y que las dos
+# compilaciones (la de la app y la demo autocontenida) salgan sin errores.
+name: Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Textos sin traducir
+        run: node scripts/i18n.mjs
+      - run: npm run build
+      - run: npm run build:single

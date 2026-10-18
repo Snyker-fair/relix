@@ -1,374 +1,272 @@
-![Relix](brand/relix-logo.png)
+<p align="center"><img src="brand/relix-logo.png" alt="Relix" width="360"></p>
 
-# Relix
+<p align="center"><strong>Your relics, ready to play.</strong><br>
+A game launcher for emulators on Xbox Series X|S in Developer Mode.</p>
 
-**Tus reliquias, listas para jugar.**
+<p align="center">
+  <a href="https://github.com/Snyker-fair/relix/actions/workflows/ci.yml"><img src="https://github.com/Snyker-fair/relix/actions/workflows/ci.yml/badge.svg" alt="Tests"></a>
+  <a href="https://github.com/Snyker-fair/relix/releases/latest"><img src="https://img.shields.io/github/v/release/Snyker-fair/relix" alt="Latest release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="GPL-3.0"></a>
+</p>
 
-Frontend para lanzar juegos en una Xbox Series X|S en **Modo Desarrollador**.
-Escanea la carpeta `roms` de tu USB, lista cada juego en su consola y lo abre
-en su emulador: RetroArch, XBSX2, PPSSPP, etc. Descarga las portadas desde la
-misma consola (libretro-thumbnails, las de RetroArch) y, si además copias la
-carpeta de **ES-DE**, usa sus portadas, descripciones y favoritos.
+<p align="center">
+  <a href="https://snyker-fair.github.io/relix/"><b>Try the demo in your browser</b></a> ·
+  <a href="https://github.com/Snyker-fair/relix/releases/latest">Download</a> ·
+  <a href="README.es.md">Leer en español</a>
+</p>
 
-Estilo visual lúdico y redondeado, pensado para verse en una TV a 3 metros y
-manejarse con el control. Logo, colores, tipografía y voz de la marca están en
-[`brand/`](brand/README.md).
+<p align="center"><img src="docs/media/tour.webp" alt="A short tour of Relix: home, a console's library, the game menu and Options" width="860"></p>
 
-> **Antes de usarlo:** Relix no está afiliado a Microsoft, Sony, Nintendo, Sega ni a
-> los autores de los emuladores. No incluye juegos, BIOS ni claves: los juegos y las
-> BIOS deben salir de tus propias consolas. Solo funciona en una Xbox en **Modo
-> Desarrollador**; no es una app de la Microsoft Store.
+Relix scans the `roms` folder on your USB drive, lists every game under its
+console and opens it in the right emulator — RetroArch, XBSX2, PPSSPP, Xenia
+and more. It downloads covers straight from the console, keeps your favorites,
+collections and playtime on the USB drive, and when something is missing it
+tells you exactly what and opens a step-by-step guide to fix it. It reads and
+writes the same folders as [ES-DE](https://es-de.org), so you can scrape on
+your PC and play on the TV.
 
-**Documentación:** armar el proyecto la primera vez en
-[`shell/README.md`](shell/README.md) · compilar una versión nueva en
-[`docs/COMPILAR.md`](docs/COMPILAR.md) · qué probar en la TV en
-[`docs/PROBAR.md`](docs/PROBAR.md).
+It is designed to be read from three meters away and driven with a controller:
+big type, rounded shapes, a color per console, and a hint bar that always says
+what each button does.
 
-## Cómo funciona
+> **Before you start:** Relix is not affiliated with Microsoft, Sony, Nintendo,
+> Sega or the emulator authors. It does not include games, BIOS files or keys:
+> those must come from consoles and discs you own. It only runs on an Xbox in
+> **Developer Mode**; it is not a Microsoft Store app.
 
-```
-┌─────────────────────── App UWP "Relix" (Xbox) ──────────────────────┐
-│                                                                     │
-│   Shell en C# (shell/)                  Interfaz en Svelte (src/)   │
-│   ─────────────────────                 ─────────────────────────   │
-│   · Lee el control (nativo)           ──►  evento 'input'           │
-│   · Lee el USB (gamelists, portadas)  ◄──  bridge.loadLibrary()     │
-│   · Abre emuladores por URI           ◄──  bridge.launch(uri)       │
-│   · Vuelve al frente con relix:       ──►  evento 'resumed'         │
-│                                                                     │
-└─────────────────────────────────┬───────────────────────────────────┘
-                                  │ Launcher.LaunchUriAsync(...)
-                                  ▼
-     xbsx2:?cmd=xbsx2.exe "E:\roms\ps2\Okami.chd"&launchOnExit=relix:
-                                  │
-                                  ▼
-                 XBSX2 abre el juego; al salir, Xbox vuelve a Relix
-```
+## Features
 
-- **Lanzar un juego** es abrir una URI con el protocolo del emulador. El formato
-  es el mismo que usan otros frontends para Xbox (verificado en el código de
-  RetroPass). Ver `src/lib/core/launchUri.js`.
-- **`launchOnExit=relix:`** hace que la consola vuelva sola a Relix al cerrar
-  el emulador.
-- **La interfaz corre en WebView2** (Chromium), soportado en apps UWP de Xbox
-  y depurable con las DevTools de Edge desde el PC.
-- **El control se lee en C#** (`Windows.Gaming.Input`) y llega a la interfaz
-  como mensajes. Así se evita el cursor del "modo mouse" y un bug conocido de
-  WebView2 en Xbox con el foco y el botón B.
-- **La biblioteca se guarda.** El primer inicio (o un disco nuevo) escanea todas
-  las consolas; después Relix abre al instante con la lista guardada. Desde
-  **Opciones** (ícono de engranaje o botón Menú ≡) se re-escanea consola por consola.
-- **La interfaz y las portadas se sirven desde `https://relix.example`**, una
-  dirección interna que responde el shell sin salir a internet.
-- **Portadas sin cuentas.** En **Opciones › Portadas** Relix baja las portadas de
-  [libretro-thumbnails](https://github.com/libretro-thumbnails) por consola: nombre
-  exacto (Redump) o mismo título con la región preferida. Si el nombre es dudoso
-  ("GT4", "Persona 4"), no adivina: lo deja para **Elegir a mano** con las
-  candidatas más parecidas. La grilla usa miniaturas JPG que el shell crea una vez.
-  En grillas y listas todas las portadas miden lo mismo; el panel de detalle
-  muestra la caja completa con su forma real (PS1 cuadrada, PSP alta).
-- **Tus datos viajan con el USB.** Favoritos, ocultos, tiempo de juego, portadas
-  elegidas y preferencias se guardan solos en `E:\relix\datos.json` (2 segundos
-  después de cada cambio, y en el acto al lanzar un juego). Si reinstalas Relix o
-  cambias de Xbox, siguen ahí. Hay una copia de la versión anterior y un respaldo
-  por día de los últimos 7; si `datos.json` se daña, Relix usa la copia más nueva
-  que sirva.
-- **Tiempo de juego.** Relix anota la hora al lanzar y la hora al volver, sea
-  saliendo del emulador o con el botón Xbox. Las partidas de menos de 1 minuto no
-  cuentan y las de más de 12 horas se descartan. Si la Xbox cierra Relix mientras
-  juegas, la partida se cierra la próxima vez que abra.
-- **Juegos que no abren.** El emulador no le avisa a Relix cuando falla (se cierra
-  y la Xbox vuelve sola). Si vuelves antes de 15 segundos, Relix lo toma como un
-  juego que no abrió y dice qué revisar: en PS1, la BIOS exacta según la región
-  del archivo (`scph5500.bin` Japón, `scph5501.bin` EE. UU., `scph5502.bin` Europa)
-  en la carpeta `system` de RetroArch.
-- **Revisión del sistema.** Al abrir, Relix revisa que el USB deje guardar, el
-  espacio libre, las carpetas de `roms` que no reconoce, qué emuladores faltan para
-  las consolas con juegos, las BIOS en las carpetas de las guías
-  (`E:\RetroArch\system`, `E:\DuckStation\bios`, `E:\XBSX2\BIOS`, según la región
-  de tus juegos de PS1) y si llega al servidor de portadas. Si algo falta, avisa una
-  vez y lo muestra en **Opciones › Revisión**, con la guía que lo arregla. Una BIOS
-  puesta dentro del emulador no se puede ver desde Relix: sale como información.
-- **Primer uso guiado.** La primera vez aparece un recorrido de cinco pantallas
-  (hola, tu USB, emuladores, portadas, botones). Se salta con ≡ y se repite desde
-  Opciones › Revisión.
-- **Ficha viva.** Si ES-DE escrapeó fanart, logo y video en el PC, el panel del juego
-  los muestra: el fanart arriba con el logo encima y, tras 1,5 segundos en el juego,
-  el video sin sonido (se repite; el sonido se activa en Preferencias). A los juegos
-  sin fondo, **Opciones › Portadas** les baja además una captura de libretro.
-- **Protector de pantalla.** Tras 3, 5 o 10 minutos sin tocar el control (o nunca),
-  tus juegos uno tras otro: el fanart a pantalla completa o la captura enmarcada,
-  con su nombre y consola. **A** juega el que se ve; cualquier otro botón vuelve.
-- **Filtros.** **Y › Filtrar** muestra los géneros de la consola y "2 o más
-  jugadores", con los datos de los gamelists de ES-DE. El filtro dura la sesión.
-- **Registro de diagnóstico.** Relix anota en `E:\relix\registro.txt` cada juego
-  que abres (con la URI exacta), cómo volvió (y si se cerró al abrir), los errores
-  del shell y de la interfaz, la revisión del sistema y los problemas al guardar o
-  bajar portadas. Se lee en el PC o en **Opciones › Revisión › Registro de
-  diagnóstico**. Pasados 256 KB, el archivo pasa a `registro.anterior.txt`.
-- **Español o inglés.** En **Opciones › Preferencias › Idioma · Language**:
-  Automático (el idioma de la Xbox: español si está en español, inglés en
-  cualquier otro caso), Español o English. En la primera pantalla de Primeros
-  pasos, **Y** cambia de idioma. Todo se traduce: pantallas, guías, avisos, la
-  revisión, el registro de diagnóstico y los mensajes de error del shell. Los
-  nombres de archivos y carpetas del USB (`datos.json`, `registro.txt`…) no
-  cambian.
-- **Tema claro u oscuro.** En **Opciones › Preferencias › Tema**: Claro, Oscuro
-  ("Noche azul": fondo azul noche y paneles azul pizarra, con el rosa y los colores
-  de cada consola de siempre) o Automático, que es oscuro de 20:00 a 7:00. El shell
-  recuerda el fondo del tema, así de noche no hay destello celeste al abrir.
+- **Your whole library, one shelf.** A channel per console, Favorites,
+  Collections and *Continue playing*. Twelve consoles: PS1, PS2, PSP, SNES, N64,
+  GBA, GameCube, Wii U, 3DS, Mega Drive, Dreamcast and Xbox 360.
+- **Covers without accounts.** Downloaded from
+  [libretro-thumbnails](https://github.com/libretro-thumbnails) (the ones
+  RetroArch uses). When a file name is ambiguous, Relix doesn't guess: it asks
+  you to pick from the closest matches.
+- **Pick your emulator.** A recommended emulator per console, a different one
+  per console in Options, or per game with *Open with…*. Relix asks the Xbox
+  which emulators are installed.
+- **Find games fast.** Search across every console with an on-screen keyboard,
+  jump by letter with the triggers, sort (A–Z, recent, most played, year) and
+  filter by genre or players.
+- **A living game page.** Fan art, logo and video preview when ES-DE scraped
+  them; a background screenshot from libretro when it didn't.
+- **Playtime.** Time and sessions per game, counted whether you quit from the
+  emulator or come back with the Xbox button.
+- **It tells you what's wrong.** *Checkup* verifies the USB drive, free space,
+  missing emulators and BIOS files (per region of your PS1 games). If a game
+  closes right after launching, Relix tells you which BIOS or core to check.
+  Every console has a guide: what to install from DevStore, which files it
+  needs and where they go, with a QR code for your phone.
+- **Your data travels with the USB drive.** Favorites, collections, playtime and
+  settings are saved to `relix\datos.json`, with the previous copy and a daily
+  backup for a week. Reinstall Relix or move to another Xbox and it's all there.
+- **Diagnostic log.** Every launch (with its exact URI), how it came back, and
+  every error, in `relix\registro.txt` and on screen in Checkup.
+- **English and Spanish**, automatic from the console language. **Light and dark
+  themes**, with an automatic mode for the evening. A **screensaver** with your
+  games, and a **new version notice** when a release is out.
 
-## Estructura
+<table>
+  <tr>
+    <td><img src="docs/media/home.png" alt="Home: a channel per console"></td>
+    <td><img src="docs/media/library.png" alt="A console's library with its game page"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/media/game-menu.png" alt="Game menu: play, open with, favorites, collections, cover, hide, sort, filter"></td>
+    <td><img src="docs/media/checkup.png" alt="Checkup: what is missing and the guide that fixes it"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/media/guide.png" alt="Guide for a console: install the emulator, files and settings, your games"></td>
+    <td><img src="docs/media/library-dark.png" alt="The dark theme"></td>
+  </tr>
+</table>
 
-```
-src/
-  lib/core/          lógica pura, sin interfaz (con tests)
-    platforms.js     consolas, colores y cómo se lanza cada emulador
-    launchUri.js     arma la URI de lanzamiento
-    esde.js          lee gamelist.xml de ES-DE y calcula rutas de ROMs/portadas
-    scan.js          convierte los archivos de roms en juegos (nombres, multidisco, Wii U)
-    coverMatch.js    busca la portada de cada juego en la lista de libretro
-    search.js        búsqueda por comienzo de palabra (sin tildes; II = 2)
-    sorting.js       orden A–Z / recientes / más jugados / año y saltos con LT/RT
-    userData.js      formato de datos.json, qué copia manda y tiempo de cada partida
-    quickExit.js     aviso cuando un juego se cierra al abrir (BIOS según la región)
-    media.js         fondo, logo y video de cada juego (downloaded_media de ES-DE)
-    filters.js       filtros por género y jugadores (Y › Filtrar)
-    theme.js         tema claro, oscuro o automático (los colores están en app.css)
-    diagnostics.js   formato de las líneas del registro de diagnóstico
-    language.js      qué idioma toca (Automático sigue a la Xbox)
-    guides.js        guías de instalación por consola y emulador (DevStore, BIOS, carpetas)
-    systemCheck.js   revisión del sistema: qué está bien, qué falta y qué guía lo arregla
-    collections.js   lee y escribe colecciones en el formato de ES-DE
-    bridge.js        habla con el shell en C# (o usa datos de prueba en el navegador)
-  lib/i18n/          traducciones: t() en i18n.svelte.js y el inglés en en.js
-  lib/ui/            piezas de interfaz: entrada del control, sonidos, portadas…
-  screens/           Home, Library (grilla), Search, GameMenu (Y), Options, Guide, Welcome
-                     (primer uso), Screensaver, CoverPicker, LaunchOverlay
-  mock/gamelists/    gamelists de ejemplo con el formato real de ES-DE
-  mock/libretro-names.json  nombres reales de libretro (demo y tests)
-  mock/en.json       descripciones y géneros de la demo en inglés
-tests/               tests de la lógica y del puente con el shell (vitest)
-brand/               logo, íconos de la app y guía de marca
-shell/               el shell en C# (RelixShell) y la guía para Visual Studio
-docs/                compilar una versión nueva (COMPILAR.md) y qué probar en la TV (PROBAR.md)
-scripts/             copy-to-shell.mjs (copia la interfaz a Visual Studio) e
-                     i18n.mjs (textos sin traducir)
+The covers in these screenshots are Relix's own color covers; the demo and the
+console show the real ones from libretro.
+
+## Install
+
+You need an Xbox Series X|S in
+[Developer Mode](https://learn.microsoft.com/windows/uwp/xbox-apps/devkit-activation),
+a USB drive and a PC on the same network.
+
+1. From the [latest release](https://github.com/Snyker-fair/relix/releases/latest),
+   download the `.msix` package and the dependencies `.zip`, and extract the zip.
+2. Open the **Device Portal** (the address Dev Home shows) › **My games & apps** ›
+   **Add**. Pick the `.msix`, then add the files from the dependencies folder
+   when it asks for them.
+3. In **Dev Home**, highlight Relix › View button ⧉ › **View details** › change
+   the type from **App** to **Game**, so it gets more memory.
+4. On the PC, create a folder per console on the USB drive: `E:\roms\psx`,
+   `E:\roms\ps2`, `E:\roms\snes`… (ES-DE names) and copy your games there.
+5. Plug the drive into the Xbox and open Relix. The welcome tour and
+   **Options › Checkup** tell you which emulators and BIOS files are missing,
+   and each console's guide explains how to install them from DevStore.
+
+To update, install the new `.msix` the same way: your data lives on the USB
+drive. Relix lets you know when a new version is out.
+
+## How it works
+
+```mermaid
+flowchart LR
+  subgraph xbox["Xbox Series X|S · Developer Mode"]
+    subgraph app["Relix · UWP app"]
+      ui["Interface<br/>Svelte 5 in WebView2"]
+      shell["Shell<br/>C#"]
+      ui <-->|"postMessage<br/>{ id, type, payload }"| shell
+    end
+    usb[("USB drive<br/>roms · ES-DE · relix")]
+    emu["Emulator<br/>RetroArch · XBSX2 · PPSSPP…"]
+    shell <--> usb
+    shell -->|"LaunchUriAsync<br/>xbsx2:?cmd=…&launchOnExit=relix:"| emu
+    emu -->|"relix: on exit"| shell
+  end
+  shell -.->|"covers"| libretro["thumbnails.libretro.com"]
+  ui -.->|"new version?"| github["GitHub Releases"]
 ```
 
-## Comandos
+- **Launching a game is opening a URI.** Each emulator registers a protocol
+  (`retroarch:`, `xbsx2:`, `ppsspp:`…); Relix builds the command line with the
+  game's path and `launchOnExit=relix:`, so the Xbox comes back to Relix when the
+  emulator closes. It's the same format other Xbox frontends use (see
+  `src/lib/core/launchUri.js`).
+- **The shell is small and does the native work**: reads the USB drive (UWP's
+  removable storage), lists files, downloads and resizes covers, writes your data
+  atomically, reads the controller with `Windows.Gaming.Input` (no mouse mode,
+  no WebView2 focus bugs) and serves the interface from `https://relix.example`
+  without touching the network.
+- **The interface does everything else** and also runs in a regular browser with
+  test data — that's the [demo](https://snyker-fair.github.io/relix/).
+
+### Design decisions
+
+- **WebView2 + Svelte instead of XAML.** The interface iterates in the browser
+  with hot reload and is debugged with Edge DevTools from the PC. Svelte compiles
+  to small, fast JavaScript — the Xbox runs the UI while emulators fight for
+  memory.
+- **Pure logic, tested.** Everything that decides something — matching covers,
+  building URIs, choosing which copy of your data wins, the checkup rules, version
+  comparison — lives in `src/lib/core/` without any UI, covered by 150+ tests.
+- **ES-DE compatible on purpose.** Relix reads ES-DE's gamelists and media and
+  writes covers and collections where ES-DE expects them. One USB drive works on
+  the PC and on the Xbox, and nothing needs converting.
+- **Data on the USB drive, not in the app.** UWP app data disappears when you
+  uninstall; a dev-mode app gets reinstalled often. `datos.json` is written
+  through a temporary file, keeps the previous version and daily backups, and
+  Relix picks the newest copy that is valid.
+- **Say what's wrong, not just that something failed.** An emulator never tells
+  Relix why it closed, so Relix infers it (closed within 15 s = didn't start)
+  and points at the likely cause; Checkup turns each problem into a guide.
+- **Translations without keys.** Strings are written in Spanish in the code and
+  go through `t()`; `src/lib/i18n/en.js` maps each to English. The code stays
+  readable, and a test fails if any string — including dynamic ones like guide
+  steps — is missing its translation.
+
+## Development
 
 ```bash
 npm install
-npm run dev            # abre en el navegador con datos de prueba
-npm test               # corre los tests
-npm run build          # dist/ para empaquetar dentro de la app UWP
-npm run build:single   # dist-single/index.html autocontenido (demo)
-npm run build:shell -- "C:\Proyectos\RelixShell\RelixShell"   # compila y copia a Visual Studio
+npm run dev            # the interface in your browser, with test data
+npm test               # logic and translation tests (vitest)
+npm run build          # dist/ for the UWP package
+npm run build:single   # dist-single/index.html, self-contained (the demo)
+node scripts/i18n.mjs  # strings still missing their English translation
 ```
 
-**Controles en el navegador:** flechas para moverte, Enter para elegir, Esc para
-volver, X para favorito, Q y E para cambiar de consola. Un control de Xbox
-conectado al PC también funciona.
+In the browser: arrow keys, Enter (A), Esc (B), X, Y, Q/E (LB/RB), Z/C (LT/RT),
+V (View) and M (Menu). An Xbox controller plugged into the PC works too.
 
-**Probarla en la TV antes de la Etapa 2:** corre `npm run dev -- --host` y abre
-`http://<IP-de-tu-PC>:5173` en el Edge de la Xbox (modo normal). Si el control
-mueve el cursor de Edge en lugar de la interfaz, es lo esperado: en la app UWP
-se desactiva ese "modo mouse".
+```
+src/
+  lib/core/     pure logic with tests: platforms, launch URIs, ES-DE, covers,
+                search, sorting, your data, checkup, guides, updates…
+  lib/i18n/     t(), tn(), plural() and the English catalog
+  lib/ui/       stores and shared components (controller input, sounds, covers…)
+  screens/      Home, Library, Search, GameMenu, Options, Guide, Welcome…
+  mock/         ES-DE gamelists and libretro names for the demo and tests
+shell/          the C# shell (RelixShell) and its Visual Studio project
+tests/          vitest
+docs/           build and on-TV test guides (Spanish), README media
+brand/          logo, app icons and brand guide
+```
 
-## Rutas en la consola (por defecto)
+Every push runs the tests and both builds on GitHub Actions; `master` deploys the
+demo to GitHub Pages, and every `v*` tag builds, signs and publishes the Xbox
+package. The step-by-step guides for setting up the Visual Studio project
+([`shell/README.md`](shell/README.md)), building a new version
+([`docs/COMPILAR.md`](docs/COMPILAR.md)) and testing on the TV
+([`docs/PROBAR.md`](docs/PROBAR.md)) are in Spanish.
 
-| Qué | Dónde |
+## Folders on the USB drive
+
+| What | Where |
 |---|---|
-| ROMs | `E:\roms\<sistema>\` |
-| Gamelists | `E:\ES-DE\gamelists\<sistema>\gamelist.xml` |
-| Portadas | `E:\ES-DE\downloaded_media\<sistema>\covers\` (las de ES-DE y las que baja Relix) |
-| Fondos | `…\fanart\` (ES-DE); si no hay, `…\screenshots\` (ES-DE o Relix) o `…\titlescreens\` |
-| Logos | `…\marquees\` (ES-DE, "marquee (wheel)") |
-| Videos | `…\videos\` (ES-DE; `.mp4`, `.webm` o `.m4v`) |
-| Colecciones | `E:\ES-DE\collections\custom-<Nombre>.cfg` (las ve también ES-DE) |
-| Tus datos | `E:\relix\datos.json` (y `datos.anterior.json`) |
-| Respaldos diarios | `E:\relix\respaldos\datos-AAAA-MM-DD.json` (los últimos 7) |
-| Registro de diagnóstico | `E:\relix\registro.txt` (y `registro.anterior.txt`) |
-| Caché de Relix | `E:\relix\cache\` (listas de libretro y miniaturas; se puede borrar) |
+| Games | `E:\roms\<console>\` (ES-DE names: `psx`, `ps2`, `psp`, `snes`, `n64`, `gba`, `gc`, `wiiu`, `n3ds`, `megadrive`, `dreamcast`, `xbox360`; also `ps1`, `genesis`, `3ds`, `dc`…) |
+| Gamelists | `E:\ES-DE\gamelists\<console>\gamelist.xml` |
+| Covers | `E:\ES-DE\downloaded_media\<console>\covers\` (ES-DE's and the ones Relix downloads) |
+| Backgrounds, logos, videos | `…\fanart\`, `…\screenshots\`, `…\marquees\`, `…\videos\` (from ES-DE) |
+| Collections | `E:\ES-DE\collections\custom-<Name>.cfg` (ES-DE sees them too) |
+| Your data | `E:\relix\datos.json`, `datos.anterior.json` and `respaldos\` (last 7 days) |
+| Diagnostic log | `E:\relix\registro.txt` |
+| Cache | `E:\relix\cache\` (libretro lists and thumbnails; safe to delete) |
 
-**Volver a un respaldo:** en el PC, copia el `datos-<día>.json` que quieras
-encima de `E:\relix\datos.json` y abre Relix. Cuando el archivo del USB cambia por
-fuera de la app (un respaldo, u otra Xbox), Relix usa el del USB.
+Multi-disc games go in an `.m3u`; Xbox 360 and Dreamcast games can live in a
+folder per game (`Halo 3 (USA)\default.xex`). To get descriptions, genres,
+fan art and videos, scrape with ES-DE on your PC and copy its `gamelists` and
+`downloaded_media` folders to `E:\ES-DE\`.
 
-`<sistema>` usa los nombres de ES-DE: `psx`, `ps2`, `psp`, `snes`, `n64`, `gba`, `gc`,
-`wiiu`, `n3ds`, `megadrive`, `dreamcast`, `xbox360` (también acepta `ps1`, `genesis`,
-`3ds`, `dc`...). Los juegos de Xbox 360 y Dreamcast pueden ir en carpetas
-(`Halo 3 (USA)/default.xex`, `Shenmue (USA)/disc.gdi`): el nombre sale de la carpeta.
-Así puedes escanear y descargar portadas con ES-DE en el PC y copiar las
-carpetas tal cual al disco USB, y lo que baja Relix también lo ve ES-DE.
+## Emulators
 
-## Fondos, logos y videos con ES-DE (en el PC)
+The first one is the recommended one. RetroArch cores open with `retroarch:`;
+standalone protocols are the ones [RetroPass](https://github.com/retropassdev/RetroPass) uses.
 
-Relix no escrapea por su cuenta (ScreenScraper pide una clave de desarrollador):
-usa lo que ES-DE deja en el USB. Una vez por consola:
-
-1. Instala [ES-DE](https://es-de.org) en el PC y crea una cuenta gratis en
-   [ScreenScraper](https://www.screenscraper.fr): con cuenta, ES-DE escrapea más
-   rápido y con más cupo por día.
-2. Conecta el USB y deja que ES-DE use `E:\roms` como carpeta de ROMs (la pide la
-   primera vez). Así los archivos de ES-DE tienen el mismo nombre que ve la Xbox.
-3. Menú de ES-DE → **SCRAPER**:
-   - **SCRAPE FROM**: ScreenScraper.
-   - **ACCOUNT SETTINGS**: activa **USE THIS ACCOUNT FOR SCREENSCRAPER** y escribe
-     tu usuario y contraseña.
-   - **CONTENT SETTINGS**: deja activados los videos, *fan art*, *marquee (wheel)*
-     (el logo), *screenshots*, *box covers* y *other metadata* (descripción, género
-     y jugadores, que usan los filtros).
-   - **SCRAPE THESE SYSTEMS**: las consolas que quieras → **START**.
-4. Copia al USB, desde la carpeta de datos de ES-DE en el PC (con el instalador,
-   `C:\Users\<tu usuario>\ES-DE`), las carpetas `downloaded_media` y `gamelists`
-   dentro de `E:\ES-DE\`. Si Windows pregunta, combina las carpetas: las portadas
-   que bajó Relix ya están ahí.
-5. Abre Relix: lee los fondos, logos y videos al iniciar.
-
-Los nombres del menú son los de ES-DE en inglés y pueden cambiar un poco entre
-versiones. Cada video pesa entre 5 y 20 MB: si el USB es chico, escrapea videos
-solo de las consolas que más juegas.
-
-## Emuladores configurados
-
-El primero de cada fila es el recomendado. En **Opciones › Consolas** eliges el de
-cada consola (con A pasas al siguiente) y con **Y › Abrir con…** uno distinto para
-un juego puntual. Si no elegiste, Relix usa el primero que tengas instalado: le
-pregunta a la Xbox qué protocolos hay (Acerca de muestra cuáles).
-
-| Consola | Emuladores (protocolo) |
+| Console | Emulators |
 |---|---|
-| PS1 | RetroArch SwanStation, RetroArch Beetle PSX HW, DuckStation (`duckstation:`) |
-| PS2 | XBSX2 (`xbsx2:`) |
-| PSP | PPSSPP (`ppsspp:`), RetroArch PPSSPP |
+| PS1 | RetroArch SwanStation, RetroArch Beetle PSX HW, DuckStation |
+| PS2 | XBSX2 |
+| PSP | PPSSPP, RetroArch PPSSPP |
 | SNES | RetroArch Snes9x, RetroArch bsnes |
 | N64 | RetroArch Mupen64Plus-Next, RetroArch ParaLLEl N64 |
 | GBA | RetroArch mGBA, gpSP, VBA-M |
-| GameCube | RetroArch Dolphin, Dolphin (`dolphin:`; su última versión no abre juegos desde otras apps) |
-| Wii U | ninguno: el port de Cemu no registra un protocolo, se abre desde Dev Home |
-| 3DS | RetroArch 3DS (`citrara:`), Panda3DS (`panda:`), los dos experimentales |
+| GameCube | RetroArch Dolphin, Dolphin |
+| Wii U | Cemu, opened from Dev Home (it doesn't register a protocol yet) |
+| 3DS | RetroArch 3DS, Panda3DS (both experimental) |
 | Mega Drive | RetroArch Genesis Plus GX, RetroArch PicoDrive |
-| Dreamcast | RetroArch Flycast, Flycast (`flycast:`) |
-| Xbox 360 | Xenia Canary (`xeniacanary:`), Xenia (`xenia:`) |
+| Dreamcast | RetroArch Flycast, Flycast |
+| Xbox 360 | Xenia Canary, Xenia |
 
-Los de RetroArch se abren con `retroarch:` y su núcleo (`cores\<núcleo>.dll`). Los
-protocolos de los emuladores sueltos son los mismos que usa
-[RetroPass](https://github.com/retropassdev/RetroPass) (`UrlSchemeGenerator.cs`).
-Se configuran en `src/lib/core/platforms.js`.
+Switch will join when an emulator with a launch protocol becomes playable.
 
-**Switch:** existe [NXbox](https://github.com/NspxMiguel/NXbox), un port de Eden con
-protocolo `nxbox://`, pero todavía no tiene un juego jugable de punta a punta ni
-versión pública. Se suma como una consola más cuando madure.
+## Controls
 
-## Hecho
-
-- [x] **Interfaz:** inicio con canales, biblioteca en grilla, favoritos, "Seguir jugando".
-- [x] **Identidad Relix:** logo, íconos de la app y guía de marca en `brand/`.
-- [x] **Shell en C#:** WebView2, control nativo sin modo mouse, lectura del USB,
-      lanzamiento de emuladores y regreso con `relix:`. Validado en la consola.
-- [x] **Escaneo de `roms`:** nombres limpios, multidisco, Wii U en carpetas, ES-DE opcional.
-- [x] **Opciones:** biblioteca guardada y escaneo por consola.
-- [x] **Arreglos rápidos:** Reintentar cuando no hay USB, ocultar consolas vacías,
-      avance del primer escaneo, posición en la grilla.
-- [x] **Portadas desde internet:** libretro sin cuentas, elegir a mano, miniaturas,
-      tamaño parejo en la grilla, caja real en el detalle y región preferida.
-- [x] **Encontrar juegos:** saltos por letra (LT/RT), menú del juego (Y), búsqueda con
-      teclado en pantalla (⧉), orden A–Z / recientes / año, colecciones en formato
-      ES-DE y juegos ocultos.
-- [x] **Acerca de:** versión y fecha de compilación, emuladores instalados,
-      rutas en el USB, resumen de la biblioteca y créditos (Opciones › Acerca de).
-- [x] **Tus datos en el USB y tiempo de juego:** respaldo automático con copias
-      diarias, tiempo y partidas por juego (detalle, Seguir jugando, Acerca de) y
-      orden "Más jugados".
-- [x] **Más consolas y elegir emulador:** SNES, N64, GBA, 3DS, Mega Drive, Dreamcast
-      y Xbox 360; emulador por consola (Opciones › Consolas) o por juego (Y › Abrir
-      con…); Relix revisa cuáles están instalados; el inicio y las pestañas se
-      deslizan cuando no caben.
-- [x] **Guías por consola:** qué emulador instalar (desde DevStore y el Device Portal),
-      qué archivos pide y dónde van, dónde van los juegos y cómo probar; con lo que
-      Relix ya sabe (emulador instalado, juegos encontrados) y un QR a DevStore.
-      Se abren con Y en Opciones › Consolas o desde una consola sin juegos.
-- [x] **Revisión del sistema y primer uso:** Opciones › Revisión (USB, espacio,
-      carpetas, emuladores, BIOS por región, internet y respaldo) con la guía de cada
-      cosa; aviso al abrir y número en el ícono de Opciones; recorrido de bienvenida
-      de cinco pantallas que se puede saltar y repetir.
-- [x] **Ficha viva, protector y filtros:** fanart, logo y video de ES-DE en el panel
-      del juego (capturas de libretro para los que no tienen fondo), protector de
-      pantalla con tus juegos y Y › Filtrar por género o jugadores.
-- [x] **Tema oscuro:** Claro, Oscuro o Automático (de noche) en Preferencias.
-- [x] **Registro de diagnóstico:** `E:\relix\registro.txt`, visible en Revisión, y
-      una plantilla de *issue* que lo pide.
-- [x] **Interfaz en inglés:** Automático, Español o English, con los mensajes del
-      shell incluidos.
-
-## Traducciones
-
-Los textos se escriben en español en el código y pasan por `t()`
-(`src/lib/i18n/i18n.svelte.js`); `src/lib/i18n/en.js` tiene cada uno en inglés:
-
-```js
-t('Seguir jugando')                        // "Continue playing"
-t('Juego {n} de {total}', { n, total })    // "Game 3 of 9"
-tn(n, '{n} juego nuevo', '{n} juegos nuevos')
-plural(n, 'juego', 'juegos')               // "3 games"
-```
-
-`node scripts/i18n.mjs` lista los textos que todavía no tienen su versión en
-inglés, listos para copiar a `en.js`. `tests/i18n.test.js` falla si falta alguno,
-si los `{nombres}` no coinciden o si una guía, un chequeo de la revisión o un aviso
-queda sin traducir.
-
-## Controles
-
-| Botón | Qué hace |
+| Button | Action |
 |---|---|
-| A | Abrir / jugar |
-| B | Volver |
-| X | Favorito (en la búsqueda: borrar letra) |
-| Y | Menú del juego: jugar, abrir con…, favorito, colecciones, cambiar portada, ocultar, ordenar, filtrar. En Opciones › Consolas, o en una consola sin juegos: la guía |
-| LB / RB | Consola anterior / siguiente (o colección, dentro de Colecciones) |
-| LT / RT | Letra anterior / siguiente (año, si ordenas por año) |
-| Vista ⧉ | Buscar en todas las consolas |
-| Menú ≡ | Opciones |
+| A | Open / play |
+| B | Back |
+| X | Favorite (in search: delete a letter) |
+| Y | Game menu: play, open with…, favorite, collections, change cover, hide, sort, filter |
+| LB / RB | Previous / next console |
+| LT / RT | Previous / next letter (or year) |
+| View ⧉ | Search every console |
+| Menu ≡ | Options |
 
-En el navegador: flechas, Enter, Esc, X, Y, Q/E, Z/C, V y M.
+## License
 
-## Hoja de ruta
+Relix is free software under the [GPL-3.0](LICENSE) (or, at your option, any
+later version): you can use, study, modify and share it. If you distribute a
+modified version, it must carry the same license and its source code. It comes
+with no warranty.
 
-1. ~~Arreglos rápidos~~ (hecho)
-2. ~~Portadas desde internet~~ (hecho)
-3. ~~Encontrar juegos~~ (hecho; filtros por género/jugadores quedan para el paso 7)
-4. ~~Respaldo en el USB y tiempo de juego~~ (hecho)
-5. ~~Más consolas y elegir emulador~~ (hecho; Switch cuando NXbox sea jugable)
-6. ~~Revisión del sistema y primer uso guiado~~ (hecho)
-7. ~~Ficha más viva, protector de pantalla y filtros~~ (hecho, con lo que escrapea
-   ES-DE en el PC; ScreenScraper directo desde la Xbox queda para más adelante)
-8. **Portafolio:** GitHub público, tests en GitHub Actions, releases instalables y
-   README en inglés (la interfaz en inglés ya está).
+It uses [uqr](https://github.com/unjs/uqr) for QR codes (MIT) and the
+[Baloo 2](https://fonts.google.com/specimen/Baloo+2) and
+[Nunito](https://fonts.google.com/specimen/Nunito) typefaces (SIL Open Font
+License). Covers come from [libretro-thumbnails](https://github.com/libretro-thumbnails)
+and are downloaded on the console; none are included in this repository.
+Console and emulator names are trademarks of their owners and are only used to
+say what Relix works with. Console icons are hand-drawn and don't use logos.
 
-Más adelante: RetroAchievements, administrar la biblioteca desde el celular, perfiles.
-
----
-
-Creado por **snyker-fair** ([GitHub](https://github.com/Snyker-fair)).
-
-## Licencia
-
-Relix es software libre con la [licencia GPL-3.0](LICENSE) (o, a tu elección, una
-versión posterior): puedes usarlo, estudiarlo, modificarlo y compartirlo. Si
-distribuyes una versión modificada, debe llevar la misma licencia y su código.
-Se entrega sin garantía.
-
-Usa:
-
-- [uqr](https://github.com/unjs/uqr) para los códigos QR (MIT).
-- Las letras [Baloo 2](https://fonts.google.com/specimen/Baloo+2) y
-  [Nunito](https://fonts.google.com/specimen/Nunito) (SIL Open Font License).
-- Las portadas de [libretro-thumbnails](https://github.com/libretro-thumbnails),
-  que se bajan desde la consola y no vienen en este repositorio.
-
-Los nombres de consolas y emuladores son marcas de sus dueños y se usan solo para
-decir con qué funciona Relix. Los íconos de las consolas están dibujados a mano y
-no usan logos.
+Made by **[snyker-fair](https://github.com/Snyker-fair)**. Found a bug? Open an
+[issue](https://github.com/Snyker-fair/relix/issues/new/choose) — it asks for
+the few details that make it quick to fix.
