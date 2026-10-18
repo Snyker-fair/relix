@@ -3,8 +3,10 @@ node_modules/
 dist/
 dist-single/
 
-# Proyecto de Visual Studio (si se sube junto al repositorio)
-# El certificado de firma es personal: nunca se sube
+# Proyecto de Visual Studio (shell/RelixShell)
+# La interfaz compilada: la copia `npm run build:shell`
+shell/RelixShell/ui/
+# El certificado de firma es personal: nunca se sube (va como secreto en GitHub)
 *.pfx
 bin/
 obj/

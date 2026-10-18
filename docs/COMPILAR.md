@@ -1,144 +1,97 @@
-# Compilar una versión nueva de Relix
+# Compilar y publicar Relix
 
-Cómo llevar una versión nueva de Relix a un proyecto de Visual Studio que ya
-existe. Para armar el proyecto la primera vez, sigue [`shell/README.md`](../shell/README.md).
+Cómo probar Relix en tu Xbox desde el código y cómo publicar una versión nueva.
+El proyecto de Visual Studio está en este repositorio, en `shell/RelixShell/`:
+no hay que copiar archivos a otro proyecto.
 
-La guía es acumulada: sirve aunque te hayas saltado varias versiones, porque los
-pasos reemplazan todo el shell y agregan lo nuevo.
+Las rutas son de ejemplo; cámbialas por las tuyas.
 
-Las rutas son de ejemplo; cámbialas por las tuyas:
+## Lo que necesitas (una vez)
 
-| Qué | Dónde |
-|---|---|
-| Proyecto web (este repositorio) | `C:\Proyectos\relix` |
-| Proyecto de Visual Studio | `C:\Proyectos\RelixShell\RelixShell` (donde está `Package.appxmanifest`) |
+- **Visual Studio 2022** (17.14 o posterior, para abrir `.slnx`) con la carga de
+  trabajo **Desarrollo de la Plataforma universal de Windows**. Trae el SDK de
+  Windows 10.0.26100 que pide el proyecto.
+- **Node.js 22** y **Git**.
+- El repositorio, en `cmd`:
+  ```
+  git clone https://github.com/Snyker-fair/relix C:\Proyectos\relix
+  cd C:\Proyectos\relix
+  npm install
+  ```
 
----
+> **Si venías del proyecto anterior** (tu propia carpeta `RelixShell` fuera del
+> repositorio): ya no la necesitas. En la 1.0.0 el publicador del paquete pasó a
+> `CN=snyker-fair`, así que la Xbox lo trata como una app distinta. **Desinstala
+> Relix una vez** desde Dev Home antes de instalar la nueva; tus datos están en el
+> USB y vuelven solos.
 
-## 1. Trae la versión nueva
+## Probar en tu Xbox
 
-1. Cierra Visual Studio.
-2. En `C:\Proyectos\relix`, corre `git pull`. Si bajaste un `.zip` de la versión,
-   descomprímelo encima y elige **Reemplazar los archivos en el destino**.
-
-## 2. Copia el shell completo
-
-Desde `C:\Proyectos\relix\shell\RelixShell\`, copia **y reemplaza**:
-
-| Archivo | Va a |
-|---|---|
-| `App.xaml`, `App.xaml.cs` | `C:\Proyectos\RelixShell\RelixShell\` |
-| `MainPage.xaml`, `MainPage.xaml.cs` | `C:\Proyectos\RelixShell\RelixShell\` |
-| Todos los `.cs` de `Shell\` | `C:\Proyectos\RelixShell\RelixShell\Shell\` |
-
-## 3. Agrega los archivos nuevos al proyecto
-
-Copiar un `.cs` a la carpeta no basta: Visual Studio solo compila los que están
-**dentro del proyecto**.
-
-1. Abre la solución en Visual Studio.
-2. En el **Explorador de soluciones**, abre la carpeta **Shell** y revisa qué archivos aparecen.
-3. Por cada uno de esta lista que **no** aparezca: clic derecho en **Shell** →
-   **Agregar → Elemento existente…** → elige el archivo en `C:\Proyectos\RelixShell\RelixShell\Shell\`.
-
-| Archivo | Desde |
-|---|---|
-| `CoverService.cs` | Paso 2 de la hoja de ruta (portadas) |
-| `CollectionStore.cs` | Paso 3 (colecciones) |
-| `UserDataStore.cs` | Paso 4 (tus datos en el USB y tiempo de juego) |
-| `SystemCheck.cs` | Paso 6 (revisión del sistema) |
-| `DiagnosticLog.cs` | 0.8.2 (registro de diagnóstico) |
-| `Text.cs` | 0.9.0 (mensajes del shell en español o inglés) |
-
-Al final, la carpeta **Shell** debe tener nueve archivos: `CollectionStore.cs`,
-`CoverService.cs`, `DiagnosticLog.cs`, `GamepadInput.cs`, `LibraryReader.cs`,
-`LocalServer.cs`, `SystemCheck.cs`, `Text.cs` y `UserDataStore.cs`.
-
-> **Ojo:** si un archivo ya aparece en **Shell**, no lo agregues otra vez. Y haz
-> el clic derecho sobre la carpeta **Shell**, no sobre el proyecto: si no, Visual
-> Studio deja una segunda copia en la raíz y la compilación falla con
-> `CS0101: El espacio de nombres 'RelixShell' ya contiene una definición para...`.
-> Para revisarlo, escribe el nombre del archivo en el buscador del Explorador de
-> soluciones: debe aparecer **una sola vez**, dentro de **Shell**.
-
-## 4. Revisa el manifiesto
-
-Doble clic en `Package.appxmanifest` → pestaña **Funcionalidades**. Deben estar marcadas:
-
-- **Internet (cliente)**: para bajar portadas.
-- **Almacenamiento extraíble**: para leer y escribir en el USB.
-
-## 4b. Íconos nuevos (gema y nombre)
-
-La imagen de la app en la ficha de la Xbox ahora lleva la gema y el nombre, y hay
-una versión grande para TV 4K.
-
-1. Copia **todos** los PNG de `C:\Proyectos\relix\brand\uwp\` a
-   `C:\Proyectos\RelixShell\RelixShell\Assets\` y elige **Reemplazar**.
-2. En el Explorador de soluciones, abre la carpeta **Assets**. Si no aparece
-   `Square310x310Logo.scale-200.png`: clic derecho en **Assets** →
-   **Agregar → Elemento existente…** → elige ese archivo (una sola vez).
-3. Clic derecho en `Package.appxmanifest` → **Ver código**. Busca
-   `<uap:DefaultTile` y déjalo así (agrega el atributo `Square310x310Logo`):
-   ```xml
-   <uap:DefaultTile
-     Wide310x150Logo="Assets\Wide310x150Logo.png"
-     Square310x310Logo="Assets\Square310x310Logo.png" />
+1. Trae lo último: `git pull` (y `npm install` si cambió `package.json`).
+2. Compila la interfaz y cópiala dentro del proyecto:
    ```
-   Si dentro de `<uap:DefaultTile>` hay un bloque `<uap:ShowNameOnTiles>`, bórralo:
-   las imágenes ya traen el nombre y la Xbox lo pondría dos veces.
-4. En el mismo XML, dentro de `<Properties>`, pon tu nombre o alias como publicador:
-   ```xml
-   <PublisherDisplayName>tu-alias</PublisherDisplayName>
+   npm run build:shell
    ```
-   Es solo el nombre que se muestra: no cambia la identidad de la app ni hace
-   falta desinstalarla.
-5. Guarda (**Ctrl + S**).
+   Queda en `shell\RelixShell\ui\` (Git la ignora).
+3. Abre `shell\RelixShell\RelixShell.slnx` en Visual Studio.
+4. Arriba elige **Debug**, **x64** y **Máquina remota**. La primera vez, o si
+   cambió la IP de la consola: clic derecho en **RelixShell** → **Propiedades** →
+   **Depurar** → **Máquina remota**, con la IP que muestra Dev Home. Visual Studio
+   pide el PIN de emparejamiento la primera vez (Dev Home › **Pair with Visual Studio**).
+5. **F5**.
 
-## 5. Compila la interfaz y cópiala al proyecto
+Si solo cambiaste la interfaz, basta con `npm run build:shell` y **F5** de nuevo.
+Después, [`PROBAR.md`](PROBAR.md) dice qué revisar en la TV.
 
-En `cmd` (no PowerShell):
+## Publicar una versión
+
+GitHub arma, firma y publica el paquete solo, a partir de una etiqueta:
+
+1. Anota los cambios en [`CHANGELOG.md`](../CHANGELOG.md), arriba, con el número
+   nuevo (`## [1.0.1] - 2026-11-02`). Esa sección se usa como notas del release.
+   Haz el commit.
+2. Sube el número de versión y crea la etiqueta:
+   ```
+   npm version 1.0.1
+   git push --follow-tags
+   ```
+   `npm version` cambia `package.json` y `package-lock.json`, hace el commit y crea
+   la etiqueta `v1.0.1`.
+3. En GitHub, pestaña **Actions** › **Release**: en unos 10 a 15 minutos la versión
+   aparece en **Releases** con el `.msix`, el `.zip` de dependencias y `Relix.cer`.
+4. Las Xbox con Relix lo avisan al abrir (como mucho un día después; en
+   **Revisión › Revisar de nuevo**, en el acto).
+
+Si el flujo falla, el registro del paso que falló dice por qué. La etiqueta tiene
+que calzar con `package.json` (el flujo lo revisa), y el número del paquete UWP se
+arma solo: `1.0.1` → `1.0.1.0`.
+
+### Una vez: el certificado de firma
+
+Los paquetes se firman con un certificado tuyo que GitHub guarda como secreto. Se
+crea una sola vez, en el PC, en PowerShell desde la carpeta `relix`:
 
 ```
-cd C:\Proyectos\relix
-npm install
-npm run build:shell -- "C:\Proyectos\RelixShell\RelixShell"
+powershell -ExecutionPolicy Bypass -File scripts\crear-certificado.ps1
 ```
 
-`npm install` solo hace falta cuando cambian las dependencias (la última vez fue
-`uqr`, los códigos QR de las guías, en la 0.6.0). Correrlo de más no hace daño.
+El script deja el certificado en el portapapeles y muestra su contraseña. En
+GitHub, en el repositorio: **Settings** › **Secrets and variables** › **Actions** ›
+**New repository secret**, dos veces:
 
-## 6. Despliega en la Xbox
+| Name | Secret |
+|---|---|
+| `RELIX_CERT` | Pega (Ctrl + V) |
+| `RELIX_CERT_PASSWORD` | La contraseña que mostró el script |
 
-1. Si la IP de la consola cambió: clic derecho en **RelixShell** → **Propiedades** →
-   **Depurar** → **Máquina remota** (con **Debug** y **x64** arriba).
-2. **F5**.
+El certificado también queda en tu Windows (`certmgr.msc` › Personal ›
+Certificados › Relix). Si algún día creas otro, usa el mismo publicador
+(`CN=snyker-fair`, el de `Package.appxmanifest`).
 
-Después, la lista de [`PROBAR.md`](PROBAR.md) dice qué revisar en la TV.
+## Qué corre GitHub solo
 
-## Cambios en el shell (C#) por paso
-
-| Paso | Archivo | Cambio |
+| Flujo | Cuándo | Qué hace |
 |---|---|---|
-| 2 | `Shell/CoverService.cs` | **Nuevo.** Lista de libretro, descargas, miniaturas |
-| 2 | `Shell/LocalServer.cs` | Rutas `/thumb/` y portadas por nombre exacto |
-| 2 | `Shell/LibraryReader.cs` | `CollectFilesAsync` pasa a `internal` |
-| 2 | `MainPage.xaml.cs` | Mensajes `listCovers`, `coverIndex`, `downloadCovers` |
-| 3 | `Shell/CollectionStore.cs` | **Nuevo.** Colecciones en `ES-DE\collections` |
-| 3 | `Shell/CoverService.cs` | `DeleteCoverAsync` (usar la portada de color) |
-| 3 | `Shell/GamepadInput.cs` | Gatillos LT/RT (con repetición) y botón Vista |
-| 3 | `MainPage.xaml.cs` | Mensajes `deleteCover`, `listCollections`, `saveCollection` |
-| 4 | `Shell/UserDataStore.cs` | **Nuevo.** `E:\relix\datos.json`, copia anterior y respaldos diarios |
-| 4 | `MainPage.xaml.cs` | Mensajes `loadUserData`, `saveUserData`; evento `visible` al volver a primer plano |
-| 5 | `MainPage.xaml.cs` | Mensaje `emulatorStatus` (qué emuladores tiene la consola) |
-| 6 | `Shell/SystemCheck.cs` | **Nuevo.** Permisos de escritura, espacio libre, carpetas de `roms`, archivos de BIOS e internet |
-| 6 | `MainPage.xaml.cs` | Mensaje `systemCheck`; responde un error a los mensajes que no conoce (antes la interfaz quedaba esperando) |
-| 7 | `Shell/CoverService.cs` | Baja también capturas (`Named_Snaps`) y pantallas de título de libretro; lista cualquier carpeta de `downloaded_media` |
-| 7 | `Shell/LocalServer.cs` | Videos (`.mp4`, `.webm`, `.m4v`) por partes (Range), para que se repitan sin cargarlos enteros |
-| 7 | `MainPage.xaml.cs` | Mensaje `listMedia`; `downloadCovers` acepta `kind` (portadas, capturas o pantallas de título) |
-| 7 · tema | `MainPage.xaml.cs` | Mensaje `setBackground`: guarda el fondo del tema y lo usa al abrir (página y WebView2) |
-| 0.8.2 | `Shell/DiagnosticLog.cs` | **Nuevo.** `E:\relix\registro.txt`: agrega líneas, lee las últimas y rota a `registro.anterior.txt` pasados 256 KB |
-| 0.8.2 | `MainPage.xaml.cs` | Mensajes `appendLog` y `readLog`; anota cuando la interfaz se cae y se recarga |
-| 0.9.0 | `Shell/Text.cs` | **Nuevo.** Idioma de los mensajes del shell (lo guarda en LocalSettings; la primera vez, el de la consola) |
-| 0.9.0 | `MainPage.xaml.cs` | Mensaje `setLanguage`; sus mensajes de error en español o inglés |
-| 0.9.0 | `Shell/CoverService.cs`, `CollectionStore.cs`, `UserDataStore.cs` | Mensajes de error en español o inglés |
+| [`ci.yml`](../.github/workflows/ci.yml) | Cada cambio en `main` y cada pull request | Tests, textos sin traducir y las dos compilaciones de la interfaz |
+| [`pages.yml`](../.github/workflows/pages.yml) | Cada cambio en `main` | Publica la demo en `snyker-fair.github.io/relix` |
+| [`release.yml`](../.github/workflows/release.yml) | Cada etiqueta `vX.Y.Z` | Compila el shell en Windows, firma el paquete y crea el release |

@@ -184,7 +184,7 @@
     if (library.status === 'error') untrack(() => diagnostics.log('usb', library.error))
   })
 
-  /** "Relix 0.9.0 · Xbox · E:\roms · 57 juegos en 12 consolas · tema claro · español" */
+  /** "Relix 1.0.0 · Xbox · E:\roms · 57 juegos en 12 consolas · tema claro · español" */
   function startSummary() {
     const consoles = new Set(library.all.map((g) => g.system)).size
     return [

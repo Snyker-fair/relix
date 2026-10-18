@@ -4,7 +4,7 @@ Genera los íconos de Relix a partir de brand/relix-mark.svg.
   python3 brand/build-assets.py
 
 Salida:
-  brand/uwp/   -> los PNG con los nombres de la plantilla UWP de Visual Studio.
+  shell/RelixShell/Assets/ -> los PNG con los nombres de la plantilla UWP de Visual Studio.
                   Se copian tal cual a la carpeta Assets del proyecto RelixShell.
   brand/       -> relix-logo.png (logo horizontal, fondo transparente)
 
@@ -18,7 +18,7 @@ from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parent.parent
 BRAND = ROOT / "brand"
-OUT = BRAND / "uwp"
+OUT = BRAND.parent / "shell" / "RelixShell" / "Assets"
 FONTS = ROOT / "node_modules" / "@fontsource" / "baloo-2" / "files"
 
 SKY = "#DDEBF7"

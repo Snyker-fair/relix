@@ -194,8 +194,8 @@ brand/          logo, app icons and brand guide
 
 Every push runs the tests and both builds on GitHub Actions; `main` deploys the
 demo to GitHub Pages, and every `v*` tag builds, signs and publishes the Xbox
-package. The step-by-step guides for setting up the Visual Studio project
-([`shell/README.md`](shell/README.md)), building a new version
+package. The guides to how the shell works
+([`shell/README.md`](shell/README.md)), building and releasing
 ([`docs/COMPILAR.md`](docs/COMPILAR.md)) and testing on the TV
 ([`docs/PROBAR.md`](docs/PROBAR.md)) are in Spanish.
 

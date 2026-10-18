@@ -20,7 +20,7 @@ símbolo se lean como una sola pieza.
 |---|---|
 | `relix-mark.svg` | Fuente única del símbolo. Todo lo demás se genera desde aquí. |
 | `relix-logo.png` | Logo horizontal (gema + nombre), fondo transparente. |
-| `uwp/*.png` | Íconos de la app para Visual Studio (ver abajo). |
+| `../shell/RelixShell/Assets/*.png` | Íconos de la app (ver abajo); los genera `build-assets.py`. |
 | `build-assets.py` | Regenera los PNG si cambias el SVG: `python3 brand/build-assets.py` |
 
 - El nombre se escribe siempre en **minúsculas** en el logo: `relix`. En textos
@@ -57,10 +57,10 @@ Cercana y breve, como alguien que te pasa el control:
 - Esperas con un guiño a la marca: *Desempolvando tus reliquias…*
 - Los errores dicen qué pasó y qué hacer: *No se pudo abrir XBSX2. Revisa que esté instalado en la consola.*
 
-## Íconos para Visual Studio (Etapa 2)
+## Íconos de la app
 
-Los archivos de `uwp/` tienen los nombres exactos de la plantilla **UWP Blank App**.
-Copia todos a la carpeta `Assets` del proyecto **RelixShell** y acepta reemplazar.
+Están en `shell/RelixShell/Assets/`, con los nombres exactos de la plantilla
+**UWP Blank App**, y el proyecto ya los incluye.
 
 | Archivo | Tamaño | Dónde se ve |
 |---|---|---|

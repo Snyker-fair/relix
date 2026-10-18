@@ -56,7 +56,7 @@ con un error, copia el mensaje de la ventana **Salida**.
 - [ ] En las grillas, el aro rosado del juego enfocado no toca la fila de arriba ni las portadas de al lado.
 
 ## Acerca de
-- [ ] **≡ → RB hasta Acerca de** muestra la versión 0.9.0, la fecha de compilación y "Xbox · Modo Desarrollador".
+- [ ] **≡ → RB hasta Acerca de** muestra la versión 1.0.0, la fecha de compilación y "Xbox · Modo Desarrollador".
 - [ ] **En tu USB** muestra tu letra de disco real.
 - [ ] Al pie del panel izquierdo dice **Creado por snyker-fair**.
 
@@ -169,5 +169,17 @@ con un error, copia el mensaje de la ventana **Salida**.
       **↑ ↓** recorren; **LT / RT**, de a una página; **B** vuelve.
 - [ ] En el PC existe `E:\relix\registro.txt` con las mismas líneas.
 - [ ] Con un emulador sin instalar, el intento queda como **ERROR** con `[emulator-missing]`.
+
+## Versión publicada y aviso de versión nueva (1.0.0)
+- [ ] Desinstala el Relix de antes desde Dev Home (el nuevo tiene otro publicador) e
+      instala el `.msix` del release como dice el README (**Instalar**). Abre: tus
+      favoritos, colecciones y tiempo de juego siguen ahí (vienen del USB).
+- [ ] Dev Home muestra un solo Relix. Cámbialo de **App** a **Game** si no lo hiciste.
+- [ ] **≡ → Revisión** con internet: no aparece ninguna fila de versión nueva (estás en
+      la última).
+- [ ] Cuando salga la 1.0.1: al abrir Relix aparece una vez "Relix 1.0.1 ya está
+      disponible: ≡ › Revisión", Revisión la muestra arriba con **↑**, y en **Acerca de**
+      el chip dice "Hay una versión nueva: 1.0.1". Sin esperar un día: **Revisión ›
+      Revisar de nuevo**.
 
 Si algo falla, la tabla **Si algo falla** de [`shell/README.md`](../shell/README.md) tiene las causas más comunes.
