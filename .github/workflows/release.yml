@@ -85,25 +85,34 @@ jobs:
         env:
           RELIX_CERT_PASSWORD: ${{ secrets.RELIX_CERT_PASSWORD }}
         run: |
-          $sign = if ($env:SIGN -eq 'true') {
-            '/p:AppxPackageSigningEnabled=true',
-            "/p:PackageCertificateKeyFile=$env:RUNNER_TEMP\relix.pfx",
-            "/p:PackageCertificatePassword=$env:RELIX_CERT_PASSWORD"
-          } else { '/p:AppxPackageSigningEnabled=false' }
-          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -format json | ConvertFrom-Json
-          $uwp = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -requires Microsoft.VisualStudio.Workload.Universal -property installationPath
-          Write-Host "::notice::Visual Studio $($vs.catalog.productDisplayVersion) · carga de trabajo UWP: $(if ($uwp) { 'sí' } else { 'no' })"
-          msbuild shell/RelixShell/RelixShell.csproj /restore /v:minimal /nologo `
-            /p:Configuration=Release /p:Platform=x64 `
-            /p:GenerateAppxPackageOnBuild=true /p:UapAppxPackageBuildMode=SideloadOnly /p:AppxBundle=Never `
-            "/p:AppxPackageDir=$env:RUNNER_TEMP\paquete\" `
-            @sign 2>&1 | Tee-Object -Variable log
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vs = & $vswhere -latest -property catalog_productDisplayVersion
+          $uwp = & $vswhere -latest -requires Microsoft.VisualStudio.Workload.Universal -property installationPath
+          Write-Host "::notice::Visual Studio $vs · carga de trabajo UWP: $(if ($uwp) { 'sí' } else { 'no' })"
+
+          $params = @(
+            'shell\RelixShell\RelixShell.csproj', '-restore', '-verbosity:minimal', '-nologo',
+            '-property:Configuration=Release', '-property:Platform=x64',
+            '-property:GenerateAppxPackageOnBuild=true', '-property:UapAppxPackageBuildMode=SideloadOnly',
+            '-property:AppxBundle=Never', "-property:AppxPackageDir=$env:RUNNER_TEMP\paquete\"
+          )
+          Write-Host "::notice::msbuild $($params -join ' ')"
+          if ($env:SIGN -eq 'true') {
+            $params += '-property:AppxPackageSigningEnabled=true'
+            $params += "-property:PackageCertificateKeyFile=$env:RUNNER_TEMP\relix.pfx"
+            $params += "-property:PackageCertificatePassword=$env:RELIX_CERT_PASSWORD"
+          } else {
+            $params += '-property:AppxPackageSigningEnabled=false'
+          }
+          & msbuild @params 2>&1 | Tee-Object -Variable log
           $code = $LASTEXITCODE
           if ($code -ne 0) {
-            # Los errores como anotaciones: se ven en el resumen de la ejecución
-            $errors = @($log | Select-String -Pattern ': error |error MSB|error CS|error APPX|error NU' | Select-Object -First 10)
-            if ($errors.Count -eq 0) { $errors = @($log | Select-Object -Last 10) }
-            foreach ($line in $errors) { Write-Host "::error::$("$line".Trim())" }
+            # Los errores como una anotación: se ven en el resumen de la ejecución
+            $lines = @($log | ForEach-Object { "$_".Trim() } | Where-Object { $_ })
+            $errors = @($lines | Select-String -Pattern 'error' -Context 0, 2 | Select-Object -First 8 |
+              ForEach-Object { @($_.Line) + $_.Context.PostContext })
+            if ($errors.Count -eq 0) { $errors = $lines | Select-Object -Last 15 }
+            Write-Host "::error title=msbuild::$(($errors | Select-Object -Unique) -join '%0A')"
             exit $code
           }
 
