@@ -45,7 +45,8 @@ Después, [`PROBAR.md`](PROBAR.md) dice qué revisar en la TV.
 
 ## Publicar una versión
 
-GitHub arma, firma y publica el paquete solo, a partir de una etiqueta:
+GitHub arma y firma el paquete solo, a partir de una etiqueta, y lo deja como
+borrador para que lo pruebes antes de publicarlo:
 
 1. Anota los cambios en [`CHANGELOG.md`](../CHANGELOG.md), arriba, con el número
    nuevo (`## [1.0.1] - 2026-11-02`). Esa sección se usa como notas del release.
@@ -57,10 +58,15 @@ GitHub arma, firma y publica el paquete solo, a partir de una etiqueta:
    ```
    `npm version` cambia `package.json` y `package-lock.json`, hace el commit y crea
    la etiqueta `v1.0.1`.
-3. En GitHub, pestaña **Actions** › **Release**: en unos 10 a 15 minutos la versión
-   aparece en **Releases** con el `.msix`, el `.zip` de dependencias y `Relix.cer`.
-4. Las Xbox con Relix lo avisan al abrir (como mucho un día después; en
-   **Revisión › Revisar de nuevo**, en el acto).
+3. En GitHub, pestaña **Actions** › **Release**: en unos 3 a 5 minutos aparece en
+   **Releases** un **borrador** (*Draft*) con el `.msix`, el `.zip` de dependencias
+   y `Relix.cer`. Solo tú lo ves.
+4. Baja el `.msix` y el `.zip` del borrador e instálalos en la Xbox como dice el
+   README (**Instalar**). Revisa la prueba rápida de [`PROBAR.md`](PROBAR.md).
+5. Si anda: en el borrador, **Edit** (el lápiz) › **Publish release**. Desde ahí es
+   público y las Xbox con Relix lo avisan al abrir (como mucho un día después; en
+   **Revisión › Revisar de nuevo**, en el acto). Si no anda, bórralo (**Delete**),
+   corrige y sube la versión siguiente.
 
 Si el flujo falla, el registro del paso que falló dice por qué. La etiqueta tiene
 que calzar con `package.json` (el flujo lo revisa), y el número del paquete UWP se
@@ -94,5 +100,5 @@ Certificados › Relix). Si algún día creas otro, usa el mismo publicador
 |---|---|---|
 | [`ci.yml`](../.github/workflows/ci.yml) | Cada cambio en `main` y cada pull request | Tests, textos sin traducir y las dos compilaciones de la interfaz |
 | [`pages.yml`](../.github/workflows/pages.yml) | Cada cambio en `main` | Publica la demo en `snyker-fair.github.io/relix` |
-| [`release.yml`](../.github/workflows/release.yml) | Cada etiqueta `vX.Y.Z` | Compila el shell en Windows, firma el paquete y crea el release |
+| [`release.yml`](../.github/workflows/release.yml) | Cada etiqueta `vX.Y.Z` | Compila el shell en Windows, firma el paquete y crea el release como borrador |
 | [`release.yml`](../.github/workflows/release.yml) | Cada cambio en `shell/` en `main` | Lo mismo, como prueba y sin publicar: el paquete queda en la ejecución (**Artifacts**) por 14 días |

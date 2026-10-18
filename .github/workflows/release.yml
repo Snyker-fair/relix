@@ -1,6 +1,7 @@
-# Cada etiqueta vX.Y.Z publica una versión: compila la interfaz y el shell,
+# Cada etiqueta vX.Y.Z prepara una versión: compila la interfaz y el shell,
 # arma el paquete para la Xbox, lo firma con el certificado guardado como
-# secreto y lo sube a GitHub Releases junto con sus dependencias.
+# secreto y lo sube a GitHub Releases, junto con sus dependencias, como
+# borrador. Se publica a mano después de probarlo en la Xbox.
 #
 # Secretos (Settings › Secrets and variables › Actions), una sola vez, con
 # scripts/crear-certificado.ps1:
@@ -158,3 +159,7 @@ jobs:
           name: Relix ${{ env.VERSION }}
           body_path: ${{ runner.temp }}/notas.md
           files: ${{ runner.temp }}/release/*
+          # Queda como borrador: se prueba en la Xbox y se publica a mano
+          # (Releases › Edit › Publish release). Hasta entonces nadie lo ve
+          # y las Xbox no avisan de la versión nueva.
+          draft: true
