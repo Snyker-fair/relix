@@ -43,6 +43,12 @@ cada botón. Logo, colores, tipografía y voz de la marca están en
   [libretro-thumbnails](https://github.com/libretro-thumbnails) (las mismas de
   RetroArch). Si el nombre de un archivo es dudoso, Relix no adivina: te deja
   elegir entre las más parecidas.
+- **Nombres de archivo estándar.** *Y › Renombrar archivo…* (o *≡ › Biblioteca ›
+  Nombres de archivo* para todos a la vez) cambia `kh2.iso` por
+  `Kingdom Hearts II (USA).iso`, eligiendo entre los nombres de libretro con su
+  portada o escribiéndolo. Sus otros discos, las imágenes de ES-DE, su ficha en
+  `gamelist.xml`, las partidas de RetroArch en el USB, las colecciones y el tiempo
+  de juego se mueven con él.
 - **Elige tu emulador.** Uno recomendado por consola, otro por consola en
   Opciones, o por juego con *Abrir con…*. Relix le pregunta a la Xbox cuáles hay
   instalados.

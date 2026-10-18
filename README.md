@@ -43,6 +43,11 @@ what each button does.
   [libretro-thumbnails](https://github.com/libretro-thumbnails) (the ones
   RetroArch uses). When a file name is ambiguous, Relix doesn't guess: it asks
   you to pick from the closest matches.
+- **Standard file names.** *Y › Rename file…* (or *≡ › Library › File names*
+  for every file at once) renames `kh2.iso` to `Kingdom Hearts II (USA).iso`,
+  picking from libretro's names with their covers or typing it. Its other discs,
+  ES-DE images, `gamelist.xml` entry, RetroArch saves on the USB drive,
+  collections and playtime move with it.
 - **Pick your emulator.** A recommended emulator per console, a different one
   per console in Options, or per game with *Open with…*. Relix asks the Xbox
   which emulators are installed.

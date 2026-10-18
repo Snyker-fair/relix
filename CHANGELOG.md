@@ -4,6 +4,13 @@ Each version's section becomes the notes of its GitHub release.
 
 ## [1.1.0] - 2026-10-18
 
+- **Rename files to their standard name:** *Y › Rename file…* on a game, or
+  *≡ › Library › File names* to go through every file whose name isn't the
+  standard one (the Redump / No-Intro names libretro uses), each with its cover
+  so you can tell the right version. You can also type the name. Everything tied
+  to the old name moves with it: its other discs, its ES-DE images and
+  `gamelist.xml` entry, Relix's thumbnails, the RetroArch saves on the USB drive,
+  your collections, playtime and favorites. Nothing is overwritten.
 - **English file names on the USB drive:** your data is now in `relix\data.json`,
   with `data.previous.json` and daily backups in `relix\backups\`; the diagnostic
   log is `relix\log.txt` and the thumbnails are in `relix\cache\thumbnails\`. The

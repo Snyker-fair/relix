@@ -232,5 +232,35 @@ Before installing 1.1.0, on the PC, write down what `E:\relix\` has: with 1.0.0 
       there.
 - [ ] **About** › **On your USB drive** shows `data.json`, `backups` and `log.txt`.
 
+## Renaming files (1.1.0)
+Before starting, on the PC, copy to the USB drive a game with a made-up name (for
+example `E:\roms\ps2\kh2.iso`, a copy of a game you have) and, if you play it with
+RetroArch, one of its saves in `E:\RetroArch\saves` with the same name
+(`kh2.srm`). **≡ → Library** to scan the console.
+
+- [ ] On that game, **Y → Rename file…**: the standard names show up with their
+      cover; the file's current name is on the left and, under it, the new one as
+      you move.
+- [ ] **A** on a name: the window says what moves with it (images, its entry in
+      `gamelist.xml`, RetroArch saves, collections). **B** cancels and nothing
+      changes.
+- [ ] **A** again: "Renamed: …". On the PC the file has the new name; so do its
+      ES-DE images in `E:\ES-DE\downloaded_media\ps2\*\` and its save
+      (`… .srm`), and `gamelist.xml` points to the new name.
+- [ ] Back in Relix: the game keeps its cover, its playtime, whether it's a
+      favorite and its collections. In ES-DE (on the PC) it still has its data.
+- [ ] Open it with RetroArch: the save is there.
+- [ ] **Y** on the screen opens the keyboard with the name: it has `( ) [ ]`, the
+      **Ab** key for capitals and **LT** erases a word. A name with `:` or one
+      that's already taken says why it can't be used.
+- [ ] A PS1 game in several discs without an `.m3u` (`ff7 (Disc 1).chd`,
+      `ff7 (Disc 2).chd`): renaming disc 1 renames every disc, each with its
+      number.
+- [ ] An Xbox 360 game in a folder: the folder is renamed and the game still
+      opens.
+- [ ] **≡ → Library → File names**: it checks the consoles and lists the files
+      without their standard name. **X** keeps a game as it is (it leaves the
+      list), **RB** moves to the next one.
+
 If something fails, the **If something fails** table in
 [`shell/README.md`](../shell/README.md) has the most common causes.
