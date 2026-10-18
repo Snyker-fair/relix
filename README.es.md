@@ -193,9 +193,11 @@ docs/           guías para compilar y probar en la TV, imágenes del README
 brand/          logo, íconos de la app y guía de marca
 ```
 
-Cada cambio corre los tests y las dos compilaciones en GitHub Actions; `main`
-publica la demo en GitHub Pages, y cada etiqueta `v*` compila, firma y publica el
-paquete para la Xbox. Las guías: cómo funciona el shell
+Los commits siguen [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+([`docs/COMPILAR.md`](docs/COMPILAR.md#commits)). Cada cambio corre los tests y
+las dos compilaciones en GitHub Actions; `main` publica la demo en GitHub Pages,
+y cada etiqueta `v*` compila y firma el paquete para la Xbox como un release en
+borrador, que se publica a mano después de probarlo en la consola. Las guías: cómo funciona el shell
 ([`shell/README.md`](shell/README.md)), compilar y publicar
 ([`docs/COMPILAR.md`](docs/COMPILAR.md)) y qué probar en la TV
 ([`docs/PROBAR.md`](docs/PROBAR.md)).

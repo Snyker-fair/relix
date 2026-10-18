@@ -192,9 +192,10 @@ docs/           build and on-TV test guides (Spanish), README media
 brand/          logo, app icons and brand guide
 ```
 
+Commits follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 Every push runs the tests and both builds on GitHub Actions; `main` deploys the
-demo to GitHub Pages, and every `v*` tag builds, signs and publishes the Xbox
-package. The guides to how the shell works
+demo to GitHub Pages, and every `v*` tag builds and signs the Xbox package as a
+draft release, published by hand after testing it on the console. The guides to how the shell works
 ([`shell/README.md`](shell/README.md)), building and releasing
 ([`docs/COMPILAR.md`](docs/COMPILAR.md)) and testing on the TV
 ([`docs/PROBAR.md`](docs/PROBAR.md)) are in Spanish.

@@ -43,6 +43,58 @@ Las rutas son de ejemplo; cámbialas por las tuyas.
 Si solo cambiaste la interfaz, basta con `npm run build:shell` y **F5** de nuevo.
 Después, [`PROBAR.md`](PROBAR.md) dice qué revisar en la TV.
 
+## Commits
+
+Los mensajes de commit siguen
+[Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/):
+
+```
+<tipo>(<ámbito>): <descripción>
+
+<cuerpo, opcional: por qué se hizo el cambio>
+
+<notas al pie, opcionales>
+```
+
+**Tipo**, en inglés, como pide la convención:
+
+| Tipo | Para qué |
+|---|---|
+| `feat` | Una función nueva para quien usa Relix |
+| `fix` | Un error corregido |
+| `docs` | Solo documentación: README, guías, CHANGELOG |
+| `style` | Formato del código, sin cambiar lo que hace |
+| `refactor` | Reordenar código sin cambiar lo que hace |
+| `perf` | Que algo sea más rápido o liviano |
+| `test` | Tests |
+| `build` | Compilación, dependencias, proyecto de Visual Studio |
+| `ci` | Flujos de GitHub Actions |
+| `chore` | Mantención que no entra en otro tipo, como el número de cada versión |
+| `revert` | Deshacer un commit anterior |
+
+**Ámbito**, opcional: la parte de Relix que cambia. `ui` (la interfaz, `src/`),
+`shell` (el C#), `i18n` (traducciones), `release` (versiones y releases), `demo`
+(GitHub Pages), `brand` (logo e íconos), `deps` (dependencias) o `changelog`.
+
+**Descripción:** en español, en minúscula, en presente ("agrega", "corrige") y
+sin punto final, en unos 70 caracteres como mucho.
+
+**Cambio incompatible:** un `!` después del tipo y una nota al pie
+`BREAKING CHANGE:` que diga qué hay que hacer; por ejemplo, si cambian las
+carpetas del USB. El tipo también dice qué número sube en la versión siguiente:
+un cambio incompatible, el primero (`2.0.0`); un `feat`, el del medio (`1.1.0`);
+solo `fix`, el último (`1.0.1`).
+
+```
+feat(ui): agrega orden por fecha de lanzamiento
+fix(shell): vuelve a Relix al cerrar Xenia
+docs(changelog): anota los cambios de la 1.0.1
+ci(release): quita Relix.cer de los releases
+chore(release): 1.0.1
+```
+
+El último lo escribe `npm version` solo: está configurado en `.npmrc`.
+
 ## Publicar una versión
 
 GitHub arma y firma el paquete solo, a partir de una etiqueta, y lo deja como
@@ -50,14 +102,14 @@ borrador para que lo pruebes antes de publicarlo:
 
 1. Anota los cambios en [`CHANGELOG.md`](../CHANGELOG.md), arriba, con el número
    nuevo (`## [1.0.1] - 2026-11-02`). Esa sección se usa como notas del release.
-   Haz el commit.
+   Haz el commit: `docs(changelog): anota los cambios de la 1.0.1`.
 2. Sube el número de versión y crea la etiqueta:
    ```
    npm version 1.0.1
    git push --follow-tags
    ```
-   `npm version` cambia `package.json` y `package-lock.json`, hace el commit y crea
-   la etiqueta `v1.0.1`.
+   `npm version` cambia `package.json` y `package-lock.json`, hace el commit
+   (`chore(release): 1.0.1`) y crea la etiqueta `v1.0.1`.
 3. En GitHub, pestaña **Actions** › **Release**: en unos 3 a 5 minutos aparece en
    **Releases** un **borrador** (*Draft*) con el `.msix` y el `.zip` de
    dependencias. Solo tú lo ves.
