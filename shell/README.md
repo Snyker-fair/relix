@@ -1,124 +1,132 @@
 # RelixShell
 
-El shell es la parte en C# que corre en la Xbox: una app UWP con un WebView2 a
-pantalla completa. Tiene cuatro trabajos:
+The shell is the C# part that runs on the Xbox: a UWP app with a full-screen
+WebView2. It has four jobs:
 
-1. **Mostrar la interfaz** (la de `src/`, compilada en `ui/`) y hablar con ella por
-   mensajes.
-2. **Leer el control** de forma nativa y pasarle cada botón a la interfaz.
-3. **Leer y escribir en el USB:** escanea `roms\<consola>\`, lee lo de ES-DE, guarda
-   portadas, miniaturas, colecciones, tus datos y el registro.
-4. **Abrir los emuladores** y volver a Relix cuando los cierras.
+1. **Show the interface** (the one in `src/`, built into `ui/`) and talk to it
+   through messages.
+2. **Read the controller** natively and pass each button to the interface.
+3. **Read and write the USB drive:** it scans `roms\<console>\`, reads ES-DE's
+   files, and saves covers, thumbnails, collections, your data and the log.
+4. **Open the emulators** and come back to Relix when you close them.
 
-Para compilarlo y probarlo en la Xbox, y para publicar una versión, sigue
-[`docs/COMPILAR.md`](../docs/COMPILAR.md).
+To build it and try it on the Xbox, and to release a version, follow
+[`docs/BUILDING.md`](../docs/BUILDING.md).
 
 ```
 RelixShell/
-  RelixShell.slnx         la solución: ábrela en Visual Studio 2022
-  RelixShell.csproj       el proyecto (WinUI 2 trae WebView2; ui\** va en el paquete)
-  Package.appxmanifest    identidad, protocolo relix:, permisos (USB e internet)
-  App.xaml(.cs)           arranque, sin modo mouse, vuelta desde el emulador (relix:)
-  MainPage.xaml(.cs)      el WebView2 y los mensajes con la interfaz
-  Shell/                  el trabajo de verdad (ver la tabla)
-  Assets/                 íconos de la app (los genera brand/build-assets.py)
-  Properties/             AssemblyInfo y directivas de .NET Native
-  ui/                     la interfaz compilada: la copia `npm run build:shell` (Git la ignora)
+  RelixShell.slnx         the solution: open it in Visual Studio 2022
+  RelixShell.csproj       the project (WinUI 2 brings WebView2; ui\** goes in the package)
+  Package.appxmanifest    identity, the relix: protocol, permissions (USB and internet)
+  App.xaml(.cs)           startup, no mouse mode, coming back from the emulator (relix:)
+  MainPage.xaml(.cs)      the WebView2 and the messages with the interface
+  Shell/                  the real work (see the table)
+  Assets/                 app icons (made by brand/build-assets.py)
+  Properties/             AssemblyInfo and .NET Native directives
+  ui/                     the built interface: `npm run build:shell` copies it (Git ignores it)
 ```
 
-| Archivo de `Shell/` | Qué hace |
+| File in `Shell/` | What it does |
 |---|---|
-| `GamepadInput.cs` | Lee el control y lo manda a la interfaz |
-| `LocalServer.cs` | Sirve la interfaz, las imágenes, las miniaturas y los videos (por partes) desde `https://relix.example` |
-| `LibraryReader.cs` | Encuentra el USB y recorre la carpeta `roms` |
-| `CoverService.cs` | Baja portadas y capturas de libretro, crea las miniaturas, lista lo que hay en `downloaded_media` |
-| `CollectionStore.cs` | Lee y guarda las colecciones en `ES-DE\collections` |
-| `UserDataStore.cs` | Guarda tus datos en `relix\datos.json`, con copia anterior y respaldos diarios |
-| `SystemCheck.cs` | Revisa permisos, espacio, carpetas, archivos de BIOS e internet (Opciones › Revisión) |
-| `DiagnosticLog.cs` | Escribe y lee el registro de diagnóstico (`relix\registro.txt`) |
-| `Text.cs` | Idioma de los mensajes del shell: el mismo de la interfaz |
+| `GamepadInput.cs` | Reads the controller and sends it to the interface |
+| `LocalServer.cs` | Serves the interface, images, thumbnails and videos (in ranges) from `https://relix.example` |
+| `LibraryReader.cs` | Finds the USB drive and walks the `roms` folder |
+| `CoverService.cs` | Downloads covers and screenshots from libretro, makes the thumbnails, lists what's in `downloaded_media` |
+| `CollectionStore.cs` | Reads and saves collections in `ES-DE\collections` |
+| `UserDataStore.cs` | Saves your data in `relix\data.json`, with the previous copy and daily backups |
+| `LegacyFileNames.cs` | Renames the Spanish file names of drives used with Relix 1.0.0 |
+| `SystemCheck.cs` | Checks permissions, space, folders, BIOS files and internet (Options › Checkup) |
+| `DiagnosticLog.cs` | Writes and reads the diagnostic log (`relix\log.txt`) |
+| `Text.cs` | The language of the shell's messages: the same as the interface's |
 
-### Por qué el control se lee en C#
+### Why the controller is read in C#
 
-WebView2 en Xbox tiene un problema conocido: atrapa el foco y el botón B, y su
-contenido usa un cursor de "modo mouse". Por eso el foco se queda en la página
-de XAML y nunca pasa al WebView2. El control se lee con `Windows.Gaming.Input`
-y cada botón llega a la interfaz como un mensaje.
+WebView2 on Xbox has a known problem: it grabs the focus and the B button, and
+its content uses a "mouse mode" cursor. That's why the focus stays on the XAML
+page and never goes to the WebView2. The controller is read with
+`Windows.Gaming.Input` and each button reaches the interface as a message.
 
-### Lo que no se puede cambiar en el manifiesto
+### What can't change in the manifest
 
-- El protocolo **tiene que llamarse `relix`**: es el que usan los emuladores para
-  devolverte a la app (`launchOnExit=relix:`).
-- **Almacenamiento extraíble** (`removableStorage`) para el USB e **Internet
-  (cliente)** para las portadas y el aviso de versión nueva.
-- El publicador (`CN=snyker-fair`) tiene que ser el mismo del certificado con que
-  GitHub firma los releases.
+- The protocol **has to be called `relix`**: it's the one emulators use to send
+  you back to the app (`launchOnExit=relix:`).
+- **Removable storage** (`removableStorage`) for the USB drive and **Internet
+  (client)** for covers and the new-version notice.
+- The publisher (`CN=snyker-fair`) has to match the certificate GitHub signs the
+  releases with.
 
 ---
 
-## Un USB de prueba
+## A test USB drive
 
-1. Usa un disco formateado en **NTFS**.
-2. Copia el **contenido** de `shell\usb-de-prueba\` a la raíz del disco. Debe quedar:
+1. Use a drive formatted as **NTFS**.
+2. Copy the **contents** of `shell\test-usb\` to the root of the drive. It should
+   end up as:
    ```
-   E:\ES-DE\gamelists\ps2\gamelist.xml   (y las demás consolas)
-   E:\roms\ps2\                          (vacía por ahora)
+   E:\ES-DE\gamelists\ps2\gamelist.xml   (and the other consoles)
+   E:\roms\ps2\                          (empty for now)
    ```
-3. Con el disco conectado al PC, corre la **Xbox USB Permissions Tool** de
-   [DevStore](https://xbdev.store/). Da permiso a las apps de la Xbox para leer y
-   escribir el disco. Los emuladores también lo necesitan.
-4. Conecta el disco a la Xbox.
+3. With the drive plugged into the PC, run the **Xbox USB Permissions Tool** from
+   [DevStore](https://xbdev.store/). It lets the Xbox apps read and write the
+   drive. The emulators need it too.
+4. Plug the drive into the Xbox.
 
-Relix lista lo que encuentra en `roms\<consola>\`. Con la carpeta de prueba, que
-tiene `roms` vacía, verás cada consola con el aviso de que no hay juegos y en qué
-carpeta ponerlos. Copia un juego real en esa carpeta y aparecerá al escanear.
+Relix lists what it finds in `roms\<console>\`. With the test folder, whose
+`roms` is empty, you'll see each console with the notice that it has no games
+and which folder to put them in. Copy a real game into that folder and it shows
+up when you scan.
 
-Juegos de varios discos: usa un `.m3u` (Relix muestra solo ese) o deja los discos
-con `(Disc 1)`, `(Disc 2)` en el nombre (Relix muestra solo el disco 1). Las
-carpetas y formatos de cada consola están en la guía de cada una, dentro de Relix.
+Multi-disc games: use an `.m3u` (Relix shows only that one) or leave the discs
+with `(Disc 1)`, `(Disc 2)` in the name (Relix shows only disc 1). Each console's
+folders and formats are in its guide, inside Relix.
 
-`E:\relix\cache` se puede borrar cuando quieras: Relix la vuelve a crear. Si
-reemplazas portadas desde el PC, bórrala para que se rehagan las miniaturas.
+`E:\relix\cache` can be deleted whenever you want: Relix makes it again. If you
+replace covers from the PC, delete it so the thumbnails are made again.
 
-## Lo que deberías ver al abrir
+## What you should see when it opens
 
-1. La pantalla de carga celeste (o azul noche, con el tema oscuro) con el logo.
-2. La gema apareciendo con su destello y la fila de consolas.
-3. El control moviéndose entre consolas, **sin cursor**.
-4. Con A, la biblioteca. Con B, la vuelta al inicio. B no cierra la app.
+1. The light blue loading screen (or night blue, with the dark theme) with the
+   logo.
+2. The gem appearing with its sparkle, and the row of consoles.
+3. The controller moving between consoles, **without a cursor**.
+4. A opens the library. B goes back home. B doesn't close the app.
 
-Al abrir un juego y cerrar el emulador, la consola vuelve sola a Relix.
+When you open a game and close the emulator, the console goes back to Relix by
+itself.
 
 ---
 
-## Si algo falla
+## If something fails
 
-| Qué ves | Qué revisar |
+| What you see | What to check |
 |---|---|
-| Visual Studio no abre `RelixShell.slnx` | Hace falta Visual Studio 2022 17.14 o posterior |
-| Error de que falta el SDK 10.0.26100 o la plataforma UWP | Instala la carga de trabajo **Desarrollo de la Plataforma universal de Windows** en el Visual Studio Installer |
-| Error de compilación con `XamlControlsResources` o `WebView2` | Los paquetes NuGet no se restauraron: clic derecho en la solución → **Restaurar paquetes NuGet** |
-| Pantalla celeste vacía | Falta `npm run build:shell`: la carpeta `ui` no quedó en el paquete |
-| Opciones › Revisión dice "No se pudo revisar el USB a fondo" | El shell no respondió en 15 segundos: casi siempre es una interfaz nueva con un shell viejo. Vuelve a desplegar con F5 |
-| "No pude guardar tus datos en el USB" | El USB no deja escribir: vuelve a aplicarle los permisos con la USB Permissions Tool. Mientras, tus datos quedan en la app y pasan al USB cuando se pueda |
-| "No encontré la carpeta roms en ningún disco USB" | La carpeta `roms` debe estar en la raíz del disco. Corre la USB Permissions Tool |
-| Un juego no aparece | Revisa que su formato esté en la guía de la consola y que esté a 3 carpetas de profundidad como máximo |
-| No hay sonido | Revisa que `MainPage.xaml.cs` tenga la línea `--autoplay-policy=no-user-gesture-required` |
-| "… no está instalado en la consola" | Ese emulador no está instalado, o su protocolo es otro |
-| "No pude conectarme al servidor de portadas" | La Xbox no tiene internet |
-| Una portada equivocada | Menú del juego (Y) › **Cambiar portada** |
-| Un video de vista previa no aparece | Revisa que esté en `ES-DE\downloaded_media\<consola>\videos\` con el mismo nombre que el juego y sea `.mp4` (H.264) o `.webm`. Si el resto anda, puede ser un formato que la Xbox no reproduce |
-| Aparecen dos Relix en Dev Home | Uno es de antes de la 1.0.0 (otro publicador): desinstala el viejo |
+| Visual Studio doesn't open `RelixShell.slnx` | You need Visual Studio 2022 17.14 or later |
+| An error that the 10.0.26100 SDK or the UWP platform is missing | Install the **Universal Windows Platform development** workload in the Visual Studio Installer |
+| A build error with `XamlControlsResources` or `WebView2` | The NuGet packages weren't restored: right-click the solution → **Restore NuGet Packages** |
+| An empty light blue screen | `npm run build:shell` is missing: the `ui` folder didn't make it into the package |
+| Options › Checkup says "Couldn't fully check the USB drive" | The shell didn't answer within 15 seconds: almost always a new interface with an old shell. Deploy again with F5 |
+| "I couldn't save your data to the USB drive" | The drive can't be written to: apply the permissions again with the USB Permissions Tool. Meanwhile your data stays in the app and moves to the drive when it can |
+| "I couldn't find a roms folder on any USB drive" | The `roms` folder has to be at the root of the drive. Run the USB Permissions Tool |
+| A game doesn't show up | Check that its format is in the console's guide and that it's at most 3 folders deep |
+| No sound | Check that `MainPage.xaml.cs` has the line `--autoplay-policy=no-user-gesture-required` |
+| "… isn't installed on the console" | That emulator isn't installed, or its protocol is a different one |
+| "I couldn't connect to the cover server" | The Xbox has no internet |
+| A wrong cover | Game menu (Y) › **Change cover** |
+| A preview video doesn't show | Check that it's in `ES-DE\downloaded_media\<console>\videos\` with the same name as the game and that it's `.mp4` (H.264) or `.webm`. If everything else works, it may be a format the Xbox doesn't play |
+| `datos.json` or `registro.txt` are still on the drive | Relix 1.1.0 renames them only if the drive can be written to and the English name doesn't exist yet. Apply the permissions again; if `data.json` already exists, the old file can be deleted |
+| Two Relix apps in Dev Home | One is from before 1.0.0 (another publisher): uninstall the old one |
 
-### Ver la consola de la interfaz desde el PC
+### See the interface's console from the PC
 
-Solo funciona en compilaciones **Debug**, que activan la depuración remota:
+It only works in **Debug** builds, which turn on remote debugging:
 
-1. En Edge, abre `https://<IP-de-la-Xbox>:11443` y acepta la advertencia de seguridad.
-2. Descarga `https://<IP-de-la-Xbox>:11443/config/rootcertificate` e instálalo en
-   **Usuario actual → Entidades de certificación raíz de confianza**.
-3. Reinicia Edge y abre `edge://inspect`.
-4. En **Connect to a remote Windows device**, escribe `https://<IP-de-la-Xbox>:11443`.
-5. Con Relix abierto en la Xbox, haz clic en **inspect** bajo el WebView2 llamado **Edge**.
+1. In Edge, open `https://<Xbox-IP>:11443` and accept the security warning.
+2. Download `https://<Xbox-IP>:11443/config/rootcertificate` and install it in
+   **Current User → Trusted Root Certification Authorities**.
+3. Restart Edge and open `edge://inspect`.
+4. Under **Connect to a remote Windows device**, type `https://<Xbox-IP>:11443`.
+5. With Relix open on the Xbox, click **inspect** under the WebView2 called
+   **Edge**.
 
-Ahí ves los errores de JavaScript y los mensajes entre la interfaz y el shell.
+There you see the JavaScript errors and the messages between the interface and
+the shell.

@@ -172,6 +172,7 @@ npm run dev            # the interface in your browser, with test data
 npm test               # logic and translation tests (vitest)
 npm run build          # dist/ for the UWP package
 npm run build:single   # dist-single/index.html, self-contained (the demo)
+npm run build:shell    # builds and copies the interface into the Visual Studio project
 node scripts/i18n.mjs  # strings still missing their English translation
 ```
 
@@ -188,17 +189,34 @@ src/
   mock/         ES-DE gamelists and libretro names for the demo and tests
 shell/          the C# shell (RelixShell) and its Visual Studio project
 tests/          vitest
-docs/           build and on-TV test guides (Spanish), README media
+docs/           build and on-TV test guides, README media
 brand/          logo, app icons and brand guide
 ```
 
 Commits follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 Every push runs the tests and both builds on GitHub Actions; `main` deploys the
 demo to GitHub Pages, and every `v*` tag builds and signs the Xbox package as a
-draft release, published by hand after testing it on the console. The guides to how the shell works
-([`shell/README.md`](shell/README.md)), building and releasing
-([`docs/COMPILAR.md`](docs/COMPILAR.md)) and testing on the TV
-([`docs/PROBAR.md`](docs/PROBAR.md)) are in Spanish.
+draft release, published by hand after testing it on the console. The guides:
+how the shell works ([`shell/README.md`](shell/README.md)), building and
+releasing ([`docs/BUILDING.md`](docs/BUILDING.md)) and what to test on the TV
+([`docs/TESTING.md`](docs/TESTING.md)).
+
+### Translations
+
+The interface is written in Spanish and translated to English in
+`src/lib/i18n/en.js`:
+
+```js
+t('Seguir jugando')                        // "Continue playing"
+t('Juego {n} de {total}', { n, total })    // "Game 3 of 9"
+tn(n, '{n} juego nuevo', '{n} juegos nuevos')
+plural(n, 'juego', 'juegos')               // "3 games"
+```
+
+`node scripts/i18n.mjs` lists the strings still missing their English version,
+ready to copy into `en.js`. `tests/i18n.test.js` fails if one is missing, if the
+`{names}` don't match, or if a guide, a checkup item or a notice is left
+untranslated.
 
 ## Folders on the USB drive
 
@@ -210,13 +228,46 @@ draft release, published by hand after testing it on the console. The guides to 
 | Backgrounds, logos, videos | `…\fanart\`, `…\screenshots\`, `…\marquees\`, `…\videos\` (from ES-DE) |
 | Collections | `E:\ES-DE\collections\custom-<Name>.cfg` (ES-DE sees them too) |
 | Your data | `E:\relix\data.json`, `data.previous.json` and `backups\` (last 7 days) |
-| Diagnostic log | `E:\relix\log.txt` |
+| Diagnostic log | `E:\relix\log.txt` (and `log.previous.txt`) |
 | Cache | `E:\relix\cache\` (libretro lists and thumbnails; safe to delete) |
 
 Multi-disc games go in an `.m3u`; Xbox 360 and Dreamcast games can live in a
-folder per game (`Halo 3 (USA)\default.xex`). To get descriptions, genres,
-fan art and videos, scrape with ES-DE on your PC and copy its `gamelists` and
-`downloaded_media` folders to `E:\ES-DE\`.
+folder per game (`Halo 3 (USA)\default.xex`): the name comes from the folder.
+
+**Restore a backup:** on the PC, copy the `backups\data-<day>.json` you want over
+`E:\relix\data.json` and open Relix. When the file on the USB drive changes
+outside the app (a backup, or another Xbox), Relix uses the one on the drive.
+
+Drives used with Relix 1.0.0 have Spanish names (`datos.json`, `respaldos\`,
+`registro.txt`): Relix 1.1.0 renames them the first time it opens the drive,
+without overwriting or deleting anything.
+
+### Backgrounds, logos and videos with ES-DE (on the PC)
+
+Relix doesn't scrape on its own (ScreenScraper asks for a developer key): it uses
+what ES-DE leaves on the USB drive. Once per console:
+
+1. Install [ES-DE](https://es-de.org) on the PC and create a free
+   [ScreenScraper](https://www.screenscraper.fr) account: with an account, ES-DE
+   scrapes faster and with a bigger daily quota.
+2. Plug in the USB drive and let ES-DE use `E:\roms` as its ROM folder (it asks
+   the first time). That way ES-DE's files have the same names the Xbox sees.
+3. ES-DE menu → **SCRAPER**:
+   - **SCRAPE FROM**: ScreenScraper.
+   - **ACCOUNT SETTINGS**: turn on **USE THIS ACCOUNT FOR SCREENSCRAPER** and type
+     your username and password.
+   - **CONTENT SETTINGS**: leave on videos, *fan art*, *marquee (wheel)* (the
+     logo), *screenshots*, *box covers* and *other metadata* (description, genre
+     and players, which the filters use).
+   - **SCRAPE THESE SYSTEMS**: the consoles you want → **START**.
+4. From ES-DE's data folder on the PC (with the installer,
+   `C:\Users\<your user>\ES-DE`), copy the `downloaded_media` and `gamelists`
+   folders into `E:\ES-DE\` on the USB drive. If Windows asks, merge the folders:
+   the covers Relix downloaded are already there.
+5. Open Relix: it reads the backgrounds, logos and videos when it starts.
+
+Each video weighs between 5 and 20 MB: if the USB drive is small, scrape videos
+only for the consoles you play most.
 
 ## Emulators
 

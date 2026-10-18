@@ -172,7 +172,7 @@ npm run dev            # la interfaz en el navegador, con datos de prueba
 npm test               # tests de la lógica y de las traducciones (vitest)
 npm run build          # dist/ para el paquete UWP
 npm run build:single   # dist-single/index.html autocontenido (la demo)
-npm run build:shell -- "C:\Proyectos\RelixShell\RelixShell"   # compila y copia a Visual Studio
+npm run build:shell    # compila y copia la interfaz al proyecto de Visual Studio
 node scripts/i18n.mjs  # textos que todavía no tienen su versión en inglés
 ```
 
@@ -194,13 +194,13 @@ brand/          logo, íconos de la app y guía de marca
 ```
 
 Los commits siguen [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
-([`docs/COMPILAR.md`](docs/COMPILAR.md#commits)). Cada cambio corre los tests y
+([`docs/BUILDING.md`](docs/BUILDING.md#commits)). Cada cambio corre los tests y
 las dos compilaciones en GitHub Actions; `main` publica la demo en GitHub Pages,
 y cada etiqueta `v*` compila y firma el paquete para la Xbox como un release en
-borrador, que se publica a mano después de probarlo en la consola. Las guías: cómo funciona el shell
-([`shell/README.md`](shell/README.md)), compilar y publicar
-([`docs/COMPILAR.md`](docs/COMPILAR.md)) y qué probar en la TV
-([`docs/PROBAR.md`](docs/PROBAR.md)).
+borrador, que se publica a mano después de probarlo en la consola. Las guías, en
+inglés: cómo funciona el shell ([`shell/README.md`](shell/README.md)), compilar y
+publicar ([`docs/BUILDING.md`](docs/BUILDING.md)) y qué probar en la TV
+([`docs/TESTING.md`](docs/TESTING.md)).
 
 ### Traducciones
 
@@ -236,6 +236,10 @@ carpeta.
 **Volver a un respaldo:** en el PC, copia el `backups\data-<día>.json` que
 quieras encima de `E:\relix\data.json` y abre Relix. Cuando el archivo del USB
 cambia por fuera de la app (un respaldo, u otra Xbox), Relix usa el del USB.
+
+Los USB que usaste con Relix 1.0.0 tienen nombres en español (`datos.json`,
+`respaldos\`, `registro.txt`): Relix 1.1.0 los renombra la primera vez que abre
+el disco, sin sobrescribir ni borrar nada.
 
 ### Fondos, logos y videos con ES-DE (en el PC)
 

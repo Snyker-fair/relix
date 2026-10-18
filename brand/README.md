@@ -1,84 +1,89 @@
-# Marca Relix
+# Relix brand
 
-![Logo de Relix](relix-logo.png)
+![The Relix logo](relix-logo.png)
 
-**Tus reliquias, listas para jugar.**
+**Your relics, ready to play.**
 
-## La idea
+## The idea
 
-**Relix** viene de *reliquias*: esos juegos que guardaste por años, en disco o
-en cartucho, y que aquí vuelven a brillar. La marca es una **gema**, una
-reliquia pulida, con un **destello en forma de X**. Esa X es la del nombre, el
-brillo de la piedra y un guiño a la consola donde vive la app.
+**Relix** comes from *relics*: those games you kept for years, on discs or
+cartridges, that shine again here. The mark is a **gem**, a polished relic, with
+an **X-shaped sparkle**. That X is the one in the name, the stone's shine and a
+nod to the console the app lives on.
 
-El punto de la "i" es una gemita del mismo rosa, para que el nombre y el
-símbolo se lean como una sola pieza.
+The dot on the "i" is a small gem of the same pink, so the name and the symbol
+read as one piece.
 
 ## Logo
 
-| Archivo | Uso |
+| File | Use |
 |---|---|
-| `relix-mark.svg` | Fuente única del símbolo. Todo lo demás se genera desde aquí. |
-| `relix-logo.png` | Logo horizontal (gema + nombre), fondo transparente. |
-| `../shell/RelixShell/Assets/*.png` | Íconos de la app (ver abajo); los genera `build-assets.py`. |
-| `build-assets.py` | Regenera los PNG si cambias el SVG: `python3 brand/build-assets.py` |
+| `relix-mark.svg` | The symbol's only source. Everything else is made from it. |
+| `relix-logo.png` | Horizontal logo (gem + name), transparent background. |
+| `../shell/RelixShell/Assets/*.png` | The app icons (see below); `build-assets.py` makes them. |
+| `build-assets.py` | Makes the PNGs again if you change the SVG: `python3 brand/build-assets.py` |
 
-- El nombre se escribe siempre en **minúsculas** en el logo: `relix`. En textos
-  corridos se escribe **Relix**.
-- No cambies los colores de la gema ni pongas el logo sobre fotos o fondos
-  oscuros sin un recuadro claro detrás.
-- Tamaño mínimo del símbolo solo: 24 px. Del logo con nombre: 30 px de alto.
+- In the logo, the name is always written in **lowercase**: `relix`. In running
+  text it's written **Relix**.
+- Don't change the gem's colors, and don't put the logo on photos or dark
+  backgrounds without a light box behind it.
+- Minimum size of the symbol alone: 24 px. Of the logo with the name: 30 px tall.
 
-## Colores
+## Colors
 
-| Nombre | Hex | Uso |
+| Name | Hex | Use |
 |---|---|---|
-| Cielo | `#DDEBF7` | Fondo de la app, tiles y pantalla de carga |
-| Cielo hondo | `#C6DBEF` | Trama de puntos del fondo |
-| Tinta | `#23304A` | Textos y el nombre en el logo |
-| Tinta suave | `#56647E` | Textos secundarios |
-| Gema | `#FF4F87` | Foco, favoritos, el punto de la i |
-| Destello | `#FFC23D` | Solo el destello en X del logo |
+| Sky | `#DDEBF7` | App background, tiles and loading screen |
+| Deep sky | `#C6DBEF` | The background's dot pattern |
+| Ink | `#23304A` | Text and the name in the logo |
+| Soft ink | `#56647E` | Secondary text |
+| Gem | `#FF4F87` | Focus, favorites, the dot on the i |
+| Sparkle | `#FFC23D` | Only the logo's X sparkle |
 
-Cada consola además tiene su propio color de canal (ver `src/lib/core/platforms.js`).
+Each console also has its own channel color (see `src/lib/core/platforms.js`).
 
-## Tipografía
+## Typography
 
-- **Baloo 2** (600–800): títulos, nombres de juegos y el logo.
-- **Nunito** (400–700): textos, etiquetas y ayudas.
+- **Baloo 2** (600–800): titles, game names and the logo.
+- **Nunito** (400–700): text, labels and hints.
 
-Ambas son libres (licencia SIL OFL) y vienen empaquetadas dentro de la app.
+Both are free (SIL OFL license) and are bundled inside the app.
 
-## Voz
+## Voice
 
-Cercana y breve, como alguien que te pasa el control:
+Friendly and brief, like someone handing you the controller. Relix speaks
+Spanish and English; the examples are in both:
 
-- Botones con verbos claros: **Jugar**, **Volver**, **Favorito**, **Abrir**.
-- Esperas con un guiño a la marca: *Desempolvando tus reliquias…*
-- Los errores dicen qué pasó y qué hacer: *No se pudo abrir XBSX2. Revisa que esté instalado en la consola.*
+- Buttons with clear verbs: **Play** / *Jugar*, **Back** / *Volver*,
+  **Favorite** / *Favorito*, **Open** / *Abrir*.
+- Waits with a nod to the brand: **Dusting off your relics…** / *Desempolvando
+  tus reliquias…*
+- Errors say what happened and what to do: **Couldn't open XBSX2. Make sure it's
+  installed on the console.** / *No se pudo abrir XBSX2. Revisa que esté
+  instalado en la consola.*
 
-## Íconos de la app
+## App icons
 
-Están en `shell/RelixShell/Assets/`, con los nombres exactos de la plantilla
-**UWP Blank App**, y el proyecto ya los incluye.
+They're in `shell/RelixShell/Assets/`, with the exact names of the **UWP Blank
+App** template, and the project already includes them.
 
-| Archivo | Tamaño | Dónde se ve |
+| File | Size | Where it shows |
 |---|---|---|
-| `Square150x150Logo.scale-200.png` | 300×300 | Ficha de la app en la Xbox, Dev Home, pines (gema y nombre) |
-| `Square310x310Logo.scale-200.png` | 620×620 | Tile grande: la misma imagen con más detalle para TV 4K |
-| `Wide310x150Logo.scale-200.png` | 620×300 | Tile ancho |
-| `Square44x44Logo.scale-200.png` | 88×88 | Listas de apps |
-| `Square44x44Logo.targetsize-24_altform-unplated.png` | 24×24 | Íconos pequeños |
-| `SplashScreen.scale-200.png` | 1240×600 | Pantalla de carga |
-| `StoreLogo.png` | 50×50 | Instalador |
-| `LockScreenLogo.scale-200.png` | 48×48 | Pantalla de bloqueo (Windows) |
+| `Square150x150Logo.scale-200.png` | 300×300 | The app's card on the Xbox, Dev Home, pins (gem and name) |
+| `Square310x310Logo.scale-200.png` | 620×620 | Large tile: the same image with more detail for 4K TVs |
+| `Wide310x150Logo.scale-200.png` | 620×300 | Wide tile |
+| `Square44x44Logo.scale-200.png` | 88×88 | App lists |
+| `Square44x44Logo.targetsize-24_altform-unplated.png` | 24×24 | Small icons |
+| `SplashScreen.scale-200.png` | 1240×600 | Loading screen |
+| `StoreLogo.png` | 50×50 | Installer |
+| `LockScreenLogo.scale-200.png` | 48×48 | Lock screen (Windows) |
 
-En `Package.appxmanifest` (pestaña *Recursos visuales*):
+In `Package.appxmanifest` (the *Visual Assets* tab):
 
-- **Nombre para mostrar:** `Relix`
-- **Color de fondo del tile:** `#DDEBF7`
-- **Color de fondo de la pantalla de presentación:** `#DDEBF7`
-- **Mostrar nombre en:** desmarca todos los tiles (las imágenes ya traen el nombre)
+- **Display name:** `Relix`
+- **Tile background color:** `#DDEBF7`
+- **Splash screen background color:** `#DDEBF7`
+- **Show name on:** uncheck every tile (the images already have the name)
 
-En la pestaña *Declaraciones*, el protocolo se llama **`relix`**. Es el que usan
-los emuladores para devolverte a la app al cerrar un juego.
+In the *Declarations* tab, the protocol is called **`relix`**. It's the one the
+emulators use to send you back to the app when you close a game.
