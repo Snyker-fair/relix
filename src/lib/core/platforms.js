@@ -35,6 +35,7 @@
  * @property {string[]} folders     Accepted names for its folder in roms\ (the first one that exists)
  * @property {string[]} extensions  Game formats Relix lists when scanning
  * @property {string} libretro      The console's folder in libretro-thumbnails (covers)
+ * @property {string} wikipedia     Its English Wikipedia article: Relix finds its Wikidata item from it (game info)
  * @property {number} coverAspect   Width / height of its box (PS1 is square, SNES is landscape)
  */
 
@@ -76,6 +77,7 @@ export const PLATFORMS = [
     folders: ['psx', 'ps1', 'playstation'],
     extensions: ['chd', 'cue', 'pbp', 'm3u'],
     libretro: 'Sony - PlayStation',
+    wikipedia: 'PlayStation (console)',
     coverAspect: 1,
   },
   {
@@ -90,6 +92,7 @@ export const PLATFORMS = [
     folders: ['ps2', 'playstation2'],
     extensions: ['chd', 'iso', 'cso'],
     libretro: 'Sony - PlayStation 2',
+    wikipedia: 'PlayStation 2',
     coverAspect: 0.71,
   },
   {
@@ -107,6 +110,7 @@ export const PLATFORMS = [
     folders: ['psp'],
     extensions: ['iso', 'cso', 'chd', 'pbp'],
     libretro: 'Sony - PlayStation Portable',
+    wikipedia: 'PlayStation Portable',
     coverAspect: 0.58,
   },
 
@@ -126,6 +130,7 @@ export const PLATFORMS = [
     folders: ['snes', 'sfc', 'superfamicom'],
     extensions: ['sfc', 'smc', 'zip', '7z'],
     libretro: 'Nintendo - Super Nintendo Entertainment System',
+    wikipedia: 'Super Nintendo Entertainment System',
     coverAspect: 1.38,
   },
   {
@@ -143,6 +148,7 @@ export const PLATFORMS = [
     folders: ['n64', 'nintendo64'],
     extensions: ['z64', 'n64', 'v64', 'zip', '7z'],
     libretro: 'Nintendo - Nintendo 64',
+    wikipedia: 'Nintendo 64',
     coverAspect: 1.38,
   },
   {
@@ -161,6 +167,7 @@ export const PLATFORMS = [
     folders: ['gba'],
     extensions: ['gba', 'zip', '7z'],
     libretro: 'Nintendo - Game Boy Advance',
+    wikipedia: 'Game Boy Advance',
     coverAspect: 1,
   },
   {
@@ -180,6 +187,7 @@ export const PLATFORMS = [
     folders: ['gc', 'gamecube', 'ngc'],
     extensions: ['rvz', 'iso', 'gcz', 'gcm', 'ciso'],
     libretro: 'Nintendo - GameCube',
+    wikipedia: 'GameCube',
     coverAspect: 0.71,
   },
   {
@@ -196,6 +204,7 @@ export const PLATFORMS = [
     folders: ['wiiu'],
     extensions: ['wua', 'wux', 'wud', 'rpx'],
     libretro: 'Nintendo - Wii U',
+    wikipedia: 'Wii U',
     coverAspect: 0.71,
   },
   {
@@ -214,6 +223,7 @@ export const PLATFORMS = [
     folders: ['n3ds', '3ds'],
     extensions: ['3ds', 'cci', 'cxi', '3dsx'],
     libretro: 'Nintendo - Nintendo 3DS',
+    wikipedia: 'Nintendo 3DS',
     coverAspect: 0.9,
   },
 
@@ -233,6 +243,7 @@ export const PLATFORMS = [
     folders: ['megadrive', 'genesis', 'md'],
     extensions: ['md', 'gen', 'smd', 'bin', 'zip', '7z'],
     libretro: 'Sega - Mega Drive - Genesis',
+    wikipedia: 'Sega Genesis',
     coverAspect: 0.71,
   },
   {
@@ -250,6 +261,7 @@ export const PLATFORMS = [
     folders: ['dreamcast', 'dc'],
     extensions: ['chd', 'cdi', 'gdi', 'm3u'],
     libretro: 'Sega - Dreamcast',
+    wikipedia: 'Dreamcast',
     coverAspect: 1,
   },
 
@@ -269,6 +281,7 @@ export const PLATFORMS = [
     folders: ['xbox360'],
     extensions: ['iso', 'xex', 'zar'],
     libretro: 'Microsoft - Xbox 360',
+    wikipedia: 'Xbox 360',
     coverAspect: 0.71,
   },
 ]

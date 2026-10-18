@@ -161,6 +161,20 @@ describe('bridge with the Xbox shell', () => {
     await expect(saving).rejects.toMatchObject({ code: 'usb-readonly' })
   })
 
+  it("reads and writes a console's gamelist", async () => {
+    const reading = bridge.readGamelist('ps2')
+    const asked = shell.sent.at(-1)
+    expect(asked).toMatchObject({ type: 'readGamelist', payload: { system: 'ps2' } })
+    shell.emit({ id: asked.id, ok: true, result: { text: null } })
+    await expect(reading).resolves.toBeNull()
+
+    const writing = bridge.writeGamelist('ps2', '<gameList></gameList>')
+    const msg = shell.sent.at(-1)
+    expect(msg).toMatchObject({ type: 'writeGamelist', payload: { system: 'ps2', text: '<gameList></gameList>' } })
+    shell.emit({ id: msg.id, ok: true, result: true })
+    await expect(writing).resolves.toBe(true)
+  })
+
   it('asks what a rename would move, then renames', async () => {
     const plan = {
       kind: /** @type {const} */ ('file'),

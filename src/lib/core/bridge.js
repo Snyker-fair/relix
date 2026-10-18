@@ -41,6 +41,11 @@
  *             text null if there's none yet; source: 'data.json', 'data.previous.json' or a backup)
  *     { id, type: 'saveUserData', payload: { text } }
  *        -> { id, ok: true, result: true }      (keeps the previous one and a backup per day)
+ *     { id, type: 'readGamelist', payload: { system: 'ps2' } }
+ *        -> { id, ok: true, result: { text } }      (ES-DE's gamelist.xml; null if there's none)
+ *     { id, type: 'writeGamelist', payload: { system: 'ps2', text } }
+ *        -> { id, ok: true, result: true }          (through a temporary file; the first time,
+ *             the original stays as gamelist.xml.relix-backup)
  *     { id, type: 'renameGame', payload: { system, folder, files, media, gamelist, saves } }
  *        -> { id, ok: true, result: { files, media, thumbnails, gamelist, saves, savesFolder, failed, errors } }
  *             (core/rename.js plans it; 'renamePreview' answers the same without renaming)
@@ -86,6 +91,7 @@ const MOCK_GAMELISTS = { psx, psp, ps2, gc, wiiu, snes, n64, gba, n3ds, megadriv
  * @returns {Record<string, string>}
  */
 function demoGamelists() {
+  const written = demoWrittenGamelists()
   /** @type {{ descriptions: Record<string, string>, genres: Record<string, string> }} */
   const english = mockEnglish
   /** @param {string} xml */
@@ -98,9 +104,34 @@ function demoGamelists() {
   return Object.fromEntries(
     Object.entries(MOCK_GAMELISTS).map(([id, xml]) => [
       id,
-      swap(xml).replace(/<path>\.\/(.*?)<\/path>/g, (_, path) => `<path>./${demoRenamed(id, path.replace(/&amp;/g, '&')).replace(/&/g, '&amp;')}</path>`),
+      swap(written[id] ?? xml).replace(
+        /<path>\.\/(.*?)<\/path>/g,
+        (_, path) => `<path>./${demoRenamed(id, path.replace(/&amp;/g, '&')).replace(/&/g, '&amp;')}</path>`,
+      ),
     ]),
   )
+}
+
+/**
+ * Demo games ES-DE didn't scrape (they're not in its gamelists), to try
+ * Y › Find info… in the browser.
+ */
+const DEMO_UNSCRAPED = /** @type {Record<string, string[]>} */ ({
+  psx: ['Silent Hill (USA).chd'],
+  ps2: ['Final Fantasy X (USA).chd'],
+  gc: ['Super Smash Bros. Melee (USA).rvz'],
+})
+
+const DEMO_GAMELISTS_KEY = 'relix:demo-gamelists'
+
+/** The demo gamelists written in the browser (Y › Find info…) @returns {Record<string, string>} */
+function demoWrittenGamelists() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(DEMO_GAMELISTS_KEY) ?? '{}')
+    return saved && typeof saved === 'object' ? saved : {}
+  } catch {
+    return {}
+  }
 }
 
 /** @returns {any} */
@@ -303,7 +334,8 @@ export async function scanRoms(systemIds) {
   const roms = {}
   for (const p of platforms) {
     const xml = /** @type {Record<string, string>} */ (MOCK_GAMELISTS)[p.id] ?? ''
-    const files = [...xml.matchAll(/<path>\.\/(.*?)<\/path>/g)].map((m) => demoRenamed(p.id, m[1].replace(/&amp;/g, '&')))
+    const listed = [...xml.matchAll(/<path>\.\/(.*?)<\/path>/g)].map((m) => m[1].replace(/&amp;/g, '&'))
+    const files = [...new Set([...listed, ...(DEMO_UNSCRAPED[p.id] ?? [])])].map((path) => demoRenamed(p.id, path))
     roms[p.id] = { folder: p.id, files }
   }
   return roms
@@ -543,6 +575,30 @@ export async function saveCollection(file, text) {
 const DEMO_COLLECTIONS_KEY = 'relix:demo-collections'
 
 // ── Renaming a game's file (Y › Rename file…) ───────────────────────────
+
+// ── ES-DE's gamelists ───────────────────────────────────────────────────
+
+/**
+ * A console's gamelist.xml as it is on the USB drive right now.
+ * @param {string} system
+ * @returns {Promise<string | null>}  null if it has none
+ */
+export async function readGamelist(system) {
+  if (mode === 'xbox') return (await request('readGamelist', { system })).text ?? null
+  return demoGamelists()[system] ?? null
+}
+
+/**
+ * Saves a console's gamelist.xml (the shell writes it safely; see GamelistWriter.cs).
+ * @param {string} system
+ * @param {string} text
+ */
+export async function writeGamelist(system, text) {
+  if (mode === 'xbox') return request('writeGamelist', { system, text })
+  await new Promise((resolve) => setTimeout(resolve, 150))
+  saveDemo(DEMO_GAMELISTS_KEY, { ...demoWrittenGamelists(), [system]: text })
+  return true
+}
 
 /**
  * @typedef {{ files: number, media: number, thumbnails: number, gamelist: number, saves: number,

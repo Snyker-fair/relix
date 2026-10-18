@@ -318,6 +318,17 @@ class Library {
   }
 
   /**
+   * A console's gamelist.xml was just written (Y › Find info…): its games are
+   * read again from that text, without asking the USB drive.
+   * @param {string} systemId
+   * @param {string} xml
+   */
+  applyGamelist(systemId, xml) {
+    this.#listed[systemId] = parseGamelist(xml, systemId, { includeHidden: true })
+    this.#rebuild()
+  }
+
+  /**
    * A game was renamed on the USB drive (see ui/renamer.svelte.js): the saved
    * scan and ES-DE's entries move to the new names without scanning again, and
    * the covers and images are read again.
