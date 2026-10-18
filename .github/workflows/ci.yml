@@ -1,6 +1,6 @@
-# Tests y compilación de la interfaz en cada cambio: los tests de la lógica
-# (vitest), que en.js tenga todos los textos en inglés y que las dos
-# compilaciones (la de la app y la demo autocontenida) salgan sin errores.
+# Tests and interface builds on every change: the logic tests (vitest),
+# that en.js has every text in English, and that both builds (the app's and
+# the self-contained demo) come out without errors.
 name: Tests
 
 on:
@@ -22,7 +22,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
-      - name: Textos sin traducir
+      - name: Untranslated texts
         run: node scripts/i18n.mjs
       - run: npm run build
       - run: npm run build:single

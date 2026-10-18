@@ -1,6 +1,6 @@
-# La demo en el navegador (los mismos datos de prueba de `npm run dev`),
-# publicada en GitHub Pages cada vez que cambia main.
-# Una vez: Settings › Pages › Source: GitHub Actions.
+# The browser demo (the same test data as `npm run dev`), deployed to
+# GitHub Pages every time main changes.
+# Once: Settings › Pages › Source: GitHub Actions.
 name: Demo
 
 on:
@@ -13,7 +13,7 @@ permissions:
   pages: write
   id-token: write
 
-# Una publicación a la vez; la más nueva gana
+# One deployment at a time; the newest wins
 concurrency:
   group: pages
   cancel-in-progress: true

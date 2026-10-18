@@ -1,18 +1,18 @@
-# Cada etiqueta vX.Y.Z prepara una versión: compila la interfaz y el shell,
-# arma el paquete para la Xbox, lo firma con el certificado guardado como
-# secreto y lo sube a GitHub Releases, junto con sus dependencias, como
-# borrador. Se publica a mano después de probarlo en la Xbox.
+# Every vX.Y.Z tag prepares a version: it builds the interface and the shell,
+# makes the Xbox package, signs it with the certificate kept as a secret and
+# uploads it to GitHub Releases, with its dependencies, as a draft. It's
+# published by hand after testing it on the Xbox.
 #
-# Secretos (Settings › Secrets and variables › Actions), una sola vez, con
+# Secrets (Settings › Secrets and variables › Actions), only once, with
 # scripts/create-certificate.ps1:
-#   RELIX_CERT            el certificado (.pfx) en base64
-#   RELIX_CERT_PASSWORD   su contraseña
+#   RELIX_CERT            the certificate (.pfx) in base64
+#   RELIX_CERT_PASSWORD   its password
 #
-# Publicar: npm version 1.0.1  ->  git push --follow-tags  (see docs/BUILDING.md)
+# Release: npm version 1.0.1  ->  git push --follow-tags  (see docs/BUILDING.md)
 #
-# Cada cambio del shell en main (y Actions › Release › Run workflow) arma el
-# mismo paquete como prueba, sin publicarlo: queda como artefacto del flujo.
-# Sin los secretos, ese paquete de prueba sale sin firmar.
+# Every shell change on main (and Actions › Release › Run workflow) builds the
+# same package as a test, without releasing it: it stays as a workflow artifact.
+# Without the secrets, that test package comes out unsigned.
 name: Release
 
 on:
@@ -27,23 +27,23 @@ permissions:
 
 jobs:
   package:
-    # windows-2022 trae Visual Studio 2022 con la carga de trabajo UWP, .NET Native
-    # y el SDK 10.0.26100 que pide el proyecto
+    # windows-2022 has Visual Studio 2022 with the UWP workload, .NET Native
+    # and the 10.0.26100 SDK the project asks for
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v5
 
-      - name: Versión
+      - name: Version
         shell: pwsh
         run: |
           $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
           if ('${{ github.ref_type }}' -eq 'tag') {
             $tag = '${{ github.ref_name }}'.TrimStart('v')
-            if ($tag -ne $version) { throw "La etiqueta es v$tag pero package.json dice $version" }
+            if ($tag -ne $version) { throw "The tag is v$tag but package.json says $version" }
             "PUBLISH=true" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
           }
           "VERSION=$version" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
-          # El paquete UWP usa cuatro números: 1.0.0 -> 1.0.0.0
+          # The UWP package uses four numbers: 1.0.0 -> 1.0.0.0
           $manifest = (Resolve-Path shell/RelixShell/Package.appxmanifest).Path
           [xml]$xml = Get-Content $manifest -Raw
           $xml.Package.Identity.Version = "$version.0"
@@ -55,10 +55,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
-      - name: Interfaz dentro del proyecto
+      - name: Interface inside the project
         run: npm run build:shell
 
-      - name: Certificado
+      - name: Certificate
         shell: pwsh
         env:
           RELIX_CERT: ${{ secrets.RELIX_CERT }}
@@ -67,20 +67,20 @@ jobs:
           New-Item -ItemType Directory "$env:RUNNER_TEMP\release" | Out-Null
           if (-not $env:RELIX_CERT) {
             if ($env:PUBLISH) { throw 'The RELIX_CERT secret is missing: see docs/BUILDING.md' }
-            Write-Host '::warning::Sin el secreto RELIX_CERT: el paquete de prueba sale sin firmar'
+            Write-Host '::warning::No RELIX_CERT secret: the test package comes out unsigned'
             "SIGN=false" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
             exit 0
           }
           "SIGN=true" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
           $pfx = "$env:RUNNER_TEMP\relix.pfx"
           [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:RELIX_CERT))
-          # Abrirlo revisa la contraseña antes de compilar
+          # Opening it checks the password before building
           $cert = [Security.Cryptography.X509Certificates.X509Certificate2]::new($pfx, $env:RELIX_CERT_PASSWORD)
-          Write-Host "Certificado: $($cert.Subject), válido hasta $($cert.NotAfter)"
+          Write-Host "Certificate: $($cert.Subject), valid until $($cert.NotAfter)"
 
       - uses: microsoft/setup-msbuild@v3
 
-      - name: Paquete para la Xbox
+      - name: Xbox package
         shell: pwsh
         env:
           RELIX_CERT_PASSWORD: ${{ secrets.RELIX_CERT_PASSWORD }}
@@ -88,13 +88,13 @@ jobs:
           $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
           $vs = & $vswhere -latest -property catalog_productDisplayVersion
           $uwp = & $vswhere -latest -requires Microsoft.VisualStudio.Workload.Universal -property installationPath
-          Write-Host "::notice::Visual Studio $vs · carga de trabajo UWP: $(if ($uwp) { 'sí' } else { 'no' })"
+          Write-Host "::notice::Visual Studio $vs · UWP workload: $(if ($uwp) { 'yes' } else { 'no' })"
 
           $params = @(
             'shell\RelixShell\RelixShell.csproj', '-restore', '-verbosity:minimal', '-nologo',
             '-property:Configuration=Release', '-property:Platform=x64',
             '-property:GenerateAppxPackageOnBuild=true', '-property:UapAppxPackageBuildMode=SideloadOnly',
-            '-property:AppxBundle=Never', "-property:AppxPackageDir=$env:RUNNER_TEMP\paquete\"
+            '-property:AppxBundle=Never', "-property:AppxPackageDir=$env:RUNNER_TEMP\package\"
           )
           Write-Host "::notice::msbuild $($params -join ' ')"
           if ($env:SIGN -eq 'true') {
@@ -107,7 +107,7 @@ jobs:
           & msbuild @params 2>&1 | Tee-Object -Variable log
           $code = $LASTEXITCODE
           if ($code -ne 0) {
-            # Los errores como una anotación: se ven en el resumen de la ejecución
+            # The errors as an annotation: they show in the run's summary
             $lines = @($log | ForEach-Object { "$_".Trim() } | Where-Object { $_ })
             $errors = @($lines | Select-String -Pattern 'error' -Context 0, 2 | Select-Object -First 8 |
               ForEach-Object { @($_.Line) + $_.Context.PostContext })
@@ -116,28 +116,28 @@ jobs:
             exit $code
           }
 
-      - name: Archivos y notas del release
+      - name: Release files and notes
         shell: pwsh
         run: |
           $out = "$env:RUNNER_TEMP\release"
-          $main = Get-ChildItem "$env:RUNNER_TEMP\paquete" -Recurse -File |
+          $main = Get-ChildItem "$env:RUNNER_TEMP\package" -Recurse -File |
             Where-Object { $_.Extension -in '.msix', '.appx' -and $_.DirectoryName -notmatch 'Dependencies' } |
             Select-Object -First 1
-          if (-not $main) { throw 'No se encontró el paquete' }
+          if (-not $main) { throw 'The package was not found' }
           Copy-Item $main.FullName "$out\Relix_$($env:VERSION)_x64$($main.Extension)"
           $deps = Join-Path $main.DirectoryName 'Dependencies\x64'
           Compress-Archive -Path "$deps\*" -DestinationPath "$out\Relix_$($env:VERSION)_Dependencies_x64.zip"
           $files = Get-ChildItem $out | ForEach-Object { '{0} ({1:N1} MB)' -f $_.Name, ($_.Length / 1MB) }
           $depNames = Get-ChildItem $deps -File | ForEach-Object Name
-          Write-Host "::notice title=Archivos::$($files -join ', ') · dependencias: $($depNames -join ', ')"
+          Write-Host "::notice title=Files::$($files -join ', ') · dependencies: $($depNames -join ', ')"
 
-          # Las notas: la sección de esta versión en CHANGELOG.md y cómo instalar
+          # The notes: this version's section in CHANGELOG.md and how to install
           $changelog = Get-Content CHANGELOG.md -Raw
           $pattern = "(?ms)^## \[$([regex]::Escape($env:VERSION))\][^\n]*\n(.*?)(?=^## \[|\z)"
           $match = [regex]::Match($changelog, $pattern)
           $notes = if ($match.Success) { $match.Groups[1].Value.Trim() -replace '\r', '' } else { '' }
-          # GitHub muestra cada salto de línea: se juntan las líneas de un mismo párrafo
-          # (las que no empiezan una viñeta, un título, una tabla o una cita)
+          # GitHub shows every line break: the lines of a paragraph are joined
+          # (the ones that don't start a bullet, a heading, a table or a quote)
           $notes = $notes -replace '\n[ \t]*(?=\S)(?![-*+] |#|\||>|\d+\. )', ' '
           $install = @(
             '### Install',
@@ -145,13 +145,13 @@ jobs:
             '',
             '**Instalar:** baja el `.msix` y el `.zip` de dependencias, descomprímelo y en el Device Portal: **My games & apps › Add**, elige el `.msix` y agrega las dependencias cuando las pida. Los pasos completos están en el [README en español](https://github.com/Snyker-fair/relix/blob/main/README.es.md#instalar).'
           ) -join "`n"
-          "$notes`n`n$install" | Out-File "$env:RUNNER_TEMP\notas.md" -Encoding utf8
+          "$notes`n`n$install" | Out-File "$env:RUNNER_TEMP\notes.md" -Encoding utf8
 
-      - name: Paquete de prueba (sin publicar)
+      - name: Test package (not released)
         if: env.PUBLISH != 'true'
         uses: actions/upload-artifact@v6
         with:
-          name: Relix_${{ env.VERSION }}_prueba
+          name: Relix_${{ env.VERSION }}_test
           path: ${{ runner.temp }}/release/
           retention-days: 14
 
@@ -159,9 +159,9 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           name: Relix ${{ env.VERSION }}
-          body_path: ${{ runner.temp }}/notas.md
+          body_path: ${{ runner.temp }}/notes.md
           files: ${{ runner.temp }}/release/*
-          # Queda como borrador: se prueba en la Xbox y se publica a mano
-          # (Releases › Edit › Publish release). Hasta entonces nadie lo ve
-          # y las Xbox no avisan de la versión nueva.
+          # It stays a draft: it's tested on the Xbox and published by hand
+          # (Releases › Edit › Publish release). Until then nobody sees it
+          # and Xboxes don't announce the new version.
           draft: true
