@@ -127,7 +127,9 @@ jobs:
           Copy-Item $main.FullName "$out\Relix_$($env:VERSION)_x64$($main.Extension)"
           $deps = Join-Path $main.DirectoryName 'Dependencies\x64'
           Compress-Archive -Path "$deps\*" -DestinationPath "$out\Relix_$($env:VERSION)_Dependencies_x64.zip"
-          Get-ChildItem $out | Format-Table Name, Length
+          $files = Get-ChildItem $out | ForEach-Object { '{0} ({1:N1} MB)' -f $_.Name, ($_.Length / 1MB) }
+          $depNames = Get-ChildItem $deps -File | ForEach-Object Name
+          Write-Host "::notice title=Archivos::$($files -join ', ') · dependencias: $($depNames -join ', ')"
 
           # Las notas: la sección de esta versión en CHANGELOG.md y cómo instalar
           $changelog = Get-Content CHANGELOG.md -Raw
