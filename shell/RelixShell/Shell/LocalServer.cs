@@ -9,15 +9,15 @@ using Windows.Storage.Streams;
 namespace RelixShell
 {
     /// <summary>
-    /// Responde los pedidos de la interfaz a https://relix.example sin pasar por la red:
+    /// Answers the interface's requests to https://relix.example without going through the network:
     ///
-    ///   /index.html, /assets/...         archivos de la interfaz (carpeta ui del paquete)
-    ///   /media/psx/covers/Juego.png      imágenes de ES-DE en el USB, por su nombre exacto
-    ///   /media/psx/covers/Juego          sin extensión: prueba .png, .jpg, .jpeg y .webp
-    ///   /media/psx/videos/Juego.mp4      videos de ES-DE, por partes (Range) para poder repetirlos
-    ///   /thumb/psx/Juego.png             miniatura JPG de esa portada (ver CoverService)
+    ///   /index.html, /assets/...         the interface's files (the package's ui folder)
+    ///   /media/psx/covers/Game.png       ES-DE images on the USB drive, by their exact name
+    ///   /media/psx/covers/Game           without an extension: tries .png, .jpg, .jpeg and .webp
+    ///   /media/psx/videos/Game.mp4       ES-DE videos, in ranges (Range) so they can loop
+    ///   /thumb/psx/Game.png              the JPG thumbnail of that cover (see CoverService)
     ///
-    /// Todo pasa por el mismo origen, así la interfaz no tiene problemas de CORS.
+    /// Everything goes through the same origin, so the interface has no CORS problems.
     /// </summary>
     internal sealed class LocalServer
     {
@@ -28,8 +28,8 @@ namespace RelixShell
         private static readonly string[] VideoExtensions = { ".mp4", ".webm", ".m4v" };
 
         /// <summary>
-        /// Lo más que se manda de un video por pedido. El reproductor pide el resto
-        /// a medida que lo necesita, así no se lee el archivo entero a memoria.
+        /// The most of a video sent per request. The player asks for the rest
+        /// as it needs it, so the whole file isn't read into memory.
         /// </summary>
         private const ulong MaxVideoChunk = 2 * 1024 * 1024;
 
@@ -106,7 +106,7 @@ namespace RelixShell
             }
         }
 
-        /// <summary>Archivos de la interfaz: carpeta ui dentro del paquete de la app.</summary>
+        /// <summary>The interface's files: the ui folder inside the app package.</summary>
         private static async Task<StorageFile> FindUiFileAsync(string path)
         {
             if (path.Length == 0 || path == "/")
@@ -128,7 +128,7 @@ namespace RelixShell
             }
         }
 
-        /// <summary>Imágenes de ES-DE: carpeta downloaded_media del USB.</summary>
+        /// <summary>ES-DE's images: the downloaded_media folder on the USB drive.</summary>
         private async Task<StorageFile> FindMediaAsync(string relative)
         {
             LibraryPaths paths = getPaths();
@@ -139,7 +139,7 @@ namespace RelixShell
 
             string basePath = Path.Combine(paths.MediaRoot, relative.Replace('/', '\\'));
 
-            // La interfaz ya sabe qué imágenes y videos hay (con su extensión): una sola búsqueda
+            // The interface already knows which images and videos there are (with their extension): a single lookup
             string extension = Path.GetExtension(basePath).ToLowerInvariant();
             if (Array.IndexOf(ImageExtensions, extension) >= 0 || Array.IndexOf(VideoExtensions, extension) >= 0)
             {
@@ -157,7 +157,7 @@ namespace RelixShell
             return null;
         }
 
-        /// <summary>"psx/Juego.png" -> miniatura de downloaded_media\psx\covers\Juego.png</summary>
+        /// <summary>"psx/Game.png" -> the thumbnail of downloaded_media\psx\covers\Game.png</summary>
         private async Task<StorageFile> FindThumbnailAsync(string relative)
         {
             LibraryPaths paths = getPaths();
@@ -175,10 +175,10 @@ namespace RelixShell
         }
 
         /// <summary>
-        /// Un video: si el reproductor pide un trozo (Range: bytes=inicio-fin), se
-        /// responde 206 con ese trozo (hasta 2 MB); si no, el archivo entero
-        /// avisando que acepta trozos. Sin esto, el WebView2 no puede volver al
-        /// principio para repetir el video.
+        /// A video: if the player asks for a piece (Range: bytes=start-end), it's
+        /// answered with a 206 and that piece (up to 2 MB); otherwise the whole file,
+        /// saying it accepts ranges. Without this, the WebView2 can't go back to
+        /// the start to loop the video.
         /// </summary>
         private async Task<CoreWebView2WebResourceResponse> VideoResponseAsync(
             StorageFile file, CoreWebView2HttpRequestHeaders requestHeaders)
@@ -229,8 +229,8 @@ namespace RelixShell
         }
 
         /// <summary>
-        /// Lee "Range: bytes=inicio-fin" (fin opcional) o "bytes=-N" (los últimos N).
-        /// false si el pedido no trae Range o no se entiende.
+        /// Reads "Range: bytes=start-end" (end optional) or "bytes=-N" (the last N).
+        /// false if the request has no Range or it can't be understood.
         /// </summary>
         private static bool TryParseRange(CoreWebView2HttpRequestHeaders headers, ulong size, out ulong start, out ulong end)
         {
@@ -279,8 +279,8 @@ namespace RelixShell
         }
 
         /// <summary>
-        /// true si la ruta intenta salir de su carpeta ("../"). Un nombre como
-        /// "Juego... (USA)" sí es válido.
+        /// true if the path tries to leave its folder ("../"). A name like
+        /// "Game... (USA)" is valid.
         /// </summary>
         private static bool GoesUp(string path)
         {
@@ -295,8 +295,8 @@ namespace RelixShell
                 contentType = "application/octet-stream";
             }
 
-            // Las portadas casi nunca cambian: que el WebView2 las guarde una semana.
-            // Si Relix reemplaza una, la interfaz cambia la URL (?v=...).
+            // Covers almost never change: let the WebView2 keep them for a week.
+            // If Relix replaces one, the interface changes the URL (?v=...).
             string cache = isMedia ? "max-age=604800" : "no-cache";
             return "Content-Type: " + contentType + "\r\nCache-Control: " + cache;
         }

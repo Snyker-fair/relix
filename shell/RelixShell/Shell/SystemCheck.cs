@@ -9,16 +9,16 @@ using Windows.Storage;
 namespace RelixShell
 {
     /// <summary>
-    /// Revisión del sistema (Opciones › Revisión y el primer uso): lo que Relix
-    /// puede comprobar del USB y de la consola. Aquí solo se mide; la interfaz
-    /// decide qué significa cada cosa y cómo arreglarla (src/lib/core/systemCheck.js).
+    /// The system checkup (Options › Checkup and the first run): what Relix
+    /// can check about the USB drive and the console. Here it's only measured; the
+    /// interface decides what each thing means and how to fix it (src/lib/core/systemCheck.js).
     /// </summary>
     internal static class SystemCheck
     {
-        /// <summary>El servidor de portadas: si responde, hay internet para bajarlas.</summary>
+        /// <summary>The cover server: if it answers, there's internet to download them.</summary>
         private const string ThumbnailsServer = "https://thumbnails.libretro.com/";
 
-        /// <summary>Tope de archivos por carpeta (las de BIOS tienen unos pocos).</summary>
+        /// <summary>A cap on files per folder (the BIOS folders have a few).</summary>
         private const int MaxFilesPerFolder = 300;
 
         private static readonly HttpClient Http = new HttpClient { Timeout = TimeSpan.FromSeconds(6) };
@@ -39,7 +39,7 @@ namespace RelixShell
             return result;
         }
 
-        /// <summary>Escribe y borra un archivo de prueba en E:\relix.</summary>
+        /// <summary>Writes and deletes a test file in E:\relix.</summary>
         private static async Task<bool> CanWriteAsync(LibraryPaths paths)
         {
             try
@@ -57,7 +57,7 @@ namespace RelixShell
             }
         }
 
-        /// <summary>{ free, total } en bytes, o null si la consola no lo informa.</summary>
+        /// <summary>{ free, total } in bytes, or null if the console doesn't report it.</summary>
         private static async Task<IJsonValue> SpaceAsync(LibraryPaths paths)
         {
             try
@@ -78,12 +78,12 @@ namespace RelixShell
             }
             catch (Exception)
             {
-                // sin datos de espacio: la interfaz no muestra esa fila
+                // no space data: the interface doesn't show that row
             }
             return JsonValue.CreateNullValue();
         }
 
-        /// <summary>Las carpetas dentro de roms (para avisar de las que Relix no usa).</summary>
+        /// <summary>The folders inside roms (to point out the ones Relix doesn't use).</summary>
         private static async Task<IJsonValue> RomFoldersAsync(LibraryPaths paths)
         {
             var names = new JsonArray();
@@ -99,8 +99,8 @@ namespace RelixShell
         }
 
         /// <summary>
-        /// Los archivos de cada carpeta pedida, relativa al USB ("RetroArch\\system").
-        /// null si la carpeta no existe.
+        /// The files of each folder asked for, relative to the USB drive ("RetroArch\\system").
+        /// null if the folder doesn't exist.
         /// </summary>
         private static async Task<IJsonValue> ListFoldersAsync(LibraryPaths paths, JsonArray folders)
         {
@@ -110,7 +110,7 @@ namespace RelixShell
                 string relative = value.GetString();
                 if (relative.Contains("..") || Path.IsPathRooted(relative))
                 {
-                    continue; // solo carpetas dentro del USB
+                    continue; // only folders inside the USB drive
                 }
 
                 StorageFolder folder = await LibraryReader.TryGetFolderAsync(Path.Combine(paths.DriveRoot, relative));
@@ -134,7 +134,7 @@ namespace RelixShell
             return result;
         }
 
-        /// <summary>¿Responde el servidor de portadas?</summary>
+        /// <summary>Does the cover server answer?</summary>
         private static async Task<bool> InternetAsync()
         {
             try

@@ -5,7 +5,7 @@
     xmlns:local="using:RelixShell">
 
     <Application.Resources>
-        <!-- Estilos de WinUI 2: los necesita el control WebView2 -->
+        <!-- WinUI 2 styles: the WebView2 control needs them -->
         <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
     </Application.Resources>
 </Application>

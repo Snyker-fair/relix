@@ -13,15 +13,15 @@ using Windows.UI.Xaml.Media;
 namespace RelixShell
 {
     /// <summary>
-    /// La única pantalla del shell: un WebView2 a pantalla completa con la
-    /// interfaz de Relix. Esta clase hace de puente entre la interfaz y la
-    /// consola (ver src/lib/core/bridge.js en el proyecto web).
+    /// The shell's only screen: a full-screen WebView2 with the Relix
+    /// interface. This class is the bridge between the interface and the
+    /// console (see src/lib/core/bridge.js in the web project).
     /// </summary>
     public sealed partial class MainPage : Page
     {
         /// <summary>
-        /// Dirección interna de la interfaz. No existe en internet: LocalServer
-        /// responde cada pedido desde el paquete de la app o desde el USB.
+        /// The interface's internal address. It doesn't exist on the internet: LocalServer
+        /// answers every request from the app package or from the USB drive.
         /// </summary>
         public const string Origin = "https://relix.example";
 
@@ -36,13 +36,13 @@ namespace RelixShell
         {
             InitializeComponent();
             Current = this;
-            // El fondo del tema que tenía la interfaz la última vez (ver SavedBackground)
+            // The theme background the interface had last time (see SavedBackground)
             Background = new SolidColorBrush(ParseColor(SavedBackground()));
 
             gamepad.ActionPressed += action => SendEvent("input", action);
 
-            // En Xbox, B también es "volver" para el sistema. Lo marcamos como
-            // manejado para que no saque a Relix; la interfaz recibe la B igual.
+            // On Xbox, B is also "back" for the system. We mark it as
+            // handled so it doesn't take you out of Relix; the interface still gets the B.
             SystemNavigationManager.GetForCurrentView().BackRequested += (s, e) => e.Handled = true;
 
             Window.Current.Activated += OnWindowActivated;
@@ -53,17 +53,17 @@ namespace RelixShell
         {
             Focus(FocusState.Programmatic);
 
-            // Fondo mientras carga, sin destello blanco (formato AARRGGBB): el del
-            // tema que tenía la interfaz la última vez (celeste, o azul noche si
-            // estaba en oscuro). Estas variables deben quedar antes de crear el WebView2.
+            // Background while loading, without a white flash (AARRGGBB format): the
+            // theme the interface had last time (light blue, or night blue if it
+            // was dark). These variables must be set before creating the WebView2.
             Environment.SetEnvironmentVariable("WEBVIEW2_DEFAULT_BACKGROUND_COLOR", SavedBackground());
 
-            // Sonido: el navegador solo deja sonar audio después de un clic o una
-            // tecla. En Relix el control llega por mensajes desde C#, que no
-            // cuentan como gesto, así que sin esto los sonidos quedan mudos.
+            // Sound: the browser only lets audio play after a click or a key press.
+            // In Relix the controller arrives as messages from C#, which don't
+            // count as a gesture, so without this the sounds stay muted.
             string browserArguments = "--autoplay-policy=no-user-gesture-required";
 #if DEBUG
-            // Permite inspeccionar la interfaz desde Edge en el PC (edge://inspect).
+            // Lets you inspect the interface from Edge on the PC (edge://inspect).
             browserArguments += " --enable-features=msEdgeDevToolsWdpRemoteDebugging";
 #endif
             Environment.SetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", browserArguments);
@@ -77,12 +77,12 @@ namespace RelixShell
             server = new LocalServer(core, () => paths, covers);
             core.WebMessageReceived += OnWebMessage;
 
-            // Si el proceso que dibuja la web se cae, se vuelve a cargar la interfaz.
+            // If the process that draws the web page crashes, the interface loads again.
             core.ProcessFailed += (s, failure) =>
             {
                 if (failure.ProcessFailedKind == CoreWebView2ProcessFailedKind.RenderProcessExited)
                 {
-                    // La interfaz no alcanza a anotarlo: lo anota el shell
+                    // The interface doesn't get to log it: the shell does
                     var ignored = DiagnosticLog.AppendAsync(paths, new[]
                     {
                         LogLine("ERROR", Text.Pick(
@@ -96,7 +96,7 @@ namespace RelixShell
             core.Navigate(Origin + "/index.html");
         }
 
-        // ── Registro de diagnóstico (E:\relix\registro.txt) ─────────────────
+        // ── Diagnostic log (E:\relix\log.txt) ───────────────────────────────
 
         private async Task AppendLogAsync(JsonArray values)
         {
@@ -114,24 +114,24 @@ namespace RelixShell
             }
             catch (UserFacingException)
             {
-                return; // sin USB no hay dónde anotar
+                return; // without a USB drive there's nowhere to write
             }
             await DiagnosticLog.AppendAsync(paths, lines);
         }
 
-        /// <summary>Una línea con el mismo formato que arma la interfaz (src/lib/core/diagnostics.js).</summary>
+        /// <summary>A line in the same format the interface builds (src/lib/core/diagnostics.js).</summary>
         private static string LogLine(string kind, string text)
         {
             return DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture)
                 + "  " + kind.PadRight(9) + " " + text;
         }
 
-        // ── Fondo del tema ──────────────────────────────────────────────────
+        // ── Theme background ────────────────────────────────────────────────
 
-        /// <summary>Celeste de Relix (tema claro), en AARRGGBB.</summary>
+        /// <summary>Relix's light blue (light theme), in AARRGGBB.</summary>
         private const string DefaultBackground = "FFDDEBF7";
 
-        /// <summary>El fondo que pidió la interfaz la última vez, o el celeste.</summary>
+        /// <summary>The background the interface asked for last time, or the light blue.</summary>
         private static string SavedBackground()
         {
             object saved;
@@ -150,7 +150,7 @@ namespace RelixShell
             Background = new SolidColorBrush(ParseColor(color));
         }
 
-        /// <summary>"FF0F1524": ocho dígitos hexadecimales.</summary>
+        /// <summary>"FF0F1524": eight hexadecimal digits.</summary>
         private static bool IsColor(string value)
         {
             if (value == null || value.Length != 8)
@@ -176,7 +176,7 @@ namespace RelixShell
                 Convert.ToByte(aarrggbb.Substring(6, 2), 16));
         }
 
-        /// <summary>Lo llama App al volver desde un emulador.</summary>
+        /// <summary>App calls it when coming back from an emulator.</summary>
         public void OnReturnedFromGame()
         {
             gamepad.Prime();
@@ -196,8 +196,8 @@ namespace RelixShell
         }
 
         /// <summary>
-        /// Relix volvió a verse (al salir del emulador o con el botón Xbox): la
-        /// interfaz cierra la partida en curso y suma el tiempo jugado.
+        /// Relix is visible again (after leaving the emulator or with the Xbox button):
+        /// the interface closes the session in progress and adds up the playtime.
         /// </summary>
         private void OnVisibilityChanged(object sender, VisibilityChangedEventArgs e)
         {
@@ -209,11 +209,11 @@ namespace RelixShell
 
         private void OnWebGotFocus(object sender, RoutedEventArgs e)
         {
-            // Si el WebView2 llega a tomar el foco, se lo devolvemos a la página.
+            // If the WebView2 ever takes the focus, we give it back to the page.
             Focus(FocusState.Programmatic);
         }
 
-        // ── Mensajes de la interfaz ─────────────────────────────────────────
+        // ── Messages from the interface ─────────────────────────────────────
 
         private async void OnWebMessage(CoreWebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
         {
@@ -232,12 +232,12 @@ namespace RelixShell
                 switch (type)
                 {
                     case "ready":
-                        // La interfaz ya está en pantalla: empezamos a leer el control.
+                        // The interface is on screen: we start reading the controller.
                         gamepad.Start();
                         break;
 
                     case "appendLog":
-                        // Sin respuesta: el registro nunca hace esperar a la interfaz
+                        // No answer: the log never makes the interface wait
                         await AppendLogAsync(payload.GetNamedArray("lines", new JsonArray()));
                         break;
 
@@ -249,12 +249,12 @@ namespace RelixShell
                         break;
 
                     case "setLanguage":
-                        // La interfaz cambió de idioma (o acaba de abrir): los mensajes del shell la siguen
+                        // The interface changed language (or just opened): the shell's messages follow it
                         Text.SetLanguage(payload.GetNamedString("language", "es"));
                         break;
 
                     case "setBackground":
-                        // El tema cambió: se usa ese fondo desde ahora y al abrir la próxima vez
+                        // The theme changed: that background is used from now on and the next time it opens
                         SaveBackground(payload.GetNamedString("color", DefaultBackground));
                         break;
 
@@ -327,8 +327,8 @@ namespace RelixShell
                         break;
 
                     default:
-                        // Un mensaje de una interfaz más nueva que este shell: se
-                        // responde para que la interfaz no se quede esperando
+                        // A message from an interface newer than this shell: it's
+                        // answered so the interface doesn't keep waiting
                         if (id != 0) ReplyError(id, Text.Pick(
                             "Esta versión del shell no conoce \"" + type + "\". Actualiza el proyecto C#.",
                             "This version of the shell doesn't know \"" + type + "\". Update the C# project."), "unknown-message");
@@ -346,15 +346,15 @@ namespace RelixShell
         }
 
         /// <summary>
-        /// Encuentra el USB y lee los datos de ES-DE. No recorre las carpetas de
-        /// roms: eso lo hace ScanRomsAsync, solo para las consolas que se pidan.
+        /// Finds the USB drive and reads ES-DE's data. It doesn't walk the roms
+        /// folders: ScanRomsAsync does that, only for the consoles asked for.
         /// </summary>
         private async Task<IJsonValue> LoadLibraryAsync(JsonObject payload)
         {
             await EnsurePathsAsync(refresh: true);
 
             var gamelists = new JsonObject();
-            // Cada consola llega como { id: "psx", folders: ["psx", "ps1", "playstation"] }
+            // Each console arrives as { id: "psx", folders: ["psx", "ps1", "playstation"] }
             List<string> systemIds = SystemIds(payload);
             foreach (string id in systemIds)
             {
@@ -367,7 +367,7 @@ namespace RelixShell
 
             var result = new JsonObject();
             result.SetNamedValue("romRoot", JsonValue.CreateStringValue(paths.RomRoot));
-            // Identifica el disco: si cambia, la interfaz descarta la lista guardada.
+            // Identifies the drive: if it changes, the interface drops the saved list.
             result.SetNamedValue("driveId", JsonValue.CreateStringValue(DriveId()));
             result.SetNamedValue("mediaBase", JsonValue.CreateStringValue(Origin + "/media"));
             result.SetNamedValue("thumbBase", JsonValue.CreateStringValue(Origin + "/thumb"));
@@ -376,17 +376,17 @@ namespace RelixShell
             return result;
         }
 
-        /// <summary>Identifica el disco: si cambia, la interfaz no mezcla datos de dos USB.</summary>
+        /// <summary>Identifies the drive: if it changes, the interface doesn't mix data from two USB drives.</summary>
         private string DriveId()
         {
             return paths.DriveRoot + "|" + paths.DriveName;
         }
 
-        // ── Tus datos (E:\relix\datos.json) ──────────────────────────────────
+        // ── Your data (E:\relix\data.json) ──────────────────────────────────
 
         /// <summary>
-        /// { driveId, text, source }. text es null si el USB aún no tiene datos;
-        /// source dice de qué archivo salió (datos.json, la anterior o un respaldo).
+        /// { driveId, text, source }. text is null if the USB drive has no data yet;
+        /// source says which file it came from (data.json, the previous one or a backup).
         /// </summary>
         private async Task<IJsonValue> LoadUserDataAsync()
         {
@@ -400,9 +400,9 @@ namespace RelixShell
             return result;
         }
 
-        // ── Portadas ────────────────────────────────────────────────────────
+        // ── Covers ──────────────────────────────────────────────────────────
 
-        /// <summary>{ psx: ["Okami (USA).png", ...] } para las consolas pedidas.</summary>
+        /// <summary>{ psx: ["Okami (USA).png", ...] } for the consoles asked for.</summary>
         private async Task<JsonObject> ListCoversAsync(List<string> systemIds)
         {
             var result = new JsonObject();
@@ -414,9 +414,9 @@ namespace RelixShell
         }
 
         /// <summary>
-        /// Lo que hay en downloaded_media para cada consola. Pedido:
+        /// What's in downloaded_media for each console. Request:
         /// { systems: ["psx"], types: ["screenshots", "fanart", "marquees", "videos"] }.
-        /// Respuesta: { media: { psx: { screenshots: ["Okami (USA).png"], videos: [...] } } }.
+        /// Answer: { media: { psx: { screenshots: ["Okami (USA).png"], videos: [...] } } }.
         /// </summary>
         private async Task<IJsonValue> ListMediaAsync(JsonObject payload)
         {
@@ -440,7 +440,7 @@ namespace RelixShell
             return result;
         }
 
-        /// <summary>Lista de portadas de libretro para una consola: { names: [...] }.</summary>
+        /// <summary>libretro's list of covers for a console: { names: [...] }.</summary>
         private async Task<IJsonValue> CoverIndexAsync(JsonObject payload)
         {
             await EnsurePathsAsync(refresh: false);
@@ -451,9 +451,9 @@ namespace RelixShell
         }
 
         /// <summary>
-        /// Baja portadas (o capturas) al USB. Pedido: { system, libretro, kind?, items: [{ key, remote }] }.
-        /// kind: "covers" (por defecto), "screenshots" o "titlescreens".
-        /// Mientras baja, manda eventos coverProgress { system, done, total }.
+        /// Downloads covers (or screenshots) to the USB drive. Request: { system, libretro, kind?, items: [{ key, remote }] }.
+        /// kind: "covers" (the default), "screenshots" or "titlescreens".
+        /// While downloading, it sends coverProgress { system, done, total } events.
         /// </summary>
         private async Task<IJsonValue> DownloadCoversAsync(JsonObject payload)
         {
@@ -493,9 +493,9 @@ namespace RelixShell
             return result;
         }
 
-        // ── Colecciones ─────────────────────────────────────────────────────
+        // ── Collections ─────────────────────────────────────────────────────
 
-        /// <summary>{ collections: [{ file: "custom-Nombre.cfg", text: "..." }] }</summary>
+        /// <summary>{ collections: [{ file: "custom-Name.cfg", text: "..." }] }</summary>
         private async Task<IJsonValue> ListCollectionsAsync()
         {
             await EnsurePathsAsync(refresh: false);
@@ -512,7 +512,7 @@ namespace RelixShell
             return result;
         }
 
-        /// <summary>Ids de "systems", que llegan como ["psx"] o como [{ id: "psx", ... }].</summary>
+        /// <summary>Ids from "systems", which arrive as ["psx"] or as [{ id: "psx", ... }].</summary>
         private static List<string> SystemIds(JsonObject payload)
         {
             var ids = new List<string>();
@@ -536,8 +536,8 @@ namespace RelixShell
         }
 
         /// <summary>
-        /// Recorre roms\&lt;consola&gt;\ solo para las consolas pedidas. La interfaz
-        /// lo usa la primera vez y desde Opciones, consola por consola.
+        /// Walks roms\&lt;console&gt;\ only for the consoles asked for. The interface
+        /// uses it the first time and from Options, console by console.
         /// </summary>
         private async Task<IJsonValue> ScanRomsAsync(JsonObject payload)
         {
@@ -559,7 +559,7 @@ namespace RelixShell
                     folderNames.Add(id);
                 }
 
-                // Sin carpeta para esa consola: se informa vacía, con el primer nombre aceptado
+                // No folder for that console: it's reported empty, with the first accepted name
                 RomFolder scan = await LibraryReader.ScanRomsAsync(paths, folderNames)
                     ?? new RomFolder(folderNames[0], new List<string>());
 
@@ -579,7 +579,7 @@ namespace RelixShell
             return result;
         }
 
-        /// <summary>Busca el USB (siempre si refresh es true; si no, solo la primera vez).</summary>
+        /// <summary>Looks for the USB drive (always if refresh is true; otherwise only the first time).</summary>
         private async Task EnsurePathsAsync(bool refresh)
         {
             if (paths == null || refresh)
@@ -597,8 +597,8 @@ namespace RelixShell
         }
 
         /// <summary>
-        /// Qué emuladores tiene la consola: { status: { retroarch: true, duckstation: false } }.
-        /// Pregunta por cada protocolo, igual que el aviso de "no está instalado".
+        /// Which emulators the console has: { status: { retroarch: true, duckstation: false } }.
+        /// It asks about each protocol, the same as the "isn't installed" notice.
         /// </summary>
         private static async Task<IJsonValue> EmulatorStatusAsync(JsonObject payload)
         {
@@ -615,7 +615,7 @@ namespace RelixShell
                 }
                 catch (Exception)
                 {
-                    // protocolo no válido: queda como no instalado
+                    // an invalid protocol: it counts as not installed
                 }
                 status.SetNamedValue(protocol, JsonValue.CreateBooleanValue(available));
             }
@@ -645,7 +645,7 @@ namespace RelixShell
                 return;
             }
 
-            // No se abrió: averiguamos si es porque el emulador no está instalado.
+            // It didn't open: we find out whether it's because the emulator isn't installed.
             LaunchQuerySupportStatus support =
                 await Launcher.QueryUriSupportAsync(uri, LaunchQuerySupportType.Uri);
             if (support != LaunchQuerySupportStatus.Available)
@@ -659,7 +659,7 @@ namespace RelixShell
                 Text.Pick("La consola no pudo abrir el emulador.", "The console couldn't open the emulator."));
         }
 
-        // ── Envío de mensajes a la interfaz ─────────────────────────────────
+        // ── Sending messages to the interface ───────────────────────────────
 
         private void Reply(double id, IJsonValue result)
         {

@@ -12,7 +12,7 @@ using Windows.Storage.Streams;
 
 namespace RelixShell
 {
-    /// <summary>Una portada para bajar: dónde guardarla y cómo se llama en libretro.</summary>
+    /// <summary>A cover to download: where to save it and what it's called on libretro.</summary>
     internal sealed class CoverRequest
     {
         public CoverRequest(string key, string remote)
@@ -21,14 +21,14 @@ namespace RelixShell
             Remote = remote;
         }
 
-        /// <summary>Ruta del juego sin extensión, p. ej. "Okami (USA)" o "FF7 (USA)/FF7 (USA)".</summary>
+        /// <summary>The game's path without its extension, e.g. "Okami (USA)" or "FF7 (USA)/FF7 (USA)".</summary>
         public string Key { get; }
 
-        /// <summary>Nombre en libretro sin ".png", p. ej. "Ookami (USA)".</summary>
+        /// <summary>The name on libretro without ".png", e.g. "Ookami (USA)".</summary>
         public string Remote { get; }
     }
 
-    /// <summary>Resultado de una descarga: lo que se guardó y lo que falló.</summary>
+    /// <summary>The result of a download: what was saved and what failed.</summary>
     internal sealed class CoverDownloadResult
     {
         public List<string> Saved { get; } = new List<string>();
@@ -36,22 +36,22 @@ namespace RelixShell
     }
 
     /// <summary>
-    /// Portadas e imágenes de libretro-thumbnails (las mismas de RetroArch):
+    /// Covers and images from libretro-thumbnails (the same as RetroArch's):
     ///
-    ///   - la lista de nombres de cada consola, guardada un mes en E:\relix\cache\libretro\
-    ///   - la descarga al USB, en la carpeta de ES-DE:
-    ///       E:\ES-DE\downloaded_media\&lt;consola&gt;\covers\&lt;juego&gt;.png        (Named_Boxarts)
-    ///       E:\ES-DE\downloaded_media\&lt;consola&gt;\screenshots\&lt;juego&gt;.png   (Named_Snaps)
-    ///       E:\ES-DE\downloaded_media\&lt;consola&gt;\titlescreens\&lt;juego&gt;.png  (Named_Titles)
-    ///   - las miniaturas JPG para la grilla, en E:\relix\cache\miniaturas\
-    ///     (o en la memoria interna de la app si el USB no deja escribir)
-    ///   - la lista de lo que ES-DE (o Relix) dejó en cada carpeta de downloaded_media
+    ///   - each console's list of names, kept for a month in E:\relix\cache\libretro\
+    ///   - the download to the USB drive, in ES-DE's folder:
+    ///       E:\ES-DE\downloaded_media\&lt;console&gt;\covers\&lt;game&gt;.png        (Named_Boxarts)
+    ///       E:\ES-DE\downloaded_media\&lt;console&gt;\screenshots\&lt;game&gt;.png   (Named_Snaps)
+    ///       E:\ES-DE\downloaded_media\&lt;console&gt;\titlescreens\&lt;game&gt;.png  (Named_Titles)
+    ///   - the JPG thumbnails for the grid, in E:\relix\cache\thumbnails\
+    ///     (or in the app's internal storage if the USB drive can't be written to)
+    ///   - the list of what ES-DE (or Relix) left in each downloaded_media folder
     /// </summary>
     internal sealed class CoverService
     {
         private const string Server = "https://thumbnails.libretro.com/";
 
-        /// <summary>Qué se puede bajar de libretro: carpeta de ES-DE -> carpeta de libretro.</summary>
+        /// <summary>What can be downloaded from libretro: ES-DE folder -> libretro folder.</summary>
         private static readonly Dictionary<string, string> LibretroFolders =
             new Dictionary<string, string>(StringComparer.Ordinal)
             {
@@ -60,22 +60,22 @@ namespace RelixShell
                 { "titlescreens", "Named_Titles" },
             };
 
-        /// <summary>Carpetas de downloaded_media que la interfaz puede pedir listar.</summary>
+        /// <summary>downloaded_media folders the interface can ask to list.</summary>
         private static readonly string[] MediaTypes =
             { "covers", "screenshots", "titlescreens", "fanart", "marquees", "videos" };
 
         private static readonly string[] VideoExtensions = { ".mp4", ".webm", ".m4v" };
 
-        /// <summary>Cada cuánto se vuelve a bajar la lista de nombres de una consola.</summary>
+        /// <summary>How often a console's list of names is downloaded again.</summary>
         private static readonly TimeSpan IndexMaxAge = TimeSpan.FromDays(30);
 
-        /// <summary>Ancho de las miniaturas: el doble de una portada en la grilla (184 px).</summary>
+        /// <summary>Thumbnail width: twice a cover in the grid (184 px).</summary>
         private const uint ThumbWidth = 368;
 
         /// <summary>Thumbnails folder inside E:\relix\cache (until 1.0.0, "miniaturas").</summary>
         internal const string ThumbnailFolder = "thumbnails";
 
-        /// <summary>Descargas a la vez: el servidor es comunitario, no hay que apurarlo.</summary>
+        /// <summary>Downloads at a time: the server is run by the community, there's no need to rush it.</summary>
         private const int ParallelDownloads = 2;
 
         private static readonly string[] ImageExtensions = { ".png", ".jpg", ".jpeg", ".webp" };
@@ -96,12 +96,12 @@ namespace RelixShell
             return client;
         }
 
-        // ── Lista de portadas de una consola ────────────────────────────────
+        // ── A console's list of covers ──────────────────────────────────────
 
         /// <summary>
-        /// Nombres de las portadas de una consola en libretro, sin ".png".
-        /// Usa la copia guardada si tiene menos de un mes; si no hay internet,
-        /// usa la copia aunque sea más vieja.
+        /// The names of a console's covers on libretro, without ".png".
+        /// It uses the saved copy if it's less than a month old; without internet,
+        /// it uses the copy even if it's older.
         /// </summary>
         public async Task<List<string>> GetIndexAsync(LibraryPaths paths, string libretroSystem)
         {
@@ -135,7 +135,7 @@ namespace RelixShell
                 }
                 catch (Exception)
                 {
-                    // Sin poder guardar la copia: se usa igual, se bajará de nuevo la próxima vez.
+                    // The copy couldn't be saved: it's used anyway, and downloaded again next time.
                 }
                 return names;
             }
@@ -154,7 +154,7 @@ namespace RelixShell
         }
 
         /// <summary>
-        /// Lee la página de índice del servidor. Cada portada es un enlace:
+        /// Reads the server's index page. Each cover is a link:
         /// &lt;a href="Ookami%20(USA).png"&gt;
         /// </summary>
         private static List<string> ParseIndex(string html)
@@ -181,12 +181,12 @@ namespace RelixShell
             return lines;
         }
 
-        // ── Descarga ────────────────────────────────────────────────────────
+        // ── Download ────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Baja las imágenes pedidas y las guarda en la carpeta de ES-DE del USB.
-        /// kind: "covers" (portadas), "screenshots" (capturas) o "titlescreens".
-        /// Avisa el avance con onProgress(listas, total).
+        /// Downloads the images asked for and saves them in ES-DE's folder on the USB drive.
+        /// kind: "covers", "screenshots" or "titlescreens".
+        /// It reports progress with onProgress(done, total).
         /// </summary>
         public async Task<CoverDownloadResult> DownloadAsync(
             LibraryPaths paths, string systemId, string libretroSystem, string kind,
@@ -215,8 +215,8 @@ namespace RelixShell
                         "I couldn't save to the USB drive. Plug the drive into the PC and apply the permissions again with the DevStore tool."));
             }
 
-            // Sin Task.Run: todo sigue en el hilo de la interfaz, así onProgress
-            // puede mandar mensajes al WebView2 sin cambiar de hilo.
+            // No Task.Run: everything stays on the interface thread, so onProgress
+            // can send messages to the WebView2 without switching threads.
             var result = new CoverDownloadResult();
             var gate = new SemaphoreSlim(ParallelDownloads);
             var progress = new int[1];
@@ -263,12 +263,12 @@ namespace RelixShell
                 throw new InvalidOperationException(Text.Pick("El servidor no devolvió una imagen.", "The server didn't return an image."));
             }
 
-            // La clave puede traer carpetas: "Final Fantasy VII (USA)/Final Fantasy VII (USA)"
+            // The key can include folders: "Final Fantasy VII (USA)/Final Fantasy VII (USA)"
             string[] parts = item.Key.Split('/');
             StorageFolder folder = await CreateFoldersAsync(covers, SubArray(parts, 0, parts.Length - 1));
             string stem = parts[parts.Length - 1];
 
-            // Una sola imagen por juego: se quitan las de otro formato (p. ej. un .jpg de ES-DE)
+            // A single image per game: the ones in another format go (e.g. a .jpg from ES-DE)
             foreach (string extension in ImageExtensions)
             {
                 if (extension != ".png" && await folder.TryGetItemAsync(stem + extension) is StorageFile old)
@@ -306,10 +306,10 @@ namespace RelixShell
             return ex.Message;
         }
 
-        // ── Portadas que ya están en el USB ─────────────────────────────────
+        // ── Covers already on the USB drive ─────────────────────────────────
 
         /// <summary>
-        /// Las portadas de una consola, con su extensión, relativas a covers:
+        /// A console's covers, with their extension, relative to covers:
         /// ["Okami (USA).png", "FF7 (USA)/FF7 (USA).jpg"]
         /// </summary>
         public static Task<List<string>> ListCoversAsync(LibraryPaths paths, string systemId)
@@ -317,15 +317,15 @@ namespace RelixShell
             return ListMediaAsync(paths, systemId, "covers");
         }
 
-        /// <summary>¿Es una carpeta de downloaded_media que la interfaz puede pedir?</summary>
+        /// <summary>Is it a downloaded_media folder the interface can ask for?</summary>
         public static bool IsMediaType(string type)
         {
             return Array.IndexOf(MediaTypes, type) >= 0;
         }
 
         /// <summary>
-        /// Los archivos de una carpeta de downloaded_media (covers, screenshots,
-        /// fanart, marquees, videos…), con su extensión y relativos a ella:
+        /// The files in a downloaded_media folder (covers, screenshots,
+        /// fanart, marquees, videos…), with their extension and relative to it:
         /// ["Okami (USA).png", "FF7 (USA)/FF7 (USA).mp4"]
         /// </summary>
         public static async Task<List<string>> ListMediaAsync(LibraryPaths paths, string systemId, string type)
@@ -355,13 +355,13 @@ namespace RelixShell
             return found;
         }
 
-        // ── Miniaturas ──────────────────────────────────────────────────────
+        // ── Thumbnails ──────────────────────────────────────────────────────
 
         /// <summary>
-        /// Miniatura JPG de una portada. Se crea la primera vez que se pide y
-        /// queda guardada. Si no se puede crear, devuelve la portada original.
+        /// A cover's JPG thumbnail. It's made the first time it's asked for and
+        /// stays saved. If it can't be made, it returns the original cover.
         /// </summary>
-        /// <param name="relativeFile">Relativa a covers, con extensión: "Okami (USA).png"</param>
+        /// <param name="relativeFile">Relative to covers, with the extension: "Okami (USA).png"</param>
         public async Task<StorageFile> GetThumbnailAsync(LibraryPaths paths, string systemId, string relativeFile)
         {
             StorageFile original = await LibraryReader.TryGetFileAsync(
@@ -424,7 +424,7 @@ namespace RelixShell
                 }
                 catch (Exception)
                 {
-                    await thumb.DeleteAsync(); // que no quede una miniatura a medias
+                    await thumb.DeleteAsync(); // so no half-made thumbnail is left behind
                     throw;
                 }
             }
@@ -458,7 +458,7 @@ namespace RelixShell
                     ExifOrientationMode.IgnoreExifOrientation, ColorManagementMode.DoNotColorManage);
                 byte[] pixels = pixelData.DetachPixelData();
 
-                // JPG no tiene transparencia: las esquinas transparentes quedan blancas
+                // JPG has no transparency: transparent corners turn white
                 for (int i = 0; i < pixels.Length; i += 4)
                 {
                     int alpha = pixels[i + 3];
@@ -485,8 +485,8 @@ namespace RelixShell
         }
 
         /// <summary>
-        /// Borra la portada de un juego (en cualquier formato) y su miniatura.
-        /// Así queda con la portada de color. key: ruta del juego sin extensión.
+        /// Deletes a game's cover (in any format) and its thumbnail.
+        /// That way it's left with the color cover. key: the game's path without its extension.
         /// </summary>
         public async Task DeleteCoverAsync(LibraryPaths paths, string systemId, string key)
         {
@@ -502,7 +502,7 @@ namespace RelixShell
             await DeleteThumbnailAsync(paths, systemId, key);
         }
 
-        /// <summary>Al reemplazar una portada, su miniatura vieja se borra.</summary>
+        /// <summary>When a cover is replaced, its old thumbnail is deleted.</summary>
         private async Task DeleteThumbnailAsync(LibraryPaths paths, string systemId, string key)
         {
             try
@@ -517,15 +517,15 @@ namespace RelixShell
             }
             catch (Exception)
             {
-                // Si no se pudo borrar, se verá la miniatura anterior hasta borrar la caché.
+                // If it couldn't be deleted, the old thumbnail shows until the cache is deleted.
             }
         }
 
-        // ── Carpetas ────────────────────────────────────────────────────────
+        // ── Folders ─────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Carpeta de caché: E:\relix\cache en el USB, para que sobreviva a
-        /// reinstalar la app. Si el USB no deja escribir, la memoria interna.
+        /// The cache folder: E:\relix\cache on the USB drive, so it survives
+        /// reinstalling the app. If the USB drive can't be written to, the internal storage.
         /// </summary>
         private async Task<StorageFolder> GetCacheRootAsync(LibraryPaths paths)
         {

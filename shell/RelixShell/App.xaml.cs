@@ -9,9 +9,9 @@ using Windows.UI.Xaml.Navigation;
 namespace RelixShell
 {
     /// <summary>
-    /// Punto de entrada de Relix en la Xbox.
-    /// Se abre desde Dev Home o, al cerrar un emulador, con el protocolo relix:
-    /// (la interfaz lo pide con launchOnExit=relix: en cada lanzamiento).
+    /// Relix's entry point on the Xbox.
+    /// It opens from Dev Home or, when an emulator closes, with the relix: protocol
+    /// (the interface asks for it with launchOnExit=relix: on every launch).
     /// </summary>
     sealed partial class App : Application
     {
@@ -19,10 +19,10 @@ namespace RelixShell
         {
             InitializeComponent();
 
-            // Sin cursor de "modo mouse": Relix se maneja solo con el control.
+            // No "mouse mode" cursor: Relix is used only with the controller.
             RequiresPointerMode = ApplicationRequiresPointerMode.WhenRequested;
 
-            // Los sonidos los pone la interfaz de Relix, no los de XAML.
+            // The Relix interface plays its own sounds, not XAML's.
             ElementSoundPlayer.State = ElementSoundPlayerState.Off;
 
             Suspending += OnSuspending;
@@ -39,14 +39,14 @@ namespace RelixShell
 
             if (args.Kind == ActivationKind.Protocol)
             {
-                // Volvimos desde un emulador
+                // We're back from an emulator
                 MainPage.Current?.OnReturnedFromGame();
             }
         }
 
         private void Start(bool prelaunch)
         {
-            // Usar toda la pantalla de la TV; los márgenes seguros los maneja la interfaz.
+            // Use the whole TV screen; the interface handles the safe margins.
             ApplicationView.GetForCurrentView().SetDesiredBoundsMode(ApplicationViewBoundsMode.UseCoreWindow);
 
             Frame rootFrame = Window.Current.Content as Frame;
@@ -72,7 +72,7 @@ namespace RelixShell
 
         private void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
         {
-            throw new Exception("No se pudo cargar la página " + e.SourcePageType.FullName);
+            throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
         }
 
         private void OnSuspending(object sender, SuspendingEventArgs e)

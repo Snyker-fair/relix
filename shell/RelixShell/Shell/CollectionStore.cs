@@ -7,20 +7,20 @@ using Windows.Storage;
 namespace RelixShell
 {
     /// <summary>
-    /// Colecciones personalizadas en el formato de ES-DE, en el USB:
+    /// Custom collections in ES-DE's format, on the USB drive:
     ///
-    ///   E:\ES-DE\collections\custom-&lt;Nombre&gt;.cfg
+    ///   E:\ES-DE\collections\custom-&lt;Name&gt;.cfg
     ///
-    /// Una línea por juego (%ROMPATH%/psx/Juego.chd). La interfaz arma y
-    /// entiende el contenido (ver src/lib/core/collections.js); aquí solo se
-    /// leen y escriben los archivos.
+    /// One line per game (%ROMPATH%/psx/Game.chd). The interface builds and
+    /// reads the content (see src/lib/core/collections.js); here the files are
+    /// only read and written.
     /// </summary>
     internal static class CollectionStore
     {
         private const string Prefix = "custom-";
         private const string Extension = ".cfg";
 
-        /// <summary>Todas las colecciones: nombre de archivo y contenido.</summary>
+        /// <summary>Every collection: file name and content.</summary>
         public static async Task<List<KeyValuePair<string, string>>> ListAsync(LibraryPaths paths)
         {
             var collections = new List<KeyValuePair<string, string>>();
@@ -40,7 +40,7 @@ namespace RelixShell
             return collections;
         }
 
-        /// <summary>Guarda una colección. Si el contenido queda vacío, se borra el archivo.</summary>
+        /// <summary>Saves a collection. If the content ends up empty, the file is deleted.</summary>
         public static async Task SaveAsync(LibraryPaths paths, string fileName, string text)
         {
             if (!IsCollectionFile(fileName))
@@ -75,7 +75,7 @@ namespace RelixShell
             }
         }
 
-        /// <summary>"custom-Nombre.cfg", sin carpetas ni caracteres raros.</summary>
+        /// <summary>"custom-Name.cfg", without folders or odd characters.</summary>
         private static bool IsCollectionFile(string name)
         {
             return name.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase)

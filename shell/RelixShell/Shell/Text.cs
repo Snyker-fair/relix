@@ -5,28 +5,28 @@ using Windows.System.UserProfile;
 namespace RelixShell
 {
     /// <summary>
-    /// Idioma de los mensajes del shell (errores que se ven en la interfaz y la
-    /// línea del registro cuando la interfaz se cae): el mismo de la interfaz,
-    /// que lo avisa con el mensaje setLanguage al abrir y cada vez que cambia.
+    /// The language of the shell's messages (errors shown in the interface and
+    /// the log line when the interface crashes): the same as the interface's,
+    /// which reports it with the setLanguage message when it opens and every time it changes.
     ///
-    /// Se guarda en LocalSettings, así los mensajes de antes de que la interfaz
-    /// hable (por ejemplo, "no encontré la carpeta roms") ya salen en su idioma.
-    /// La primera vez sigue al idioma de la consola, igual que Automático.
+    /// It's saved in LocalSettings, so the messages from before the interface
+    /// talks (for example, "I couldn't find the roms folder") already come out in its language.
+    /// The first time, it follows the console's language, just like Automatic.
     /// </summary>
     internal static class Text
     {
         private const string SettingKey = "language";
 
-        /// <summary>true: inglés; false: español</summary>
+        /// <summary>true: English; false: Spanish</summary>
         public static bool English { get; private set; } = LoadSaved();
 
-        /// <summary>El texto en el idioma de la interfaz.</summary>
+        /// <summary>The text in the interface's language.</summary>
         public static string Pick(string spanish, string english)
         {
             return English ? english : spanish;
         }
 
-        /// <summary>"es" o "en", como lo manda la interfaz.</summary>
+        /// <summary>"es" or "en", as the interface sends it.</summary>
         public static void SetLanguage(string language)
         {
             English = language == "en";
@@ -36,7 +36,7 @@ namespace RelixShell
             }
             catch (Exception)
             {
-                // sin LocalSettings vale solo mientras la app está abierta
+                // without LocalSettings it only lasts while the app is open
             }
         }
 
@@ -49,7 +49,7 @@ namespace RelixShell
                 {
                     return saved == "en";
                 }
-                // Todavía no hay: el idioma de la consola (español o, si no, inglés)
+                // Not set yet: the console's language (Spanish or, otherwise, English)
                 string first = GlobalizationPreferences.Languages.Count > 0 ? GlobalizationPreferences.Languages[0] : "";
                 return !first.StartsWith("es", StringComparison.OrdinalIgnoreCase);
             }

@@ -9,9 +9,9 @@
     Loaded="OnLoaded">
 
     <!--
-        El foco se queda en la página, nunca en el WebView2: así la consola no
-        muestra el cursor del "modo mouse" ni le entrega el control a la web.
-        El control lo lee GamepadInput y se lo pasa a la interfaz por mensajes.
+        The focus stays on the page, never on the WebView2: that way the console
+        doesn't show the "mouse mode" cursor or hand the controller to the web page.
+        GamepadInput reads the controller and passes it to the interface as messages.
     -->
     <Grid>
         <muxc:WebView2
