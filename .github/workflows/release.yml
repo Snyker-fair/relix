@@ -74,9 +74,8 @@ jobs:
           "SIGN=true" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
           $pfx = "$env:RUNNER_TEMP\relix.pfx"
           [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:RELIX_CERT))
-          # La parte pública, para quien quiera instalarla (sin la clave privada)
+          # Abrirlo revisa la contraseña antes de compilar
           $cert = [Security.Cryptography.X509Certificates.X509Certificate2]::new($pfx, $env:RELIX_CERT_PASSWORD)
-          [IO.File]::WriteAllBytes("$env:RUNNER_TEMP\release\Relix.cer", $cert.Export('Cert'))
           Write-Host "Certificado: $($cert.Subject), válido hasta $($cert.NotAfter)"
 
       - uses: microsoft/setup-msbuild@v3

@@ -59,8 +59,8 @@ borrador para que lo pruebes antes de publicarlo:
    `npm version` cambia `package.json` y `package-lock.json`, hace el commit y crea
    la etiqueta `v1.0.1`.
 3. En GitHub, pestaña **Actions** › **Release**: en unos 3 a 5 minutos aparece en
-   **Releases** un **borrador** (*Draft*) con el `.msix`, el `.zip` de dependencias
-   y `Relix.cer`. Solo tú lo ves.
+   **Releases** un **borrador** (*Draft*) con el `.msix` y el `.zip` de
+   dependencias. Solo tú lo ves.
 4. Baja el `.msix` y el `.zip` del borrador e instálalos en la Xbox como dice el
    README (**Instalar**). Revisa la prueba rápida de [`PROBAR.md`](PROBAR.md).
 5. Si anda: en el borrador, **Edit** (el lápiz) › **Publish release**. Desde ahí es
