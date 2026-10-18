@@ -297,6 +297,21 @@ namespace RelixShell
                         Reply(id, JsonValue.CreateBooleanValue(true));
                         break;
 
+                    case "readGamelist":
+                        // Y › Find info…: the gamelist as it is now, to add to it
+                        await EnsurePathsAsync(refresh: false);
+                        string gamelistText = await LibraryReader.ReadGamelistAsync(paths, payload.GetNamedString("system"));
+                        var gamelist = new JsonObject();
+                        gamelist.SetNamedValue("text", gamelistText == null ? JsonValue.CreateNullValue() : JsonValue.CreateStringValue(gamelistText));
+                        Reply(id, gamelist);
+                        break;
+
+                    case "writeGamelist":
+                        await EnsurePathsAsync(refresh: false);
+                        await GamelistWriter.WriteAsync(paths, payload.GetNamedString("system"), payload.GetNamedString("text"));
+                        Reply(id, JsonValue.CreateBooleanValue(true));
+                        break;
+
                     case "renamePreview":
                     case "renameGame":
                         // Y › Rename file…: renamePreview only counts what would move
