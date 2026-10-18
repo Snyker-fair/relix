@@ -4,6 +4,13 @@ Each version's section becomes the notes of its GitHub release.
 
 ## [1.1.0] - 2026-10-18
 
+- **Game info from Wikipedia:** *Y › Find info…* on a game, or *≡ › Library ›
+  Game info* for every game ES-DE didn't scrape. Relix finds each game among its
+  console's games on Wikidata and adds its description (from Wikipedia, in Spanish
+  or English, with its CC BY-SA credit), year, genre, developer, publisher and
+  players to ES-DE's `gamelist.xml`. The sure matches are saved by themselves and
+  you pick the rest. Nothing already there is replaced, the original gamelist is
+  kept as `gamelist.xml.relix-backup`, and no account or key is needed.
 - **Rename files to their standard name:** *Y › Rename file…* on a game, or
   *≡ › Library › File names* to go through every file whose name isn't the
   standard one (the Redump / No-Intro names libretro uses), each with its cover

@@ -43,6 +43,12 @@ cada botón. Logo, colores, tipografía y voz de la marca están en
   [libretro-thumbnails](https://github.com/libretro-thumbnails) (las mismas de
   RetroArch). Si el nombre de un archivo es dudoso, Relix no adivina: te deja
   elegir entre las más parecidas.
+- **Información de los juegos desde Wikipedia.** Para los juegos que ES-DE no
+  scrapeó: *Y › Buscar información…*, o *≡ › Biblioteca › Información de los
+  juegos* para todos, agrega la descripción, el año, el género, la desarrolladora,
+  la editora y los jugadores desde [Wikidata](https://www.wikidata.org) y
+  [Wikipedia](https://es.wikipedia.org) al `gamelist.xml` de ES-DE, en español o
+  inglés. Sin cuentas ni claves, y sin reemplazar nada de lo que ya hay.
 - **Nombres de archivo estándar.** *Y › Renombrar archivo…* (o *≡ › Biblioteca ›
   Nombres de archivo* para todos a la vez) cambia `kh2.iso` por
   `Kingdom Hearts II (USA).iso`, eligiendo entre los nombres de libretro con su
@@ -180,6 +186,7 @@ npm run build          # dist/ para el paquete UWP
 npm run build:single   # dist-single/index.html autocontenido (la demo)
 npm run build:shell    # compila y copia la interfaz al proyecto de Visual Studio
 node scripts/i18n.mjs  # textos que todavía no tienen su versión en inglés
+RELIX_LIVE=1 npx vitest run tests/gameInfo.live.test.js  # la información de los juegos contra Wikidata real (pide internet)
 ```
 
 En el navegador: flechas, Enter (A), Esc (B), X, Y, Q/E (LB/RB), Z/C (LT/RT), V
@@ -227,7 +234,7 @@ queda sin traducir.
 | Qué | Dónde |
 |---|---|
 | Juegos | `E:\roms\<consola>\` (nombres de ES-DE: `psx`, `ps2`, `psp`, `snes`, `n64`, `gba`, `gc`, `wiiu`, `n3ds`, `megadrive`, `dreamcast`, `xbox360`; también `ps1`, `genesis`, `3ds`, `dc`…) |
-| Gamelists | `E:\ES-DE\gamelists\<consola>\gamelist.xml` |
+| Gamelists | `E:\ES-DE\gamelists\<consola>\gamelist.xml` (la primera vez que Relix agrega información, el original queda como `gamelist.xml.relix-backup`) |
 | Portadas | `E:\ES-DE\downloaded_media\<consola>\covers\` (las de ES-DE y las que baja Relix) |
 | Fondos, logos y videos | `…\fanart\`, `…\screenshots\`, `…\marquees\`, `…\videos\` (de ES-DE) |
 | Colecciones | `E:\ES-DE\collections\custom-<Nombre>.cfg` (las ve también ES-DE) |
@@ -322,7 +329,10 @@ Usa [uqr](https://github.com/unjs/uqr) para los códigos QR (MIT) y las letras
 [Baloo 2](https://fonts.google.com/specimen/Baloo+2) y
 [Nunito](https://fonts.google.com/specimen/Nunito) (SIL Open Font License). Las
 portadas son de [libretro-thumbnails](https://github.com/libretro-thumbnails) y se
-bajan desde la consola; ninguna viene en este repositorio. Los nombres de consolas
+bajan desde la consola; ninguna viene en este repositorio. La información de los
+juegos viene de [Wikidata](https://www.wikidata.org) (CC0) y las descripciones de
+[Wikipedia](https://es.wikipedia.org) (CC BY-SA 4.0): cada una lleva su crédito al
+final. Los nombres de consolas
 y emuladores son marcas de sus dueños y se usan solo para decir con qué funciona
 Relix. Los íconos de las consolas están dibujados a mano y no usan logos.
 

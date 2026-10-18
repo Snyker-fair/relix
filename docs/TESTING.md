@@ -262,5 +262,29 @@ RetroArch, one of its saves in `E:\RetroArch\saves` with the same name
       without their standard name. **X** keeps a game as it is (it leaves the
       list), **RB** moves to the next one.
 
+## Game info from Wikipedia (1.1.0)
+Before starting, on the PC, copy `E:\ES-DE\gamelists\` somewhere safe, and copy to
+the USB drive a game ES-DE hasn't scraped (it has no description in Relix).
+**≡ → Library** to scan its console. The console needs internet.
+
+- [ ] On that game, **Y**: the menu has **Find info…** (a game with everything
+      doesn't show it).
+- [ ] **Find info…**: the left shows what it's missing; the right, the results
+      from Wikipedia with **Match** on the sure one, and its year, genre, players
+      and description. Moving through the results changes the description.
+- [ ] **A**: "Info saved: …". The game's panel now shows the description, with
+      "Source: Wikipedia, …" at the end, and **Y › Sort library › Year** places it.
+- [ ] On the PC, `gamelist.xml` has the new entry (or the missing fields in the
+      existing one) and `gamelist.xml.relix-backup` is the original. Open ES-DE:
+      it shows the description too.
+- [ ] A scraped game with a description keeps its own text: Relix only fills what
+      was empty.
+- [ ] **≡ → Library → Game info**: it says how many games have no description;
+      **A** goes through the consoles, saves the sure ones by itself and then
+      shows the ones to pick. **X** leaves a game without info (it leaves the list).
+- [ ] With the language in English, the descriptions come from the English
+      Wikipedia.
+- [ ] Without internet: it says it couldn't reach Wikipedia, and nothing changes.
+
 If something fails, the **If something fails** table in
 [`shell/README.md`](../shell/README.md) has the most common causes.

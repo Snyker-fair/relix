@@ -43,6 +43,12 @@ what each button does.
   [libretro-thumbnails](https://github.com/libretro-thumbnails) (the ones
   RetroArch uses). When a file name is ambiguous, Relix doesn't guess: it asks
   you to pick from the closest matches.
+- **Game info from Wikipedia.** For the games ES-DE didn't scrape: *Y › Find
+  info…*, or *≡ › Library › Game info* for all of them, adds the description,
+  year, genre, developer, publisher and players from
+  [Wikidata](https://www.wikidata.org) and [Wikipedia](https://www.wikipedia.org)
+  to ES-DE's `gamelist.xml`, in Spanish or English. No accounts or keys, and
+  nothing already there is replaced.
 - **Standard file names.** *Y › Rename file…* (or *≡ › Library › File names*
   for every file at once) renames `kh2.iso` to `Kingdom Hearts II (USA).iso`,
   picking from libretro's names with their covers or typing it. Its other discs,
@@ -179,6 +185,7 @@ npm run build          # dist/ for the UWP package
 npm run build:single   # dist-single/index.html, self-contained (the demo)
 npm run build:shell    # builds and copies the interface into the Visual Studio project
 node scripts/i18n.mjs  # strings still missing their English translation
+RELIX_LIVE=1 npx vitest run tests/gameInfo.live.test.js  # game info against the real Wikidata (needs internet)
 ```
 
 In the browser: arrow keys, Enter (A), Esc (B), X, Y, Q/E (LB/RB), Z/C (LT/RT),
@@ -228,7 +235,7 @@ untranslated.
 | What | Where |
 |---|---|
 | Games | `E:\roms\<console>\` (ES-DE names: `psx`, `ps2`, `psp`, `snes`, `n64`, `gba`, `gc`, `wiiu`, `n3ds`, `megadrive`, `dreamcast`, `xbox360`; also `ps1`, `genesis`, `3ds`, `dc`…) |
-| Gamelists | `E:\ES-DE\gamelists\<console>\gamelist.xml` |
+| Gamelists | `E:\ES-DE\gamelists\<console>\gamelist.xml` (the first time Relix adds game info, the original stays as `gamelist.xml.relix-backup`) |
 | Covers | `E:\ES-DE\downloaded_media\<console>\covers\` (ES-DE's and the ones Relix downloads) |
 | Backgrounds, logos, videos | `…\fanart\`, `…\screenshots\`, `…\marquees\`, `…\videos\` (from ES-DE) |
 | Collections | `E:\ES-DE\collections\custom-<Name>.cfg` (ES-DE sees them too) |
@@ -320,7 +327,10 @@ It uses [uqr](https://github.com/unjs/uqr) for QR codes (MIT) and the
 [Baloo 2](https://fonts.google.com/specimen/Baloo+2) and
 [Nunito](https://fonts.google.com/specimen/Nunito) typefaces (SIL Open Font
 License). Covers come from [libretro-thumbnails](https://github.com/libretro-thumbnails)
-and are downloaded on the console; none are included in this repository.
+and are downloaded on the console; none are included in this repository. Game
+info comes from [Wikidata](https://www.wikidata.org) (CC0) and the descriptions
+from [Wikipedia](https://www.wikipedia.org) (CC BY-SA 4.0): each one keeps its
+credit at the end.
 Console and emulator names are trademarks of their owners and are only used to
 say what Relix works with. Console icons are hand-drawn and don't use logos.
 
