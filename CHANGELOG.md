@@ -1,7 +1,19 @@
 # Changelog
 
 Each version's section becomes the notes of its GitHub release.
-Cada sección se usa como notas del release de esa versión.
+
+## [1.1.0] - 2026-10-18
+
+- **English file names on the USB drive:** your data is now in `relix\data.json`,
+  with `data.previous.json` and daily backups in `relix\backups\`; the diagnostic
+  log is `relix\log.txt` and the thumbnails are in `relix\cache\thumbnails\`. The
+  first time 1.1.0 opens a drive used with 1.0.0, it renames `datos.json`,
+  `respaldos\`, `registro.txt` and `cache\miniaturas\` by itself, without
+  overwriting or deleting anything: your favorites, collections and playtime
+  stay, and the thumbnails don't have to be made again.
+- **For contributors:** the code comments, tests, guides (`docs/BUILDING.md`,
+  `docs/TESTING.md`) and tools are in English, and commits follow Conventional
+  Commits. Relix itself still speaks Spanish and English.
 
 ## [1.0.0] - 2026-10-18
 
