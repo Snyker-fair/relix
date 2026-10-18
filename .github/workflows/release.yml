@@ -8,11 +8,18 @@
 #   RELIX_CERT_PASSWORD   su contraseña
 #
 # Publicar: npm version 1.0.1  ->  git push --follow-tags  (ver docs/COMPILAR.md)
+#
+# Cada cambio del shell en main (y Actions › Release › Run workflow) arma el
+# mismo paquete como prueba, sin publicarlo: queda como artefacto del flujo.
+# Sin los secretos, ese paquete de prueba sale sin firmar.
 name: Release
 
 on:
   push:
     tags: ['v[0-9]+.[0-9]+.[0-9]+']
+    branches: [main]
+    paths: ['shell/**', '.github/workflows/release.yml']
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -28,9 +35,12 @@ jobs:
       - name: Versión
         shell: pwsh
         run: |
-          $version = '${{ github.ref_name }}'.TrimStart('v')
-          $package = (Get-Content package.json -Raw | ConvertFrom-Json).version
-          if ($package -ne $version) { throw "La etiqueta es v$version pero package.json dice $package" }
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          if ('${{ github.ref_type }}' -eq 'tag') {
+            $tag = '${{ github.ref_name }}'.TrimStart('v')
+            if ($tag -ne $version) { throw "La etiqueta es v$tag pero package.json dice $version" }
+            "PUBLISH=true" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+          }
           "VERSION=$version" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
           # El paquete UWP usa cuatro números: 1.0.0 -> 1.0.0.0
           $manifest = (Resolve-Path shell/RelixShell/Package.appxmanifest).Path
@@ -53,11 +63,17 @@ jobs:
           RELIX_CERT: ${{ secrets.RELIX_CERT }}
           RELIX_CERT_PASSWORD: ${{ secrets.RELIX_CERT_PASSWORD }}
         run: |
-          if (-not $env:RELIX_CERT) { throw 'Falta el secreto RELIX_CERT: ver docs/COMPILAR.md' }
+          New-Item -ItemType Directory "$env:RUNNER_TEMP\release" | Out-Null
+          if (-not $env:RELIX_CERT) {
+            if ($env:PUBLISH) { throw 'Falta el secreto RELIX_CERT: ver docs/COMPILAR.md' }
+            Write-Host '::warning::Sin el secreto RELIX_CERT: el paquete de prueba sale sin firmar'
+            "SIGN=false" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+            exit 0
+          }
+          "SIGN=true" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
           $pfx = "$env:RUNNER_TEMP\relix.pfx"
           [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:RELIX_CERT))
           # La parte pública, para quien quiera instalarla (sin la clave privada)
-          New-Item -ItemType Directory "$env:RUNNER_TEMP\release" | Out-Null
           $cert = [Security.Cryptography.X509Certificates.X509Certificate2]::new($pfx, $env:RELIX_CERT_PASSWORD)
           [IO.File]::WriteAllBytes("$env:RUNNER_TEMP\release\Relix.cer", $cert.Export('Cert'))
           Write-Host "Certificado: $($cert.Subject), válido hasta $($cert.NotAfter)"
@@ -69,13 +85,16 @@ jobs:
         env:
           RELIX_CERT_PASSWORD: ${{ secrets.RELIX_CERT_PASSWORD }}
         run: |
+          $sign = if ($env:SIGN -eq 'true') {
+            '/p:AppxPackageSigningEnabled=true',
+            "/p:PackageCertificateKeyFile=$env:RUNNER_TEMP\relix.pfx",
+            "/p:PackageCertificatePassword=$env:RELIX_CERT_PASSWORD"
+          } else { '/p:AppxPackageSigningEnabled=false' }
           msbuild shell/RelixShell/RelixShell.csproj /restore /v:minimal `
             /p:Configuration=Release /p:Platform=x64 `
             /p:GenerateAppxPackageOnBuild=true /p:UapAppxPackageBuildMode=SideloadOnly /p:AppxBundle=Never `
             "/p:AppxPackageDir=$env:RUNNER_TEMP\paquete\" `
-            /p:AppxPackageSigningEnabled=true `
-            "/p:PackageCertificateKeyFile=$env:RUNNER_TEMP\relix.pfx" `
-            "/p:PackageCertificatePassword=$env:RELIX_CERT_PASSWORD"
+            @sign
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Archivos y notas del release
@@ -104,7 +123,16 @@ jobs:
           ) -join "`n"
           "$notes`n`n$install" | Out-File "$env:RUNNER_TEMP\notas.md" -Encoding utf8
 
-      - uses: softprops/action-gh-release@v2
+      - name: Paquete de prueba (sin publicar)
+        if: env.PUBLISH != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Relix_${{ env.VERSION }}_prueba
+          path: ${{ runner.temp }}/release/
+          retention-days: 14
+
+      - if: env.PUBLISH == 'true'
+        uses: softprops/action-gh-release@v2
         with:
           name: Relix ${{ env.VERSION }}
           body_path: ${{ runner.temp }}/notas.md

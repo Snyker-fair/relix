@@ -95,3 +95,4 @@ Certificados › Relix). Si algún día creas otro, usa el mismo publicador
 | [`ci.yml`](../.github/workflows/ci.yml) | Cada cambio en `main` y cada pull request | Tests, textos sin traducir y las dos compilaciones de la interfaz |
 | [`pages.yml`](../.github/workflows/pages.yml) | Cada cambio en `main` | Publica la demo en `snyker-fair.github.io/relix` |
 | [`release.yml`](../.github/workflows/release.yml) | Cada etiqueta `vX.Y.Z` | Compila el shell en Windows, firma el paquete y crea el release |
+| [`release.yml`](../.github/workflows/release.yml) | Cada cambio en `shell/` en `main` | Lo mismo, como prueba y sin publicar: el paquete queda en la ejecución (**Artifacts**) por 14 días |
