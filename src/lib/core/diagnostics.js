@@ -22,6 +22,7 @@ export const LOG_KINDS = {
   covers: 'PORTADAS',
   usb: 'USB',
   rename: 'RENOMBRAR',
+  info: 'FICHAS',
 }
 
 /** Longer lines are cut (URIs with long paths can go past 400) */

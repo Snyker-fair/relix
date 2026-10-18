@@ -11,6 +11,7 @@
   import { collections } from '../lib/ui/collections.svelte.js'
   import CoverArt from '../lib/ui/CoverArt.svelte'
   import { emulators } from '../lib/ui/emulators.svelte.js'
+  import { gameInfo } from '../lib/ui/gameInfo.svelte.js'
   import { activeFilters } from '../lib/ui/filters.svelte.js'
   import { plural } from '../lib/ui/format.js'
   import { t } from '../lib/i18n/i18n.svelte.js'
@@ -31,12 +32,13 @@
    *   onLaunch: (game: any) => void,
    *   onChangeCover: (game: any) => void,
    *   onRename: (game: any) => void,
+   *   onFindInfo: (game: any) => void,
    *   onToast: (message: string) => void,
    * }}
    *   sortOptions: the orders that make sense in that list (without it, "Sort" isn't shown)
    *   filterChannel: the open library channel (without it, "Filter" isn't shown)
    */
-  let { game, sortOptions, filterChannel, onClose, onLaunch, onChangeCover, onRename, onToast } = $props()
+  let { game, sortOptions, filterChannel, onClose, onLaunch, onChangeCover, onRename, onFindInfo, onToast } = $props()
 
   /** @typedef {{ id: string, icon: string, label: string, value?: string, checked?: boolean, disabled?: boolean, tag?: string }} Item */
 
@@ -83,6 +85,8 @@
     },
     { id: 'cover', icon: 'cover', label: t('Cambiar portada') },
     { id: 'rename', icon: 'rename', label: t('Renombrar archivo…') },
+    // Only if it's missing something Wikipedia could give
+    ...(gameInfo.canFill(game) ? [{ id: 'info', icon: 'info', label: t('Buscar información…') }] : []),
     { id: 'hide', icon: 'hide', label: t('Ocultar juego') },
     ...(sortOptions
       ? [{ id: 'sort', icon: 'sort', label: t('Ordenar biblioteca'), value: t(SORT_NAMES[settings.sortOrder]) }]
@@ -228,6 +232,10 @@
       sound.select()
       onClose()
       onRename(current)
+    } else if (item.id === 'info') {
+      sound.select()
+      onClose()
+      onFindInfo(current)
     } else if (item.id === 'hide') {
       library.hide(current)
       sound.back()

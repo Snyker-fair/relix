@@ -8,6 +8,7 @@ import { effectiveLanguage, interpolate, systemLanguage } from '../src/lib/core/
 import { buildLaunchUri } from '../src/lib/core/launchUri.js'
 import { getEmulator, getPlatform, PLATFORMS } from '../src/lib/core/platforms.js'
 import { PS1_BIOS, quickExitMessage } from '../src/lib/core/quickExit.js'
+import { INFO_FIELD_NAMES } from '../src/lib/core/gameInfo.js'
 import { RENAME_ERRORS, RENAME_STEPS } from '../src/lib/core/rename.js'
 import { sectionOf, SORT_NAMES } from '../src/lib/core/sorting.js'
 import { buildChecks, formatBytes } from '../src/lib/core/systemCheck.js'
@@ -175,6 +176,7 @@ describe('in English', () => {
       ...Object.values(SORT_NAMES),
       ...Object.values(RENAME_ERRORS),
       ...Object.values(RENAME_STEPS),
+      ...Object.values(INFO_FIELD_NAMES),
       ...Object.values(PS1_BIOS).map((b) => b.label),
       ...PLATFORMS.flatMap((p) => [p.noEmulatorNote ?? '', ...p.emulators.map((e) => e.note ?? '')]).filter(Boolean),
       DEVSTORE_LABEL,

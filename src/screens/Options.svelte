@@ -15,6 +15,7 @@
   import { library } from '../lib/ui/library.svelte.js'
   import Logo from '../lib/ui/Logo.svelte'
   import PadButton from '../lib/ui/PadButton.svelte'
+  import { gameInfo } from '../lib/ui/gameInfo.svelte.js'
   import { renamer } from '../lib/ui/renamer.svelte.js'
   import { settings } from '../lib/ui/settings.svelte.js'
   import { shelf } from '../lib/ui/shelf.svelte.js'
@@ -34,6 +35,7 @@
    *   onToast: (message: string) => void,
    *   onPickCovers: () => void,
    *   onRenameFiles: () => void,
+   *   onGameInfo: () => void,
    *   onGuide: (systemId: string, from: { section: string, row: string }) => void,
    *   onWelcome: () => void,
    *   initialSection?: string,
@@ -42,8 +44,17 @@
    *   initialRow: the row with the focus on opening (e.g. the console of the guide you're coming back from).
    *   In Checkup the console is enough: "psx" focuses its first check ("emu:psx").
    */
-  let { onBack, onToast, onPickCovers, onRenameFiles, onGuide, onWelcome, initialSection = 'library', initialRow } =
-    $props()
+  let {
+    onBack,
+    onToast,
+    onPickCovers,
+    onRenameFiles,
+    onGameInfo,
+    onGuide,
+    onWelcome,
+    initialSection = 'library',
+    initialRow,
+  } = $props()
 
   // Sections: they change with LB/RB, just like the consoles in the library
   const SECTIONS = $derived([
@@ -54,8 +65,8 @@
     { id: 'preferences', name: t('Preferencias') },
     { id: 'about', name: t('Acerca de') },
   ])
-  // Library: a row per console, "Scan everything", the file names and the hidden games
-  const LIBRARY_ROWS = [...PLATFORMS.map((p) => p.id), 'all', 'rename', 'hidden']
+  // Library: a row per console, "Scan everything", the file names, the games' information and the hidden games
+  const LIBRARY_ROWS = [...PLATFORMS.map((p) => p.id), 'all', 'rename', 'info', 'hidden']
   const PREFERENCE_ROWS = ['language', 'theme', 'empty', 'sounds', 'region', 'video', 'screensaver']
   // Consoles: which emulator each one opens with
   const CONSOLE_ROWS = PLATFORMS.map((p) => p.id)
@@ -196,7 +207,9 @@
         ? t('Mostrar')
         : ROWS[index] === 'rename'
           ? t('Revisar')
-          : t('Escanear')
+          : ROWS[index] === 'info'
+            ? t('Buscar')
+            : t('Escanear')
       : section === 'preferences' || section === 'consoles'
         ? t('Cambiar')
         : section === 'check'
@@ -231,6 +244,7 @@
     const id = ROWS[index]
     if (id === 'hidden') return unhideRow()
     if (id === 'rename') return (sound.select(), onRenameFiles())
+    if (id === 'info') return (sound.select(), onGameInfo())
     if (busy || scanningAll) return
     sound.select()
     try {
@@ -602,6 +616,30 @@
             <PadButton name="a" size={30} /> {t('Revisar')}
           {:else if toRename > 0}
             <span class="value on">{toRename}</span>
+          {/if}
+        </span>
+      {:else if id === 'info'}
+        {@const withoutInfo = gameInfo.withoutDescription}
+        <span class="badge neutral">
+          <ChannelIcon id="info" color="currentColor" size={46} />
+        </span>
+        <span class="text">
+          <strong>{t('Información de los juegos')}</strong>
+          <span>
+            {gameInfo.finding
+              ? t('Buscando en Wikipedia: {console}…', { console: gameInfo.finding.console })
+              : withoutInfo > 0
+                ? tn(withoutInfo, '{n} juego sin descripción · desde Wikipedia', '{n} juegos sin descripción · desde Wikipedia')
+                : t('Todos tienen su descripción')}
+          </span>
+        </span>
+        <span class="state">
+          {#if gameInfo.finding}
+            <span class="spinner" aria-hidden="true"></span>
+          {:else if focused}
+            <PadButton name="a" size={30} /> {t('Buscar')}
+          {:else if withoutInfo > 0}
+            <span class="value on">{withoutInfo}</span>
           {/if}
         </span>
       {:else if id === 'hidden'}

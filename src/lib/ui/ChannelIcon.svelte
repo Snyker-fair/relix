@@ -127,6 +127,10 @@
     <!-- box with a check mark: pick by hand -->
     <rect x="20" y="10" width="56" height="76" rx="9" />
     <path d="M34 49l10 10 19-21" />
+  {:else if id === 'info'}
+    <!-- an open book: the game's information -->
+    <path d="M48 26c-8-6-20-8-34-6v52c14-2 26 0 34 6 8-6 20-8 34-6V20c-14-2-26 0-34 6Z" />
+    <path d="M48 26v52" />
   {:else if id === 'rename'}
     <!-- pencil over a line: rename the file -->
     <path d="M60 14l20 20-40 40H20V54Z" />

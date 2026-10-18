@@ -24,6 +24,7 @@
   import Stage from './lib/ui/Stage.svelte'
   import CoverPicker from './screens/CoverPicker.svelte'
   import RenamePicker from './screens/RenamePicker.svelte'
+  import InfoPicker from './screens/InfoPicker.svelte'
   import GameMenu from './screens/GameMenu.svelte'
   import Guide from './screens/Guide.svelte'
   import Home from './screens/Home.svelte'
@@ -43,6 +44,7 @@
    *   | { name: 'options', from: any, section?: string, row?: string }
    *   | { name: 'coverPicker', back: any, gameId?: string }
    *   | { name: 'renamer', back: any, gameId?: string }
+   *   | { name: 'info', back: any, gameId?: string }
    *   | { name: 'guide', systemId: string, back: any }
    *   | { name: 'welcome', step: number, row?: string, back: any, auto?: boolean }} Screen
    *   welcome.auto: it opened by itself the first time (not from Options)
@@ -346,6 +348,11 @@
   }
 
   /** @param {any} game */
+  function findInfo(game) {
+    screen = { name: 'info', back: screen, gameId: game.id }
+  }
+
+  /** @param {any} game */
   async function startGame(game) {
     const platform = getPlatform(game.system)
     // That game's, its console's or the recommended one (see emulators.svelte.js)
@@ -452,6 +459,7 @@
       onToast={showToast}
       onPickCovers={() => (screen = { name: 'coverPicker', back: { ...options, section: 'covers' } })}
       onRenameFiles={() => (screen = { name: 'renamer', back: { ...options, section: 'library', row: 'rename' } })}
+      onGameInfo={() => (screen = { name: 'info', back: { ...options, section: 'library', row: 'info' } })}
       onGuide={(systemId, from) => (screen = { name: 'guide', systemId, back: { ...options, ...from } })}
       onWelcome={() => (screen = { name: 'welcome', step: 0, back: { ...options, section: 'check', row: 'welcome' } })}
     />
@@ -489,6 +497,9 @@
   {:else if screen.name === 'renamer'}
     {@const back = screen.back}
     <RenamePicker gameId={screen.gameId} onBack={() => (screen = back)} onToast={showToast} />
+  {:else if screen.name === 'info'}
+    {@const back = screen.back}
+    <InfoPicker gameId={screen.gameId} onBack={() => (screen = back)} onToast={showToast} />
   {:else}
     {@const back = screen.back}
     <CoverPicker gameId={screen.gameId} onBack={() => (screen = back)} onToast={showToast} />
@@ -503,6 +514,7 @@
       onLaunch={startGame}
       onChangeCover={changeCover}
       onRename={renameFile}
+      onFindInfo={findInfo}
       onToast={showToast}
     />
   {/if}
