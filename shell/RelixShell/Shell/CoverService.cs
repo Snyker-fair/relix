@@ -549,6 +549,16 @@ namespace RelixShell
             return cacheRoot;
         }
 
+        /// <summary>A console's thumbnails folder (null if it has none yet).</summary>
+        internal async Task<StorageFolder> ThumbnailFolderAsync(LibraryPaths paths, string systemId)
+        {
+            StorageFolder root = await GetCacheRootAsync(paths);
+            return await root.TryGetItemAsync(ThumbnailFolder) is StorageFolder thumbs
+                && await thumbs.TryGetItemAsync(systemId) is StorageFolder system
+                ? system
+                : null;
+        }
+
         internal static async Task<StorageFolder> CreateFoldersAsync(StorageFolder parent, params string[] names)
         {
             StorageFolder folder = parent;

@@ -297,6 +297,13 @@ namespace RelixShell
                         Reply(id, JsonValue.CreateBooleanValue(true));
                         break;
 
+                    case "renamePreview":
+                    case "renameGame":
+                        // Y › Rename file…: renamePreview only counts what would move
+                        await EnsurePathsAsync(refresh: false);
+                        Reply(id, await RomRenamer.RunAsync(paths, covers, payload, dryRun: type == "renamePreview"));
+                        break;
+
                     case "listCollections":
                         Reply(id, await ListCollectionsAsync());
                         break;
