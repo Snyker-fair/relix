@@ -30,7 +30,7 @@ jobs:
     # y el SDK 10.0.26100 que pide el proyecto
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Versión
         shell: pwsh
@@ -48,7 +48,7 @@ jobs:
           $xml.Package.Identity.Version = "$version.0"
           $xml.Save($manifest)
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -78,7 +78,7 @@ jobs:
           [IO.File]::WriteAllBytes("$env:RUNNER_TEMP\release\Relix.cer", $cert.Export('Cert'))
           Write-Host "Certificado: $($cert.Subject), válido hasta $($cert.NotAfter)"
 
-      - uses: microsoft/setup-msbuild@v2
+      - uses: microsoft/setup-msbuild@v3
 
       - name: Paquete para la Xbox
         shell: pwsh
@@ -144,14 +144,14 @@ jobs:
 
       - name: Paquete de prueba (sin publicar)
         if: env.PUBLISH != 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: Relix_${{ env.VERSION }}_prueba
           path: ${{ runner.temp }}/release/
           retention-days: 14
 
       - if: env.PUBLISH == 'true'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: Relix ${{ env.VERSION }}
           body_path: ${{ runner.temp }}/notas.md
