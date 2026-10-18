@@ -90,12 +90,22 @@ jobs:
             "/p:PackageCertificateKeyFile=$env:RUNNER_TEMP\relix.pfx",
             "/p:PackageCertificatePassword=$env:RELIX_CERT_PASSWORD"
           } else { '/p:AppxPackageSigningEnabled=false' }
-          msbuild shell/RelixShell/RelixShell.csproj /restore /v:minimal `
+          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -format json | ConvertFrom-Json
+          $uwp = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -requires Microsoft.VisualStudio.Workload.Universal -property installationPath
+          Write-Host "::notice::Visual Studio $($vs.catalog.productDisplayVersion) · carga de trabajo UWP: $(if ($uwp) { 'sí' } else { 'no' })"
+          msbuild shell/RelixShell/RelixShell.csproj /restore /v:minimal /nologo `
             /p:Configuration=Release /p:Platform=x64 `
             /p:GenerateAppxPackageOnBuild=true /p:UapAppxPackageBuildMode=SideloadOnly /p:AppxBundle=Never `
             "/p:AppxPackageDir=$env:RUNNER_TEMP\paquete\" `
-            @sign
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            @sign 2>&1 | Tee-Object -Variable log
+          $code = $LASTEXITCODE
+          if ($code -ne 0) {
+            # Los errores como anotaciones: se ven en el resumen de la ejecución
+            $errors = @($log | Select-String -Pattern ': error |error MSB|error CS|error APPX|error NU' | Select-Object -First 10)
+            if ($errors.Count -eq 0) { $errors = @($log | Select-Object -Last 10) }
+            foreach ($line in $errors) { Write-Host "::error::$("$line".Trim())" }
+            exit $code
+          }
 
       - name: Archivos y notas del release
         shell: pwsh
