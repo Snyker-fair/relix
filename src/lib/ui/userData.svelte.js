@@ -18,6 +18,12 @@ import { localMeta, markSynced, readSynced, replaceSynced, setLocalDrive, watchS
 
 const SAVE_DELAY = 2000
 
+/**
+ * Your data's main file. datos.json is its name on drives used with 1.0.0: the
+ * shell renames it, and if it can't yet (a read-only drive), it still reads it.
+ */
+const MAIN_FILES = ['data.json', 'datos.json']
+
 class UserDataSync {
   /**
    * off      sin USB (los datos quedan en la app)
@@ -65,7 +71,7 @@ class UserDataSync {
     if (source === 'usb' && usb) {
       // replaceSynced avisa a cada estado; si es lo mismo que ya había, no cambia nada visible
       replaceSynced(usb.values, usb.savedAt, file.driveId)
-      this.recoveredFrom = file.source && file.source !== 'datos.json' ? file.source : ''
+      this.recoveredFrom = file.source && !MAIN_FILES.includes(file.source) ? file.source : ''
       this.savedAt = usb.savedAt
       this.status = 'saved'
       // Si salió de una copia (datos.json estaba dañado), se reescribe datos.json

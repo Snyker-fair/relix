@@ -8,25 +8,25 @@ using Windows.Storage.FileProperties;
 namespace RelixShell
 {
     /// <summary>
-    /// Registro de diagnóstico en el USB: E:\relix\registro.txt, texto simple que
-    /// se lee en el PC. Una línea por evento (lanzamientos, errores, revisión…);
-    /// las arma la interfaz (src/lib/core/diagnostics.js) y aquí solo se guardan.
+    /// Diagnostic log on the USB drive: E:\relix\log.txt, plain text to read on
+    /// the PC. One line per event (launches, errors, checkup…); the interface
+    /// builds them (src/lib/core/diagnostics.js) and here they are only saved.
     ///
-    /// Cuando pasa de MaxBytes, el archivo pasa a ser registro.anterior.txt y se
-    /// empieza uno nuevo: nunca crece sin límite.
+    /// Past MaxBytes, the file becomes log.previous.txt and a new one starts:
+    /// it never grows without limit.
     /// </summary>
     internal static class DiagnosticLog
     {
         private const string Folder = "relix";
-        private const string FileName = "registro.txt";
-        private const string PreviousName = "registro.anterior.txt";
+        private const string FileName = "log.txt";
+        private const string PreviousName = "log.previous.txt";
         private const ulong MaxBytes = 256 * 1024;
         private const int MaxLineLength = 600;
 
-        /// <summary>Una escritura a la vez: los eventos llegan juntos al lanzar un juego.</summary>
+        /// <summary>One write at a time: events arrive together when a game launches.</summary>
         private static readonly SemaphoreSlim Gate = new SemaphoreSlim(1, 1);
 
-        /// <summary>Agrega líneas al final. Si el USB no deja escribir, no hace nada.</summary>
+        /// <summary>Adds lines at the end. If the USB drive can't be written to, it does nothing.</summary>
         public static async Task AppendAsync(LibraryPaths paths, IEnumerable<string> lines)
         {
             var clean = new List<string>();
@@ -40,6 +40,7 @@ namespace RelixShell
                 return;
             }
 
+            await LegacyFileNames.MigrateAsync(paths);
             await Gate.WaitAsync();
             try
             {
@@ -58,7 +59,7 @@ namespace RelixShell
             }
             catch (Exception)
             {
-                // El registro nunca debe romper nada: sin permisos, simplemente no se anota
+                // The log must never break anything: without permissions, it simply isn't written
             }
             finally
             {
@@ -66,7 +67,7 @@ namespace RelixShell
             }
         }
 
-        /// <summary>Las últimas líneas del registro (para verlas en la TV), de la más vieja a la más nueva.</summary>
+        /// <summary>The last lines of the log (to see them on the TV), oldest to newest.</summary>
         public static async Task<List<string>> ReadLastAsync(LibraryPaths paths, int count)
         {
             var result = new List<string>();
@@ -74,6 +75,7 @@ namespace RelixShell
             {
                 return result;
             }
+            await LegacyFileNames.MigrateAsync(paths);
             await Gate.WaitAsync();
             try
             {
@@ -99,7 +101,7 @@ namespace RelixShell
             }
             catch (Exception)
             {
-                // Sin registro que leer: la interfaz muestra la lista vacía
+                // No log to read: the interface shows an empty list
             }
             finally
             {

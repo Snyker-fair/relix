@@ -59,11 +59,11 @@ cada botón. Logo, colores, tipografía y voz de la marca están en
   tiene su guía: qué instalar desde DevStore, qué archivos pide y dónde van, con
   un QR para el celular.
 - **Tus datos viajan con el USB.** Favoritos, colecciones, tiempo de juego y
-  preferencias se guardan en `relix\datos.json`, con la copia anterior y un
+  preferencias se guardan en `relix\data.json`, con la copia anterior y un
   respaldo por día de la última semana. Reinstala Relix o cambia de Xbox y todo
   sigue ahí.
 - **Registro de diagnóstico.** Cada juego que abres (con su URI exacta), cómo
-  volvió y cada error, en `relix\registro.txt` y en pantalla en Revisión.
+  volvió y cada error, en `relix\log.txt` y en pantalla en Revisión.
 - **Español e inglés**, automático según el idioma de la consola. **Tema claro y
   oscuro**, con un modo automático para la noche. **Protector de pantalla** con
   tus juegos y **aviso de versión nueva** cuando sale una.
@@ -154,7 +154,7 @@ flowchart LR
   y en la Xbox, sin convertir nada.
 - **Los datos en el USB, no en la app.** Los datos de una app UWP se borran al
   desinstalarla, y una app en Modo Desarrollador se reinstala seguido.
-  `datos.json` se escribe a través de un archivo temporal, guarda la versión
+  `data.json` se escribe a través de un archivo temporal, guarda la versión
   anterior y respaldos diarios, y Relix usa la copia válida más nueva.
 - **Decir qué falla, no solo que falló.** Un emulador nunca le dice a Relix por qué
   se cerró: Relix lo deduce (se cerró antes de 15 s = no abrió) y apunta a la causa
@@ -225,16 +225,16 @@ queda sin traducir.
 | Portadas | `E:\ES-DE\downloaded_media\<consola>\covers\` (las de ES-DE y las que baja Relix) |
 | Fondos, logos y videos | `…\fanart\`, `…\screenshots\`, `…\marquees\`, `…\videos\` (de ES-DE) |
 | Colecciones | `E:\ES-DE\collections\custom-<Nombre>.cfg` (las ve también ES-DE) |
-| Tus datos | `E:\relix\datos.json`, `datos.anterior.json` y `respaldos\` (los últimos 7 días) |
-| Registro de diagnóstico | `E:\relix\registro.txt` (y `registro.anterior.txt`) |
+| Tus datos | `E:\relix\data.json`, `data.previous.json` y `backups\` (los últimos 7 días) |
+| Registro de diagnóstico | `E:\relix\log.txt` (y `log.previous.txt`) |
 | Caché | `E:\relix\cache\` (listas de libretro y miniaturas; se puede borrar) |
 
 Los juegos de varios discos van en un `.m3u`; los de Xbox 360 y Dreamcast pueden
 ir en una carpeta por juego (`Halo 3 (USA)\default.xex`): el nombre sale de la
 carpeta.
 
-**Volver a un respaldo:** en el PC, copia el `respaldos\datos-<día>.json` que
-quieras encima de `E:\relix\datos.json` y abre Relix. Cuando el archivo del USB
+**Volver a un respaldo:** en el PC, copia el `backups\data-<día>.json` que
+quieras encima de `E:\relix\data.json` y abre Relix. Cuando el archivo del USB
 cambia por fuera de la app (un respaldo, u otra Xbox), Relix usa el del USB.
 
 ### Fondos, logos y videos con ES-DE (en el PC)

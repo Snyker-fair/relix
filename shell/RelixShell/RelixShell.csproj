@@ -127,6 +127,7 @@
     <Compile Include="Shell\CoverService.cs" />
     <Compile Include="Shell\DiagnosticLog.cs" />
     <Compile Include="Shell\GamepadInput.cs" />
+    <Compile Include="Shell\LegacyFileNames.cs" />
     <Compile Include="Shell\LibraryReader.cs" />
     <Compile Include="Shell\LocalServer.cs" />
     <Compile Include="Shell\SystemCheck.cs" />

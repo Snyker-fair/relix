@@ -21,9 +21,9 @@
     { label: t('Juegos'), path: `${library.romRoot}\\${t('<consola>')}` },
     { label: t('Portadas'), path: `${drive}\\ES-DE\\downloaded_media` },
     { label: t('Colecciones'), path: `${drive}\\ES-DE\\collections` },
-    { label: t('Tus datos'), path: `${drive}\\relix\\datos.json` },
-    { label: t('Respaldos'), path: `${drive}\\relix\\respaldos ${t('(7 días)')}` },
-    { label: t('Registro'), path: `${drive}\\relix\\registro.txt` },
+    { label: t('Tus datos'), path: `${drive}\\relix\\data.json` },
+    { label: t('Respaldos'), path: `${drive}\\relix\\backups ${t('(7 días)')}` },
+    { label: t('Registro'), path: `${drive}\\relix\\log.txt` },
     { label: t('Caché'), path: `${drive}\\relix\\cache ${t('(se puede borrar)')}` },
   ])
 

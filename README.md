@@ -59,10 +59,10 @@ what each button does.
   Every console has a guide: what to install from DevStore, which files it
   needs and where they go, with a QR code for your phone.
 - **Your data travels with the USB drive.** Favorites, collections, playtime and
-  settings are saved to `relix\datos.json`, with the previous copy and a daily
+  settings are saved to `relix\data.json`, with the previous copy and a daily
   backup for a week. Reinstall Relix or move to another Xbox and it's all there.
 - **Diagnostic log.** Every launch (with its exact URI), how it came back, and
-  every error, in `relix\registro.txt` and on screen in Checkup.
+  every error, in `relix\log.txt` and on screen in Checkup.
 - **English and Spanish**, automatic from the console language. **Light and dark
   themes**, with an automatic mode for the evening. A **screensaver** with your
   games, and a **new version notice** when a release is out.
@@ -153,7 +153,7 @@ flowchart LR
   writes covers and collections where ES-DE expects them. One USB drive works on
   the PC and on the Xbox, and nothing needs converting.
 - **Data on the USB drive, not in the app.** UWP app data disappears when you
-  uninstall; a dev-mode app gets reinstalled often. `datos.json` is written
+  uninstall; a dev-mode app gets reinstalled often. `data.json` is written
   through a temporary file, keeps the previous version and daily backups, and
   Relix picks the newest copy that is valid.
 - **Say what's wrong, not just that something failed.** An emulator never tells
@@ -209,8 +209,8 @@ draft release, published by hand after testing it on the console. The guides to 
 | Covers | `E:\ES-DE\downloaded_media\<console>\covers\` (ES-DE's and the ones Relix downloads) |
 | Backgrounds, logos, videos | `…\fanart\`, `…\screenshots\`, `…\marquees\`, `…\videos\` (from ES-DE) |
 | Collections | `E:\ES-DE\collections\custom-<Name>.cfg` (ES-DE sees them too) |
-| Your data | `E:\relix\datos.json`, `datos.anterior.json` and `respaldos\` (last 7 days) |
-| Diagnostic log | `E:\relix\registro.txt` |
+| Your data | `E:\relix\data.json`, `data.previous.json` and `backups\` (last 7 days) |
+| Diagnostic log | `E:\relix\log.txt` |
 | Cache | `E:\relix\cache\` (libretro lists and thumbnails; safe to delete) |
 
 Multi-disc games go in an `.m3u`; Xbox 360 and Dreamcast games can live in a

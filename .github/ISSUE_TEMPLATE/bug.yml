@@ -43,6 +43,6 @@ body:
     attributes:
       label: Diagnostic log
       description: |
-        The last lines of `E:\relix\registro.txt` (on the PC), or a photo of Options › Checkup › Diagnostic log.
+        The last lines of `E:\relix\log.txt` (on the PC), or a photo of Options › Checkup › Diagnostic log.
         Check it before pasting: it includes your game names and USB drive paths.
       render: text

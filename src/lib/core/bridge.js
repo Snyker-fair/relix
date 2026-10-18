@@ -610,7 +610,7 @@ export async function loadUserData() {
   } catch {
     // sin almacenamiento: la demo parte con los datos de ejemplo
   }
-  return { driveId: 'demo', text: text ?? DEMO_USERDATA, source: 'datos.json' }
+  return { driveId: 'demo', text: text ?? DEMO_USERDATA, source: 'data.json' }
 }
 
 /** @param {string} text  contenido completo de datos.json */

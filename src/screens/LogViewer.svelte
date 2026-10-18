@@ -126,7 +126,7 @@
     <div class="title">
       <h2>{t('Registro de diagnóstico')}</h2>
       <p>
-        {t('En el PC:')} <code>{drive}relix\registro.txt</code>
+        {t('En el PC:')} <code>{drive}relix\log.txt</code>
         {#if status === 'ready' && entries.length > 0}· {t('las últimas {entries}', { entries: plural(entries.length, 'entrada', 'entradas') })}{/if}
       </p>
     </div>

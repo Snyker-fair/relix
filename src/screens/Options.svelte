@@ -711,7 +711,7 @@
         <span class="text">
           <strong>{t('Registro de diagnóstico')}</strong>
           <span>
-            <code>{logDrive}relix\registro.txt</code> ·
+            <code>{logDrive}relix\log.txt</code> ·
             {diagnostics.lastAt
               ? t('última entrada {when}', { when: timeAgo(diagnostics.lastAt, now) })
               : t('cada juego que abres y cada error')}

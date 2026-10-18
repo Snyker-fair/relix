@@ -346,7 +346,7 @@ export function buildChecks({ shell, romRoot, consoles, knownFolders, dataStatus
             id: 'data',
             state: 'ok',
             title: t('Tus datos se respaldan en el USB'),
-            detail: t('{file} y una copia por día.', { file: `${drive}relix\\datos.json` }),
+            detail: t('{file} y una copia por día.', { file: `${drive}relix\\data.json` }),
           },
   )
   return checks

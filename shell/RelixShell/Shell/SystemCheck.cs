@@ -46,7 +46,7 @@ namespace RelixShell
             {
                 StorageFolder relix = await CoverService.CreateFoldersAsync(
                     await StorageFolder.GetFolderFromPathAsync(paths.DriveRoot), "relix");
-                StorageFile probe = await relix.CreateFileAsync(".prueba-escritura", CreationCollisionOption.ReplaceExisting);
+                StorageFile probe = await relix.CreateFileAsync(".write-test", CreationCollisionOption.ReplaceExisting);
                 await FileIO.WriteTextAsync(probe, "relix");
                 await probe.DeleteAsync(StorageDeleteOption.PermanentDelete);
                 return true;

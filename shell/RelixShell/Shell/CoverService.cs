@@ -72,6 +72,9 @@ namespace RelixShell
         /// <summary>Ancho de las miniaturas: el doble de una portada en la grilla (184 px).</summary>
         private const uint ThumbWidth = 368;
 
+        /// <summary>Thumbnails folder inside E:\relix\cache (until 1.0.0, "miniaturas").</summary>
+        internal const string ThumbnailFolder = "thumbnails";
+
         /// <summary>Descargas a la vez: el servidor es comunitario, no hay que apurarlo.</summary>
         private const int ParallelDownloads = 2;
 
@@ -401,7 +404,7 @@ namespace RelixShell
         {
             string[] parts = (systemId + "/" + WithoutExtension(relativeFile) + ".jpg").Split('/');
             StorageFolder thumbs = await (await GetCacheRootAsync(paths))
-                .CreateFolderAsync("miniaturas", CreationCollisionOption.OpenIfExists);
+                .CreateFolderAsync(ThumbnailFolder, CreationCollisionOption.OpenIfExists);
             StorageFolder folder = await CreateFoldersAsync(thumbs, SubArray(parts, 0, parts.Length - 1));
             string name = parts[parts.Length - 1];
 
@@ -506,7 +509,7 @@ namespace RelixShell
             {
                 StorageFolder root = await GetCacheRootAsync(paths);
                 StorageFile old = await LibraryReader.TryGetFileAsync(
-                    Path.Combine(root.Path, "miniaturas", systemId, key.Replace('/', '\\') + ".jpg"));
+                    Path.Combine(root.Path, ThumbnailFolder, systemId, key.Replace('/', '\\') + ".jpg"));
                 if (old != null)
                 {
                     await old.DeleteAsync();
@@ -531,6 +534,7 @@ namespace RelixShell
                 return cacheRoot;
             }
 
+            await LegacyFileNames.MigrateAsync(paths);
             try
             {
                 cacheRoot = await CreateFoldersAsync(
