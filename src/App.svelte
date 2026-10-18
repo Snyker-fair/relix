@@ -467,10 +467,10 @@
       initialRow={screen.row}
       onGuide={(systemId, from) => (screen = { name: 'guide', systemId, back: { ...welcome, ...from } })}
       onDone={() => {
-        const to = back // {@const} sigue a `screen`: se guarda antes de cambiarla
+        const to = back // {@const} follows `screen`: it's kept before changing it
         settings.markOnboarded()
         screen = to
-        // Si quedó algo por arreglar (o saltaste el recorrido), se avisa una vez
+        // If something was left to fix (or you skipped the tour), it says so once
         if (to.name === 'home') {
           warnSystem()
           notifyUpdate()

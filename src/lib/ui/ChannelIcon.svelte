@@ -124,7 +124,7 @@
     <path d="M48 14v42M31 40l17 17 17-17" />
     <path d="M18 62v10a9 9 0 0 0 9 9h42a9 9 0 0 0 9-9V62" />
   {:else if id === 'pick'}
-    <!-- caja con visto bueno: elegir a mano -->
+    <!-- box with a check mark: pick by hand -->
     <rect x="20" y="10" width="56" height="76" rx="9" />
     <path d="M34 49l10 10 19-21" />
   {:else if id === 'collections' || id.startsWith('collection:')}
