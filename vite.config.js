@@ -3,11 +3,11 @@ import { defineConfig } from 'vite'
 import { viteSingleFile } from 'vite-plugin-singlefile'
 import pkg from './package.json' with { type: 'json' }
 
-// `npm run build`         -> dist/ normal (para empaquetar dentro de la app UWP)
-// `npm run build:single`  -> dist-single/index.html autocontenido (vista previa / demo)
+// `npm run build`         -> the normal dist/ (to package inside the UWP app)
+// `npm run build:single`  -> dist-single/index.html, self-contained (preview / demo)
 export default defineConfig(({ mode }) => ({
   base: './',
-  // Versión y fecha de compilación, para Opciones › Acerca de
+  // Version and build date, for Options › About
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
     __BUILD_DATE__: JSON.stringify(new Date().toISOString().slice(0, 10)),
@@ -15,13 +15,13 @@ export default defineConfig(({ mode }) => ({
   plugins: [svelte(), ...(mode === 'single' ? [viteSingleFile()] : [])],
   build: {
     outDir: mode === 'single' ? 'dist-single' : 'dist',
-    // Chromium de WebView2 en Xbox es moderno; no hace falta transpilar a ES5
+    // WebView2's Chromium on Xbox is modern; there's no need to transpile to ES5
     target: 'es2022',
     rollupOptions: {
-      // Nombres fijos, sin código aleatorio (index.js y no index-CDvk.js).
-      // Visual Studio arma el paquete con la lista de archivos de ui/; si los
-      // nombres cambiaran en cada compilación, podría quedar apuntando a
-      // archivos que ya no existen.
+      // Fixed names, without random code (index.js and not index-CDvk.js).
+      // Visual Studio builds the package with the list of files in ui/; if the
+      // names changed on every build, it could end up pointing at
+      // files that no longer exist.
       output: {
         entryFileNames: 'assets/[name].js',
         chunkFileNames: 'assets/[name].js',

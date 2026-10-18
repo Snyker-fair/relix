@@ -1,12 +1,12 @@
-# Dependencias y compilaciones de la interfaz
+# Dependencies and interface builds
 node_modules/
 dist/
 dist-single/
 
-# Proyecto de Visual Studio (shell/RelixShell)
-# La interfaz compilada: la copia `npm run build:shell`
+# Visual Studio project (shell/RelixShell)
+# The built interface: `npm run build:shell` copies it
 shell/RelixShell/ui/
-# El certificado de firma es personal: nunca se sube (va como secreto en GitHub)
+# The signing certificate is personal: it's never committed (it goes in a GitHub secret)
 *.pfx
 bin/
 obj/
@@ -16,7 +16,7 @@ BundleArtifacts/
 *.user
 *.suo
 
-# Sistema y herramientas
+# System and tools
 .DS_Store
 Thumbs.db
 __pycache__/

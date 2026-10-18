@@ -1,22 +1,22 @@
 /**
- * Revisa las traducciones: busca en src/ cada texto que pasa por t(), tn() o
- * plural() y dice cuáles no tienen su versión en inglés en src/lib/i18n/en.js.
+ * Checks the translations: finds in src/ every text that goes through t(), tn()
+ * or plural() and says which ones have no English version in src/lib/i18n/en.js.
  *
- *   node scripts/i18n.mjs            textos sin traducir (listos para copiar a en.js)
- *   node scripts/i18n.mjs --unused   entradas de en.js que ya no usa ningún t() literal
+ *   node scripts/i18n.mjs            untranslated texts (ready to copy into en.js)
+ *   node scripts/i18n.mjs --unused   entries in en.js that no literal t() uses anymore
  *
- * tests/i18n.test.js usa las mismas funciones.
+ * tests/i18n.test.js uses the same functions.
  */
 import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-// Con node: junto a este archivo. Dentro de vitest (jsdom) la URL no es file:, y
-// los tests corren desde la raíz del proyecto.
+// With node: next to this file. Inside vitest (jsdom) the URL isn't file:, and
+// the tests run from the project's root.
 const IS_FILE = import.meta.url.startsWith('file:')
 const ROOT = IS_FILE ? join(dirname(fileURLToPath(import.meta.url)), '..') : process.cwd()
 
-/** Todos los .js y .svelte de src/ (menos los datos de prueba) */
+/** Every .js and .svelte in src/ (except the test data) */
 export function sourceFiles(dir = join(ROOT, 'src')) {
   /** @type {string[]} */
   const out = []
@@ -29,7 +29,7 @@ export function sourceFiles(dir = join(ROOT, 'src')) {
   return out
 }
 
-/** Lee un literal de JS que empieza en `at` ('…', "…" o `…`). null si no es uno solo. */
+/** Reads a JS literal that starts at `at` ('…', "…" or `…`). null if it isn't a single one. */
 function readString(src, at) {
   const quote = src[at]
   if (!`'"\``.includes(quote)) return null
@@ -44,7 +44,7 @@ function readString(src, at) {
   return { value: Function(`return ${literal}`)(), end: i + 1 }
 }
 
-/** Separa los argumentos de una llamada que abre en `at` (justo después de "("). */
+/** Splits the arguments of a call that opens at `at` (right after "("). */
 function readArgs(src, at) {
   /** @type {Array<{ start: number, text: string }>} */
   const args = []
@@ -53,7 +53,7 @@ function readArgs(src, at) {
   for (let i = at; i < src.length; i++) {
     const c = src[i]
     if (`'"\``.includes(c)) {
-      // salta el literal entero (las plantillas con ${} se tratan aparte)
+      // skips the whole literal (templates with ${} are handled separately)
       let j = i + 1
       while (j < src.length && src[j] !== c) {
         if (src[j] === '\\') j++
@@ -86,7 +86,7 @@ function readArgs(src, at) {
 }
 
 /**
- * Los textos de t('…'), tn(n, '…', '…') y plural(n, '…', '…') de un archivo.
+ * The texts of t('…'), tn(n, '…', '…') and plural(n, '…', '…') in a file.
  * @returns {{ keys: Array<{ key: string, line: number }>, problems: string[] }}
  */
 export function extractFromSource(src, name = '') {
@@ -101,16 +101,16 @@ export function extractFromSource(src, name = '') {
       const arg = args[index]
       if (!arg) continue
       const trimmed = arg.text.trim()
-      if (!trimmed || !`'"\``.includes(trimmed[0])) continue // variable: se revisa al correr
+      if (!trimmed || !`'"\``.includes(trimmed[0])) continue // a variable: checked at runtime
       const at = arg.start + arg.text.indexOf(trimmed[0])
       const read = readString(src, at)
       if (!read) continue
       if (read.dynamic) {
-        problems.push(`${name}:${lineOf(at)} usa \${} dentro de ${match[1]}(): pasa los valores como {nombre}`)
+        problems.push(`${name}:${lineOf(at)} uses \${} inside ${match[1]}(): pass the values as {name}`)
         continue
       }
       if (src.slice(read.end, arg.start + arg.text.length).trim() !== '') {
-        problems.push(`${name}:${lineOf(at)} arma el texto de ${match[1]}() con +: escríbelo entero`)
+        problems.push(`${name}:${lineOf(at)} builds the text of ${match[1]}() with +: write it whole`)
         continue
       }
       keys.push({ key: read.value, line: lineOf(at) })
@@ -119,7 +119,7 @@ export function extractFromSource(src, name = '') {
   return { keys, problems }
 }
 
-/** Todos los textos de src/, con dónde aparecen */
+/** Every text in src/, with where it appears */
 export function collectKeys() {
   /** @type {Map<string, string[]>} */
   const keys = new Map()
@@ -136,13 +136,13 @@ export function collectKeys() {
   return { keys, problems }
 }
 
-/** Los {nombre} de un texto, ordenados */
+/** The {name}s of a text, sorted */
 export const placeholders = (/** @type {string} */ text) => [...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort()
 
 if (IS_FILE && process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const { default: EN } = await import('../src/lib/i18n/en.js')
   const { keys, problems } = collectKeys()
-  for (const p of problems) console.log('PROBLEMA', p)
+  for (const p of problems) console.log('PROBLEM', p)
   if (process.argv.includes('--unused')) {
     for (const key of Object.keys(EN)) if (!keys.has(key)) console.log(JSON.stringify(key))
   } else {
@@ -152,6 +152,6 @@ if (IS_FILE && process.argv[1] && fileURLToPath(import.meta.url) === process.arg
       n++
       console.log(`  // ${where[0]}\n  ${JSON.stringify(key)}: '',`)
     }
-    console.log(`// ${n} sin traducir de ${keys.size}`)
+    console.log(`// ${n} untranslated out of ${keys.size}`)
   }
 }

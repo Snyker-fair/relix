@@ -1,14 +1,14 @@
 """
-Genera los íconos de Relix a partir de brand/relix-mark.svg.
+Makes the Relix icons from brand/relix-mark.svg.
 
   python3 brand/build-assets.py
 
-Salida:
-  shell/RelixShell/Assets/ -> los PNG con los nombres de la plantilla UWP de Visual Studio.
-                  Se copian tal cual a la carpeta Assets del proyecto RelixShell.
-  brand/       -> relix-logo.png (logo horizontal, fondo transparente)
+Output:
+  shell/RelixShell/Assets/ -> the PNGs with the names of Visual Studio's UWP template.
+                  The RelixShell project uses them as they are.
+  brand/       -> relix-logo.png (horizontal logo, transparent background)
 
-Requiere: pip install playwright  (y npm install, por las fuentes)
+Needs: pip install playwright  (and npm install, for the fonts)
 """
 
 import base64
@@ -27,19 +27,19 @@ POP = "#FF4F87"
 
 MARK = (BRAND / "relix-mark.svg").read_text(encoding="utf-8")
 
-# Silueta blanca de la gema (Windows exige blanco puro en el logo de bloqueo)
+# White silhouette of the gem (Windows requires pure white for the lock screen logo)
 MARK_WHITE = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
 <path d="M36 30H76L96 50L56 100L16 50Z" fill="#fff" stroke="#fff" stroke-width="9" stroke-linejoin="round"/>
 <path d="M98 2Q98 24 120 24Q98 24 98 46Q98 24 76 24Q98 24 98 2Z" fill="#fff" transform="rotate(45 98 24)"/>
 </svg>"""
 
 def _font(name: str) -> str:
-    # Las fuentes van incrustadas: Chromium no carga fuentes file:// en una página local
+    # The fonts are embedded: Chromium doesn't load file:// fonts in a local page
     data = base64.b64encode((FONTS / name).read_bytes()).decode()
     return f"url(data:font/woff2;base64,{data}) format('woff2')"
 
 
-# El subconjunto latino básico ya trae la "ı" sin punto que usa el logo
+# The basic Latin subset already has the dotless "ı" the logo uses
 FONT_CSS = f"""
 @font-face {{ font-family: 'Baloo 2'; font-weight: 800;
   src: {_font('baloo-2-latin-800-normal.woff2')}; }}
@@ -47,7 +47,7 @@ FONT_CSS = f"""
 
 
 def lockup(mark_px: int) -> str:
-    """Gema + nombre, con la i punteada por una gemita (igual que Logo.svelte)."""
+    """Gem + name, with the i dotted by a small gem (same as Logo.svelte)."""
     word = mark_px / 1.15 * 0.92
     return f"""
 <div class="lockup" style="gap:{mark_px * 0.16}px">
@@ -57,7 +57,7 @@ def lockup(mark_px: int) -> str:
 
 
 def stacked(mark_px: int) -> str:
-    """Gema arriba y nombre abajo, centrados: para los tiles cuadrados."""
+    """Gem on top and name below, centered: for the square tiles."""
     word = mark_px * 0.62
     return f"""
 <div style="display:flex;flex-direction:column;align-items:center;gap:{mark_px * 0.06}px">
@@ -85,18 +85,18 @@ def mark_box(px: int, svg: str = MARK) -> str:
     return f'<div style="width:{px}px;height:{px}px">{svg}</div>'
 
 
-# nombre de archivo -> (ancho, alto, fondo o None, contenido)
+# file name -> (width, height, background or None, content)
 ASSETS = {
-    # Ícono de la lista de apps (Dev Home) y barra de tareas
+    # App list icon (Dev Home) and taskbar
     "Square44x44Logo.scale-200.png": (88, 88, None, mark_box(84)),
     "Square44x44Logo.targetsize-24_altform-unplated.png": (24, 24, None, mark_box(24)),
-    # Tile cuadrado: es lo que más vas a ver en la Xbox (ficha de la app, Dev Home, pines)
+    # Square tile: what you'll see most on the Xbox (the app's card, Dev Home, pins)
     "Square150x150Logo.scale-200.png": (300, 300, SKY, stacked(160)),
-    # Tile grande: la misma imagen con el doble de detalle, para TV 4K
+    # Large tile: the same image with twice the detail, for 4K TVs
     "Square310x310Logo.scale-200.png": (620, 620, SKY, stacked(330)),
-    # Tile ancho
+    # Wide tile
     "Wide310x150Logo.scale-200.png": (620, 300, SKY, lockup(150)),
-    # Pantalla de carga (el fondo lo pone el manifiesto: #DDEBF7)
+    # Loading screen (the manifest sets the background: #DDEBF7)
     "SplashScreen.scale-200.png": (1240, 600, None, lockup(190)),
     "StoreLogo.png": (50, 50, SKY, mark_box(40)),
     "LockScreenLogo.scale-200.png": (48, 48, None, mark_box(44, MARK_WHITE)),
