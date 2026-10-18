@@ -15,6 +15,7 @@
   import { library } from '../lib/ui/library.svelte.js'
   import Logo from '../lib/ui/Logo.svelte'
   import PadButton from '../lib/ui/PadButton.svelte'
+  import { renamer } from '../lib/ui/renamer.svelte.js'
   import { settings } from '../lib/ui/settings.svelte.js'
   import { shelf } from '../lib/ui/shelf.svelte.js'
   import { sound } from '../lib/ui/sound.js'
@@ -32,6 +33,7 @@
    *   onBack: () => void,
    *   onToast: (message: string) => void,
    *   onPickCovers: () => void,
+   *   onRenameFiles: () => void,
    *   onGuide: (systemId: string, from: { section: string, row: string }) => void,
    *   onWelcome: () => void,
    *   initialSection?: string,
@@ -40,7 +42,8 @@
    *   initialRow: the row with the focus on opening (e.g. the console of the guide you're coming back from).
    *   In Checkup the console is enough: "psx" focuses its first check ("emu:psx").
    */
-  let { onBack, onToast, onPickCovers, onGuide, onWelcome, initialSection = 'library', initialRow } = $props()
+  let { onBack, onToast, onPickCovers, onRenameFiles, onGuide, onWelcome, initialSection = 'library', initialRow } =
+    $props()
 
   // Sections: they change with LB/RB, just like the consoles in the library
   const SECTIONS = $derived([
@@ -51,8 +54,8 @@
     { id: 'preferences', name: t('Preferencias') },
     { id: 'about', name: t('Acerca de') },
   ])
-  // Library: a row per console, "Scan everything" and the hidden games
-  const LIBRARY_ROWS = [...PLATFORMS.map((p) => p.id), 'all', 'hidden']
+  // Library: a row per console, "Scan everything", the file names and the hidden games
+  const LIBRARY_ROWS = [...PLATFORMS.map((p) => p.id), 'all', 'rename', 'hidden']
   const PREFERENCE_ROWS = ['language', 'theme', 'empty', 'sounds', 'region', 'video', 'screensaver']
   // Consoles: which emulator each one opens with
   const CONSOLE_ROWS = PLATFORMS.map((p) => p.id)
@@ -191,7 +194,9 @@
     section === 'library'
       ? ROWS[index] === 'hidden'
         ? t('Mostrar')
-        : t('Escanear')
+        : ROWS[index] === 'rename'
+          ? t('Revisar')
+          : t('Escanear')
       : section === 'preferences' || section === 'consoles'
         ? t('Cambiar')
         : section === 'check'
@@ -225,6 +230,7 @@
   async function scanRow() {
     const id = ROWS[index]
     if (id === 'hidden') return unhideRow()
+    if (id === 'rename') return (sound.select(), onRenameFiles())
     if (busy || scanningAll) return
     sound.select()
     try {
@@ -574,6 +580,28 @@
             <PadButton name="a" size={30} /> {t('Escanear')}
           {:else}
             {meta.when}
+          {/if}
+        </span>
+      {:else if id === 'rename'}
+        {@const toRename = renamer.pending.length}
+        <span class="badge neutral">
+          <ChannelIcon id="rename" color="currentColor" size={46} />
+        </span>
+        <span class="text">
+          <strong>{t('Nombres de archivo')}</strong>
+          <span>
+            {renamer.review === null
+              ? t('Busca los archivos que no tienen su nombre estándar y los renombra')
+              : toRename > 0
+                ? tn(toRename, '{n} archivo sin su nombre estándar', '{n} archivos sin su nombre estándar')
+                : t('Todos tienen su nombre estándar')}
+          </span>
+        </span>
+        <span class="state">
+          {#if focused}
+            <PadButton name="a" size={30} /> {t('Revisar')}
+          {:else if toRename > 0}
+            <span class="value on">{toRename}</span>
           {/if}
         </span>
       {:else if id === 'hidden'}

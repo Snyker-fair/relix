@@ -71,6 +71,8 @@
     USB: 'warn',
     PORTADAS: 'warn',
     COVERS: 'warn',
+    RENOMBRAR: 'warn',
+    RENAME: 'warn',
     LANZAR: 'go',
     LAUNCH: 'go',
     'VOLVIÓ': 'ok',

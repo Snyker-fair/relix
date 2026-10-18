@@ -30,12 +30,13 @@
    *   onClose: () => void,
    *   onLaunch: (game: any) => void,
    *   onChangeCover: (game: any) => void,
+   *   onRename: (game: any) => void,
    *   onToast: (message: string) => void,
    * }}
    *   sortOptions: the orders that make sense in that list (without it, "Sort" isn't shown)
    *   filterChannel: the open library channel (without it, "Filter" isn't shown)
    */
-  let { game, sortOptions, filterChannel, onClose, onLaunch, onChangeCover, onToast } = $props()
+  let { game, sortOptions, filterChannel, onClose, onLaunch, onChangeCover, onRename, onToast } = $props()
 
   /** @typedef {{ id: string, icon: string, label: string, value?: string, checked?: boolean, disabled?: boolean, tag?: string }} Item */
 
@@ -81,6 +82,7 @@
             : t('En {n}', { n: inCollections.length }),
     },
     { id: 'cover', icon: 'cover', label: t('Cambiar portada') },
+    { id: 'rename', icon: 'rename', label: t('Renombrar archivo…') },
     { id: 'hide', icon: 'hide', label: t('Ocultar juego') },
     ...(sortOptions
       ? [{ id: 'sort', icon: 'sort', label: t('Ordenar biblioteca'), value: t(SORT_NAMES[settings.sortOrder]) }]
@@ -222,6 +224,10 @@
       sound.select()
       onClose()
       onChangeCover(current)
+    } else if (item.id === 'rename') {
+      sound.select()
+      onClose()
+      onRename(current)
     } else if (item.id === 'hide') {
       library.hide(current)
       sound.back()

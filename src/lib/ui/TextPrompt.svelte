@@ -2,7 +2,13 @@
   /**
    * A window to type a short text with the on-screen keyboard
    * (e.g. the name of a new collection). ≡ or "Done" confirm; B cancels.
+   *
+   * file: for a file name (Y › Rename file…): a wider field that wraps, the
+   * keyboard with parentheses and brackets, and LT to erase a word.
+   * check: what's wrong with the text as you type it (null if nothing):
+   * it shows under the field and "Done" waits until it's fixed.
    */
+  import { untrack } from 'svelte'
   import HintBar from './HintBar.svelte'
   import { pushHandler } from './input.js'
   import Keyboard from './Keyboard.svelte'
@@ -13,18 +19,23 @@
    * @type {{
    *   title: string,
    *   placeholder?: string,
+   *   initial?: string,
+   *   file?: boolean,
+   *   maxLength?: number,
+   *   check?: (value: string) => string | null,
    *   onSubmit: (value: string) => void,
    *   onCancel: () => void,
    * }}
    */
-  let { title, placeholder = '', onSubmit, onCancel } = $props()
+  let { title, placeholder = '', initial = '', file = false, maxLength, check, onSubmit, onCancel } = $props()
 
-  let value = $state('')
+  let value = $state(untrack(() => initial))
+  const problem = $derived(value.trim() && check ? check(value) : null)
   /** @type {Keyboard | undefined} */
   let keyboard = $state()
 
   function submit() {
-    if (!value.trim()) return sound.error()
+    if (!value.trim() || problem) return sound.error()
     onSubmit(value.trim())
   }
 
@@ -38,12 +49,22 @@
 </script>
 
 <div class="backdrop">
-  <section class="prompt" aria-label={title}>
+  <section class="prompt" class:file aria-label={title}>
     <h2>{title}</h2>
     <p class="field" class:empty={!value}>
-      {value || placeholder}<span class="caret" aria-hidden="true"></span>
+      {#if value}{value}<span class="caret" aria-hidden="true"></span>
+      {:else}<span class="caret" aria-hidden="true"></span>{placeholder}{/if}
     </p>
-    <Keyboard bind:this={keyboard} bind:value onSubmit={submit} />
+    {#if check || file}
+      <p class="problem" role="status">{problem ?? ''}</p>
+    {/if}
+    <Keyboard
+      bind:this={keyboard}
+      bind:value
+      onSubmit={submit}
+      layout={file ? 'file' : 'text'}
+      maxLength={maxLength ?? (file ? 120 : 40)}
+    />
   </section>
 
   <HintBar
@@ -51,6 +72,7 @@
     hints={[
       { button: 'a', label: t('Escribir') },
       { button: 'x', label: t('Borrar') },
+      ...(file ? [{ button: /** @type {const} */ ('lt'), label: t('Borrar palabra') }] : []),
       { button: 'y', label: t('Espacio') },
       { button: 'start', label: t('Listo') },
       { button: 'b', label: t('Cancelar') },
@@ -70,6 +92,7 @@
   }
   .prompt {
     width: 700px;
+    max-height: 960px;
     padding: 44px 48px 48px;
     border-radius: 48px;
     background: var(--cloud);
@@ -98,6 +121,38 @@
   .field.empty {
     color: var(--ink-soft);
   }
+  /* a file name: long, so it wraps instead of being cut */
+  .file {
+    width: 1040px;
+    padding-top: 38px;
+    padding-bottom: 40px;
+    margin-bottom: 70px; /* a little above the middle: the bar of buttons fits below */
+  }
+  .file .field {
+    display: block;
+    height: auto;
+    min-height: 76px;
+    margin-bottom: 0;
+    padding: 14px 24px;
+    font-size: 30px;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+  .file .caret {
+    display: inline-block;
+    height: 32px;
+    vertical-align: -5px;
+  }
+  .problem {
+    min-height: 30px;
+    margin: 10px 4px 22px;
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--pop);
+  }
+  .file h2 {
+    font-size: 40px;
+  }
   .caret {
     width: 4px;
     height: 38px;
@@ -107,7 +162,6 @@
     animation: blink 1s steps(2, start) infinite;
   }
   .field.empty .caret {
-    order: -1;
     margin: 0 8px 0 0;
   }
   @keyframes blink {

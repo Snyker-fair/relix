@@ -7,6 +7,10 @@
    *
    * `handle` returns false if the action isn't its business (for example, leaving
    * through the right edge toward the search results).
+   *
+   * layout 'file' is for file names: it has parentheses and brackets, no ":"
+   * (Windows doesn't accept it in a name) and a caps lock key, for "(USA)".
+   * LT erases the last word there: "Kingdom Hearts II (USA)" -> "Kingdom Hearts II".
    */
   import { sound } from './sound.js'
   import { t } from '../i18n/i18n.svelte.js'
@@ -17,19 +21,33 @@
    *   onSubmit?: (value: string) => void,
    *   maxLength?: number,
    *   active?: boolean,
+   *   layout?: 'text' | 'file',
    * }}
    */
-  let { value = $bindable(''), onSubmit, maxLength = 40, active = true } = $props()
+  let { value = $bindable(''), onSubmit, maxLength = 40, active = true, layout = 'text' } = $props()
 
   const COLUMNS = 7
   const LETTERS = ['ABCDEFG', 'HIJKLMN', 'ÑOPQRST', 'UVWXYZ-', '1234567', "890&':."]
+  const FILE_LETTERS = ['ABCDEFG', 'HIJKLMN', 'ÑOPQRST', 'UVWXYZ-', '1234567', "890&',.", '()[]!+_']
 
-  /** @typedef {{ id: string, label: string, span: number, kind: 'char'|'space'|'del'|'ok' }} Key */
+  /** @typedef {{ id: string, label: string, span: number, kind: 'char'|'space'|'del'|'ok'|'caps' }} Key */
+
+  /** Caps lock (file names only) */
+  let caps = $state(false)
 
   /** @type {Key[][]} */
   const rows = $derived([
-    ...LETTERS.map((r) => [...r].map((ch) => /** @type {Key} */ ({ id: ch, label: ch, span: 1, kind: 'char' }))),
-    onSubmit
+    ...(layout === 'file' ? FILE_LETTERS : LETTERS).map((r) =>
+      [...r].map((ch) => /** @type {Key} */ ({ id: ch, label: ch, span: 1, kind: 'char' })),
+    ),
+    layout === 'file'
+      ? [
+          { id: 'caps', label: caps ? 'AB' : 'Ab', span: 1, kind: 'caps' },
+          { id: 'space', label: t('Espacio'), span: 2, kind: 'space' },
+          { id: 'del', label: t('Borrar'), span: 2, kind: 'del' },
+          { id: 'ok', label: t('Listo'), span: 2, kind: 'ok' },
+        ]
+      : onSubmit
       ? [
           { id: 'space', label: t('Espacio'), span: 3, kind: 'space' },
           { id: 'del', label: t('Borrar'), span: 2, kind: 'del' },
@@ -67,14 +85,16 @@
       if (!value.trim()) return sound.error()
       onSubmit?.(value.trim())
       return
+    } else if (key.kind === 'caps') {
+      caps = !caps
     } else if (key.kind === 'space') {
       if (value.length === 0 || value.endsWith(' ') || value.length >= maxLength) return sound.error()
       value += ' '
     } else {
       if (value.length >= maxLength) return sound.error()
       // Uppercase at the start of each word: "with friends" -> "With Friends" looks right in titles
-      const startOfWord = value.length === 0 || value.endsWith(' ')
-      value += startOfWord ? key.label : key.label.toLowerCase()
+      const startOfWord = value.length === 0 || /[ ([]$/.test(value)
+      value += caps || startOfWord ? key.label : key.label.toLowerCase()
     }
     sound.select()
   }
@@ -106,6 +126,10 @@
     } else if (action === 'y') {
       press({ id: 'space', label: '', span: 1, kind: 'space' })
       return true
+    } else if (action === 'lt' && layout === 'file') {
+      if (value.length === 0) sound.error()
+      else (value = value.replace(/\s*\S*$/, ''), sound.select())
+      return true
     } else {
       return false
     }
@@ -119,7 +143,7 @@
   }
 </script>
 
-<div class="keyboard" class:active role="group" aria-label={t('Teclado')}>
+<div class="keyboard" class:active class:file={layout === 'file'} role="group" aria-label={t('Teclado')}>
   {#each rows as keys, r (r)}
     <div class="row">
       {#each keys as key (key.id)}
@@ -127,6 +151,7 @@
           class="key"
           class:wide={key.span > 1}
           class:ok={key.kind === 'ok'}
+          class:on={key.kind === 'caps' && caps}
           class:focused={active && focused.key.id === key.id}
           style:grid-column="span {key.span}"
           onclick={() => press(key)}
@@ -166,9 +191,21 @@
   .key.wide {
     font-size: 22px;
   }
+  /* file names: one more row, so the keys are a little shorter */
+  .file,
+  .file .row {
+    gap: 10px;
+  }
+  .file .key {
+    height: 54px;
+  }
   .key.ok {
     background: var(--ink);
     color: var(--cloud);
+  }
+  /* caps lock on */
+  .key.on {
+    background: var(--sun);
   }
   /* the focused key changes color and rises a little, without growing:
      that way it never steps on its neighbors, not even the wide ones */

@@ -127,6 +127,11 @@
     <!-- box with a check mark: pick by hand -->
     <rect x="20" y="10" width="56" height="76" rx="9" />
     <path d="M34 49l10 10 19-21" />
+  {:else if id === 'rename'}
+    <!-- pencil over a line: rename the file -->
+    <path d="M60 14l20 20-40 40H20V54Z" />
+    <path d="M50 24l20 20" />
+    <path d="M50 82h30" opacity="0.55" />
   {:else if id === 'collections' || id.startsWith('collection:')}
     <!-- stacked boxes: collections -->
     <rect x="30" y="14" width="44" height="58" rx="8" opacity="0.55" />
