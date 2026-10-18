@@ -193,7 +193,7 @@ docs/           guías para compilar y probar en la TV, imágenes del README
 brand/          logo, íconos de la app y guía de marca
 ```
 
-Cada cambio corre los tests y las dos compilaciones en GitHub Actions; `master`
+Cada cambio corre los tests y las dos compilaciones en GitHub Actions; `main`
 publica la demo en GitHub Pages, y cada etiqueta `v*` compila, firma y publica el
 paquete para la Xbox. Las guías: armar el proyecto de Visual Studio
 ([`shell/README.md`](shell/README.md)), compilar una versión nueva

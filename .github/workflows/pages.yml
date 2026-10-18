@@ -1,11 +1,11 @@
 # La demo en el navegador (los mismos datos de prueba de `npm run dev`),
-# publicada en GitHub Pages cada vez que cambia master.
+# publicada en GitHub Pages cada vez que cambia main.
 # Una vez: Settings › Pages › Source: GitHub Actions.
 name: Demo
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   workflow_dispatch:
 
 permissions:

@@ -192,7 +192,7 @@ docs/           build and on-TV test guides (Spanish), README media
 brand/          logo, app icons and brand guide
 ```
 
-Every push runs the tests and both builds on GitHub Actions; `master` deploys the
+Every push runs the tests and both builds on GitHub Actions; `main` deploys the
 demo to GitHub Pages, and every `v*` tag builds, signs and publishes the Xbox
 package. The step-by-step guides for setting up the Visual Studio project
 ([`shell/README.md`](shell/README.md)), building a new version
