@@ -10,15 +10,15 @@ const games = [
   { id: 'f' },
 ]
 
-describe('filtros de la biblioteca', () => {
-  it('separa los géneros compuestos', () => {
+describe('library filters', () => {
+  it('splits compound genres', () => {
     expect(genresOf('Acción / Plataformas')).toEqual(['Acción', 'Plataformas'])
     expect(genresOf('Lucha, Arcade')).toEqual(['Lucha', 'Arcade'])
     expect(genresOf('Shoot\'em up - Vertical')).toEqual(["Shoot'em up", 'Vertical'])
     expect(genresOf(undefined)).toEqual([])
   })
 
-  it('lee cuántos juegan', () => {
+  it('reads how many play', () => {
     expect(maxPlayers('1-2')).toBe(2)
     expect(maxPlayers('1 - 4')).toBe(4)
     expect(maxPlayers('2')).toBe(2)
@@ -26,7 +26,7 @@ describe('filtros de la biblioteca', () => {
     expect(maxPlayers(undefined)).toBe(0)
   })
 
-  it('ofrece los géneros de más a menos juegos y los de 2 o más', () => {
+  it('offers the genres from most to fewest games and the 2-or-more ones', () => {
     const { genres, multiplayer } = filterOptions(games)
     expect(genres).toEqual([
       { name: 'Lucha', count: 2 },
@@ -37,14 +37,14 @@ describe('filtros de la biblioteca', () => {
     expect(multiplayer).toBe(3)
   })
 
-  it('filtra por género (sin importar mayúsculas ni tildes) o por jugadores', () => {
+  it('filters by genre (ignoring case and accents) or by players', () => {
     expect(applyFilter(games, { kind: 'genre', value: 'Plataformas' }).map((g) => g.id)).toEqual(['a', 'b'])
     expect(applyFilter(games, { kind: 'genre', value: 'accion' }).map((g) => g.id)).toEqual(['b'])
     expect(applyFilter(games, { kind: 'players' }).map((g) => g.id)).toEqual(['b', 'c', 'e'])
     expect(applyFilter(games, null)).toBe(games)
   })
 
-  it('nombre y comparación', () => {
+  it('name and comparison', () => {
     expect(filterLabel({ kind: 'players' })).toBe('2 o más jugadores')
     expect(filterLabel({ kind: 'genre', value: 'Lucha' })).toBe('Lucha')
     expect(sameFilter({ kind: 'genre', value: 'Acción' }, { kind: 'genre', value: 'accion' })).toBe(true)

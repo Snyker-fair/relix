@@ -46,27 +46,27 @@ describe('searchGames', () => {
   ]
   const names = (/** @type {string} */ q) => searchGames(games, q).map((g) => g.name)
 
-  it('normaliza tildes, signos y mayúsculas', () => {
+  it('normalizes accents, symbols and case', () => {
     expect(searchKey('Ōkami: Edición & Más')).toBe('okami edicion and mas')
   })
 
-  it('cada palabra escrita es el comienzo de una palabra del título', () => {
+  it('each typed word is the start of a word in the title', () => {
     expect(names('kin he')).toEqual(['Kingdom Hearts', 'Kingdom Hearts II'])
     expect(names('okami')).toEqual(['Ōkami'])
     expect(names('takedown')).toEqual(['Burnout 3: Takedown'])
     expect(names('ingdom')).toEqual([])
   })
 
-  it('los números romanos valen como cifras y viceversa', () => {
+  it('Roman numerals count as digits and vice versa', () => {
     expect(names('kingdom hearts 2')).toEqual(['Kingdom Hearts II'])
     expect(names('final fantasy 10')).toEqual(['Final Fantasy X'])
   })
 
-  it('"&" y "and" son lo mismo', () => {
+  it('"&" and "and" are the same', () => {
     expect(names('ratchet and')).toEqual(['Ratchet & Clank'])
   })
 
-  it('primero los que empiezan como lo escrito', () => {
+  it('first the ones that start like what was typed', () => {
     expect(names('cl')).toEqual(['Dark Cloud', 'Ratchet & Clank']) // ninguno empieza con "cl": A–Z
     expect(searchGames([game('Dark Cloud'), game('Cloud Strife')], 'cloud').map((g) => g.name)).toEqual([
       'Cloud Strife',
@@ -74,12 +74,12 @@ describe('searchGames', () => {
     ])
   })
 
-  it('sin texto no devuelve nada', () => {
+  it('without text it returns nothing', () => {
     expect(names('  ')).toEqual([])
   })
 })
 
-describe('orden y saltos', () => {
+describe('order and jumps', () => {
   const list = sortGames(
     [
       game('Burnout 3', { year: 2004 }),
@@ -93,12 +93,12 @@ describe('orden y saltos', () => {
     'az',
   )
 
-  it('letra para el índice: sin tildes y "#" para números', () => {
+  it('index letter: without accents and "#" for digits', () => {
     expect(letterOf('Ōkami')).toBe('O')
     expect(letterOf('007 Nightfire')).toBe('#')
   })
 
-  it('A–Z, por año y recientes', () => {
+  it('A–Z, by year and recent', () => {
     expect(list.map((g) => g.name)).toEqual([
       '007 Nightfire', 'Amplitude', 'Ape Escape 2', 'Bully', 'Burnout 3', 'Crash Twinsanity', 'Okami',
     ])
@@ -107,7 +107,7 @@ describe('orden y saltos', () => {
     expect(sortGames(list, 'recent', played).map((g) => g.name).slice(0, 3)).toEqual(['Okami', 'Bully', '007 Nightfire'])
   })
 
-  it('más jugados: más tiempo primero, los nunca jugados al final en A–Z', () => {
+  it('most played: most time first, the never played at the end, A–Z', () => {
     const time = { [list[4].id]: { seconds: 600 }, [list[1].id]: { seconds: 9000 } }
     expect(sortGames(list, 'played', {}, time).map((g) => g.name).slice(0, 4)).toEqual([
       'Amplitude', 'Burnout 3', '007 Nightfire', 'Ape Escape 2',
@@ -115,7 +115,7 @@ describe('orden y saltos', () => {
     expect(sectionOf(list[0], 'played')).toBeNull()
   })
 
-  it('RT salta a la letra siguiente; LT al inicio de la actual o a la anterior', () => {
+  it('RT jumps to the next letter; LT to the start of the current one or to the previous one', () => {
     // 0 "#", 1-2 "A", 3-4 "B", 5 "C", 6 "O"
     expect(jumpIndex(list, 0, 1, 'az')).toBe(1)
     expect(jumpIndex(list, 1, 1, 'az')).toBe(3)
@@ -125,7 +125,7 @@ describe('orden y saltos', () => {
     expect(jumpIndex(list, 0, -1, 'az')).toBe(0)
   })
 
-  it('por año salta de año en año; en recientes, de a una página', () => {
+  it('by year it jumps year by year; in recent, a page at a time', () => {
     const byYear = sortGames(list, 'year')
     expect(sectionOf(byYear[0], 'year')).toBe('2002')
     expect(jumpIndex(byYear, 0, 1, 'year')).toBe(2)
@@ -136,28 +136,28 @@ describe('orden y saltos', () => {
   })
 })
 
-describe('colecciones de ES-DE', () => {
+describe('ES-DE collections', () => {
   const folders = new Map([
     ['psx', 'psx'],
     ['ps1', 'psx'],
     ['ps2', 'ps2'],
   ])
 
-  it('arma y lee nombres de archivo', () => {
+  it('builds and reads file names', () => {
     expect(cleanCollectionName('  Con   amigos: 2 jugadores?  ')).toBe('Con amigos 2 jugadores')
     expect(collectionFileName('Pendientes')).toBe('custom-Pendientes.cfg')
     expect(collectionNameFromFile('custom-Con amigos.cfg')).toBe('Con amigos')
     expect(collectionNameFromFile('favorites.cfg')).toBeNull()
   })
 
-  it('lee las líneas sin vacías ni repetidas', () => {
+  it('reads the lines without empty or repeated ones', () => {
     expect(parseCollection('%ROMPATH%/ps2/A.chd\r\n\n%ROMPATH%/ps2/a.chd\n%ROMPATH%/snes/B.sfc\n')).toEqual([
       '%ROMPATH%/ps2/A.chd',
       '%ROMPATH%/snes/B.sfc',
     ])
   })
 
-  it('reconoce la consola por la carpeta real, también con barras invertidas o ruta completa', () => {
+  it('recognizes the console by its real folder, also with backslashes or a full path', () => {
     expect(resolveLine('%ROMPATH%/ps1/FF7 (USA)/FF7 (USA).m3u', folders)).toEqual({
       system: 'psx',
       path: 'FF7 (USA)/FF7 (USA).m3u',
@@ -167,7 +167,7 @@ describe('colecciones de ES-DE', () => {
     expect(resolveLine('%ROMPATH%/snes/Mario.sfc', folders)).toBeNull()
   })
 
-  it('agrega y quita juegos conservando las líneas de otras consolas', () => {
+  it('adds and removes games keeping the lines of other consoles', () => {
     const lines = ['%ROMPATH%/snes/Mario.sfc', '%ROMPATH%/ps2/Okami.chd']
     const okami = { system: 'ps2', path: 'Okami.chd' }
     const kh = { system: 'ps2', path: 'Kingdom Hearts.chd' }

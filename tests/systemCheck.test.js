@@ -6,7 +6,7 @@ const GB = 1024 ** 3
 const platform = (/** @type {string} */ id) => /** @type {import('../src/lib/core/platforms.js').Platform} */ (getPlatform(id))
 const games = (/** @type {string[]} */ ...paths) => paths.map((path) => ({ path }))
 
-/** Una consola con juegos y su emulador recomendado @param {string} id @param {string[]} paths */
+/** A console with games and its recommended emulator @param {string} id @param {string[]} paths */
 function console_(id, paths, { installed = /** @type {boolean | null} */ (true), emulator = '' } = {}) {
   const p = platform(id)
   return { platform: p, games: games(...paths), emulator: emulator ? getEmulator(p, emulator) : (p.emulators[0] ?? null), installed }
@@ -26,8 +26,8 @@ const base = {
   dataStatus: /** @type {const} */ ('saved'),
 }
 
-describe('revisión del sistema', () => {
-  it('todo en orden', () => {
+describe('system checkup', () => {
+  it('all in order', () => {
     const checks = buildChecks({
       ...base,
       shell: { ...shell, romFolders: ['ps1'] },
@@ -38,7 +38,7 @@ describe('revisión del sistema', () => {
     expect(checks.find((c) => c.id === 'space')?.detail).toBe('182 GB libres de 465 GB.')
   })
 
-  it('juegos europeos sin scph5502.bin: dice cuál falta y para cuántos juegos', () => {
+  it('European games without scph5502.bin: says which one is missing and for how many games', () => {
     const checks = buildChecks({
       ...base,
       shell,
@@ -54,7 +54,7 @@ describe('revisión del sistema', () => {
     expect(bios?.action).toEqual({ kind: 'guide', systemId: 'psx' })
   })
 
-  it('BIOS dentro del emulador: no es error, solo avisa que no la ve', () => {
+  it("BIOS inside the emulator: not an error, it only warns that it can't see it", () => {
     const checks = buildChecks({
       ...base,
       shell,
@@ -65,7 +65,7 @@ describe('revisión del sistema', () => {
     expect(bios?.detail).toContain('E:\\DuckStation\\bios')
   })
 
-  it('PS2 con la carpeta vacía, emulador sin instalar y USB sin permisos', () => {
+  it('PS2 with an empty folder, an emulator not installed and a USB drive without permissions', () => {
     const checks = buildChecks({
       ...base,
       shell: { ...shell, writable: false, internet: false, space: { free: 1 * GB, total: 32 * GB } },
@@ -83,7 +83,7 @@ describe('revisión del sistema', () => {
     expect(summarize(checks)).toEqual({ errors: 3, warnings: 3 })
   })
 
-  it('BIOS de PS2: vale cualquier extensión, pero no la comprimida ni los archivos de apoyo', () => {
+  it('PS2 BIOS: any extension works, but not a compressed one or the companion files', () => {
     /** @param {string[]} files */
     const ps2 = (files) =>
       buildChecks({
@@ -98,13 +98,13 @@ describe('revisión del sistema', () => {
     expect(ps2(['.DS_Store'])?.title).toBe('BIOS de PS2: la carpeta está vacía')
   })
 
-  it('carpetas que Relix no usa y USB sin juegos', () => {
+  it("folders Relix doesn't use and a USB drive without games", () => {
     const checks = buildChecks({ ...base, shell, consoles: [console_('psx', [])] })
     expect(checks[0].state).toBe('warn')
     expect(checks.find((c) => c.id === 'folders')?.title).toBe('Carpetas que Relix no usa: nes')
   })
 
-  it('shell que no responde: lo dice en vez de dar todo por bueno', () => {
+  it("a shell that doesn't answer: it says so instead of calling everything fine", () => {
     const consoles = [console_('psx', ['Crash Bandicoot (USA).chd'])]
     expect(buildChecks({ ...base, shell: null, consoles }).some((c) => c.id === 'shell')).toBe(false)
     const checks = buildChecks({ ...base, shell: null, consoles, shellFailed: true })
@@ -112,12 +112,12 @@ describe('revisión del sistema', () => {
     expect(checks.some((c) => c.id === 'write' || c.id === 'bios:psx')).toBe(false)
   })
 
-  it('Wii U: informa que se abre desde Dev Home', () => {
+  it('Wii U: reports that it opens from Dev Home', () => {
     const checks = buildChecks({ ...base, shell: null, consoles: [console_('wiiu', ['Pikmin 3 (USA).wua'])] })
     expect(checks.find((c) => c.id === 'emu:wiiu')?.state).toBe('info')
   })
 
-  it('tamaños legibles', () => {
+  it('readable sizes', () => {
     expect(formatBytes(182 * GB)).toBe('182 GB')
     expect(formatBytes(1.5 * GB)).toBe('1,5 GB')
     expect(formatBytes(300 * 1024 ** 2)).toBe('300 MB')

@@ -4,13 +4,13 @@ import { getEmulator, getPlatform, PLATFORMS } from '../src/lib/core/platforms.j
 
 const platform = (/** @type {string} */ id) => /** @type {import('../src/lib/core/platforms.js').Platform} */ (getPlatform(id))
 
-describe('guías de cada consola', () => {
-  it('todos los emuladores tienen guía', () => {
+describe("each console's guide", () => {
+  it('every emulator has a guide', () => {
     const missing = PLATFORMS.flatMap((p) => p.emulators.map((e) => e.id)).filter((id) => !EMULATOR_GUIDES[id])
     expect(missing).toEqual([])
   })
 
-  it('PS1 con SwanStation: RetroArch Full, la BIOS por región y la carpeta del USB', () => {
+  it('PS1 with SwanStation: RetroArch Full, the BIOS by region and the USB folder', () => {
     const psx = platform('psx')
     const steps = guideSteps(psx, getEmulator(psx, 'swanstation'), { folder: 'E:\\roms\\ps1', installed: true, games: 0 })
     expect(steps.map((s) => s.id)).toEqual(['install', 'files', 'games', 'play'])
@@ -23,7 +23,7 @@ describe('guías de cada consola', () => {
     expect(steps[2].done).toBe(false)
   })
 
-  it('una consola sin nada extra lo dice', () => {
+  it('a console with nothing extra says so', () => {
     const snes = platform('snes')
     const steps = guideSteps(snes, getEmulator(snes, 'snes9x'), { folder: 'E:\\roms\\snes', installed: null, games: 4 })
     expect(steps[1].lines).toEqual(['No necesita nada más: ni BIOS ni ajustes.'])
@@ -31,14 +31,14 @@ describe('guías de cada consola', () => {
     expect(steps[2].done).toBe(true)
   })
 
-  it('Wii U explica Cemu aunque Relix no pueda abrirlo', () => {
+  it("Wii U explains Cemu even though Relix can't open it", () => {
     const steps = guideSteps(platform('wiiu'), null, { folder: 'E:\\roms\\wiiu', installed: null, games: 2 })
     expect(steps[0].title).toBe('Instala Cemu')
     expect(steps[1].lines.join(' ')).toContain('keys.txt')
     expect(steps[3].lines[0]).toContain('Dev Home')
   })
 
-  it('negritas y rutas se separan para dibujarlas', () => {
+  it('bold text and paths are split to draw them', () => {
     expect(richText('Copia en `E:\\roms\\ps1` y abre **≡ › Biblioteca**.')).toEqual([
       { text: 'Copia en ', kind: 'plain' },
       { text: 'E:\\roms\\ps1', kind: 'code' },

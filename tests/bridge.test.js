@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 /**
- * Simula el shell en C#: guarda lo que la interfaz envía y permite responder
- * o mandar eventos como lo haría MainPage.xaml.cs.
+ * Simulates the C# shell: keeps what the interface sends and lets you answer
+ * or send events the way MainPage.xaml.cs would.
  */
 function fakeShell() {
   /** @type {Array<(e: {data: any}) => void>} */
@@ -20,7 +20,7 @@ function fakeShell() {
   }
 }
 
-describe('bridge con el shell de Xbox', () => {
+describe('bridge with the Xbox shell', () => {
   const shell = fakeShell()
   /** @type {typeof import('../src/lib/core/bridge.js')} */
   let bridge
@@ -33,11 +33,11 @@ describe('bridge con el shell de Xbox', () => {
     delete globalThis.chrome
   })
 
-  it('detecta que corre dentro de la Xbox', () => {
+  it('detects that it runs inside the Xbox', () => {
     expect(bridge.mode).toBe('xbox')
   })
 
-  it('pide la biblioteca con la lista de consolas y recibe la respuesta', async () => {
+  it('asks for the library with the list of consoles and gets the answer', async () => {
     const pending = bridge.loadLibrary()
     const msg = shell.sent.at(-1)
     expect(msg.type).toBe('loadLibrary')
@@ -50,7 +50,7 @@ describe('bridge con el shell de Xbox', () => {
     await expect(pending).resolves.toMatchObject({ romRoot: 'F:\\roms' })
   })
 
-  it('escanea solo las consolas pedidas, con sus nombres de carpeta', async () => {
+  it('scans only the consoles asked for, with their folder names', async () => {
     const pending = bridge.scanRoms(['ps2'])
     const msg = shell.sent.at(-1)
     expect(msg).toMatchObject({ type: 'scanRoms', payload: { systems: [{ id: 'ps2', folders: ['ps2', 'playstation2'] }] } })
@@ -58,7 +58,7 @@ describe('bridge con el shell de Xbox', () => {
     await expect(pending).resolves.toEqual({ ps2: { folder: 'ps2', files: ['Okami (USA).chd'] } })
   })
 
-  it('envía la URI y la ruta del juego al lanzar', async () => {
+  it("sends the URI and the game's path when launching", async () => {
     const pending = bridge.launch('xbsx2:?cmd=xbsx2.exe "x"&launchOnExit=relix:', 'F:\\roms\\ps2\\x.chd')
     const msg = shell.sent.at(-1)
     expect(msg).toMatchObject({ type: 'launch', payload: { romPath: 'F:\\roms\\ps2\\x.chd' } })
@@ -66,7 +66,7 @@ describe('bridge con el shell de Xbox', () => {
     await expect(pending).resolves.toBe(true)
   })
 
-  it('convierte los errores del shell en ShellError con código', async () => {
+  it("turns the shell's errors into a ShellError with a code", async () => {
     const pending = bridge.launch('ppsspp:?x', 'F:\\roms\\psp\\x.iso')
     const msg = shell.sent.at(-1)
     shell.emit({ id: msg.id, ok: false, error: 'No hay ninguna app instalada que abra ppsspp:', code: 'emulator-missing' })
@@ -75,7 +75,7 @@ describe('bridge con el shell de Xbox', () => {
     expect(error.code).toBe('emulator-missing')
   })
 
-  it('entrega los eventos del control y del regreso', () => {
+  it('delivers the controller and return events', () => {
     /** @type {any[]} */
     const got = []
     const stop = bridge.onShellEvent((e) => got.push(e))
@@ -86,12 +86,12 @@ describe('bridge con el shell de Xbox', () => {
     expect(got).toEqual([{ event: 'input', action: 'down' }, { event: 'resumed' }])
   })
 
-  it('avisa que la interfaz está lista', () => {
+  it('says the interface is ready', () => {
     bridge.notifyReady()
     expect(shell.sent.at(-1)).toEqual({ type: 'ready' })
   })
 
-  it('pide la lista de portadas de libretro con el nombre de carpeta de la consola', async () => {
+  it("asks for libretro's list of covers with the console's folder name", async () => {
     const ps2 = (await import('../src/lib/core/platforms.js')).getPlatform('ps2')
     const pending = bridge.coverIndex(/** @type {any} */ (ps2))
     const msg = shell.sent.at(-1)
@@ -100,7 +100,7 @@ describe('bridge con el shell de Xbox', () => {
     await expect(pending).resolves.toEqual(['Ookami (USA)'])
   })
 
-  it('baja portadas y reporta el avance solo de esa consola', async () => {
+  it('downloads covers and reports progress only for that console', async () => {
     const ps2 = (await import('../src/lib/core/platforms.js')).getPlatform('ps2')
     /** @type {number[][]} */
     const progress = []
@@ -109,17 +109,17 @@ describe('bridge con el shell de Xbox', () => {
     const msg = shell.sent.at(-1)
     expect(msg).toMatchObject({ type: 'downloadCovers', payload: { system: 'ps2', libretro: 'Sony - PlayStation 2', items } })
 
-    shell.emit({ event: 'coverProgress', system: 'psx', done: 1, total: 9 }) // otra consola: se ignora
+    shell.emit({ event: 'coverProgress', system: 'psx', done: 1, total: 9 }) // another console: ignored
     shell.emit({ event: 'coverProgress', system: 'ps2', done: 1, total: 1 })
     shell.emit({ id: msg.id, ok: true, result: { saved: ['Okami (USA)'], failed: [] } })
     await expect(pending).resolves.toEqual({ saved: ['Okami (USA)'], failed: [] })
     expect(progress).toEqual([[1, 1]])
 
-    shell.emit({ event: 'coverProgress', system: 'ps2', done: 2, total: 2 }) // ya terminó: no escucha
+    shell.emit({ event: 'coverProgress', system: 'ps2', done: 2, total: 2 }) // already finished: not listening
     expect(progress).toEqual([[1, 1]])
   })
 
-  it('pide qué portadas hay en el USB', async () => {
+  it('asks which covers are on the USB drive', async () => {
     const pending = bridge.listCovers(['psx'])
     const msg = shell.sent.at(-1)
     expect(msg).toMatchObject({ type: 'listCovers', payload: { systems: ['psx'] } })
@@ -127,7 +127,7 @@ describe('bridge con el shell de Xbox', () => {
     await expect(pending).resolves.toEqual({ psx: ['FF7 (USA)/FF7 (USA).png'] })
   })
 
-  it('lee y guarda colecciones, y borra portadas', async () => {
+  it('reads and saves collections, and deletes covers', async () => {
     const listing = bridge.listCollections()
     let msg = shell.sent.at(-1)
     expect(msg.type).toBe('listCollections')
@@ -147,7 +147,7 @@ describe('bridge con el shell de Xbox', () => {
     await expect(deleting).resolves.toBe(true)
   })
 
-  it('lee y guarda tus datos en el USB', async () => {
+  it('reads and saves your data on the USB drive', async () => {
     const loading = bridge.loadUserData()
     let msg = shell.sent.at(-1)
     expect(msg.type).toBe('loadUserData')
@@ -161,7 +161,7 @@ describe('bridge con el shell de Xbox', () => {
     await expect(saving).rejects.toMatchObject({ code: 'usb-readonly' })
   })
 
-  it('revisa el sistema y no se queda esperando a un shell anterior', async () => {
+  it("checks the system and doesn't keep waiting for an older shell", async () => {
     vi.useFakeTimers()
     try {
       const checking = bridge.systemCheck(['RetroArch\\system'])
@@ -171,7 +171,7 @@ describe('bridge con el shell de Xbox', () => {
       shell.emit({ id: msg.id, ok: true, result })
       await expect(checking).resolves.toEqual(result)
 
-      // Un shell que no conoce el mensaje no responde: a los 15 s se rinde
+      // A shell that doesn't know the message doesn't answer: after 15 s it gives up
       const silent = bridge.systemCheck([])
       const assertion = expect(silent).rejects.toMatchObject({ code: 'timeout' })
       await vi.advanceTimersByTimeAsync(15_000)
@@ -181,13 +181,13 @@ describe('bridge con el shell de Xbox', () => {
     }
   })
 
-  it('arma las URLs de la portada y su miniatura', () => {
+  it('builds the URLs of the cover and its thumbnail', () => {
     const bases = { mediaBase: 'https://relix.example/media', thumbBase: 'https://relix.example/thumb' }
     expect(bridge.coverUrls('psx', 'FF7 (USA)/FF7 #1.png', bases)).toEqual({
       cover: 'https://relix.example/media/psx/covers/FF7%20(USA)/FF7%20%231.png',
       thumb: 'https://relix.example/thumb/psx/FF7%20(USA)/FF7%20%231.png',
     })
-    // Shell anterior sin miniaturas: usa la original
+    // An older shell without thumbnails: the original is used
     expect(bridge.coverUrls('ps2', 'Okami.jpg', { mediaBase: bases.mediaBase }).thumb).toBe(
       'https://relix.example/media/ps2/covers/Okami.jpg',
     )

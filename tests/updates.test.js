@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import { compareVersions, isNewer, parseVersion, readRelease, updateCheck } from '../src/lib/core/updates.js'
 
-describe('versión nueva', () => {
-  it('lee versiones con o sin v y con sufijo de prueba', () => {
+describe('new version', () => {
+  it('reads versions with or without v and with a prerelease suffix', () => {
     expect(parseVersion('v1.2.3')).toEqual({ numbers: [1, 2, 3], pre: '' })
     expect(parseVersion('1.0.0-beta.2')).toEqual({ numbers: [1, 0, 0], pre: 'beta.2' })
     expect(parseVersion('dev')).toBeNull()
     expect(parseVersion('1.0')).toBeNull()
   })
 
-  it('compara por número, y la de prueba va antes que la final', () => {
+  it('compares by number, and the prerelease goes before the final one', () => {
     expect(compareVersions('1.0.1', '1.0.0')).toBeGreaterThan(0)
     expect(compareVersions('1.10.0', '1.9.9')).toBeGreaterThan(0)
     expect(compareVersions('v2.0.0', '2.0.0')).toBe(0)
@@ -17,7 +17,7 @@ describe('versión nueva', () => {
     expect(compareVersions('1.0.0-beta.10', '1.0.0-beta.2')).toBeGreaterThan(0)
   })
 
-  it('avisa solo si la del release es posterior (y nunca en una compilación sin versión)', () => {
+  it("notices only if the release's is later (and never in a build without a version)", () => {
     expect(isNewer('v1.0.1', '1.0.0')).toBe(true)
     expect(isNewer('v1.0.0', '1.0.0')).toBe(false)
     expect(isNewer('v0.9.0', '1.0.0')).toBe(false)
@@ -25,7 +25,7 @@ describe('versión nueva', () => {
     expect(isNewer(null, '1.0.0')).toBe(false)
   })
 
-  it('de la respuesta de GitHub toma la versión y la página; ignora borradores y pruebas', () => {
+  it("from GitHub's answer it takes the version and the page; ignores drafts and prereleases", () => {
     expect(readRelease({ tag_name: 'v1.0.1', html_url: 'https://github.com/x', published_at: '2026-11-01T00:00:00Z' })).toEqual({
       version: '1.0.1',
       url: 'https://github.com/x',
@@ -37,7 +37,7 @@ describe('versión nueva', () => {
     expect(readRelease(null)).toBeNull()
   })
 
-  it('la fila de Revisión aparece solo con una versión posterior', () => {
+  it('the Checkup row shows up only with a later version', () => {
     const row = updateCheck({ version: '1.0.1' }, '1.0.0')
     expect(row?.id).toBe('update')
     expect(row?.state).toBe('update')

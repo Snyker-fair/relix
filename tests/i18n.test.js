@@ -16,8 +16,8 @@ import EN from '../src/lib/i18n/en.js'
 import { i18n, listJoin, plural, t, tn } from '../src/lib/i18n/i18n.svelte.js'
 import { coverSummary, formatHour, formatPlaytime, scanSummary, timeAgo } from '../src/lib/ui/format.js'
 
-describe('qué idioma toca', () => {
-  it('Automático sigue a la consola: español si prefiere español, si no inglés', () => {
+describe('which language applies', () => {
+  it('Automatic follows the console: Spanish if it prefers Spanish, otherwise English', () => {
     expect(systemLanguage(['es-CL', 'en-US'])).toBe('es')
     expect(systemLanguage(['es'])).toBe('es')
     expect(systemLanguage(['en-GB', 'es-ES'])).toBe('en')
@@ -30,26 +30,26 @@ describe('qué idioma toca', () => {
     expect(effectiveLanguage('otro', ['en-US'])).toBe('en')
   })
 
-  it('{nombre} se reemplaza; uno sin valor queda a la vista', () => {
+  it('{name} is replaced; one without a value stays visible', () => {
     expect(interpolate('{n} de {total}', { n: 3, total: 9 })).toBe('3 de 9')
     expect(interpolate('Hola {nombre}', {})).toBe('Hola {nombre}')
   })
 })
 
-describe('el catálogo en inglés', () => {
-  it('tiene cada texto que pasa por t(), tn() o plural() en el código', () => {
+describe('the English catalog', () => {
+  it('has every text that goes through t(), tn() or plural() in the code', () => {
     const { keys, problems } = collectKeys()
     expect(problems).toEqual([])
     const missing = [...keys].filter(([key]) => !(key in EN)).map(([key, where]) => `${where[0]}  ${key}`)
     expect(missing).toEqual([])
   })
 
-  it('cada traducción tiene los mismos {nombres} que su texto en español', () => {
+  it('each translation has the same {names} as its Spanish text', () => {
     const wrong = Object.entries(EN).filter(([es, en]) => placeholders(es).join() !== placeholders(en).join())
     expect(wrong).toEqual([])
   })
 
-  it('sin traducciones vacías ni con texto en español', () => {
+  it('no empty translations or ones with Spanish text', () => {
     const suspicious = Object.entries(EN).filter(
       ([, en]) => en.trim() === '' || /[áéíóúñ¿¡]/i.test(en.replace(/Español|Ōkami|Pokémon/g, '')),
     )
@@ -57,7 +57,7 @@ describe('el catálogo en inglés', () => {
   })
 })
 
-describe('en inglés', () => {
+describe('in English', () => {
   beforeEach(() => {
     i18n.choice = 'en'
     i18n.missing.clear()
@@ -66,7 +66,7 @@ describe('en inglés', () => {
     i18n.choice = 'auto'
   })
 
-  it('t, tn y plural', () => {
+  it('t, tn and plural', () => {
     expect(t('Volver')).toBe('Back')
     expect(t('Juego que no existe en el catálogo')).toBe('Juego que no existe en el catálogo')
     expect(i18n.missing.has('Juego que no existe en el catálogo')).toBe(true)
@@ -78,7 +78,7 @@ describe('en inglés', () => {
     expect(formatHour(0)).toBe('12 AM')
   })
 
-  it('las líneas del registro: el tipo en inglés y en sus 9 columnas', () => {
+  it('the log lines: the kind in English and in its 9 columns', () => {
     for (const kind of /** @type {Array<keyof typeof LOG_KINDS>} */ (Object.keys(LOG_KINDS))) {
       const line = logLine(kind, 'x', new Date(2026, 9, 17, 6, 40, 12))
       expect(t(LOG_KINDS[kind]).length).toBeLessThanOrEqual(9)
@@ -88,11 +88,11 @@ describe('en inglés', () => {
   })
 
   /**
-   * Las guías, la revisión y los avisos arman sus textos al correr: se recorren
-   * todas sus variantes y no debe quedar ninguno sin traducir.
+   * The guides, the checkup and the notices build their texts at runtime: every
+   * variant is gone through and none may be left untranslated.
    */
-  it('guías, revisión, avisos y tablas de nombres: nada sin traducir', () => {
-    // Guías: cada consola con cada emulador, y Wii U (sin emulador)
+  it('guides, checkup, notices and name tables: nothing untranslated', () => {
+    // Guides: each console with each emulator, and Wii U (no emulator)
     for (const platform of PLATFORMS) {
       const options = platform.emulators.length > 0 ? platform.emulators : [null]
       for (const emulator of options) {
@@ -106,7 +106,7 @@ describe('en inglés', () => {
       }
     }
 
-    // Revisión: todos los caminos
+    // Checkup: every path
     const GB = 1024 ** 3
     const platform = (/** @type {string} */ id) => /** @type {any} */ (getPlatform(id))
     const consoles = [
@@ -132,7 +132,7 @@ describe('en inglés', () => {
     }
     formatBytes(1.5 * GB)
 
-    // Avisos de "se cerró enseguida"
+    // "Closed right away" notices
     const emu = (/** @type {string} */ p, /** @type {string} */ e) => /** @type {any} */ (getEmulator(platform(p), e))
     for (const [p, e, path] of [
       ['psx', 'swanstation', 'RE3 (Europe).chd'],
@@ -147,7 +147,7 @@ describe('en inglés', () => {
       quickExitMessage({ name: 'Juego', path }, platform(p), emu(p, e))
     }
 
-    // Textos armados por las funciones de formato
+    // Texts built by the format functions
     scanSummary('PS2', { added: 1, removed: 0, total: 1 })
     scanSummary('PS2', { added: 2, removed: 1, total: 9 })
     scanSummary('PS2', { added: 0, removed: 2, total: 9 })
@@ -158,7 +158,7 @@ describe('en inglés', () => {
     for (const minutes of [0, 5, 90, 60 * 30, 60 * 24 * 3]) timeAgo(Date.now() - minutes * 60_000)
     formatPlaytime(10)
 
-    // Errores de lanzamiento
+    // Launch errors
     for (const call of [
       () => buildLaunchUri(null, 'E:\\a.chd'),
       () => buildLaunchUri(/** @type {any} */ ({ kind: 'retroarch', protocol: 'retroarch', core: 'x.dll' }), ''),
@@ -167,7 +167,7 @@ describe('en inglés', () => {
       expect(call).toThrow()
     }
 
-    // Tablas de nombres que las pantallas traducen al mostrarlas
+    // Name tables the screens translate when showing them
     for (const name of [
       ...Object.values(THEME_NAMES),
       ...Object.values(REGION_NAMES),

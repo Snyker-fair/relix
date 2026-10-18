@@ -13,8 +13,8 @@ import { formatPlaytime } from '../src/lib/ui/format.js'
 const MIN = 60_000
 const HOUR = 60 * MIN
 
-describe('datos.json', () => {
-  it('ida y vuelta con fecha legible', () => {
+describe('data.json', () => {
+  it('round trip with a readable date', () => {
     const at = Date.UTC(2026, 9, 16, 5, 0, 0)
     const text = serializeUserData({ favorites: { 'ps2/Okami.chd': true }, hidden: ['psx/BIOS.bin'], session: null }, at)
     expect(text).toContain('"savedAt": "2026-10-16T05:00:00.000Z"')
@@ -24,14 +24,14 @@ describe('datos.json', () => {
     expect(back?.values).toEqual({ favorites: { 'ps2/Okami.chd': true }, hidden: ['psx/BIOS.bin'], session: null })
   })
 
-  it('rechaza archivos que no son de Relix o están dañados', () => {
+  it("rejects files that aren't Relix's or are damaged", () => {
     expect(parseUserData('')).toBeNull()
     expect(parseUserData('{"favorites": {}')).toBeNull()
     expect(parseUserData('{"app": "otra"}')).toBeNull()
     expect(parseUserData('[1, 2]')).toBeNull()
   })
 
-  it('una clave dañada no arrastra a las demás', () => {
+  it("a damaged key doesn't drag down the others", () => {
     const data = parseUserData(JSON.stringify({
       app: 'relix',
       savedAt: 'no es fecha',
@@ -48,47 +48,47 @@ describe('datos.json', () => {
   })
 })
 
-describe('qué copia manda al iniciar', () => {
+describe('which copy rules at startup', () => {
   const drive = 'E:\\|RELIX (E:)'
-  it('el USB como Relix lo dejó: manda lo más nuevo', () => {
+  it('the USB drive as Relix left it: the newest rules', () => {
     expect(chooseSource({ savedAt: 100 }, { savedAt: 100, synced: 100, drive }, drive)).toBe('usb')
-    // cambios en la app que no alcanzaron a llegar al USB
+    // changes in the app that didn't make it to the USB drive
     expect(chooseSource({ savedAt: 100 }, { savedAt: 200, synced: 100, drive }, drive)).toBe('local')
   })
-  it('el USB cambió por fuera (otra Xbox o un respaldo copiado encima): manda el USB', () => {
+  it('the USB drive changed outside (another Xbox or a backup copied over it): the USB drive rules', () => {
     expect(chooseSource({ savedAt: 300 }, { savedAt: 200, synced: 100, drive }, drive)).toBe('usb')
     expect(chooseSource({ savedAt: 50 }, { savedAt: 200, synced: 100, drive }, drive)).toBe('usb')
   })
-  it('una app recién instalada toma la del USB', () => {
+  it("a freshly installed app takes the USB drive's", () => {
     expect(chooseSource({ savedAt: 100 }, { savedAt: 0, synced: 0, drive: '' }, drive)).toBe('usb')
   })
-  it('primera vez con respaldo: lo de la app se copia al USB', () => {
+  it("the first time with backups: the app's data is copied to the USB drive", () => {
     expect(chooseSource(null, { savedAt: 300, synced: 0, drive: '' }, drive)).toBe('local')
   })
-  it('otro USB: manda el suyo, o se parte de cero si no tiene', () => {
+  it('another USB drive: its own rules, or it starts from scratch if it has none', () => {
     expect(chooseSource({ savedAt: 1 }, { savedAt: 999, synced: 1, drive: 'F:\\|OTRO' }, drive)).toBe('usb')
     expect(chooseSource(null, { savedAt: 999, synced: 0, drive: 'F:\\|OTRO' }, drive)).toBe('fresh')
   })
 })
 
-describe('tiempo de juego', () => {
+describe('playtime', () => {
   const start = Date.UTC(2026, 9, 16, 20, 0, 0)
   const session = { id: 'ps2/Okami.chd', startedAt: start }
 
-  it('suma el tiempo y una partida más', () => {
+  it('adds the time and one more session', () => {
     const first = closeSession({}, session, start + 45 * MIN)
     expect(first.seconds).toBe(2700)
     const second = closeSession(first.playtime, session, start + 2 * HOUR)
     expect(second.playtime['ps2/Okami.chd']).toEqual({ seconds: 2700 + 7200, plays: 2 })
   })
 
-  it('no cuenta partidas de menos de 1 minuto ni de más de 12 horas', () => {
+  it("doesn't count sessions under 1 minute or over 12 hours", () => {
     expect(closeSession({}, session, start + 30_000).seconds).toBe(0)
     expect(closeSession({}, session, start + (MAX_SESSION_SECONDS + 1) * 1000).seconds).toBe(0)
     expect(closeSession({}, null, start).seconds).toBe(0)
   })
 
-  it('más jugados y total, solo de los juegos que siguen', () => {
+  it('most played and total, only of the games still there', () => {
     const playtime = { a: { seconds: 100, plays: 1 }, b: { seconds: 900, plays: 3 }, c: { seconds: 500, plays: 2 }, d: { seconds: 50, plays: 1 } }
     expect(mostPlayed(playtime).map((g) => g.id)).toEqual(['b', 'c', 'a'])
     expect(mostPlayed(playtime, (id) => id !== 'b', 2).map((g) => g.id)).toEqual(['c', 'a'])
@@ -96,7 +96,7 @@ describe('tiempo de juego', () => {
     expect(totalSeconds(playtime, (id) => id === 'a')).toBe(100)
   })
 
-  it('se muestra en palabras', () => {
+  it('is shown in words', () => {
     expect(formatPlaytime(30)).toBe('menos de 1 min')
     expect(formatPlaytime(45 * 60)).toBe('45 min')
     expect(formatPlaytime(3 * 3600)).toBe('3 h')

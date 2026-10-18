@@ -15,16 +15,16 @@ describe('timeAgo', () => {
 })
 
 describe('scanSummary', () => {
-  it('sin cambios', () => {
+  it('no changes', () => {
     expect(scanSummary('PS2', { added: 0, removed: 0, total: 12 })).toBe('PS2: sin cambios (12 juegos)')
   })
-  it('nuevos y quitados', () => {
+  it('new and removed', () => {
     expect(scanSummary('PS2', { added: 3, removed: 1, total: 14 })).toBe('PS2: 3 juegos nuevos y 1 quitado (14 en total)')
   })
-  it('solo uno nuevo', () => {
+  it('only one new', () => {
     expect(scanSummary('PSP', { added: 1, removed: 0, total: 1 })).toBe('PSP: 1 juego nuevo (1 en total)')
   })
-  it('solo quitados', () => {
+  it('only removed', () => {
     expect(scanSummary('PS1', { added: 0, removed: 2, total: 5 })).toBe('PS1: 2 juegos quitados (5 en total)')
   })
   it('plural', () => {
@@ -34,16 +34,16 @@ describe('scanSummary', () => {
 
 describe('coverSummary', () => {
   const none = { saved: 0, failed: 0, toChoose: 0, notFound: 0 }
-  it('nada que buscar', () => {
+  it('nothing to look for', () => {
     expect(coverSummary('PS2', none)).toBe('PS2: ya tenías todas las portadas')
   })
-  it('junta solo lo que pasó', () => {
+  it('joins only what happened', () => {
     expect(coverSummary('PS2', { ...none, saved: 7, toChoose: 2 })).toBe('PS2: 7 portadas nuevas · 2 para elegir a mano')
     expect(coverSummary('PSP', { saved: 1, failed: 1, toChoose: 0, notFound: 3 })).toBe(
       'PSP: 1 portada nueva · 3 sin resultados · 1 no se pudo bajar',
     )
   })
-  it('cuenta las capturas para el fondo', () => {
+  it('counts the background screenshots', () => {
     expect(coverSummary('PS1', { ...none, saved: 2, shots: 5 })).toBe('PS1: 2 portadas nuevas · 5 capturas para el fondo')
     expect(coverSummary('PS1', { ...none, shots: 1 })).toBe('PS1: 1 captura para el fondo')
   })

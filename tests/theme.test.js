@@ -3,13 +3,13 @@ import { effectiveTheme, isNight, THEMES } from '../src/lib/core/theme.js'
 
 const at = (/** @type {number} */ hour, minute = 0) => new Date(2026, 9, 17, hour, minute)
 
-describe('tema', () => {
-  it('Claro y Oscuro no dependen de la hora', () => {
+describe('theme', () => {
+  it("Light and Dark don't depend on the time", () => {
     expect(effectiveTheme('light', at(23))).toBe('light')
     expect(effectiveTheme('dark', at(12))).toBe('dark')
   })
 
-  it('Automático: oscuro de 20:00 a 7:00', () => {
+  it('Automatic: dark from 20:00 to 7:00', () => {
     expect(effectiveTheme('auto', at(19, 59))).toBe('light')
     expect(effectiveTheme('auto', at(20))).toBe('dark')
     expect(effectiveTheme('auto', at(3))).toBe('dark')
@@ -18,7 +18,7 @@ describe('tema', () => {
     expect(isNight(at(0))).toBe(true)
   })
 
-  it('un valor desconocido queda en Claro', () => {
+  it('an unknown value stays Light', () => {
     expect(effectiveTheme('sepia', at(22))).toBe('light')
     expect(THEMES).toEqual(['light', 'dark', 'auto'])
   })
