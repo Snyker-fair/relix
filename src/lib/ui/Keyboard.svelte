@@ -1,12 +1,12 @@
 <script>
   /**
-   * Teclado en pantalla para escribir con el control, estilo Nintendo.
-   * La pantalla que lo usa le pasa los botones con `handle(action)`:
+   * An on-screen keyboard to type with the controller, Nintendo style.
+   * The screen that uses it passes it the buttons with `handle(action)`:
    *
-   *   flechas  moverse    A  escribir la tecla    X  borrar    Y  espacio
+   *   arrows  move    A  type the key    X  delete    Y  space
    *
-   * `handle` devuelve false si la acción no le toca (por ejemplo, salir por
-   * el borde derecho hacia los resultados de la búsqueda).
+   * `handle` returns false if the action isn't its business (for example, leaving
+   * through the right edge toward the search results).
    */
   import { sound } from './sound.js'
   import { t } from '../i18n/i18n.svelte.js'
@@ -42,10 +42,10 @@
   ])
 
   let row = $state(0)
-  /** Columna de 0 a 6; las teclas anchas ocupan varias */
+  /** A column from 0 to 6; the wide keys take several */
   let col = $state(0)
 
-  /** La tecla que cubre una columna y dónde empieza */
+  /** The key that covers a column and where it starts */
   function keyAt(/** @type {number} */ r, /** @type {number} */ c) {
     let start = 0
     for (const key of rows[r]) {
@@ -72,7 +72,7 @@
       value += ' '
     } else {
       if (value.length >= maxLength) return sound.error()
-      // Mayúscula al empezar cada palabra: "Con amigos" -> "Con Amigos" queda bien en títulos
+      // Uppercase at the start of each word: "with friends" -> "With Friends" looks right in titles
       const startOfWord = value.length === 0 || value.endsWith(' ')
       value += startOfWord ? key.label : key.label.toLowerCase()
     }
@@ -81,7 +81,7 @@
 
   /**
    * @param {import('./input.js').Action} action
-   * @returns {boolean} false si la acción no le corresponde al teclado
+   * @returns {boolean} false if the action isn't the keyboard's business
    */
   export function handle(action) {
     const { key, start } = focused
@@ -113,7 +113,7 @@
     return true
   }
 
-  /** Vuelve al teclado desde los resultados: a la última columna de la fila */
+  /** Back to the keyboard from the results: to the row's last column */
   export function enterFromRight() {
     col = COLUMNS - 1
   }
@@ -170,8 +170,8 @@
     background: var(--ink);
     color: var(--cloud);
   }
-  /* la tecla enfocada cambia de color y sube un poco, sin crecer:
-     así nunca pisa a sus vecinas, ni las anchas */
+  /* the focused key changes color and rises a little, without growing:
+     that way it never steps on its neighbors, not even the wide ones */
   .key.focused {
     background: var(--pop);
     color: var(--on-color);

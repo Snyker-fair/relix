@@ -1,6 +1,6 @@
 /**
- * Sonidos de la interfaz, sintetizados con Web Audio (sin archivos de audio).
- * Suaves y cortos: un "tic" al mover, un "pop" al elegir.
+ * Interface sounds, synthesized with Web Audio (no audio files).
+ * Soft and short: a "tick" when moving, a "pop" when choosing.
  */
 
 /** @type {AudioContext|null} */
@@ -23,22 +23,22 @@ function audio() {
 }
 
 let warned = false
-/** Deja una pista en la consola (edge://inspect) si el navegador bloquea el audio. */
+/** Leaves a hint in the console (edge://inspect) if the browser blocks the audio. */
 function warnIfBlocked() {
   if (warned) return
   setTimeout(() => {
     if (ctx?.state === 'suspended' && !warned) {
       warned = true
       console.warn(
-        '[Relix] El audio está bloqueado por la política de autoplay. En la Xbox, ' +
-          'el shell debe pasar --autoplay-policy=no-user-gesture-required al WebView2.',
+        '[Relix] Audio is blocked by the autoplay policy. On the Xbox, ' +
+          'the shell must pass --autoplay-policy=no-user-gesture-required to the WebView2.',
       )
     }
   }, 1000)
 }
 
 /**
- * @param {Array<[number, number]>} notes  [frecuencia Hz, inicio en s]
+ * @param {Array<[number, number]>} notes  [frequency Hz, start in s]
  * @param {{ type?: OscillatorType, length?: number, volume?: number }} [opts]
  */
 function play(notes, { type = 'sine', length = 0.09, volume = 0.08 } = {}) {
@@ -51,7 +51,7 @@ function play(notes, { type = 'sine', length = 0.09, volume = 0.08 } = {}) {
     const gain = ac.createGain()
     osc.type = type
     osc.frequency.setValueAtTime(freq, t0 + start)
-    // pequeño "salto" de tono hacia arriba: suena más a burbuja
+    // a small upward "jump" in pitch: it sounds more like a bubble
     osc.frequency.exponentialRampToValueAtTime(freq * 1.25, t0 + start + length * 0.6)
     gain.gain.setValueAtTime(0.0001, t0 + start)
     gain.gain.exponentialRampToValueAtTime(volume, t0 + start + 0.012)

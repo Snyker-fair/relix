@@ -1,9 +1,9 @@
 /**
- * Estado de la pantalla que comparten varias piezas:
- *   - si está el protector de pantalla o se está abriendo un juego (los videos
- *     de vista previa se detienen: no tiene sentido que sigan sonando debajo)
- *   - las imágenes y videos del USB que no cargaron (no se vuelven a pedir y
- *     el panel muestra la portada en su lugar)
+ * Screen state that several pieces share:
+ *   - whether the screensaver is on or a game is opening (the preview videos
+ *     stop: there's no point in them still playing underneath)
+ *   - the images and videos from the USB drive that didn't load (they aren't
+ *     asked for again and the panel shows the cover instead)
  */
 import { SvelteSet } from 'svelte/reactivity'
 
@@ -11,7 +11,7 @@ class Activity {
   screensaver = $state(false)
   launching = $state(false)
 
-  /** Nada debería moverse ni sonar */
+  /** Nothing should move or make a sound */
   get quiet() {
     return this.screensaver || this.launching
   }
@@ -19,11 +19,11 @@ class Activity {
 
 export const activity = new Activity()
 
-/** URLs de imágenes o videos que fallaron */
+/** URLs of images or videos that failed */
 export const brokenMedia = new SvelteSet()
 
 /**
- * La URL si se puede usar: existe y no falló antes.
+ * The URL if it can be used: it exists and didn't fail before.
  * @param {string | undefined} url
  */
 export function usableMedia(url) {

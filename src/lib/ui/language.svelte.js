@@ -1,7 +1,7 @@
 /**
- * Aplica el idioma: pone lang en <html> (lectores de pantalla y guiones
- * correctos) y le avisa al shell, que escribe sus mensajes de error en el
- * mismo idioma.
+ * Applies the language: sets lang on <html> (correct screen readers and
+ * hyphenation) and tells the shell, which writes its error messages in the
+ * same language.
  */
 import { setShellLanguage } from '../core/bridge.js'
 import { i18n } from '../i18n/i18n.svelte.js'
@@ -11,7 +11,7 @@ let started = false
 export function startLanguage() {
   if (started) return
   started = true
-  // Ya, sin esperar al efecto: así el shell lo sabe antes del primer pedido
+  // Right away, without waiting for the effect: that way the shell knows before the first request
   document.documentElement.lang = i18n.current
   setShellLanguage(i18n.current)
   $effect.root(() => {

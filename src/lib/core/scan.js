@@ -1,17 +1,17 @@
 /**
- * Convierte los archivos que el shell encontró en roms\<consola>\ en juegos.
+ * Turns the files the shell found in roms\<console>\ into games.
  *
- * La carpeta roms es la fuente de verdad: lo que está ahí se lista, aunque no
- * haya gamelist de ES-DE. Si ES-DE tiene datos de ese archivo (nombre, año,
- * descripción, favorito, oculto), se usan; si no, el nombre sale del archivo.
+ * The roms folder is the source of truth: what's there gets listed, even
+ * without an ES-DE gamelist. If ES-DE has data for that file (name, year,
+ * description, favorite, hidden), it's used; otherwise the name comes from the file.
  *
- * Reglas:
- *   - Solo los formatos de la consola (platforms.js). Un .bin junto a su .cue no aparece.
- *   - Juegos de varios discos: si hay un .m3u, se lista solo el .m3u; si no, solo el disco 1.
- *   - Wii U en carpetas (Juego/code/juego.rpx): el nombre es el de la carpeta.
- *   - Archivos de nombre genérico (Juego/default.xex, Juego/disc.gdi): también.
- *   - Nombres limpios: "Legend of Zelda, The - Wind Waker (USA) [!]" -> "The Legend of Zelda: Wind Waker".
- *     Si dos juegos quedan con el mismo nombre, se agrega la región: "Okami (Europe)".
+ * Rules:
+ *   - Only the console's formats (platforms.js). A .bin next to its .cue doesn't show up.
+ *   - Multi-disc games: if there's an .m3u, only the .m3u is listed; otherwise, only disc 1.
+ *   - Wii U in folders (Game/code/game.rpx): the name is the folder's.
+ *   - Files with a generic name (Game/default.xex, Game/disc.gdi): the same.
+ *   - Clean names: "Legend of Zelda, The - Wind Waker (USA) [!]" -> "The Legend of Zelda: Wind Waker".
+ *     If two games end up with the same name, the region is added: "Okami (Europe)".
  */
 
 import { bySortName, fileStem, normalizeRelativePath, titleStem } from './esde.js'
@@ -23,22 +23,22 @@ const DISC = /\s*\(Disc\s*(\d+)(?:\s*of\s*\d+)?\)/i
 const TAGS = /\s*[([][^)\]]*[)\]]/g
 const LEADING_ARTICLE = /^(.+?), (The|A|An|El|La|Los|Las)(\s+-\s+.*)?$/i
 
-/** "Sub/Juego.chd" -> "chd" */
+/** "Sub/Game.chd" -> "chd" */
 function extensionOf(/** @type {string} */ path) {
   const name = path.split('/').pop() ?? ''
   const dot = name.lastIndexOf('.')
   return dot > 0 ? name.slice(dot + 1).toLowerCase() : ''
 }
 
-/** "Sub/Juego.chd" -> "sub" ; "Juego.chd" -> "" */
+/** "Sub/Game.chd" -> "sub" ; "Game.chd" -> "" */
 function folderOf(/** @type {string} */ path) {
   const i = path.lastIndexOf('/')
   return i >= 0 ? path.slice(0, i).toLowerCase() : ''
 }
 
 /**
- * Nombre para mostrar a partir del nombre de archivo.
- * @param {string} stem  nombre sin extensión
+ * The name to show, from the file name.
+ * @param {string} stem  the name without its extension
  */
 export function cleanTitle(stem) {
   const name = stem
@@ -47,12 +47,12 @@ export function cleanTitle(stem) {
     .replace(/\s{2,}/g, ' ')
     .trim()
     .replace(LEADING_ARTICLE, (_, main, article, rest = '') => `${article} ${main}${rest}`)
-    // Los archivos no admiten ":", por eso usan " - " para el subtítulo
+    // Files can't have ":", that's why they use " - " for the subtitle
     .replace(/\s+-\s+/g, ': ')
   return name || stem
 }
 
-/** Primera etiqueta entre paréntesis, normalmente la región: "Okami (Europe) (En,Fr)" -> "Europe" */
+/** The first tag in parentheses, usually the region: "Okami (Europe) (En,Fr)" -> "Europe" */
 function regionOf(/** @type {string} */ stem) {
   const match = /\(([^)]+)\)/.exec(stem.replace(DISC, ''))
   return match ? match[1] : ''
@@ -60,8 +60,8 @@ function regionOf(/** @type {string} */ stem) {
 
 /**
  * @param {string} system
- * @param {string} path      ruta relativa dentro de la carpeta de la consola
- * @param {string} rawName   nombre de archivo o carpeta, sin extensión
+ * @param {string} path      the relative path inside the console's folder
+ * @param {string} rawName   the file or folder name, without the extension
  * @returns {Game & { region: string }}
  */
 function makeGame(system, path, rawName) {
@@ -87,8 +87,8 @@ function makeGame(system, path, rawName) {
 }
 
 /**
- * Juegos a partir de la lista de archivos de roms\<consola>\.
- * @param {string[]} files   rutas relativas con "/" (como las manda el shell)
+ * Games from the list of files in roms\<console>\.
+ * @param {string[]} files   relative paths with "/" (as the shell sends them)
  * @param {Platform} platform
  * @returns {Game[]}
  */
@@ -96,7 +96,7 @@ export function gamesFromFiles(files, platform) {
   const formats = new Set(platform.extensions)
   const paths = files.map(normalizeRelativePath)
 
-  // .m3u que existen, por carpeta y nombre: "sub/final fantasy vii (usa)"
+  // .m3u files that exist, by folder and name: "sub/final fantasy vii (usa)"
   const playlists = new Set(
     paths
       .filter((p) => extensionOf(p) === 'm3u')
@@ -110,7 +110,7 @@ export function gamesFromFiles(files, platform) {
     if (!formats.has(extension)) continue
 
     if (extension === 'rpx') {
-      // Wii U en carpetas: .../Juego [ID]/code/archivo.rpx
+      // Wii U in folders: .../Game [ID]/code/file.rpx
       const parts = path.split('/')
       if (parts.length < 3 || parts.at(-2)?.toLowerCase() !== 'code') continue
       games.push(makeGame(platform.id, path, titleStem(path)))
@@ -121,13 +121,13 @@ export function gamesFromFiles(files, platform) {
     const disc = DISC.exec(stem)
     if (disc) {
       const withoutDisc = stem.replace(DISC, '').toLowerCase()
-      if (playlists.has(`${folderOf(path)}/${withoutDisc}`)) continue // lo abre el .m3u
-      if (Number(disc[1]) !== 1) continue // sin .m3u: solo el disco 1
+      if (playlists.has(`${folderOf(path)}/${withoutDisc}`)) continue // the .m3u opens it
+      if (Number(disc[1]) !== 1) continue // without an .m3u: only disc 1
     }
     games.push(makeGame(platform.id, path, titleStem(path)))
   }
 
-  // Mismo nombre dos veces (p. ej. versión USA y Europe): se agrega la región
+  // The same name twice (e.g. the USA and Europe versions): the region is added
   /** @type {Map<string, number>} */
   const count = new Map()
   for (const g of games) count.set(g.name.toLowerCase(), (count.get(g.name.toLowerCase()) ?? 0) + 1)
@@ -142,11 +142,11 @@ export function gamesFromFiles(files, platform) {
 }
 
 /**
- * Une lo escaneado con los datos de ES-DE. Manda lo que está en el USB:
- *   - archivo con datos en ES-DE  -> se usan los datos de ES-DE
- *   - archivo sin datos           -> nombre limpio del archivo
- *   - archivo oculto en ES-DE     -> no aparece
- *   - entrada de ES-DE sin archivo -> no aparece (no se podría abrir)
+ * Merges what was scanned with ES-DE's data. What's on the USB drive rules:
+ *   - a file with data in ES-DE   -> ES-DE's data is used
+ *   - a file without data         -> the file's clean name
+ *   - a file hidden in ES-DE      -> doesn't show up
+ *   - an ES-DE entry without a file -> doesn't show up (it couldn't be opened)
  * @param {Game[]} listed   parseGamelist(..., { includeHidden: true })
  * @param {Game[]} scanned  gamesFromFiles(...)
  * @returns {Game[]}

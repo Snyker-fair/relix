@@ -1,8 +1,8 @@
 <script>
   /**
-   * Menú del juego (botón Y): un panel que entra por la derecha con lo que
-   * se puede hacer con el juego enfocado. En la biblioteca suma "Ordenar" y,
-   * si los juegos traen datos de ES-DE, "Filtrar".
+   * The game menu (Y button): a panel that slides in from the right with what
+   * can be done with the focused game. In the library it adds "Sort" and,
+   * if the games have ES-DE data, "Filter".
    */
   import { filterLabel, filterOptions, sameFilter } from '../lib/core/filters.js'
   import { getPlatform } from '../lib/core/platforms.js'
@@ -32,14 +32,14 @@
    *   onChangeCover: (game: any) => void,
    *   onToast: (message: string) => void,
    * }}
-   *   sortOptions: órdenes que tienen sentido en esa lista (sin él, no se muestra "Ordenar")
-   *   filterChannel: canal de la biblioteca abierta (sin él, no se muestra "Filtrar")
+   *   sortOptions: the orders that make sense in that list (without it, "Sort" isn't shown)
+   *   filterChannel: the open library channel (without it, "Filter" isn't shown)
    */
   let { game, sortOptions, filterChannel, onClose, onLaunch, onChangeCover, onToast } = $props()
 
   /** @typedef {{ id: string, icon: string, label: string, value?: string, checked?: boolean, disabled?: boolean, tag?: string }} Item */
 
-  /** 'main', la lista de colecciones o la de emuladores */
+  /** 'main', the list of collections or the list of emulators */
   let view = $state('main')
   let index = $state(0)
   let naming = $state(false)
@@ -49,7 +49,7 @@
   const favorite = $derived(library.isFavorite(game))
   const inCollections = $derived(collections.namesFor(game))
 
-  // Filtros: los géneros y "2 o más jugadores" de los juegos de ese canal
+  // Filters: the genres and "2 or more players" of that channel's games
   const filterGames = $derived(filterChannel ? shelf.gamesFor(filterChannel) : [])
   const filters = $derived(filterOptions(filterGames))
   const canFilter = $derived(filterChannel !== undefined && (filters.genres.length > 0 || filters.multiplayer > 0))
@@ -58,13 +58,13 @@
   const emulator = $derived(emulators.forGame(game))
   const consoleEmulator = $derived(emulators.forPlatform(platform))
 
-  /** "No instalado" si la Xbox dice que no lo tiene @param {import('../lib/core/platforms.js').Emulator} e */
+  /** "Not installed" if the Xbox says it doesn't have it @param {import('../lib/core/platforms.js').Emulator} e */
   const installTag = (e) => (emulators.isInstalled(e) === false ? t('No instalado') : undefined)
 
   /** @type {Item[]} */
   const mainItems = $derived([
     { id: 'play', icon: 'play', label: t('Jugar'), disabled: !emulator },
-    // Solo si la consola tiene más de un emulador para elegir
+    // Only if the console has more than one emulator to choose from
     ...(platform && platform.emulators.length > 1
       ? [{ id: 'emulator', icon: 'swap', label: t('Abrir con…'), value: shortName(emulator?.name ?? '') }]
       : []),
@@ -90,7 +90,7 @@
       : []),
   ])
 
-  /** Todos, 2 o más jugadores y cada género, con cuántos juegos */
+  /** All, 2 or more players and each genre, with how many games */
   /** @type {Item[]} */
   const filterItems = $derived([
     { id: 'f:all', icon: 'collections', label: t('Todos los juegos'), tag: `${filterGames.length}`, checked: !currentFilter },
@@ -125,7 +125,7 @@
     })),
   ])
 
-  /** Emuladores para este juego: "Como la consola" y cada uno de la lista */
+  /** Emulators for this game: "Same as the console" and each one on the list */
   /** @type {Item[]} */
   const emulatorItems = $derived([
     {
@@ -149,9 +149,9 @@
   )
 
   /**
-   * Nombre corto para la fila, que es angosta: "RetroArch · SwanStation" -> "SwanStation".
-   * Si la consola tiene el mismo emulador suelto y como núcleo (PPSSPP, Dolphin,
-   * Flycast), el núcleo queda como "PPSSPP (RetroArch)".
+   * A short name for the row, which is narrow: "RetroArch · SwanStation" -> "SwanStation".
+   * If the console has the same emulator standalone and as a core (PPSSPP, Dolphin,
+   * Flycast), the core becomes "PPSSPP (RetroArch)".
    * @param {string} name
    */
   function shortName(name) {
@@ -163,7 +163,7 @@
 
   /** @type {HTMLElement | undefined} */
   let list = $state()
-  // Con muchas colecciones la lista se desplaza para mostrar la enfocada
+  // With many collections the list scrolls to show the focused one
   $effect(() => {
     index
     list?.querySelector('.item.focused')?.scrollIntoView({ block: 'nearest' })
@@ -184,7 +184,7 @@
 
   async function activate() {
     const item = items[index]
-    // El juego se guarda antes: al cerrar el menú, `game` deja de existir
+    // The game is kept first: when the menu closes, `game` stops existing
     const current = game
     if (!item || busy) return
     if (item.disabled) {
@@ -258,7 +258,7 @@
     }
   }
 
-  /** Guarda en el USB mostrando que está ocupado; si falla, avisa */
+  /** Saves to the USB drive showing it's busy; if it fails, it says so */
   async function run(/** @type {() => Promise<void>} */ task) {
     busy = true
     try {
@@ -282,7 +282,7 @@
   }
 
   $effect(() => {
-    if (naming) return // el teclado tiene el control
+    if (naming) return // the keyboard has the controller
     return pushHandler((action) => {
       if (action === 'up') move(index - 1)
       else if (action === 'down') move(index + 1)
@@ -490,7 +490,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  /* emuladores: nombres largos ("RetroArch · Mupen64Plus-Next") y su estado debajo */
+  /* emulators: long names ("RetroArch · Mupen64Plus-Next") and their state below */
   .label.small {
     font-size: 24px;
     line-height: 1.15;
@@ -501,7 +501,7 @@
     font-size: 18px;
     opacity: 0.7;
   }
-  /* filtros: cuántos juegos, al lado del nombre */
+  /* filters: how many games, next to the name */
   .label.count small {
     display: inline;
     margin-left: 10px;

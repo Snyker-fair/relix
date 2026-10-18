@@ -1,10 +1,10 @@
 import { PLATFORMS } from '../core/platforms.js'
 import { t } from '../i18n/i18n.svelte.js'
 
-/** Canal especial que junta los favoritos de todas las consolas */
+/** A special channel that gathers the favorites from every console */
 export const FAVORITES = {
   id: 'favorites',
-  // Getters: el nombre sigue al idioma activo
+  // Getters: the name follows the active language
   get name() {
     return t('Favoritos')
   },
@@ -16,8 +16,8 @@ export const FAVORITES = {
 }
 
 /**
- * Canal que agrupa las colecciones del jugador. En la biblioteca, cada
- * colección es una pestaña con id "collection:<Nombre>".
+ * The channel that groups the player's collections. In the library, each
+ * collection is a tab with the id "collection:<Name>".
  */
 export const COLLECTIONS = {
   id: 'collections',
@@ -33,11 +33,11 @@ export const COLLECTIONS = {
 
 export const COLLECTION_PREFIX = 'collection:'
 
-/** Orden de los canales en la pantalla de inicio */
+/** The order of the channels on the home screen */
 export const CHANNELS = [FAVORITES, COLLECTIONS, ...PLATFORMS]
 
 /**
- * Pestaña de una colección: usa el color del canal Colecciones.
+ * A collection's tab: it uses the Collections channel's color.
  * @param {string} name
  */
 export function collectionChannel(name) {

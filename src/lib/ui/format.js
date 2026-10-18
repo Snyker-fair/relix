@@ -1,13 +1,13 @@
 /**
- * Textos que se arman con números y fechas, en el idioma activo.
+ * Texts built with numbers and dates, in the active language.
  */
 import { i18n, plural, t, tn } from '../i18n/i18n.svelte.js'
 
 export { plural }
 
 /**
- * Una hora en punto: "20:00" en español, "8 PM" en inglés.
- * @param {number} hour  0 a 23
+ * An hour on the hour: "20:00" in Spanish, "8 PM" in English.
+ * @param {number} hour  0 to 23
  */
 export function formatHour(hour) {
   if (i18n.current === 'es') return `${hour}:00`
@@ -15,8 +15,8 @@ export function formatHour(hour) {
 }
 
 /**
- * Una fecha con las opciones de Intl, en el idioma activo ("16 oct 2026", "Oct 16, 2026").
- * Sin el punto de las abreviaturas en español ("oct." -> "oct").
+ * A date with Intl's options, in the active language ("16 oct 2026", "Oct 16, 2026").
+ * Without the period of the Spanish abbreviations ("oct." -> "oct").
  * @param {Date} date
  * @param {Intl.DateTimeFormatOptions} options
  */
@@ -26,8 +26,8 @@ export function formatDate(date, options) {
 }
 
 /**
- * Cuánto pasó desde una fecha, en palabras: "hace un momento", "hace 5 min",
- * "hace 3 h", "ayer", "hace 4 días".
+ * How long since a date, in words: "just now", "5 min ago",
+ * "3 h ago", "yesterday", "4 days ago".
  * @param {number} timestamp  ms
  * @param {number} [now]      ms
  */
@@ -43,8 +43,8 @@ export function timeAgo(timestamp, now = Date.now()) {
 }
 
 /**
- * Resumen de un escaneo para el aviso:
- * "PS2: 3 juegos nuevos y 1 quitado (12 en total)"
+ * A scan's summary for the notice:
+ * "PS2: 3 new games and 1 removed (12 in total)"
  * @param {string} consoleName
  * @param {{ added: number, removed: number, total: number }} change
  */
@@ -59,11 +59,11 @@ export function scanSummary(consoleName, { added, removed, total }) {
 }
 
 /**
- * Resumen de una búsqueda de portadas para el aviso:
- * "PS2: 7 portadas nuevas · 2 para elegir a mano · 1 sin resultados"
+ * A cover search's summary for the notice:
+ * "PS2: 7 new covers · 2 to pick by hand · 1 with no results"
  * @param {string} consoleName
  * @param {{ saved: number, failed: number, toChoose: number, notFound: number, shots?: number }} result
- *   shots: capturas de libretro bajadas para el fondo del panel
+ *   shots: screenshots downloaded from libretro for the panel's background
  */
 export function coverSummary(consoleName, { saved, failed, toChoose, notFound, shots = 0 }) {
   const parts = []
@@ -77,8 +77,8 @@ export function coverSummary(consoleName, { saved, failed, toChoose, notFound, s
 }
 
 /**
- * Tiempo jugado: "45 min", "3 h 20 min", "3 h", "128 h".
- * Pasadas las 10 horas, los minutos ya no aportan.
+ * Time played: "45 min", "3 h 20 min", "3 h", "128 h".
+ * Past 10 hours, the minutes no longer add anything.
  * @param {number} seconds
  */
 export function formatPlaytime(seconds) {

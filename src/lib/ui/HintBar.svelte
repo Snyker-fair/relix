@@ -1,7 +1,7 @@
 <script>
   /**
-   * Barra inferior con lo que hace cada botón en esta pantalla.
-   * Las pistas también se pueden clickear (útil al probar en el PC).
+   * The bottom bar with what each button does on this screen.
+   * The hints can be clicked too (useful when testing on the PC).
    */
   import { untrack } from 'svelte'
   import { hintStack } from './hintStack.svelte.js'
@@ -9,8 +9,8 @@
   import PadButton from './PadButton.svelte'
 
   /**
-   * also: un segundo botón para la misma pista (p. ej. LT y RT)
-   * surface: fondo propio, para cuando la barra queda sobre una pantalla oscurecida
+   * also: a second button for the same hint (e.g. LT and RT)
+   * surface: its own background, for when the bar sits over a dimmed screen
    * @type {{
    *   hints: Array<{ button: import('./input.js').Action, also?: import('./input.js').Action, label: string }>,
    *   surface?: boolean,
@@ -18,7 +18,7 @@
    */
   let { hints, surface = false } = $props()
 
-  // Si se abre una ventana encima (menú, teclado), su barra tapa a esta
+  // If a window opens on top (menu, keyboard), its bar covers this one
   const id = Symbol('hints')
   $effect(() => untrack(() => hintStack.push(id)))
   const visible = $derived(hintStack.isTop(id))
@@ -38,7 +38,7 @@
   .covered {
     visibility: hidden;
   }
-  /* sobre una ventana con fondo oscurecido: píldora clara para que se lea */
+  /* over a window with a dimmed background: a light pill so it can be read */
   .hints.surface {
     right: 92px;
     bottom: 46px;
@@ -50,7 +50,7 @@
   .hints {
     position: absolute;
     right: 112px;
-    bottom: 60px; /* dentro del área segura de la TV (5 %) */
+    bottom: 60px; /* inside the TV's safe area (5 %) */
     display: flex;
     gap: 36px;
   }

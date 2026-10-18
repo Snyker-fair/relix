@@ -8,7 +8,7 @@
     return () => clearInterval(timer)
   })
 
-  // "06:07 a. m." y "sáb, 17 oct" en español; "6:07 AM" y "Sat, Oct 17" en inglés
+  // "06:07 a. m." and "sáb, 17 oct" in Spanish; "6:07 AM" and "Sat, Oct 17" in English
   const time = $derived(
     now.toLocaleTimeString(i18n.dateLocale, { hour: i18n.current === 'es' ? '2-digit' : 'numeric', minute: '2-digit' }),
   )

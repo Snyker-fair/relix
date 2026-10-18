@@ -35,7 +35,7 @@
   import Welcome from './screens/Welcome.svelte'
 
   /**
-   * Pantallas. Las que se abren "encima" recuerdan desde dónde, para volver con B.
+   * Screens. The ones that open "on top" remember where from, to go back with B.
    * @typedef {{ name: 'home' }
    *   | { name: 'library', systemId: string }
    *   | { name: 'search', from: any }
@@ -43,14 +43,14 @@
    *   | { name: 'coverPicker', back: any, gameId?: string }
    *   | { name: 'guide', systemId: string, back: any }
    *   | { name: 'welcome', step: number, row?: string, back: any, auto?: boolean }} Screen
-   *   welcome.auto: se abrió solo la primera vez (no desde Opciones)
+   *   welcome.auto: it opened by itself the first time (not from Options)
    */
   /** @type {Screen} */
   let screen = $state({ name: 'home' })
-  /** Menú del juego (Y), encima de la pantalla actual */
+  /** The game menu (Y), on top of the current screen */
   /** @type {{ game: any, sortOptions?: import('./lib/core/sorting.js').SortOrder[], filterChannel?: string } | null} */
   let menu = $state(null)
-  /** Canal con el foco en el inicio (id de consola, 'favorites' u 'options'). null = el primero */
+  /** The channel with the focus on the home screen (a console id, 'favorites' or 'options'). null = the first one */
   /** @type {string|null} */
   let focusedId = $state(null)
   let boot = $state(true)
@@ -61,33 +61,33 @@
   /** @type {ReturnType<typeof setTimeout>} */
   let toastTimer
 
-  // En el navegador: teclado y control con la Gamepad API.
-  // En la Xbox: el control lo lee el shell en C# y llega como evento 'input'.
+  // In the browser: keyboard and controller with the Gamepad API.
+  // On the Xbox: the C# shell reads the controller and it arrives as an 'input' event.
   startInput({ keyboard: mode === 'browser', gamepad: mode === 'browser' })
-  // Registro de diagnóstico: errores del shell y de la interfaz, desde ya
+  // Diagnostic log: errors from the shell and the interface, from the start
   diagnostics.start()
 
   onShellEvent((e) => {
     if (e.event === 'input' && e.action) dispatch(/** @type {any} */ (e.action))
-    // Volviste a Relix: al cerrar el emulador (resumed) o por otro camino, como el botón Xbox (visible)
+    // You're back in Relix: when the emulator closes (resumed) or another way, like the Xbox button (visible)
     else if (e.event === 'resumed' || e.event === 'visible') {
-      markActivity() // el tiempo jugando no cuenta para el protector de pantalla
+      markActivity() // time spent playing doesn't count toward the screensaver
       backInRelix({ fromEmulator: true })
     }
   })
 
   /**
-   * Partida que terminó con Relix cerrado (la Xbox lo cerró mientras jugabas):
-   * se cierra al abrir y se avisa cuando la biblioteca esté lista.
+   * A session that ended with Relix closed (the Xbox closed it while you played):
+   * it's closed when Relix opens, and reported once the library is ready.
    */
   let finishedWhileClosed = library.endSession()
 
   library.load().finally(notifyReady)
 
-  // Al tener la biblioteca: colecciones del USB, tus datos (si el USB apareció
-  // recién, con Reintentar), la revisión del sistema (que también pregunta qué
-  // emuladores hay), el aviso de la partida que quedó pendiente y, la primera
-  // vez, el recorrido de bienvenida
+  // Once the library is in: the collections from the USB drive, your data (if the drive
+  // just showed up, with Retry), the system checkup (which also asks which
+  // emulators there are), the notice for the pending session and, the first
+  // time, the welcome tour
   let loggedStart = false
   $effect(() => {
     if (library.status !== 'ready') return
@@ -121,7 +121,7 @@
     })
   })
 
-  // Tus datos llegaron después desde el USB y ahí ya habías hecho el recorrido
+  // Your data arrived later from the USB drive and you had already done the tour there
   $effect(() => {
     if (screen.name === 'welcome' && screen.auto && screen.step === 0 && settings.onboarded) {
       untrack(() => (screen = { name: 'home' }))
@@ -129,15 +129,15 @@
   })
 
   /**
-   * Al abrir, si la revisión encontró algo por arreglar, se avisa una vez
-   * (no durante el recorrido de bienvenida, que ya lo muestra).
+   * When Relix opens, if the checkup found something to fix, it's reported once
+   * (not during the welcome tour, which already shows it).
    */
   let warnedSystem = false
   function warnSystem() {
     const { errors } = systemStatus.summary
     if (warnedSystem || errors === 0 || screen.name === 'welcome') return
     warnedSystem = true
-    // Si hay otro aviso en pantalla (el tiempo jugado, p. ej.), va después
+    // If another notice is on screen (the playtime, e.g.), this one goes after it
     setTimeout(
       () =>
         showToast(t('Relix encontró {found}: ≡ › Revisión', { found: plural(errors, 'cosa por arreglar', 'cosas por arreglar') }), 6000),
@@ -145,7 +145,7 @@
     )
   }
 
-  /** Hay una versión nueva de Relix: se avisa una vez por versión (después de otros avisos) */
+  /** There's a new version of Relix: it's reported once per version (after the other notices) */
   function notifyUpdate() {
     if (screen.name === 'welcome') return
     const version = updates.takeNotice()
@@ -156,7 +156,7 @@
     )
   }
 
-  // Si el USB no deja guardar tus datos, se avisa una vez (y se anota cada error distinto)
+  // If the USB drive doesn't let your data be saved, it's reported once (and each different error is logged)
   let warnedSave = false
   $effect(() => {
     if (userData.status !== 'error') return
@@ -170,7 +170,7 @@
     })
   })
 
-  // Demo en el navegador: al cambiar de idioma, las descripciones de prueba también
+  // Demo in the browser: when the language changes, the test descriptions change too
   let demoLanguage = i18n.current
   $effect(() => {
     const language = i18n.current
@@ -179,12 +179,12 @@
     untrack(() => library.status === 'ready' && library.reloadDemoGamelists())
   })
 
-  // Sin USB (o sin la carpeta roms): se anota lo que dijo la pantalla de carga
+  // No USB drive (or no roms folder): what the loading screen said is logged
   $effect(() => {
     if (library.status === 'error') untrack(() => diagnostics.log('usb', library.error))
   })
 
-  /** "Relix 1.0.0 · Xbox · E:\roms · 57 juegos en 12 consolas · tema claro · español" */
+  /** "Relix 1.0.0 · Xbox · E:\roms · 57 games on 12 consoles · light theme · Spanish" */
   function startSummary() {
     const consoles = new Set(library.all.map((g) => g.system)).size
     return [
@@ -208,10 +208,10 @@
   }
 
   /**
-   * Cierra la partida en curso (si había) y cuenta lo jugado. Si volviste
-   * desde el emulador a los pocos segundos, el juego no abrió: se avisa qué
-   * revisar (el emulador no le dice nada a Relix).
-   * @param {{ fromEmulator?: boolean }} [how]  false = cerraste el aviso "Abriendo…" con B
+   * Closes the session in progress (if there was one) and counts the time played. If you
+   * came back from the emulator after a few seconds, the game didn't open: it says what
+   * to check (the emulator doesn't tell Relix anything).
+   * @param {{ fromEmulator?: boolean }} [how]  false = you closed the "Opening…" notice with B
    */
   function backInRelix({ fromEmulator = false } = {}) {
     launching = null
@@ -245,7 +245,7 @@
     showToast(quickExitMessage(game, platform, emulator), 9000)
   }
 
-  /** "Okami: 45 min jugados · 12 h en total" @param {{ id: string, seconds: number }} finished */
+  /** "Okami: 45 min played · 12 h in total" @param {{ id: string, seconds: number }} finished */
   function announcePlaytime({ id, seconds }) {
     const game = library.byId.get(id)
     const total = library.playtime[id]?.seconds ?? 0
@@ -266,13 +266,13 @@
     return () => clearTimeout(timer)
   })
 
-  // Los videos de vista previa se detienen mientras se abre un juego
+  // Preview videos stop while a game opens
   $effect(() => {
     activity.launching = launching !== null
   })
 
-  // Protector de pantalla: tras los minutos elegidos sin tocar el control.
-  // No aparece en el recorrido de bienvenida ni mientras se abre un juego
+  // Screensaver: after the chosen minutes without touching the controller.
+  // It doesn't show up in the welcome tour or while a game opens
   $effect(() => {
     const minutes = settings.screensaverMinutes
     if (!minutes || library.status !== 'ready') return
@@ -304,8 +304,8 @@
   }
 
   /**
-   * Abre un canal. "Colecciones" abre la primera colección; en el inicio,
-   * el foco queda en el canal Colecciones.
+   * Opens a channel. "Collections" opens the first collection; on the home screen,
+   * the focus stays on the Collections channel.
    * @param {string} systemId
    */
   function openLibrary(systemId) {
@@ -322,13 +322,13 @@
   /**
    * @param {any} game
    * @param {import('./lib/core/sorting.js').SortOrder[]} [sortOptions]
-   * @param {string} [filterChannel]  canal de la biblioteca (para Y › Filtrar)
+   * @param {string} [filterChannel]  the library channel (for Y › Filter)
    */
   function openMenu(game, sortOptions, filterChannel) {
     menu = { game, sortOptions, filterChannel }
   }
 
-  /** Guía para dejar andando una consola @param {string} systemId */
+  /** The guide to get a console working @param {string} systemId */
   function openGuide(systemId) {
     screen = { name: 'guide', systemId, back: screen }
   }
@@ -341,7 +341,7 @@
   /** @param {any} game */
   async function startGame(game) {
     const platform = getPlatform(game.system)
-    // El de ese juego, el de su consola o el recomendado (ver emulators.svelte.js)
+    // That game's, its console's or the recommended one (see emulators.svelte.js)
     const emulator = emulators.forGame(game)
     if (!platform || !emulator) {
       sound.error()
@@ -367,7 +367,7 @@
     }
     sound.select()
     launching = { game, uri, emulatorName: emulator.name }
-    // La partida empieza a contar y queda en el USB antes de que la Xbox pase al emulador
+    // The session starts counting and is on the USB drive before the Xbox switches to the emulator
     library.startSession(game)
     diagnostics.log('launch', t('{game} con {emulator} · {uri}', { game: gameLabel(game.id), emulator: emulator.name, uri }))
     diagnostics.flush()
@@ -449,8 +449,8 @@
     />
   {:else if screen.name === 'guide'}
     {@const back = screen.back}
-    <!-- Al volver, el foco queda en la consola de la guía (aunque cambiaras con LB/RB).
-         En Revisión, si no cambiaste, en el mismo chequeo ("bios:psx") -->
+    <!-- Coming back, the focus stays on the guide's console (even if you switched with LB/RB).
+         In Checkup, if you didn't switch, on the same check ("bios:psx") -->
     <Guide
       systemId={screen.systemId}
       onBack={(systemId) =>
@@ -523,12 +523,12 @@
 <style>
   .toast {
     position: absolute;
-    /* arriba al centro: tapa por un momento la barra superior, nunca el contenido */
+    /* top center: briefly covers the top bar, never the content */
     top: 44px;
     left: 50%;
     translate: -50% 0;
-    /* entre el logo y el reloj: hasta los avisos largos caben en dos líneas
-       (max-content: sin él, al estar anclado al centro no pasaría de 960 px) */
+    /* between the logo and the clock: even long notices fit in two lines
+       (max-content: without it, anchored to the center it wouldn't go past 960 px) */
     width: max-content;
     max-width: 1180px;
     padding: 18px 32px;

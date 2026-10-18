@@ -1,12 +1,12 @@
 <script>
   /**
-   * Primer uso: un recorrido corto por lo que Relix necesita. Cinco pantallas
-   * (hola, tu USB, emuladores, portadas, botones). Se muestra una vez y se
-   * puede ver de nuevo desde Opciones › Revisión.
+   * First run: a short tour of what Relix needs. Five screens
+   * (hi, your USB drive, emulators, covers, buttons). It shows once and
+   * can be seen again from Options › Checkup.
    *
-   *   A  siguiente / la opción enfocada    B  pantalla anterior    ≡  saltar
-   *   ↑ ↓  elegir (consolas en Emuladores, "Buscar ahora" en Portadas)
-   *   Y  (en el saludo) cambia entre español e inglés
+   *   A  next / the focused option    B  previous screen    ≡  skip
+   *   ↑ ↓  choose (consoles in Emulators, "Search now" in Covers)
+   *   Y  (on the greeting) switches between Spanish and English
    */
   import { untrack } from 'svelte'
   import { DEVSTORE_LABEL, DEVSTORE_URL } from '../lib/core/guides.js'
@@ -35,7 +35,7 @@
    *   onDone: () => void,
    *   onToast: (message: string) => void,
    * }}
-   *   initialRow: al volver de una guía, la consola que tenía el foco
+   *   initialRow: when coming back from a guide, the console that had the focus
    */
   let { initialStep = 0, initialRow, onGuide, onDone, onToast } = $props()
 
@@ -44,7 +44,7 @@
   let step = $state(Math.min(Math.max(0, initialStep), STEPS.length - 1))
   const stepId = $derived(STEPS[step])
 
-  // Si todavía no se revisó el sistema (o la revisión es vieja), se revisa ahora
+  // If the system hasn't been checked yet (or the checkup is old), it's checked now
   $effect(() => {
     untrack(() => {
       if (!systemStatus.running && Date.now() - systemStatus.checkedAt > 20_000) systemStatus.run()
@@ -55,12 +55,12 @@
   const MARKS = { ok: '✓', warn: '!', error: '✗', info: 'i' }
   const checkById = $derived(new Map(systemStatus.checks.map((c) => [c.id, c])))
 
-  // ── Tu USB ──
+  // ── Your USB drive ──
   const usbChecks = $derived(systemStatus.checks.filter((c) => ['usb', 'write', 'space', 'folders'].includes(c.id)))
   const withGames = $derived(PLATFORMS.filter((p) => library.gamesFor(p.id).length > 0))
   const exampleFolders = ['psx', 'ps2', 'gc']
 
-  // ── Emuladores: las consolas con juegos, primero las que tienen algo pendiente ──
+  // ── Emulators: the consoles with games, the ones with something pending first ──
   const MAX_CONSOLES = 5
   const consoleRows = $derived(
     systemStatus.consoles
@@ -75,7 +75,7 @@
   )
   const shownConsoles = $derived(consoleRows.slice(0, MAX_CONSOLES))
 
-  // ── Portadas ──
+  // ── Covers ──
   const coverTotals = $derived(
     PLATFORMS.reduce(
       (sum, p) => {
@@ -86,13 +86,13 @@
     ),
   )
   const missingCovers = $derived(coverTotals.total - coverTotals.withCover)
-  /** Faltan portadas o capturas para el fondo */
+  /** Covers or background screenshots are missing */
   const needsSearch = $derived(PLATFORMS.some((p) => covers.needsSearch(p.id)))
-  /** Lo que dejó la búsqueda de esta pantalla */
+  /** What this screen's search left */
   let coverDone = $state('')
   const searching = $derived(covers.all !== null)
 
-  // Lo que se puede enfocar en cada pantalla; el botón principal va al final
+  // What can be focused on each screen; the main button goes last
   const items = $derived(
     stepId === 'emulators'
       ? [...shownConsoles.map((c) => c.platform.id), 'next']
@@ -100,7 +100,7 @@
         ? ['search', 'next']
         : ['next'],
   )
-  /** Al llegar a una pantalla el foco va al botón principal (salvo "Buscar ahora") */
+  /** On reaching a screen the focus goes to the main button (except "Search now") */
   function defaultIndex(/** @type {string | undefined} */ row) {
     if (row) {
       const i = items.indexOf(row)
@@ -111,7 +111,7 @@
   let index = $state(defaultIndex(untrack(() => initialRow)))
   const focusedItem = $derived(items[Math.min(index, items.length - 1)])
 
-  // Si la lista cambia (la revisión termina, la búsqueda acaba), el foco no se pierde
+  // If the list changes (the checkup finishes, the search ends), the focus isn't lost
   $effect.pre(() => {
     const length = items.length
     untrack(() => {
@@ -135,7 +135,7 @@
   async function searchCovers() {
     if (searching) return
     sound.select()
-    // La búsqueda sigue aunque pases a la pantalla siguiente; el foco pasa a "Siguiente"
+    // The search keeps going even if you move to the next screen; the focus moves to "Next"
     try {
       const result = await covers.findAll()
       coverDone = coverSummary(t('Listo'), result)
@@ -173,12 +173,12 @@
       else if (action === 'a') activate()
       else if (action === 'b') step > 0 ? (sound.back(), goTo(step - 1)) : sound.error()
       else if (action === 'start') finish()
-      // En el saludo, Y cambia de idioma: lo primero que necesita quien no lee el que se ve
+      // On the greeting, Y switches language: the first thing someone who can't read the one shown needs
       else if (action === 'y' && stepId === 'hello') (sound.select(), settings.switchLanguage())
     }),
   )
 
-  /** El idioma al que lleva Y en el saludo, escrito en ese idioma */
+  /** The language Y leads to on the greeting, written in that language */
   const otherLanguage = $derived(LANGUAGE_NAMES[i18n.current === 'es' ? 'en' : 'es'])
 
   const primaryLabel = $derived(step === 0 ? t('Empezar') : step === STEPS.length - 1 ? t('¡A jugar!') : t('Siguiente'))
@@ -517,7 +517,7 @@
     background: var(--pop);
   }
 
-  /* ── Panel izquierdo ─────────────────── */
+  /* ── Left panel ──────────────────────── */
   .intro {
     position: absolute;
     left: 112px;
@@ -605,8 +605,8 @@
     font-size: 22px;
   }
 
-  /* ── Contenido a la derecha ──────────── */
-  /* De 170 a 960 px, como el panel; el botón principal queda abajo a la derecha */
+  /* ── Content on the right ────────────── */
+  /* From 170 to 960 px, like the panel; the main button sits at the bottom right */
   .content {
     position: absolute;
     left: 776px;
@@ -701,7 +701,7 @@
     background: var(--cloud);
     text-align: left;
   }
-  /* Tu USB: solo para leer, más juntas para que quepan las doce consolas abajo */
+  /* Your USB drive: read-only, closer together so the twelve consoles fit below */
   .list.compact {
     gap: 14px;
   }
@@ -718,7 +718,7 @@
   .list.compact .text strong {
     font-size: 27px;
   }
-  /* las consolas en Emuladores: el aro necesita aire entre filas */
+  /* the consoles in Emulators: the ring needs room between rows */
   .list:has(.console) {
     gap: 30px;
   }

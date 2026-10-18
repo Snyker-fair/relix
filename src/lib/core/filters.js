@@ -1,23 +1,23 @@
 /**
- * Filtros de la biblioteca (Y › Filtrar): por género o para jugar con alguien.
- * Usan los datos de ES-DE (gamelist.xml); los juegos sin datos no entran en
- * ningún filtro, y si una consola no tiene datos, el menú no ofrece la opción.
+ * Library filters (Y › Filter): by genre or to play with someone.
+ * They use ES-DE's data (gamelist.xml); games without data don't fall into
+ * any filter, and if a console has no data, the menu doesn't offer the option.
  */
 import { t } from '../i18n/i18n.svelte.js'
 
 /** @typedef {{ kind: 'genre', value: string } | { kind: 'players' }} GameFilter */
 /** @typedef {{ genre?: string, players?: string }} FilterableGame */
 
-/** "plataformas" -> "Plataformas" @param {string} s */
+/** "platform" -> "Platform" @param {string} s */
 const capitalize = (s) => s.charAt(0).toLocaleUpperCase('es') + s.slice(1)
 
-/** Sin tildes ni mayúsculas, para comparar @param {string} s */
+/** Without accents or uppercase, to compare @param {string} s */
 const fold = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
 /**
- * Los géneros de un juego. ES-DE a veces guarda varios o uno con subgénero:
- *   "Acción / Plataformas" -> ["Acción", "Plataformas"]
- *   "Lucha, Arcade"        -> ["Lucha", "Arcade"]
+ * A game's genres. ES-DE sometimes keeps several, or one with a subgenre:
+ *   "Action / Platform"   -> ["Action", "Platform"]
+ *   "Fighting, Arcade"    -> ["Fighting", "Arcade"]
  * @param {string | undefined} genre
  */
 export function genresOf(genre) {
@@ -29,7 +29,7 @@ export function genresOf(genre) {
 }
 
 /**
- * Hasta cuántos juegan: "1-2" -> 2, "1 - 4" -> 4, "2" -> 2, "" -> 0.
+ * Up to how many play: "1-2" -> 2, "1 - 4" -> 4, "2" -> 2, "" -> 0.
  * @param {string | undefined} players
  */
 export function maxPlayers(players) {
@@ -38,8 +38,8 @@ export function maxPlayers(players) {
 }
 
 /**
- * Qué filtros tienen sentido en una lista: los géneros (de más a menos juegos)
- * y cuántos juegos son para 2 o más.
+ * Which filters make sense in a list: the genres (from most to fewest games)
+ * and how many games are for 2 or more.
  * @param {FilterableGame[]} games
  */
 export function filterOptions(games) {
@@ -65,7 +65,7 @@ export function filterOptions(games) {
 }
 
 /**
- * Los juegos que pasan el filtro (sin filtro, todos).
+ * The games that pass the filter (without a filter, all of them).
  * @template {FilterableGame} T
  * @param {T[]} games
  * @param {GameFilter | null | undefined} filter
@@ -78,7 +78,7 @@ export function applyFilter(games, filter) {
   return games.filter((g) => genresOf(g.genre).some((name) => fold(name) === wanted))
 }
 
-/** Cómo se lee el filtro en pantalla @param {GameFilter} filter */
+/** How the filter reads on screen @param {GameFilter} filter */
 export function filterLabel(filter) {
   return filter.kind === 'players' ? t('2 o más jugadores') : filter.value
 }

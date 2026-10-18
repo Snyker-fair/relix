@@ -1,5 +1,5 @@
 <script>
-  /** Ícono de un botón del control de Xbox (A, B, X, Y, LB, RB, LT, RT, Menú, Vista). */
+  /** The icon of an Xbox controller button (A, B, X, Y, LB, RB, LT, RT, Menu, View). */
   import { t } from '../i18n/i18n.svelte.js'
 
   let { name, size = 34 } = $props()
@@ -23,12 +23,12 @@
   aria-label={label}
 >
   {#if isMenu}
-    <!-- el botón Menú del control tiene tres rayas -->
+    <!-- the controller's Menu button has three lines -->
     <svg viewBox="0 0 20 20" width={size * 0.5} height={size * 0.5} aria-hidden="true">
       <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" />
     </svg>
   {:else if isView}
-    <!-- el botón Vista: dos ventanas superpuestas -->
+    <!-- the View button: two overlapping windows -->
     <svg viewBox="0 0 20 20" width={size * 0.55} height={size * 0.55} aria-hidden="true">
       <rect x="2.5" y="6.5" width="10" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2.2" />
       <path d="M7 4.5V4a1.5 1.5 0 0 1 1.5-1.5h8A1.5 1.5 0 0 1 18 4v8a1.5 1.5 0 0 1-1.5 1.5H15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
@@ -47,7 +47,7 @@
     height: var(--s);
     border-radius: 50%;
     background: var(--c);
-    /* blanco sobre A, B, X e Y; sobre los neutros (tinta), el color de la superficie */
+    /* white on A, B, X and Y; on the neutral ones (ink), the surface color */
     color: var(--t);
     font-family: var(--font-display);
     font-weight: 800;
@@ -63,7 +63,7 @@
     border-radius: calc(var(--s) * 0.35);
     font-size: calc(var(--s) * 0.42);
   }
-  /* gatillo: redondeado arriba, como el LT/RT del control */
+  /* trigger: rounded on top, like the controller's LT/RT */
   .trigger {
     width: calc(var(--s) * 1.3);
     border-radius: calc(var(--s) * 0.55) calc(var(--s) * 0.55) calc(var(--s) * 0.22) calc(var(--s) * 0.22);

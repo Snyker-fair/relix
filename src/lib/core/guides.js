@@ -1,31 +1,31 @@
 /**
- * Guías cortas para dejar andando cada consola: instalar el emulador, los
- * archivos que pide, dónde van los juegos y cómo probar.
+ * Short guides to get each console working: installing the emulator, the
+ * files it needs, where the games go and how to test.
  *
- * Los emuladores para Xbox en Modo Desarrollador se descargan desde DevStore
- * (xbdev.store) en el PC y se instalan con el Device Portal. Los nombres de
- * los menús de cada emulador van en inglés, que es como aparecen por defecto.
+ * Emulators for Xbox in Developer Mode are downloaded from DevStore
+ * (xbdev.store) on the PC and installed with the Device Portal. The names of
+ * each emulator's menus are in English, which is how they show up by default.
  *
- * La BIOS, las llaves y los juegos deben salir de tus propias consolas y
- * discos: las guías no enlazan sitios para bajarlos.
+ * The BIOS, the keys and the games must come from your own consoles and
+ * discs: the guides don't link to sites to download them.
  *
- * Los textos se escriben en español con {system} y {tool} en vez de las rutas;
- * guideSteps() los traduce (t) y pone las rutas.
+ * The texts are written in Spanish with {system} and {tool} instead of the paths;
+ * guideSteps() translates them (t) and fills in the paths.
  */
 import { t } from '../i18n/i18n.svelte.js'
 
-/** Lista de emuladores de DevStore: de ahí se descargan (el QR de cada guía) */
+/** DevStore's list of emulators: that's where they're downloaded from (each guide's QR code) */
 export const DEVSTORE_URL = 'https://xbdev.store/category/4/'
 export const DEVSTORE_LABEL = 'xbdev.store › Emuladores'
-/** Herramienta para dar permisos al USB (en DevStore, solo para Windows) */
+/** The tool that gives the USB drive its permissions (on DevStore, Windows only) */
 export const USB_TOOL = 'Xbox USB Permissions Tool'
 
-/** RetroArch con los núcleos incluidos (la versión Lite viene sin núcleos) */
+/** RetroArch with the cores included (the Lite version comes without cores) */
 const RETROARCH = 'RetroArch Full (Series S/X)'
 const RA_SYSTEM = 'E:\\RetroArch\\system'
-/** Lo que reemplaza a {system} y {tool} en los textos de las guías */
+/** What replaces {system} and {tool} in the guides' texts */
 const PATHS = { system: RA_SYSTEM, tool: USB_TOOL }
-/** Para que RetroArch busque la BIOS en el USB y se pueda copiar desde el PC */
+/** So RetroArch looks for the BIOS on the USB drive and it can be copied from the PC */
 const RA_SETUP = [
   'En RetroArch: **Settings › Directory › System/BIOS** → elige `{system}` (créala desde el PC si no existe).',
   'Luego **Main Menu › Configuration File › Save Current Configuration**.',
@@ -33,13 +33,13 @@ const RA_SETUP = [
 
 /**
  * @typedef {Object} EmulatorGuide
- * @property {string} download  cómo aparece en DevStore
- * @property {string[]} [setup] ajustes la primera vez, dentro del emulador
- * @property {string[]} files   archivos extra y dónde van ([] = no necesita nada más)
- * @property {string} [note]    advertencia corta
+ * @property {string} download  how it shows up on DevStore
+ * @property {string[]} [setup] settings the first time, inside the emulator
+ * @property {string[]} files   extra files and where they go ([] = it needs nothing else)
+ * @property {string} [note]    a short warning
  */
 
-/** @type {Record<string, EmulatorGuide>} por id de emulador (platforms.js) */
+/** @type {Record<string, EmulatorGuide>} by emulator id (platforms.js) */
 export const EMULATOR_GUIDES = {
   // PS1
   swanstation: {
@@ -144,7 +144,7 @@ export const EMULATOR_GUIDES = {
   },
 }
 
-/** Consejos de formato por consola (lo que más ocupa o lo que más confunde) */
+/** Format tips per console (what takes the most space or causes the most confusion) */
 /** @type {Record<string, string>} */
 const GAME_TIPS = {
   psx: 'Juegos de varios discos: crea un .m3u con la lista de discos y Relix muestra uno solo.',
@@ -161,7 +161,7 @@ const GAME_TIPS = {
   xbox360: 'Mejor .zar o la carpeta del juego con default.xex: si un .iso no abre, conviértelo a .zar en el PC.',
 }
 
-/** Wii U no tiene emulador que Relix pueda abrir: la guía explica Cemu igual */
+/** Wii U has no emulator Relix can open: the guide explains Cemu anyway */
 const CEMU = {
   download: 'Cemu',
   files: ['Si tus juegos están encriptados, importa tu **keys.txt** en Cemu (**My games › Import keys.txt**).'],
@@ -170,21 +170,21 @@ const CEMU = {
 
 /**
  * @typedef {{ id: string, title: string, lines: string[], done?: boolean | null }} GuideStep
- *   done: true listo, false falta, null no se puede saber desde Relix
+ *   done: true ready, false missing, null can't be known from Relix
  */
 
 /**
- * Los pasos de la guía de una consola, para el emulador que usa.
+ * The steps of a console's guide, for the emulator it uses.
  * @param {import('./platforms.js').Platform} platform
  * @param {import('./platforms.js').Emulator | null} emulator
  * @param {{ folder: string, installed: boolean | null, games: number }} status
- *   folder: carpeta de juegos en el USB (E:\roms\ps1); installed y games: lo que Relix ya sabe
+ *   folder: the games folder on the USB drive (E:\roms\ps1); installed and games: what Relix already knows
  * @returns {GuideStep[]}
  */
 export function guideSteps(platform, emulator, status) {
   const guide = emulator ? EMULATOR_GUIDES[emulator.id] : CEMU
   if (!guide) return []
-  /** Un texto de las tablas de arriba, traducido y con sus rutas @param {string} line */
+  /** A text from the tables above, translated and with its paths @param {string} line */
   const tr = (line) => t(line, PATHS)
 
   /** @type {GuideStep[]} */
@@ -241,7 +241,7 @@ export function guideSteps(platform, emulator, status) {
 }
 
 /**
- * Texto con **negrita** y `rutas` en partes, para dibujarlo sin HTML crudo.
+ * Text with **bold** and `paths` split into parts, to draw it without raw HTML.
  * @param {string} line
  * @returns {Array<{ text: string, kind: 'plain' | 'bold' | 'code' }>}
  */

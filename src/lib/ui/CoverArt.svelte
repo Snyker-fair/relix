@@ -1,24 +1,24 @@
 <script module>
-  /** Forma estándar de las portadas en grillas y listas (la de PS2, GameCube y Wii U) */
+  /** The standard shape of covers in grids and lists (the PS2, GameCube and Wii U one) */
   export const TILE_ASPECT = 0.71
 </script>
 
 <script>
   /**
-   * Portada de un juego. Si hay imagen se usa; si no, se dibuja una portada
-   * provisoria con el color de la consola, variando tono y adornos según el
-   * nombre (cada juego se ve distinto).
+   * A game's cover. If there's an image it's used; otherwise a temporary cover
+   * is drawn with the console's color, varying the tone and decorations by the
+   * name (each game looks different).
    *
-   * Dos formas:
-   *   - estándar (por defecto): todas iguales, para que grillas y listas se
-   *     vean parejas; la imagen llena el marco y se recorta lo que sobra
-   *   - real: la caja completa con la forma de su consola (PS1 cuadrada, PSP
-   *     alta), para el panel de detalle
+   * Two shapes:
+   *   - standard (the default): all the same, so grids and lists look
+   *     even; the image fills the frame and what's left over is cropped
+   *   - real: the whole box with its console's shape (PS1 square, PSP
+   *     tall), for the detail panel
    *
-   *   width           ancho; el alto sale de la forma
-   *   width + height  espacio máximo: la portada entra entera en ese espacio
-   *   real            usar la forma real de la caja
-   *   thumb           usar la miniatura (grillas y listas) en vez de la original
+   *   width           the width; the height comes from the shape
+   *   width + height  the maximum space: the whole cover fits in that space
+   *   real            use the box's real shape
+   *   thumb           use the thumbnail (grids and lists) instead of the original
    */
   import ChannelIcon from './ChannelIcon.svelte'
 
@@ -30,9 +30,9 @@
    */
   let { game, platform, width = 184, height, showTitle = true, thumb = false, real = false } = $props()
 
-  /** La imagen que no cargó; si la URL cambia, se vuelve a intentar */
+  /** The image that didn't load; if the URL changes, it tries again */
   let failedSrc = $state('')
-  /** La imagen que ya se ve (mientras carga, queda la portada de color debajo) */
+  /** The image already showing (while it loads, the color cover stays underneath) */
   let loadedSrc = $state('')
   const src = $derived((thumb ? (game.thumb ?? game.cover) : game.cover) ?? '')
   const showImage = $derived(src !== '' && src !== failedSrc)
@@ -45,7 +45,7 @@
     return { w: width, h: Math.round(width / aspect) }
   })
 
-  /** Hash simple y estable del nombre */
+  /** A simple, stable hash of the name */
   function hash(/** @type {string} */ str) {
     let h = 2166136261
     for (let i = 0; i < str.length; i++) {
@@ -56,7 +56,7 @@
   }
 
   const seed = $derived(hash(game.name))
-  // Mezcla el color de la consola con blanco o tinta según el hash
+  // Mixes the console's color with white or ink depending on the hash
   const shade = $derived((seed % 5) * 9 - 18) // -18..+18
   const bg = $derived(
     shade >= 0

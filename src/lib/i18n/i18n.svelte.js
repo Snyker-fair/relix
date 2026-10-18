@@ -1,21 +1,21 @@
 /**
- * Traducciones. Los textos se escriben en español y se pasan por t():
+ * Translations. The texts are written in Spanish and go through t():
  *
- *   t('Seguir jugando')                      -> "Continue playing" en inglés
+ *   t('Seguir jugando')                      -> "Continue playing" in English
  *   t('Juego {n} de {total}', { n, total })  -> "Game 3 of 9"
  *   tn(n, '{n} juego nuevo', '{n} juegos nuevos')
  *
- * El español es el texto mismo; en.js tiene cada texto en inglés. Si falta una
- * traducción se ve el español (y queda anotada en i18n.missing, que revisan los
- * tests y la auditoría de pantallas).
+ * The Spanish is the text itself; en.js has each text in English. If a
+ * translation is missing, the Spanish shows (and it's noted in i18n.missing,
+ * which the tests and the screen audit check).
  *
- * t() lee el idioma activo, así que un texto en el HTML de un componente o en
- * un $derived cambia solo al elegir otro idioma.
+ * t() reads the active language, so a text in a component's HTML or in
+ * a $derived changes by itself when another language is chosen.
  */
 import { DATE_LOCALES, effectiveLanguage, interpolate } from '../core/language.js'
 import EN from './en.js'
 
-/** Los idiomas que prefiere la consola (WebView2 usa los de Windows) */
+/** The languages the console prefers (WebView2 uses Windows's) */
 function preferredLanguages() {
   try {
     return [...(navigator.languages ?? []), navigator.language].filter(Boolean)
@@ -25,35 +25,35 @@ function preferredLanguages() {
 }
 
 class I18n {
-  /** Lo que eligió el jugador: 'auto', 'es' o 'en' (lo guarda settings) */
+  /** What the player chose: 'auto', 'es' or 'en' (settings saves it) */
   /** @type {import('../core/language.js').LanguageChoice} */
   choice = $state('auto')
-  /** Idiomas de la consola, para Automático */
+  /** The console's languages, for Automatic */
   system = preferredLanguages()
-  /** 'es' o 'en': el que se ve ahora */
+  /** 'es' or 'en': the one shown now */
   current = $derived(effectiveLanguage(this.choice, this.system))
-  /** Para fechas y horas: 'es-CL' o 'en-US' */
+  /** For dates and times: 'es-CL' or 'en-US' */
   dateLocale = $derived(DATE_LOCALES[this.current])
-  /** Textos sin traducción que aparecieron en pantalla (para los tests y la auditoría) */
+  /** Untranslated texts that showed up on screen (for the tests and the audit) */
   missing = new Set()
 }
 
 export const i18n = new I18n()
 
 try {
-  // La auditoría de pantallas (Playwright) lee lo que faltó traducir
+  // The screen audit (Playwright) reads what was left untranslated
   /** @type {any} */ (globalThis).__relixMissing = i18n.missing
 } catch {
-  // sin globalThis no hay auditoría
+  // without globalThis there's no audit
 }
 
 /** @type {Record<string, string>} */
 const catalog = EN
 
 /**
- * El texto en el idioma activo.
- * @param {string} text  en español, tal como está en el código
- * @param {Record<string, string | number>} [params]  valores para {nombre}
+ * The text in the active language.
+ * @param {string} text  in Spanish, as it is in the code
+ * @param {Record<string, string | number>} [params]  values for {name}
  */
 export function t(text, params) {
   let out = text
@@ -66,7 +66,7 @@ export function t(text, params) {
 }
 
 /**
- * Singular o plural según n, con {n} ya reemplazado.
+ * Singular or plural depending on n, with {n} already replaced.
  * @param {number} n
  * @param {string} one   "{n} juego nuevo"
  * @param {string} many  "{n} juegos nuevos"
@@ -77,8 +77,8 @@ export function tn(n, one, many, params) {
 }
 
 /**
- * plural(1, 'juego', 'juegos') -> "1 juego" ("1 game" en inglés: cada palabra
- * pasa por t()).
+ * plural(1, 'juego', 'juegos') -> "1 juego" ("1 game" in English: each word
+ * goes through t()).
  * @param {number} n @param {string} one @param {string} many
  */
 export function plural(n, one, many) {
@@ -86,8 +86,8 @@ export function plural(n, one, many) {
 }
 
 /**
- * Una lista en palabras: "a y b", "a, b y c" ("a, b, and c" en inglés).
- * Con 'disjunction': "a, b o c" ("a, b, or c").
+ * A list in words: "a y b", "a, b y c" in Spanish ("a, b, and c" in English).
+ * With 'disjunction': "a, b o c" ("a, b, or c").
  * @param {string[]} items
  * @param {'conjunction'|'disjunction'} [type]
  */

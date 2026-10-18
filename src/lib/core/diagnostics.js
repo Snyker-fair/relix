@@ -1,16 +1,16 @@
 /**
- * Registro de diagnóstico: una línea de texto por evento, para leer en el PC
- * (E:\relix\registro.txt) o en la TV (Opciones › Revisión › Registro).
+ * The diagnostic log: one line of text per event, to read on the PC
+ * (E:\relix\log.txt) or on the TV (Options › Checkup › Log).
  *
- *   2026-10-17 06:40:12  LANZAR    Ōkami (PS2) con XBSX2 · xbsx2:?cmd=…
+ *   2026-10-17 06:40:12  LAUNCH    Ōkami (PS2) with XBSX2 · xbsx2:?cmd=…
  *
- * El shell escribe la misma forma cuando anota algo por su cuenta
- * (LogLine en MainPage.xaml.cs). Cada línea queda en el idioma que tenía
- * Relix al anotarla (el tipo también: LANZAR o LAUNCH).
+ * The shell writes the same format when it logs something on its own
+ * (LogLine in MainPage.xaml.cs). Each line stays in the language Relix had
+ * when it was logged (the kind too: LANZAR or LAUNCH).
  */
 import { t } from '../i18n/i18n.svelte.js'
 
-/** Tipos de evento (cada uno ocupa 9 columnas, así el texto queda alineado; en inglés también) */
+/** Event kinds (each takes 9 columns, so the text lines up; in English too) */
 export const LOG_KINDS = {
   start: 'INICIO',
   launch: 'LANZAR',
@@ -23,18 +23,18 @@ export const LOG_KINDS = {
   usb: 'USB',
 }
 
-/** Líneas más largas se cortan (las URIs con rutas largas pueden pasar los 400) */
+/** Longer lines are cut (URIs with long paths can go past 400) */
 export const MAX_LINE = 600
 
 const pad = (/** @type {number} */ n) => String(n).padStart(2, '0')
 
-/** "2026-10-17 06:40:12" en hora local @param {Date} date */
+/** "2026-10-17 06:40:12" in local time @param {Date} date */
 export function logTime(date) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
 }
 
 /**
- * Una línea del registro.
+ * A line of the log.
  * @param {keyof typeof LOG_KINDS} kind
  * @param {string} text
  * @param {Date} [date]
@@ -46,13 +46,13 @@ export function logLine(kind, text, date = new Date()) {
 }
 
 /**
- * Separa una línea en sus partes, para mostrarla en la TV.
- * Una línea que no tiene la forma esperada queda entera como texto.
+ * Splits a line into its parts, to show it on the TV.
+ * A line without the expected shape stays whole as text.
  * @param {string} line
  * @returns {{ time: string, kind: string, text: string }}
  */
 export function parseLogLine(line) {
-  // Columnas fijas: fecha (19), dos espacios, tipo (9), un espacio, texto
+  // Fixed columns: date (19), two spaces, kind (9), one space, text
   const time = line.slice(0, 19)
   if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(time) || line.slice(19, 21) !== '  ') {
     return { time: '', kind: '', text: line }

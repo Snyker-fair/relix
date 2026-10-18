@@ -1,9 +1,9 @@
 /**
- * Búsqueda de juegos por nombre, pensada para escribir con el control:
- * cada palabra escrita tiene que ser el comienzo de alguna palabra del
- * título. "kin he" encuentra "Kingdom Hearts"; "ff 7" no, pero "final fan"
- * sí. Sin tildes ni mayúsculas, y los números romanos valen como cifras
- * ("kingdom hearts 2" encuentra "Kingdom Hearts II").
+ * Searching games by name, made for typing with the controller:
+ * each word typed has to be the start of some word in the title.
+ * "kin he" finds "Kingdom Hearts"; "ff 7" doesn't, but "final fan"
+ * does. Without accents or uppercase, and Roman numerals count as digits
+ * ("kingdom hearts 2" finds "Kingdom Hearts II").
  */
 
 const ROMAN = /** @type {Record<string, string>} */ ({
@@ -12,8 +12,8 @@ const ROMAN = /** @type {Record<string, string>} */ ({
 })
 
 /**
- * Texto comparable: minúsculas, sin tildes ni signos.
- * "Ōkami: Edición & Más" -> "okami edicion and mas"
+ * Comparable text: lowercase, without accents or symbols.
+ * "Ōkami: Édition & More" -> "okami edition and more"
  * @param {string} text
  */
 export function searchKey(text) {
@@ -27,7 +27,7 @@ export function searchKey(text) {
     .trim()
 }
 
-/** Una palabra y, si es un número romano, también su cifra */
+/** A word and, if it's a Roman numeral, its digits too */
 function variants(/** @type {string} */ word) {
   const number = ROMAN[word]
   return number ? [word, number] : [word]
@@ -36,9 +36,9 @@ function variants(/** @type {string} */ word) {
 /**
  * @template {{ name: string, sortName?: string }} T
  * @param {T[]} games
- * @param {string} query  lo que escribió el jugador
+ * @param {string} query  what the player typed
  * @param {{ limit?: number }} [options]
- * @returns {T[]}  los que calzan, los más parecidos primero
+ * @returns {T[]}  the ones that match, the closest first
  */
 export function searchGames(games, query, { limit = 60 } = {}) {
   const words = searchKey(query).split(' ').filter(Boolean)
@@ -52,7 +52,7 @@ export function searchGames(games, query, { limit = 60 } = {}) {
     const titleWords = key.split(' ').flatMap(variants)
     const matches = words.every((w) => variants(w).some((v) => titleWords.some((t) => t.startsWith(v))))
     if (!matches) continue
-    // Primero los que empiezan como lo escrito, luego los que empiezan con la primera palabra
+    // First the ones that start like what was typed, then the ones that start with the first word
     const score = key.startsWith(phrase) ? 0 : titleWords[0]?.startsWith(words[0]) ? 1 : 2
     found.push({ game, score })
   }

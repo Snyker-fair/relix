@@ -1,10 +1,10 @@
 <script>
   /**
-   * Video de vista previa del juego enfocado. Empieza a cargar recién cuando
-   * te quedas un momento en el juego (moverse rápido por la grilla no pide
-   * videos), aparece encima de la captura cuando ya se está viendo y se
-   * repite. Sin sonido salvo que lo actives en Opciones › Preferencias.
-   * Se detiene con el protector de pantalla o al abrir un juego.
+   * The preview video of the focused game. It only starts loading once you
+   * stay on the game for a moment (moving fast through the grid doesn't ask
+   * for videos), shows up over the screenshot once it's playing, and
+   * loops. Muted unless you turn the sound on in Options › Preferences.
+   * It stops with the screensaver or when a game opens.
    */
   import { activity, brokenMedia } from './activity.svelte.js'
 
@@ -24,7 +24,7 @@
     return () => clearTimeout(timer)
   })
 
-  // El sonido se puede cambiar sin volver a cargar el video
+  // The sound can change without loading the video again
   $effect(() => {
     if (!video) return
     video.muted = !sound

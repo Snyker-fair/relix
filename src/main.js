@@ -5,15 +5,15 @@ import { startLanguage } from './lib/ui/language.svelte.js'
 import { theme } from './lib/ui/theme.svelte.js'
 import { userData } from './lib/ui/userData.svelte.js'
 
-// Idioma y tema primero: si tus datos del USB traen otros, cambian solos.
-// El idioma va antes que cualquier pedido al shell, así sus errores ya salen
-// en el idioma de la interfaz.
+// Language and theme first: if your data from the USB drive has others, they change by themselves.
+// The language goes before any request to the shell, so its errors already come out
+// in the interface's language.
 startLanguage()
 theme.start()
 
-// Primero tus datos del USB (E:\relix\datos.json), así cada pantalla parte con
-// ellos. Si el shell tarda, se abre igual: los datos llegan después y cada
-// estado los vuelve a leer solo.
+// Your data from the USB drive first (E:\relix\data.json), so each screen starts with
+// it. If the shell takes a while, it opens anyway: the data arrives later and each
+// state reads it again by itself.
 const tooSlow = new Promise((resolve) => setTimeout(resolve, 3000))
 
 Promise.race([userData.start(), tooSlow]).finally(() => {

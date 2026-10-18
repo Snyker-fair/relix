@@ -1,13 +1,13 @@
 /**
- * Con qué emulador se abre cada juego:
+ * Which emulator each game opens with:
  *
- *   1. el que elegiste para ese juego (Y › Abrir con…)
- *   2. si no, el de su consola (Opciones › Consolas)
- *   3. si no, el primero de la lista que tengas instalado
- *   4. si no se sabe qué hay instalado, el recomendado (el primero)
+ *   1. the one you chose for that game (Y › Open with…)
+ *   2. otherwise, its console's (Options › Consoles)
+ *   3. otherwise, the first one on the list that you have installed
+ *   4. if it's not known what's installed, the recommended one (the first)
  *
- * Lo elegido viaja en tus datos del USB. Qué hay instalado lo pregunta el
- * shell a la Xbox (la misma revisión del aviso "no está instalado").
+ * What you chose travels in your data on the USB drive. The shell asks the Xbox
+ * what's installed (the same check as the "isn't installed" notice).
  */
 import { emulatorStatus } from '../core/bridge.js'
 import { getEmulator, getPlatform, PLATFORMS } from '../core/platforms.js'
@@ -16,22 +16,22 @@ import { load, onReplaced, save } from './storage.js'
 /** @typedef {import('../core/platforms.js').Emulator} Emulator */
 /** @typedef {import('../core/platforms.js').Platform} Platform */
 
-/** Todos los protocolos, sin repetir (retroarch una sola vez) */
+/** Every protocol, without repeats (retroarch only once) */
 export const PROTOCOLS = [...new Set(PLATFORMS.flatMap((p) => p.emulators.map((e) => e.launcher.protocol)))]
 
 class Emulators {
-  /** Elegido por consola: id de consola -> id de emulador */
+  /** Chosen per console: console id -> emulator id */
   /** @type {Record<string, string>} */
   byConsole = $state(load('emulators', {}))
-  /** Elegido para un juego puntual: id de juego -> id de emulador */
+  /** Chosen for a single game: game id -> emulator id */
   /** @type {Record<string, string>} */
   byGame = $state(load('gameEmulators', {}))
-  /** Protocolos instalados en la Xbox. null = no se sabe (navegador o shell anterior) */
+  /** Protocols installed on the Xbox. null = unknown (browser or an older shell) */
   /** @type {Record<string, boolean> | null} */
   installed = $state(null)
 
   constructor() {
-    // Llegaron tus datos del USB: se vuelven a leer
+    // Your data arrived from the USB drive: they're read again
     onReplaced(() => {
       this.byConsole = load('emulators', {})
       this.byGame = load('gameEmulators', {})
@@ -39,7 +39,7 @@ class Emulators {
   }
 
   /**
-   * true instalado, false no está, null no se sabe.
+   * true installed, false it isn't, null unknown.
    * @param {Emulator} emulator
    */
   isInstalled(emulator) {
@@ -47,7 +47,7 @@ class Emulators {
   }
 
   /**
-   * Emulador de una consola (null si la consola no tiene ninguno).
+   * A console's emulator (null if the console has none).
    * @param {Platform | null} platform
    */
   forPlatform(platform) {
@@ -58,7 +58,7 @@ class Emulators {
   }
 
   /**
-   * Emulador con que se abre un juego.
+   * The emulator a game opens with.
    * @param {{ id: string, system: string }} game
    */
   forGame(game) {
@@ -67,14 +67,14 @@ class Emulators {
     return getEmulator(platform, this.byGame[game.id] ?? '') ?? this.forPlatform(platform)
   }
 
-  /** ¿El juego tiene un emulador propio, distinto al de su consola? @param {{ id: string, system: string }} game */
+  /** Does the game have its own emulator, different from its console's? @param {{ id: string, system: string }} game */
   hasOwn(game) {
     const platform = getPlatform(game.system)
     return Boolean(platform && getEmulator(platform, this.byGame[game.id] ?? ''))
   }
 
   /**
-   * Pasa al emulador siguiente de la consola. Devuelve el nuevo.
+   * Moves to the console's next emulator. Returns the new one.
    * @param {Platform} platform
    */
   cyclePlatform(platform) {
@@ -88,7 +88,7 @@ class Emulators {
   }
 
   /**
-   * Emulador para un juego puntual; null = volver al de su consola.
+   * The emulator for a single game; null = back to its console's.
    * @param {{ id: string }} game
    * @param {string | null} emulatorId
    */
@@ -100,7 +100,7 @@ class Emulators {
     save('gameEmulators', next)
   }
 
-  /** Pregunta a la Xbox qué emuladores tiene. Sin shell (o si falla), queda en "no se sabe". */
+  /** Asks the Xbox which emulators it has. Without a shell (or if it fails), it stays "unknown". */
   async check() {
     try {
       this.installed = await emulatorStatus(PROTOCOLS)

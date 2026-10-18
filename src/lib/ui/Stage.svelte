@@ -1,8 +1,8 @@
 <script>
   /**
-   * Escenario fijo de 1920×1080 escalado para llenar la pantalla.
-   * Se diseña una sola vez en "píxeles de TV" y se ve igual en la Xbox,
-   * en un monitor o en el teléfono.
+   * A fixed 1920×1080 stage scaled to fill the screen.
+   * It's designed once in "TV pixels" and looks the same on the Xbox,
+   * on a monitor or on a phone.
    */
   let { children } = $props()
 
@@ -40,7 +40,7 @@
     height: 1080px;
     transform-origin: center;
     overflow: hidden;
-    /* Trama de puntos tipo papel de cuaderno de dibujo */
+    /* A dot pattern like sketchbook paper */
     background-color: var(--sky);
     background-image:
       radial-gradient(circle at 12% -10%, var(--glow), transparent 42%),

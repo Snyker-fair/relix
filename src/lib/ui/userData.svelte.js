@@ -1,16 +1,16 @@
 /**
- * Mantiene tus datos respaldados en el USB (E:\relix\datos.json).
+ * Keeps your data backed up on the USB drive (E:\relix\data.json).
  *
- *   Al iniciar  se lee el USB ANTES de abrir la interfaz, y manda la copia
- *               más nueva (ver chooseSource en core/userData.js).
- *   Al cambiar  algo (un favorito, una partida...) se guarda 2 segundos
- *               después, juntando varios cambios seguidos en una sola escritura.
- *   Al lanzar   un juego se guarda en el acto: la Xbox podría cerrar Relix
- *               mientras juegas y la partida en curso no se perdería.
+ *   At startup  the USB drive is read BEFORE the interface opens, and the newest
+ *               copy rules (see chooseSource in core/userData.js).
+ *   On a change (a favorite, a session...) it's saved 2 seconds
+ *               later, gathering several changes in a row into a single write.
+ *   On launch   of a game it's saved right away: the Xbox could close Relix
+ *               while you play and the session in progress wouldn't be lost.
  *
- * Si no hay USB al iniciar, se trabaja con lo de la app y se vuelve a
- * revisar cuando aparece el USB (resync). Cuando llegan datos del USB, cada
- * estado los vuelve a leer solo (storage.onReplaced).
+ * If there's no USB drive at startup, the app's data is used and it's checked
+ * again when the drive shows up (resync). When data arrives from the drive, each
+ * state reads it again by itself (storage.onReplaced).
  */
 import { loadUserData, saveUserData } from '../core/bridge.js'
 import { chooseSource, parseUserData, serializeUserData } from '../core/userData.js'
@@ -26,23 +26,23 @@ const MAIN_FILES = ['data.json', 'datos.json']
 
 class UserDataSync {
   /**
-   * off      sin USB (los datos quedan en la app)
-   * saved    al día en el USB
-   * pending  hay cambios por guardar
-   * error    el USB no deja escribir
+   * off      no USB drive (the data stays in the app)
+   * saved    up to date on the USB drive
+   * pending  there are changes to save
+   * error    the USB drive can't be written to
    * @type {'off'|'saved'|'pending'|'error'}
    */
   status = $state('off')
-  /** Última vez que se guardó en el USB (ms) */
+  /** The last time it was saved to the USB drive (ms) */
   savedAt = $state(0)
-  /** De qué archivo salieron los datos al iniciar, si no fue datos.json (p. ej. un respaldo) */
+  /** Which file the data came from at startup, if it wasn't the main one (e.g. a backup) */
   recoveredFrom = $state('')
   error = $state('')
 
   #drive = ''
   /** @type {ReturnType<typeof setTimeout> | undefined} */
   #timer
-  /** Escrituras en fila: nunca dos a la vez sobre el mismo archivo */
+  /** Writes in a queue: never two at once on the same file */
   #queue = Promise.resolve()
 
   constructor() {
@@ -50,8 +50,8 @@ class UserDataSync {
   }
 
   /**
-   * Lee el USB y deja en la app la copia que manda. Se llama antes de montar
-   * la interfaz; nunca falla (sin USB, sigue con lo de la app).
+   * Reads the USB drive and leaves the copy that rules in the app. It's called before
+   * mounting the interface; it never fails (without a USB drive, it carries on with the app's data).
    * @returns {Promise<'usb'|'local'|'fresh'|'off'>}
    */
   async start() {
@@ -69,32 +69,32 @@ class UserDataSync {
     const source = chooseSource(usb, local, file.driveId)
 
     if (source === 'usb' && usb) {
-      // replaceSynced avisa a cada estado; si es lo mismo que ya había, no cambia nada visible
+      // replaceSynced tells each state; if it's the same as before, nothing visible changes
       replaceSynced(usb.values, usb.savedAt, file.driveId)
       this.recoveredFrom = file.source && !MAIN_FILES.includes(file.source) ? file.source : ''
       this.savedAt = usb.savedAt
       this.status = 'saved'
-      // Si salió de una copia (datos.json estaba dañado), se reescribe datos.json
+      // If it came from a copy (data.json was damaged), data.json is written again
       if (this.recoveredFrom) this.#schedule(0)
     } else if (source === 'fresh') {
-      // Otro USB sin datos: este parte de cero, con tus preferencias
+      // Another USB drive without data: this one starts from scratch, with your preferences
       replaceSynced({ settings: readSynced().settings }, Date.now(), file.driveId)
       markSynced(0)
       this.#schedule(0)
     } else {
-      // Lo de la app es más nuevo (o el USB aún no tiene datos): se copia al USB
+      // The app's data is newer (or the USB drive has no data yet): it's copied to the drive
       setLocalDrive(file.driveId)
       this.#schedule(0)
     }
     return source
   }
 
-  /** El USB apareció después de iniciar (Reintentar): se vuelve a revisar. */
+  /** The USB drive showed up after startup (Retry): it's checked again. */
   async resync() {
     if (this.status === 'off') await this.start()
   }
 
-  /** Guarda ya mismo lo pendiente (antes de lanzar un juego). */
+  /** Saves what's pending right now (before launching a game). */
   async flush() {
     clearTimeout(this.#timer)
     this.#timer = undefined

@@ -1,16 +1,16 @@
 /**
- * Busca la portada de cada juego en libretro-thumbnails (las mismas portadas
- * que usa RetroArch). libretro nombra cada imagen con el nombre estándar del
- * juego (Redump / No-Intro), p. ej. "Kingdom Hearts II (USA).png".
+ * Finds each game's cover in libretro-thumbnails (the same covers RetroArch
+ * uses). libretro names each image with the game's standard name
+ * (Redump / No-Intro), e.g. "Kingdom Hearts II (USA).png".
  *
- * Se busca en tres niveles:
- *   1. Nombre exacto: el archivo ya tiene el nombre estándar (lo habitual al
- *      convertir a CHD). Es seguro.
- *   2. Mismo título: "kingdom_hearts_2.iso" -> "Kingdom Hearts II (USA)".
- *      Ignora mayúsculas, tildes, guiones bajos, "The" y números romanos.
- *      Si el archivo dice la región, se respeta; si no, se usa la preferida.
- *   3. Candidatas: apodos como "Zelda Wind Waker". No se elige solo: se
- *      ofrecen las más parecidas para que el jugador elija.
+ * It searches on three levels:
+ *   1. Exact name: the file already has the standard name (the usual case after
+ *      converting to CHD). It's safe.
+ *   2. Same title: "kingdom_hearts_2.iso" -> "Kingdom Hearts II (USA)".
+ *      It ignores case, accents, underscores, "The" and Roman numerals.
+ *      If the file names its region, that's respected; otherwise the preferred one is used.
+ *   3. Candidates: nicknames like "Zelda Wind Waker". It doesn't pick by itself:
+ *      the closest ones are offered so the player chooses.
  */
 
 import { t } from '../i18n/i18n.svelte.js'
@@ -18,14 +18,14 @@ import { fileStem, titleStem } from './esde.js'
 
 export const THUMBNAILS_SERVER = 'https://thumbnails.libretro.com'
 
-/** Regiones que aparecen en los nombres estándar */
+/** Regions that show up in the standard names */
 const REGION_WORDS = new Set([
   'USA', 'Canada', 'Europe', 'Japan', 'World', 'Spain', 'France', 'Germany', 'Italy', 'UK',
   'Asia', 'Korea', 'China', 'Taiwan', 'Australia', 'Brazil', 'Netherlands', 'Scandinavia',
   'Russia', 'Latin America', 'Mexico', 'Argentina', 'Portugal', 'Sweden', 'Hong Kong',
 ])
 
-/** Orden de preferencia cuando el archivo no dice su región */
+/** Order of preference when the file doesn't name its region */
 export const REGION_PREFERENCES = {
   usa: ['USA', 'Canada', 'World', 'Latin America', 'Mexico', 'Brazil', 'Europe', 'Spain', 'UK', 'Australia', 'Asia', 'Japan'],
   europe: ['Spain', 'Europe', 'World', 'UK', 'Australia', 'France', 'Italy', 'Germany', 'USA', 'Canada', 'Asia', 'Japan'],
@@ -34,10 +34,10 @@ export const REGION_PREFERENCES = {
 
 /** @typedef {keyof typeof REGION_PREFERENCES} RegionPreference */
 
-/** Nombre visible de cada preferencia */
+/** The visible name of each preference */
 export const REGION_NAMES = { usa: 'EE. UU.', europe: 'Europa', japan: 'Japón' }
 
-/** Versiones que no queremos como portada si hay otra opción */
+/** Versions we don't want as the cover if there's another option */
 const UNWANTED = /\b(Beta|Proto|Prototype|Demo|Sample|Taikenban|Kiosk|Trial|Preview|Promo|Debug|Pirate|Unl)\b|\bDisc [2-9]\b/i
 
 const ROMAN = /** @type {Record<string, string>} */ ({
@@ -47,7 +47,7 @@ const ROMAN = /** @type {Record<string, string>} */ ({
 const STOP_WORDS = new Set(['the', 'a', 'an', 'and'])
 const TAG = /\s*[([][^)\]]*[)\]]/g
 
-/** Caracteres que libretro reemplaza por "_" en los nombres de archivo */
+/** Characters libretro replaces with "_" in file names */
 export function libretroSafeName(/** @type {string} */ name) {
   return name.replace(/[&*/:`<>?\\|"]/g, '_')
 }
@@ -63,7 +63,7 @@ export function baseTitle(/** @type {string} */ name) {
 }
 
 /**
- * Clave de comparación de títulos.
+ * The key for comparing titles.
  * "Legend of Zelda, The - The Wind Waker (USA)" -> "legend of zelda wind waker"
  * "kingdom_hearts_2"                             -> "kingdom hearts 2"
  */
@@ -80,7 +80,7 @@ export function titleKey(/** @type {string} */ name) {
   return (kept.length > 0 ? kept : tokens).join(' ')
 }
 
-/** Regiones que dice un nombre: "Gran Turismo 4 (USA, Canada) (v1.01)" -> ["USA", "Canada"] */
+/** The regions a name says: "Gran Turismo 4 (USA, Canada) (v1.01)" -> ["USA", "Canada"] */
 export function regionsOf(/** @type {string} */ name) {
   return tagsOf(name)
     .flatMap((tag) => tag.split(/,\s*/))
@@ -88,9 +88,9 @@ export function regionsOf(/** @type {string} */ name) {
 }
 
 /**
- * Qué tan buena es una versión como portada (menor = mejor):
- * primero las que no son demo/beta, luego la región, luego la más simple.
- * @param {string} name @param {string[]} order regiones en orden de preferencia
+ * How good a version is as the cover (lower = better):
+ * first the ones that aren't demo/beta, then the region, then the simplest.
+ * @param {string} name @param {string[]} order regions in order of preference
  */
 function rank(name, order) {
   const regions = regionsOf(name)
@@ -109,14 +109,14 @@ function best(names, order) {
 /**
  * @typedef {Object} CoverIndex
  * @property {string[]} names
- * @property {Map<string, string>} exact            nombre en minúsculas -> nombre
- * @property {Map<string, string[]>} byTitle        titleKey -> versiones
- * @property {Array<{ key: string, tokens: Set<string> }>} titles  para buscar candidatas
+ * @property {Map<string, string>} exact            lowercase name -> name
+ * @property {Map<string, string[]>} byTitle        titleKey -> versions
+ * @property {Array<{ key: string, tokens: Set<string> }>} titles  to look for candidates
  */
 
 /**
- * Prepara la lista de portadas de una consola para buscar rápido.
- * @param {string[]} names  nombres sin ".png", tal como están en libretro
+ * Prepares a console's list of covers for fast lookups.
+ * @param {string[]} names  names without ".png", as they are on libretro
  * @returns {CoverIndex}
  */
 export function buildCoverIndex(names) {
@@ -142,11 +142,11 @@ function regionOrder(query, preference) {
 }
 
 /**
- * Busca la portada segura de un juego.
- * @param {string} query  nombre del archivo sin extensión (o carpeta, en Wii U)
+ * Finds a game's safe cover.
+ * @param {string} query  the file name without its extension (or the folder, on Wii U)
  * @param {CoverIndex} index
  * @param {{ region?: RegionPreference, altTitle?: string }} [options]
- *   altTitle: el nombre que trae ES-DE, por si el archivo tiene un nombre raro
+ *   altTitle: the name ES-DE has, in case the file has an odd name
  * @returns {{ name: string, how: 'exact'|'title' } | null}
  */
 export function matchCover(query, index, { region = 'usa', altTitle } = {}) {
@@ -164,8 +164,8 @@ export function matchCover(query, index, { region = 'usa', altTitle } = {}) {
  */
 
 /**
- * Portadas parecidas para elegir a mano: la mejor versión de cada título,
- * ordenadas por cuántas palabras comparten con el nombre del juego.
+ * Similar covers to pick by hand: the best version of each title,
+ * sorted by how many words they share with the game's name.
  * @param {string} query
  * @param {CoverIndex} index
  * @param {{ region?: RegionPreference, altTitle?: string, limit?: number }} [options]
@@ -179,7 +179,7 @@ export function coverCandidates(query, index, { region = 'usa', altTitle, limit 
     const wanted = [...new Set(q.split(' '))]
     for (const { key, tokens } of index.titles) {
       let hits = 0
-      let wordHit = false // que coincida algo más que un número ("Persona 4" no es "Gran Turismo 4")
+      let wordHit = false // more than a number has to match ("Persona 4" isn't "Gran Turismo 4")
       for (const t of wanted) {
         const hit = tokenHit(t, tokens)
         hits += hit
@@ -200,8 +200,8 @@ export function coverCandidates(query, index, { region = 'usa', altTitle, limit 
 }
 
 /**
- * Cuánto cuenta una palabra del juego en un título: 1 si está tal cual,
- * 0.8 si difiere en una letra ("Okami" / "Ookami"), 0 si no está.
+ * How much a word from the game counts in a title: 1 if it's there as is,
+ * 0.8 if it differs by one letter ("Okami" / "Ookami"), 0 if it isn't there.
  * @param {string} word @param {Set<string>} tokens
  */
 function tokenHit(word, tokens) {
@@ -213,7 +213,7 @@ function tokenHit(word, tokens) {
   return 0
 }
 
-/** true si a y b difieren en una sola letra (cambiada, agregada o quitada) */
+/** true if a and b differ by a single letter (changed, added or removed) */
 function oneEditApart(/** @type {string} */ a, /** @type {string} */ b) {
   if (a.length > b.length) [a, b] = [b, a]
   let i = 0
@@ -228,15 +228,15 @@ const REGION_LABELS = /** @type {Record<string, string>} */ ({
   Asia: 'Asia', Korea: 'Corea', China: 'China', Australia: 'Australia', Brazil: 'Brasil',
 })
 
-/** "Okami (Europe, Australia) (En,Fr)" -> "Europa" */
+/** "Okami (Europe, Australia) (En,Fr)" -> "Europa" ("Europe" in English) */
 export function regionLabel(/** @type {string} */ name) {
   const region = regionsOf(name)[0]
   return region ? (REGION_LABELS[region] ? t(REGION_LABELS[region]) : region) : ''
 }
 
 /**
- * Qué nombre se busca para un juego: el archivo sin extensión o, en Wii U
- * por carpetas (Juego/code/juego.rpx), el nombre de la carpeta.
+ * Which name is looked up for a game: the file without its extension or, for
+ * Wii U in folders (Game/code/game.rpx), the folder's name.
  * @param {{ path: string }} game
  */
 export function coverQuery(game) {
@@ -244,8 +244,8 @@ export function coverQuery(game) {
 }
 
 /**
- * Dónde se guarda la portada, relativa a downloaded_media/<consola>/covers,
- * sin extensión. Es la misma regla de ES-DE: la ruta del juego sin extensión.
+ * Where the cover is saved, relative to downloaded_media/<console>/covers,
+ * without an extension. It's ES-DE's rule: the game's path without its extension.
  * "Final Fantasy VII (USA)/Final Fantasy VII (USA).m3u" -> "Final Fantasy VII (USA)/Final Fantasy VII (USA)"
  * @param {{ path: string }} game
  */
@@ -256,10 +256,10 @@ export function coverKey(game) {
 }
 
 /**
- * URL de una portada en el servidor de libretro (para ver las candidatas).
- * @param {string} libretroSystem  p. ej. "Sony - PlayStation 2"
- * @param {string} name            nombre sin ".png"
- * @param {string} [folder]        Named_Boxarts (portada), Named_Snaps (captura) o Named_Titles
+ * The URL of a cover on libretro's server (to see the candidates).
+ * @param {string} libretroSystem  e.g. "Sony - PlayStation 2"
+ * @param {string} name            the name without ".png"
+ * @param {string} [folder]        Named_Boxarts (cover), Named_Snaps (screenshot) or Named_Titles
  */
 export function remoteCoverUrl(libretroSystem, name, folder = 'Named_Boxarts') {
   return `${THUMBNAILS_SERVER}/${encodeURIComponent(libretroSystem)}/${folder}/${encodeURIComponent(name)}.png`

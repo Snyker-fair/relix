@@ -1,5 +1,5 @@
 {
-  "_": "Datos de prueba en inglés: la demo en el navegador traduce las descripciones y los géneros de los gamelists cuando Relix está en inglés. Con tu USB, Relix muestra lo que dejó ES-DE.",
+  "_": "English test data: the browser demo translates the gamelists' descriptions and genres when Relix is in English. With your USB drive, Relix shows what ES-DE left.",
   "genres": {
     "Plataformas": "Platform",
     "Acción": "Action",

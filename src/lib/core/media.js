@@ -1,22 +1,22 @@
 /**
- * Imágenes y videos de cada juego, más allá de la portada. Están en
- * ES-DE/downloaded_media/<consola>/<tipo>/, con el mismo nombre que el juego:
- * los deja ES-DE al escrapear en el PC, y Relix suma capturas de libretro.
+ * Each game's images and videos, beyond the cover. They're in
+ * ES-DE/downloaded_media/<console>/<type>/, with the same name as the game:
+ * ES-DE leaves them when scraping on the PC, and Relix adds screenshots from libretro.
  *
- *   fondo: el fanart; si no hay, una captura; si no, la pantalla de título
- *   logo:  marquees (ES-DE guarda ahí el logo del juego, con transparencia)
- *   video: videos (vista previa en el panel del juego)
+ *   background: the fan art; if there's none, a screenshot; otherwise, the title screen
+ *   logo:       marquees (ES-DE keeps the game's logo there, with transparency)
+ *   video:      videos (the preview in the game panel)
  */
 
-/** Carpetas que se le piden al shell (las portadas van aparte: covers) */
+/** Folders the shell is asked for (covers go separately: covers) */
 export const MEDIA_LISTED = ['screenshots', 'titlescreens', 'fanart', 'marquees', 'videos']
 
-/** Para el fondo, en orden de preferencia */
+/** For the background, in order of preference */
 export const BACKGROUND_TYPES = ['fanart', 'screenshots', 'titlescreens']
 
 /**
- * @typedef {Record<string, string[]>} MediaFiles  tipo -> archivos con extensión ("Okami (USA).png")
- * @typedef {Map<string, Map<string, string>>} MediaIndex  tipo -> (clave en minúsculas -> archivo)
+ * @typedef {Record<string, string[]>} MediaFiles  type -> files with their extension ("Okami (USA).png")
+ * @typedef {Map<string, Map<string, string>>} MediaIndex  type -> (lowercase key -> file)
  * @typedef {{ type: string, file: string }} MediaPick
  * @typedef {{ background: MediaPick | null, logo: MediaPick | null, video: MediaPick | null }} GameMedia
  */
@@ -25,7 +25,7 @@ export const BACKGROUND_TYPES = ['fanart', 'screenshots', 'titlescreens']
 export const fileKey = (file) => file.replace(/\.[^./]+$/, '').toLowerCase()
 
 /**
- * Ordena los archivos de una consola para buscarlos por juego.
+ * Sorts a console's files to look them up by game.
  * @param {MediaFiles | undefined} files
  * @returns {MediaIndex}
  */
@@ -39,8 +39,8 @@ export function indexMedia(files) {
 }
 
 /**
- * Qué fondo, logo y video tiene un juego.
- * @param {string} key  coverKey del juego (ruta sin extensión), en cualquier mayúscula
+ * Which background, logo and video a game has.
+ * @param {string} key  the game's coverKey (its path without the extension), in any case
  * @param {MediaIndex} index
  * @returns {GameMedia}
  */
@@ -60,7 +60,7 @@ export function pickMedia(key, index) {
 }
 
 /**
- * ¿Ya tiene fondo? (fanart, captura o pantalla de título)
+ * Does it already have a background? (fan art, screenshot or title screen)
  * @param {string} key @param {MediaIndex} index
  */
 export function hasBackground(key, index) {

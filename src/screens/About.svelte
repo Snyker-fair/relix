@@ -1,8 +1,8 @@
 <script>
   /**
-   * Opciones › Acerca de: qué emuladores tiene la consola, cuánto has jugado,
-   * un resumen de la biblioteca y dónde guarda Relix las cosas en el USB.
-   * Es solo para leer: no hay nada que enfocar.
+   * Options › About: which emulators the console has, how much you've played,
+   * a summary of the library and where Relix keeps things on the USB drive.
+   * It's read-only: there's nothing to focus.
    */
   import { getPlatform, PLATFORMS } from '../lib/core/platforms.js'
   import { mostPlayed, totalSeconds } from '../lib/core/userData.js'
@@ -16,7 +16,7 @@
   /** "E:\roms" -> "E:" */
   const drive = $derived(library.romRoot.replace(/[\\/]+roms[\\/]*$/i, '') || 'E:')
 
-  // Los nombres de archivos y carpetas del USB son los mismos en cualquier idioma
+  // The names of files and folders on the USB drive are the same in any language
   const paths = $derived([
     { label: t('Juegos'), path: `${library.romRoot}\\${t('<consola>')}` },
     { label: t('Portadas'), path: `${drive}\\ES-DE\\downloaded_media` },
@@ -27,7 +27,7 @@
     { label: t('Caché'), path: `${drive}\\relix\\cache ${t('(se puede borrar)')}` },
   ])
 
-  /** Solo cuentan los juegos que siguen en el USB */
+  /** Only the games still on the USB drive count */
   const inLibrary = (/** @type {string} */ id) => library.byId.has(id)
   const total = $derived(totalSeconds(library.playtime, inLibrary))
   const plays = $derived(
@@ -53,7 +53,7 @@
     ]
   })
 
-  /** Cómo va el respaldo en el USB */
+  /** How the backup on the USB drive is doing */
   const saveState = $derived.by(() => {
     if (userData.status === 'error') return { tone: 'bad', text: t('No se pudo guardar') }
     if (userData.status === 'off') return { tone: 'muted', text: t('Solo en la app') }
@@ -65,8 +65,8 @@
   })
 
   /**
-   * Cada app de emulador una vez (RetroArch cubre muchas consolas), con lo
-   * que la Xbox dice que tiene instalado.
+   * Each emulator app once (RetroArch covers many consoles), with what
+   * the Xbox says it has installed.
    */
   const apps = $derived.by(() => {
     /** @type {Map<string, { protocol: string, name: string, installed: boolean | null }>} */
@@ -167,7 +167,7 @@
     grid-template-columns: 1fr 1fr;
     gap: 24px;
   }
-  /* todo cabe entre el encabezado y la barra de pistas (170 a 960 px) */
+  /* everything fits between the header and the hint bar (170 to 960 px) */
   .column {
     display: flex;
     flex-direction: column;
@@ -201,7 +201,7 @@
     text-overflow: ellipsis;
   }
 
-  /* ── Emuladores en la consola ─── */
+  /* ── Emulators on the console ─── */
   .apps {
     display: flex;
     flex-wrap: wrap;
@@ -245,7 +245,7 @@
     color: var(--ink);
   }
 
-  /* ── Tiempo de juego ──────────── */
+  /* ── Playtime ─────────────────── */
   .total {
     display: flex;
     align-items: baseline;
@@ -304,7 +304,7 @@
     color: var(--ink-soft);
   }
 
-  /* ── Tu biblioteca ────────────── */
+  /* ── Your library ─────────────── */
   .stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -330,7 +330,7 @@
     color: var(--ink-soft);
   }
 
-  /* ── En tu USB ────────────────── */
+  /* ── On your USB drive ────────── */
   .head {
     display: flex;
     align-items: baseline;

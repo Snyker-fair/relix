@@ -1,10 +1,10 @@
 <script>
   /**
-   * Elegir portada a mano: para los juegos cuyo nombre no permitió encontrar
-   * una portada segura (apodos como "GT4", nombres cortos como "Persona 4"),
-   * o para cambiar la de un juego desde su menú (Y).
-   * Muestra las candidatas más parecidas de libretro; A guarda la elegida,
-   * X deja la portada de color y LB/RB pasan al juego anterior o siguiente.
+   * Picking a cover by hand: for the games whose name didn't lead to a safe
+   * cover (nicknames like "GT4", short names like "Persona 4"),
+   * or to change a game's cover from its menu (Y).
+   * It shows libretro's closest candidates; A saves the chosen one,
+   * X keeps the color cover and LB/RB move to the previous or next game.
    */
   import { untrack } from 'svelte'
   import { getPlatform } from '../lib/core/platforms.js'
@@ -21,25 +21,25 @@
   import { t } from '../lib/i18n/i18n.svelte.js'
 
   /**
-   * gameId: cambiar la portada de un solo juego (desde el menú Y), aunque ya tenga
+   * gameId: change the cover of a single game (from the Y menu), even if it has one
    * @type {{ onBack: () => void, onToast: (message: string) => void, gameId?: string }}
    */
   let { onBack, onToast, gameId } = $props()
 
   const COLUMNS = 3
-  /** Espacio de cada candidata (la caja entra entera, con la forma de su consola) */
+  /** Each candidate's space (the whole box fits, with its console's shape) */
   const BOX_W = 240
   const BOX_H = 260
 
   let gameIndex = $state(0)
   let focus = $state(0)
-  /** null mientras se buscan las candidatas */
+  /** null while the candidates are being looked for */
   /** @type {import('../lib/ui/covers.svelte.js').PickerCandidate[] | null} */
   let candidates = $state(null)
   let loadError = $state('')
-  /** Candidata que se está guardando (-1 = ninguna) */
+  /** The candidate being saved (-1 = none) */
   let saving = $state(-1)
-  /** Imágenes que no cargaron */
+  /** Images that didn't load */
   /** @type {string[]} */
   let broken = $state([])
 
@@ -52,8 +52,8 @@
   const platform = $derived(game ? getPlatform(game.system) : null)
   const fileName = $derived(game?.path.split('/').pop() ?? '')
 
-  // Al cambiar de juego, buscar sus candidatas (por id: la biblioteca se
-  // rearma al guardar portadas y no hay que buscar de nuevo por eso)
+  // When the game changes, look for its candidates (by id: the library
+  // rebuilds when covers are saved, and that's no reason to search again)
   $effect(() => {
     if (!currentId) return
     const current = untrack(() => game)
@@ -73,7 +73,7 @@
     return () => (cancelled = true)
   })
 
-  /** Tamaño de la caja de una candidata, según la forma de su consola */
+  /** The size of a candidate's box, according to its console's shape */
   const box = $derived.by(() => {
     const aspect = platform?.coverAspect ?? 0.71
     return BOX_W / BOX_H > aspect
@@ -107,7 +107,7 @@
       sound.favorite()
       onToast(t('Portada guardada: {game}', { game: current.name }))
       if (single) onBack()
-      // Si no, el juego sale de la lista: el que sigue queda en la misma posición
+      // Otherwise, the game leaves the list: the next one stays in the same position
     } catch (e) {
       sound.error()
       onToast(e instanceof Error ? e.message : t('No se pudo guardar la portada.'))
@@ -118,7 +118,7 @@
 
   async function skip() {
     if (!game || saving >= 0) return
-    const current = game // al saltarlo sale de la lista
+    const current = game // when skipped it leaves the list
     try {
       await covers.useColor(current)
       sound.back()
@@ -311,7 +311,7 @@
     font-size: 22px;
   }
 
-  /* ── Juego ───────────────────────────── */
+  /* ── Game ────────────────────────────── */
   .detail {
     position: absolute;
     left: 112px;
@@ -373,7 +373,7 @@
     color: var(--ink-soft);
   }
 
-  /* ── Candidatas ──────────────────────── */
+  /* ── Candidates ──────────────────────── */
   .choices {
     position: absolute;
     left: 776px;
@@ -491,7 +491,7 @@
     animation: spin 700ms linear infinite;
   }
 
-  /* ── Terminado ───────────────────────── */
+  /* ── Finished ────────────────────────── */
   .done {
     position: absolute;
     left: 112px;

@@ -1,5 +1,5 @@
 /**
- * Preferencias del jugador, guardadas en el almacenamiento de la app.
+ * The player's preferences, saved in the app's storage.
  */
 import { REGION_PREFERENCES } from '../core/coverMatch.js'
 import { LANGUAGES } from '../core/language.js'
@@ -11,7 +11,7 @@ import { load, onReplaced, save } from './storage.js'
 
 const KEY = 'settings'
 
-/** Minutos sin tocar el control antes del protector de pantalla (0 = nunca) */
+/** Minutes without touching the controller before the screensaver (0 = never) */
 export const SCREENSAVER_CHOICES = [3, 5, 10, 0]
 
 /** @typedef {import('../core/coverMatch.js').RegionPreference} RegionPreference */
@@ -20,31 +20,31 @@ const REGIONS = /** @type {RegionPreference[]} */ (Object.keys(REGION_PREFERENCE
 const SORTS = /** @type {SortOrder[]} */ (Object.keys(SORT_NAMES))
 
 class Settings {
-  /** Mostrar en el inicio las consolas sin juegos */
+  /** Show the consoles without games on the home screen */
   showEmptyConsoles = $state(false)
-  /** Sonidos de la interfaz */
+  /** Interface sounds */
   sounds = $state(true)
-  /** Región de las portadas cuando el archivo no dice la suya */
+  /** The covers' region when the file doesn't say its own */
   /** @type {RegionPreference} */
   coverRegion = $state('usa')
-  /** Orden de la biblioteca (se cambia desde el menú del juego) */
+  /** The library's order (changed from the game menu) */
   /** @type {SortOrder} */
   sortOrder = $state('az')
-  /** Claro, Oscuro o Automático (oscuro de noche) */
+  /** Light, Dark or Automatic (dark at night) */
   /** @type {import('../core/theme.js').ThemeChoice} */
   theme = $state('light')
   /**
-   * Automático (el de la Xbox), Español o English. Lo guarda i18n, que no
-   * depende de nada más, así cualquier módulo puede traducir.
+   * Automatic (the Xbox's), Español or English. i18n keeps it, which doesn't
+   * depend on anything else, so any module can translate.
    */
   get language() {
     return i18n.choice
   }
-  /** Ya pasó (o saltó) el recorrido de bienvenida */
+  /** The welcome tour is already done (or skipped) */
   onboarded = $state(false)
-  /** Los videos de vista previa suenan (por defecto, sin sonido) */
+  /** The preview videos have sound (muted by default) */
   videoSound = $state(false)
-  /** Minutos para el protector de pantalla (0 = nunca) */
+  /** Minutes for the screensaver (0 = never) */
   screensaverMinutes = $state(5)
 
   constructor() {
@@ -77,14 +77,14 @@ class Settings {
     this.#save()
   }
 
-  /** EE. UU. -> Europa -> Japón -> EE. UU. */
+  /** USA -> Europe -> Japan -> USA */
   cycleCoverRegion() {
     this.coverRegion = REGIONS[(REGIONS.indexOf(this.coverRegion) + 1) % REGIONS.length]
     this.#save()
   }
 
   /**
-   * Pasa al orden siguiente entre los disponibles (Año solo si hay años).
+   * Moves to the next order among the available ones (Year only if there are years).
    * @param {SortOrder[]} available
    */
   cycleSortOrder(available = SORTS) {
@@ -98,34 +98,34 @@ class Settings {
     this.#save()
   }
 
-  /** 3 -> 5 -> 10 -> nunca -> 3 */
+  /** 3 -> 5 -> 10 -> never -> 3 */
   cycleScreensaver() {
     const i = SCREENSAVER_CHOICES.indexOf(this.screensaverMinutes)
     this.screensaverMinutes = SCREENSAVER_CHOICES[(i + 1) % SCREENSAVER_CHOICES.length]
     this.#save()
   }
 
-  /** Claro -> Oscuro -> Automático -> Claro */
+  /** Light -> Dark -> Automatic -> Light */
   cycleTheme() {
     this.theme = THEMES[(THEMES.indexOf(this.theme) + 1) % THEMES.length]
     this.#save()
   }
 
-  /** Automático -> Español -> English -> Automático */
+  /** Automatic -> Español -> English -> Automatic */
   cycleLanguage() {
     i18n.choice = LANGUAGES[(LANGUAGES.indexOf(i18n.choice) + 1) % LANGUAGES.length]
     this.#save()
   }
 
   /**
-   * El otro idioma, el que no se ve (Primeros pasos: Y cambia entre español e inglés).
+   * The other language, the one not shown (Getting started: Y switches between Spanish and English).
    */
   switchLanguage() {
     i18n.choice = i18n.current === 'es' ? 'en' : 'es'
     this.#save()
   }
 
-  /** Terminó o saltó el recorrido de bienvenida */
+  /** Finished or skipped the welcome tour */
   markOnboarded() {
     if (this.onboarded) return
     this.onboarded = true

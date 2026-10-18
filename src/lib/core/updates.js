@@ -1,23 +1,23 @@
 /**
- * Aviso de versión nueva: Relix le pregunta a GitHub cuál es el último release
- * y lo compara con la versión que corre. Aquí está la parte pura (comparar
- * versiones y armar el aviso); la consulta está en ui/updates.svelte.js.
+ * The new-version notice: Relix asks GitHub which release is the latest
+ * and compares it with the version that's running. Here is the pure part
+ * (comparing versions and building the notice); the request is in ui/updates.svelte.js.
  */
 import { t } from '../i18n/i18n.svelte.js'
 
-/** El último release publicado (sin borradores ni versiones de prueba) */
+/** The latest published release (without drafts or prereleases) */
 export const RELEASES_API = 'https://api.github.com/repos/Snyker-fair/relix/releases/latest'
-/** Dónde se descarga: la página del último release */
+/** Where it's downloaded from: the latest release's page */
 export const RELEASES_URL = 'https://github.com/Snyker-fair/relix/releases/latest'
-/** Cómo se escribe corto en pantalla */
+/** How it's written short on screen */
 export const RELEASES_LABEL = 'github.com/Snyker-fair/relix/releases'
 
-/** Se consulta como mucho una vez al día (GitHub limita las consultas sin cuenta) */
+/** It's checked once a day at most (GitHub limits requests without an account) */
 export const CHECK_EVERY_MS = 24 * 60 * 60 * 1000
 
 /**
  * "v1.2.3" -> { numbers: [1, 2, 3], pre: '' }; "1.0.0-beta.2" -> pre "beta.2".
- * null si no es una versión.
+ * null if it isn't a version.
  * @param {string} text
  */
 export function parseVersion(text) {
@@ -27,9 +27,9 @@ export function parseVersion(text) {
 }
 
 /**
- * Negativo si a es anterior a b, positivo si es posterior, 0 si son la misma.
- * Una versión de prueba (1.0.0-beta) va antes que la final (1.0.0).
- * Lo que no es una versión cuenta como la más vieja.
+ * Negative if a is before b, positive if it's after, 0 if they're the same.
+ * A prerelease (1.0.0-beta) goes before the final one (1.0.0).
+ * Whatever isn't a version counts as the oldest.
  * @param {string} a @param {string} b
  */
 export function compareVersions(a, b) {
@@ -46,16 +46,16 @@ export function compareVersions(a, b) {
 }
 
 /**
- * ¿Hay una versión más nueva que la que corre?
- * @param {string | null | undefined} latest   la del último release ("v1.0.1")
- * @param {string} current                     la de Relix ("1.0.0")
+ * Is there a version newer than the one running?
+ * @param {string | null | undefined} latest   the latest release's ("v1.0.1")
+ * @param {string} current                     Relix's ("1.0.0")
  */
 export function isNewer(latest, current) {
   return Boolean(latest) && parseVersion(current) !== null && compareVersions(String(latest), current) > 0
 }
 
 /**
- * Lo que importa de la respuesta de GitHub. null si no sirve (sin etiqueta, borrador…).
+ * What matters in GitHub's answer. null if it's no use (no tag, a draft…).
  * @param {any} release  /repos/{owner}/{repo}/releases/latest
  * @returns {{ version: string, url: string, publishedAt: string } | null}
  */
@@ -71,7 +71,7 @@ export function readRelease(release) {
 }
 
 /**
- * La fila de Opciones › Revisión cuando hay una versión nueva (null si no la hay).
+ * The Options › Checkup row when there's a new version (null if there isn't).
  * @param {{ version: string } | null} latest
  * @param {string} current
  * @returns {import('./systemCheck.js').Check | null}

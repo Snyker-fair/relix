@@ -1,13 +1,13 @@
 <script module>
-  /** Lo último que se buscó: si vas a otra pantalla y vuelves, sigue ahí */
+  /** The last search: if you go to another screen and come back, it's still there */
   let lastQuery = ''
 </script>
 
 <script>
   /**
-   * Búsqueda en todas las consolas, con el teclado en pantalla.
-   * A la izquierda el teclado; a la derecha los resultados, que cambian con
-   * cada letra. Desde el borde derecho del teclado se pasa a los resultados.
+   * Search across every console, with the on-screen keyboard.
+   * The keyboard on the left; on the right the results, which change with
+   * each letter. From the keyboard's right edge you move to the results.
    */
   import { getPlatform } from '../lib/core/platforms.js'
   import { searchGames } from '../lib/core/search.js'
@@ -35,10 +35,10 @@
 
   const COLUMNS = 5
   const COVER_W = 178
-  const ROW_H = Math.round(COVER_W / TILE_ASPECT) + 36 + 44 // portada + nombre + separación
+  const ROW_H = Math.round(COVER_W / TILE_ASPECT) + 36 + 44 // cover + name + gap
 
   let query = $state(lastQuery)
-  /** 'keys' (teclado) o 'results' */
+  /** 'keys' (keyboard) or 'results' */
   let zone = $state('keys')
   let index = $state(0)
   let scrollRow = $state(0)
@@ -52,7 +52,7 @@
   const searching = $derived(query.trim().length > 0)
   const results = $derived(searching ? searchGames(library.all, query, { limit: 60 }) : library.recent)
 
-  // Si cambian los resultados, el foco no puede quedar fuera de la lista
+  // If the results change, the focus can't stay outside the list
   $effect(() => {
     if (index >= results.length) index = Math.max(0, results.length - 1)
     if (results.length === 0 && zone === 'results') zone = 'keys'
@@ -212,7 +212,7 @@
     font-size: 28px;
   }
 
-  /* ── Teclado ─────────────────────────── */
+  /* ── Keyboard ────────────────────────── */
   .panel {
     position: absolute;
     left: 112px;
@@ -224,7 +224,7 @@
     background: var(--cloud);
     box-shadow: 0 30px 60px -40px rgb(var(--shadow) / 0.5);
   }
-  /* el campo es blanco con borde: no se confunde con las teclas celestes */
+  /* the field is white with a border: it doesn't get mixed up with the light blue keys */
   .field {
     display: flex;
     align-items: center;
@@ -272,7 +272,7 @@
     color: var(--ink-soft);
   }
 
-  /* ── Resultados ──────────────────────── */
+  /* ── Results ─────────────────────────── */
   .results {
     position: absolute;
     left: 776px;
@@ -287,8 +287,8 @@
     font-size: 38px;
     line-height: 1.1;
   }
-  /* "Nada con…" bajo el título de resultados. Ojo: no llamarla .empty, que es
-     la clase del campo vacío y le quitaba el espacio sobre el teclado */
+  /* "Nothing with…" under the results title. Careful: don't call it .empty, that's
+     the empty field's class and it took away the space above the keyboard */
   .no-results {
     margin: 14px 0 0;
     max-width: 820px;
@@ -296,7 +296,7 @@
     line-height: 1.45;
     color: var(--ink-soft);
   }
-  /* el aro del resultado enfocado no toca el título: 44 px libres arriba */
+  /* the focused result's ring doesn't touch the title: 44 px free above */
   .grid-window {
     position: absolute;
     top: 48px;

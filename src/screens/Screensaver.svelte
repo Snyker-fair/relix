@@ -1,14 +1,14 @@
 <script>
   /**
-   * Protector de pantalla: después de unos minutos sin tocar el control
-   * (Opciones › Preferencias), tus juegos uno tras otro, con un paneo lento.
+   * The screensaver: after a few minutes without touching the controller
+   * (Options › Preferences), your games one after another, with a slow pan.
    *
-   *   - fanart: a pantalla completa
-   *   - captura o pantalla de título: enmarcada, sobre ella misma difuminada
-   *     (suelen ser chicas y a pantalla completa se verían borrosas)
-   *   - sin fondos: las portadas; sin portadas, solo se oscurece
+   *   - fan art: full screen
+   *   - a screenshot or title screen: framed, over a blurred copy of itself
+   *     (they're usually small and would look blurry full screen)
+   *   - without backgrounds: the covers; without covers, it only dims
    *
-   *   A  jugar el que se ve        cualquier otro botón  volver
+   *   A  play the one on screen        any other button  back
    */
   import { untrack } from 'svelte'
   import { fade } from 'svelte/transition'
@@ -25,7 +25,7 @@
   /** @type {{ onPlay: (game: any) => void, onClose: () => void }} */
   let { onPlay, onClose } = $props()
 
-  /** Cuánto queda cada juego en pantalla */
+  /** How long each game stays on screen */
   const SLIDE_MS = 9000
 
   /** @template T @param {T[]} list */
@@ -38,7 +38,7 @@
     return copy
   }
 
-  // Se arma una vez, al aparecer
+  // It's put together once, when it appears
   const pool = untrack(() => {
     const withBackground = library.all.filter((g) => usableMedia(g.background))
     if (withBackground.length > 0) return { mode: 'background', games: shuffle(withBackground) }
@@ -58,7 +58,7 @@
     return () => clearInterval(timer)
   })
 
-  // La imagen siguiente se pide antes, para que entre sin saltos
+  // The next image is requested in advance, so it comes in without jumps
   $effect(() => {
     const next = pool.games[(index + 1) % Math.max(1, pool.games.length)]
     const src = next && (pool.mode === 'background' ? next.background : next.cover)
@@ -76,8 +76,8 @@
 <div class="saver" role="presentation" onclick={onClose} transition:fade={{ duration: 500 }}>
   {#if game && platform && pool.mode !== 'dim'}
     {#key index}
-      <!-- La nueva entra debajo de la anterior, que se desvanece encima: un
-           fundido limpio, sin pasar por negro -->
+      <!-- The new one comes in under the previous one, which fades on top: a
+           clean crossfade, without going through black -->
       <div class="slide" out:fade={{ duration: 1400 }}>
         {#if pool.mode === 'background'}
           {#if full}
@@ -126,14 +126,14 @@
     z-index: 40;
     overflow: hidden;
     background: #10151f;
-    color: #ffffff; /* siempre oscuro: no sigue el tema */
+    color: #ffffff; /* always dark: it doesn't follow the theme */
     cursor: none;
   }
   .slide {
     position: absolute;
     inset: 0;
   }
-  /* paneo lento (efecto Ken Burns); los impares van al revés */
+  /* slow pan (Ken Burns effect); the odd ones go the other way */
   .pan {
     position: absolute;
     inset: 0;
@@ -161,7 +161,7 @@
       transform: scale(1.04) translate(-1.2%, 0.6%);
     }
   }
-  /* la misma imagen, chica, agrandada y muy difuminada: de fondo */
+  /* the same image, small, enlarged and heavily blurred: as the background */
   .wash {
     position: absolute;
     left: -30px;
@@ -176,7 +176,7 @@
   .frame {
     position: absolute;
     right: 112px;
-    top: 170px; /* debajo del reloj */
+    top: 170px; /* below the clock */
     width: 1040px;
     height: 780px;
     overflow: hidden;
@@ -293,6 +293,6 @@
     opacity: 0.5;
   }
   .dim :global(.word) {
-    color: #ffffff; /* siempre oscuro: no sigue el tema */
+    color: #ffffff; /* always dark: it doesn't follow the theme */
   }
 </style>

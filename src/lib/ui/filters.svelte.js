@@ -1,8 +1,8 @@
 /**
- * Filtro activo de cada canal (Y › Filtrar). Dura lo que dura la sesión:
- * al abrir Relix de nuevo, cada consola muestra todos sus juegos.
+ * Each channel's active filter (Y › Filter). It lasts for the session:
+ * when Relix opens again, each console shows all its games.
  */
 import { SvelteMap } from 'svelte/reactivity'
 
-/** @type {SvelteMap<string, import('../core/filters.js').GameFilter>} canal -> filtro */
+/** @type {SvelteMap<string, import('../core/filters.js').GameFilter>} channel -> filter */
 export const activeFilters = new SvelteMap()

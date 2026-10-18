@@ -1,6 +1,6 @@
 /**
- * Versión de Relix (la de package.json) y fecha de compilación.
- * Vite las reemplaza al compilar (ver `define` en vite.config.js).
+ * Relix's version (the one in package.json) and build date.
+ * Vite replaces them when building (see `define` in vite.config.js).
  */
 
 /* global __APP_VERSION__, __BUILD_DATE__ */

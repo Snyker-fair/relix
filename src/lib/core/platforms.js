@@ -1,17 +1,17 @@
 /**
- * Configuración de cada consola.
+ * Each console's configuration.
  *
- * `id` usa los mismos nombres de sistema que ES-DE (psx, snes, megadrive...),
- * así las carpetas `gamelists/<id>` y `downloaded_media/<id>` calzan solas.
+ * `id` uses the same system names as ES-DE (psx, snes, megadrive...),
+ * so the `gamelists/<id>` and `downloaded_media/<id>` folders match by themselves.
  *
- * `emulators` son los emuladores con que se puede abrir; el primero es el
- * recomendado. Cada uno dice cómo se abre en Xbox:
- *   - kind 'retroarch'  -> protocolo `retroarch:` + núcleo libretro (.dll)
- *   - kind 'standalone' -> protocolo propio del emulador + su .exe
- * Los protocolos de los standalone son los mismos que usa RetroPass
- * (UrlSchemeGenerator.cs), otro frontend para Xbox que ya los abre.
+ * `emulators` are the emulators it can be opened with; the first one is the
+ * recommended one. Each says how it's opened on Xbox:
+ *   - kind 'retroarch'  -> the `retroarch:` protocol + a libretro core (.dll)
+ *   - kind 'standalone' -> the emulator's own protocol + its .exe
+ * The standalone protocols are the same ones RetroPass uses
+ * (UrlSchemeGenerator.cs), another Xbox frontend that already opens them.
  *
- * Sin emuladores (Wii U): Relix muestra los juegos, pero aún no los puede abrir.
+ * Without emulators (Wii U): Relix shows the games, but can't open them yet.
  *
  * @typedef {{ kind: 'retroarch', protocol: string, core: string }
  *         | { kind: 'standalone', protocol: string, exe: string }} Launcher
@@ -20,22 +20,22 @@
  * @property {string} id
  * @property {string} name        "RetroArch · SwanStation"
  * @property {Launcher} launcher
- * @property {string} [note]      advertencia corta (p. ej. "experimental")
+ * @property {string} [note]      a short warning (e.g. "experimental")
  *
  * @typedef {Object} Platform
  * @property {string} id
- * @property {string} name        Nombre visible
- * @property {string} shortName   Nombre corto para el canal
+ * @property {string} name        The visible name
+ * @property {string} shortName   A short name for the channel
  * @property {string} maker
- * @property {number} year        Año de lanzamiento de la consola
- * @property {string} color       Color del canal
- * @property {string} ink         Color de texto sobre `color`
+ * @property {number} year        The console's release year
+ * @property {string} color       The channel's color
+ * @property {string} ink         The text color on `color`
  * @property {Emulator[]} emulators
- * @property {string} [noEmulatorNote]  por qué no se puede abrir (si no hay emuladores)
- * @property {string[]} folders     Nombres aceptados para su carpeta en roms\ (el primero que exista)
- * @property {string[]} extensions  Formatos de juego que Relix lista al escanear
- * @property {string} libretro      Carpeta de la consola en libretro-thumbnails (portadas)
- * @property {number} coverAspect   Ancho / alto de su caja (PS1 es cuadrada, SNES es apaisada)
+ * @property {string} [noEmulatorNote]  why it can't be opened (if there are no emulators)
+ * @property {string[]} folders     Accepted names for its folder in roms\ (the first one that exists)
+ * @property {string[]} extensions  Game formats Relix lists when scanning
+ * @property {string} libretro      The console's folder in libretro-thumbnails (covers)
+ * @property {number} coverAspect   Width / height of its box (PS1 is square, SNES is landscape)
  */
 
 /** @param {string} id @param {string} name @param {string} core @param {string} [note] */
@@ -55,7 +55,7 @@ const standalone = (id, name, protocol, exe, note) => ({
 })
 
 /**
- * En el orden del inicio: por marca y, dentro de cada una, por año.
+ * In home screen order: by maker and, within each, by year.
  * @type {Platform[]}
  */
 export const PLATFORMS = [
@@ -173,8 +173,8 @@ export const PLATFORMS = [
     ink: '#1E0C52',
     emulators: [
       retroarch('dolphin-ra', 'Dolphin', 'dolphin_libretro.dll'),
-      // El Dolphin standalone tiene roto el lanzamiento desde frontends en su
-      // última versión; DevStore recomienda el núcleo de RetroArch para esto.
+      // The standalone Dolphin has launching from frontends broken in its
+      // latest version; DevStore recommends the RetroArch core for this.
       standalone('dolphin', 'Dolphin', 'dolphin', 'dolphin.exe', 'su última versión no abre juegos desde otras apps'),
     ],
     folders: ['gc', 'gamecube', 'ngc'],
@@ -207,7 +207,7 @@ export const PLATFORMS = [
     color: '#5468E8',
     ink: '#0B1240',
     emulators: [
-      // "RetroArch 3DS" en DevStore; RetroPass lo abre con el protocolo citrara:
+      // "RetroArch 3DS" on DevStore; RetroPass opens it with the citrara: protocol
       standalone('citrara', 'RetroArch 3DS', 'citrara', 'citrara.exe', 'experimental'),
       standalone('panda3ds', 'Panda3DS', 'panda', 'Alber.exe', 'experimental'),
     ],
@@ -283,7 +283,7 @@ export function getEmulator(platform, id) {
   return platform.emulators.find((e) => e.id === id) ?? null
 }
 
-/** Para mostrar: "retroarch: · swanstation_libretro.dll" @param {Launcher} launcher */
+/** For display: "retroarch: · swanstation_libretro.dll" @param {Launcher} launcher */
 export function launcherDetail(launcher) {
   return `${launcher.protocol}: · ${launcher.kind === 'retroarch' ? launcher.core : launcher.exe}`
 }

@@ -1,8 +1,8 @@
 /**
- * Aviso de versión nueva. Al abrir (y al revisar de nuevo en Opciones ›
- * Revisión) pregunta a GitHub por el último release, como mucho una vez al día.
- * Lo último que respondió queda guardado, así el aviso aparece aunque la Xbox
- * abra sin internet. En la demo del navegador no consulta.
+ * The new-version notice. When Relix opens (and when checking again in Options ›
+ * Checkup) it asks GitHub for the latest release, once a day at most.
+ * The last answer stays saved, so the notice shows even if the Xbox
+ * opens without internet. The browser demo doesn't ask.
  */
 import { mode } from '../core/bridge.js'
 import { CHECK_EVERY_MS, isNewer, readRelease, RELEASES_API } from '../core/updates.js'
@@ -13,19 +13,19 @@ const KEY = 'updateCheck'
 const NOTIFIED_KEY = 'updateNotified'
 
 class Updates {
-  /** El último release que respondió GitHub */
+  /** The latest release GitHub answered with */
   /** @type {{ version: string, url: string, publishedAt: string } | null} */
   latest = $state(load(KEY, null)?.latest ?? null)
-  /** Cuándo se consultó por última vez (ms) */
+  /** When it was last asked (ms) */
   checkedAt = $state(load(KEY, null)?.at ?? 0)
   checking = $state(false)
-  /** ¿Hay una versión más nueva que la que corre? */
+  /** Is there a version newer than the one running? */
   available = $derived(this.latest !== null && isNewer(this.latest.version, VERSION))
 
   /**
-   * Pregunta a GitHub, salvo que se haya hecho hace menos de un día.
-   * Nunca falla: sin internet o sin respuesta, queda lo que ya se sabía.
-   * @param {{ force?: boolean }} [options]  force: aunque se haya consultado hoy
+   * Asks GitHub, unless it was done less than a day ago.
+   * It never fails: without internet or an answer, what was already known stays.
+   * @param {{ force?: boolean }} [options]  force: even if it was asked today
    */
   async check({ force = false } = {}) {
     if (mode !== 'xbox' || this.checking) return
@@ -38,7 +38,7 @@ class Updates {
         headers: { Accept: 'application/vnd.github+json' },
         signal: controller.signal,
       })
-      // 404: todavía no hay releases. Se cuenta como consultado.
+      // 404: there are no releases yet. It counts as asked.
       const latest = response.ok ? readRelease(await response.json()) : null
       if (response.ok || response.status === 404) {
         this.latest = latest
@@ -46,7 +46,7 @@ class Updates {
         save(KEY, { at: this.checkedAt, latest })
       }
     } catch {
-      // sin internet: se vuelve a intentar la próxima vez
+      // no internet: it tries again next time
     } finally {
       clearTimeout(timer)
       this.checking = false
@@ -54,8 +54,8 @@ class Updates {
   }
 
   /**
-   * La versión nueva de la que todavía no se avisó (null si no hay o ya se avisó).
-   * Al leerla queda marcada: el aviso sale una vez por versión.
+   * The new version that hasn't been announced yet (null if there's none or it already was).
+   * Reading it marks it: the notice shows once per version.
    */
   takeNotice() {
     if (!this.available || !this.latest) return null

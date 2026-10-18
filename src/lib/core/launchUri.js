@@ -1,25 +1,25 @@
 /**
- * Construye la URI con la que Xbox abre un emulador y le pasa el juego.
+ * Builds the URI the Xbox opens an emulator with, passing it the game.
  *
- * Formato (el mismo que usan los frontends existentes, p. ej. RetroPass):
+ * Format (the same existing frontends use, e.g. RetroPass):
  *
- *   RetroArch:   retroarch:?cmd=retroarch -L cores\<nucleo>.dll "<ruta>"&launchOnExit=<app>:
- *   Standalone:  <protocolo>:?cmd=<exe> "<ruta>"&launchOnExit=<app>:
+ *   RetroArch:   retroarch:?cmd=retroarch -L cores\<core>.dll "<path>"&launchOnExit=<app>:
+ *   Standalone:  <protocol>:?cmd=<exe> "<path>"&launchOnExit=<app>:
  *
- * - La ruta del juego va escapada (equivalente a Uri.EscapeDataString de .NET).
- * - `launchOnExit` es el protocolo de NUESTRA app: al cerrar el emulador,
- *   Xbox vuelve automáticamente a Relix.
- * - El resto de la cadena se deja tal cual; el shell en C# hace `new Uri(...)`
- *   y `Launcher.LaunchUriAsync`, que se encarga de los espacios.
+ * - The game's path is escaped (equivalent to .NET's Uri.EscapeDataString).
+ * - `launchOnExit` is OUR app's protocol: when the emulator closes,
+ *   the Xbox goes back to Relix automatically.
+ * - The rest of the string is left as is; the C# shell does `new Uri(...)`
+ *   and `Launcher.LaunchUriAsync`, which takes care of the spaces.
  */
 import { t } from '../i18n/i18n.svelte.js'
 
 export const APP_PROTOCOL = 'relix'
 
 /**
- * Igual que Uri.EscapeDataString (RFC 3986): solo deja sin escapar
- * letras, números y - _ . ~
- * encodeURIComponent deja además ! ' ( ) * así que los escapamos a mano.
+ * The same as Uri.EscapeDataString (RFC 3986): it only leaves letters,
+ * digits and - _ . ~ unescaped.
+ * encodeURIComponent also leaves ! ' ( ) * so we escape them by hand.
  * @param {string} value
  */
 export function escapeDataString(value) {
@@ -31,7 +31,7 @@ export function escapeDataString(value) {
 
 /**
  * @param {import('./platforms.js').Launcher|null} launcher
- * @param {string} romPath  Ruta absoluta del juego en la consola, p. ej. E:\roms\ps2\Okami.chd
+ * @param {string} romPath  The game's absolute path on the console, e.g. E:\roms\ps2\Okami.chd
  * @param {string} [appProtocol]
  * @returns {string}
  */

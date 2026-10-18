@@ -1,10 +1,10 @@
 <script>
   /**
-   * El registro de diagnóstico en la TV (Opciones › Revisión › Registro): las
-   * últimas entradas de E:\relix\registro.txt, la más nueva arriba. Sirve para
-   * sacarle una foto cuando algo falla, sin llevar el USB al PC.
+   * The diagnostic log on the TV (Options › Checkup › Log): the last
+   * entries of E:\relix\log.txt, the newest on top. It's there to
+   * take a photo when something fails, without taking the USB drive to the PC.
    *
-   *   ↑ ↓  recorrer    LT / RT  de a una página    B  volver
+   *   ↑ ↓  scroll    LT / RT  a page at a time    B  back
    */
   import { untrack } from 'svelte'
   import { readLog } from '../lib/core/bridge.js'
@@ -31,7 +31,7 @@
   let entries = $state([])
   let index = $state(0)
 
-  // Lo pendiente se manda antes de leer, así la lista incluye lo de recién
+  // What's pending is sent before reading, so the list includes the latest
   $effect(() => {
     untrack(() => {
       diagnostics.flush()
@@ -49,7 +49,7 @@
 
   const today = new Date()
   const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
-  /** "06:40" hoy; "16 oct 23:10" otro día @param {string} time */
+  /** "06:40" today; "16 oct 23:10" another day @param {string} time */
   function when(time) {
     if (!time) return ''
     const [day, clock] = time.split(' ')
@@ -59,8 +59,8 @@
   }
 
   /**
-   * Color de cada tipo: lo que falló en rosa, lo que hay que mirar en amarillo.
-   * En los dos idiomas: el registro puede tener líneas anotadas en cada uno.
+   * Each kind's color: what failed in pink, what needs a look in yellow.
+   * In both languages: the log can have lines written in each.
    */
   const TONES = {
     ERROR: 'bad',
@@ -79,7 +79,7 @@
     START: 'start',
   }
 
-  // Lista que se desliza: la entrada enfocada siempre a la vista
+  // A list that slides: the focused entry always in view
   let scroll = $state(0)
   /** @type {HTMLElement | undefined} */
   let list = $state()

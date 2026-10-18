@@ -1,24 +1,24 @@
 /**
- * Lectura de la biblioteca de ES-DE.
+ * Reading the ES-DE library.
  *
- * Estructura que ES-DE deja en el disco (y que copiamos al USB de la Xbox):
+ * The structure ES-DE leaves on the drive (and that we copy to the Xbox's USB drive):
  *
- *   ES-DE/gamelists/<sistema>/gamelist.xml
- *   ES-DE/downloaded_media/<sistema>/covers/<nombre-del-rom>.png|jpg
- *   ES-DE/downloaded_media/<sistema>/screenshots/...
- *   ES-DE/downloaded_media/<sistema>/fanart/...
- *   roms/<sistema>/<nombre-del-rom>.<ext>
+ *   ES-DE/gamelists/<system>/gamelist.xml
+ *   ES-DE/downloaded_media/<system>/covers/<rom-name>.png|jpg
+ *   ES-DE/downloaded_media/<system>/screenshots/...
+ *   ES-DE/downloaded_media/<system>/fanart/...
+ *   roms/<system>/<rom-name>.<ext>
  *
- * A diferencia del EmulationStation clásico, ES-DE no guarda las rutas de las
- * imágenes en el XML: se encuentran por el nombre del archivo del juego.
+ * Unlike classic EmulationStation, ES-DE doesn't keep the image paths in the
+ * XML: they're found by the game's file name.
  */
 import { t } from '../i18n/i18n.svelte.js'
 
 /**
  * @typedef {Object} Game
- * @property {string} id           Identificador estable: `<sistema>/<ruta relativa>`
+ * @property {string} id           A stable identifier: `<system>/<relative path>`
  * @property {string} system
- * @property {string} path         Ruta relativa tal como viene en el XML, sin "./"
+ * @property {string} path         The relative path as it comes in the XML, without "./"
  * @property {string} name
  * @property {string} sortName
  * @property {string} description
@@ -27,13 +27,13 @@ import { t } from '../i18n/i18n.svelte.js'
  * @property {string} publisher
  * @property {string} genre
  * @property {string} players
- * @property {number|null} rating  De 0 a 1
+ * @property {number|null} rating  From 0 to 1
  * @property {boolean} favorite
  * @property {boolean} hidden
  * @property {number} playCount
  */
 
-/** Tipos de imagen de ES-DE que usamos, en orden de preferencia para la portada. */
+/** ES-DE image types we use, in order of preference for the cover. */
 export const MEDIA_TYPES = ['covers', 'screenshots', 'titlescreens', 'fanart', 'marquees', 'miniatures']
 export const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp']
 
@@ -42,7 +42,7 @@ function text(el, tag) {
   return el.getElementsByTagName(tag)[0]?.textContent?.trim() ?? ''
 }
 
-/** "./Carpeta/Juego.chd" -> "Carpeta/Juego.chd" (normaliza separadores) */
+/** "./Folder/Game.chd" -> "Folder/Game.chd" (normalizes separators) */
 export function normalizeRelativePath(p) {
   return p.replace(/\\/g, '/').replace(/^\.\//, '')
 }
@@ -53,22 +53,22 @@ export function parseYear(releaseDate) {
   return m ? Number(m[1]) : null
 }
 
-/** El nombre de archivo sin carpeta ni extensión: "Sub/Okami (USA).chd" -> "Okami (USA)" */
+/** The file name without folder or extension: "Sub/Okami (USA).chd" -> "Okami (USA)" */
 export function fileStem(relPath) {
   const name = normalizeRelativePath(relPath).split('/').pop() ?? ''
   const dot = name.lastIndexOf('.')
   return dot > 0 ? name.slice(0, dot) : name
 }
 
-/** Archivos con nombre genérico: el nombre del juego es el de su carpeta */
+/** Files with a generic name: the game's name is its folder's */
 const GENERIC_STEMS = /^(default|disc|disco|game|track\s*0*1)$/i
 
 /**
- * De dónde sale el nombre de un juego (para mostrarlo y buscar su portada):
+ * Where a game's name comes from (to show it and find its cover):
  *   "Okami (USA).chd"                 -> "Okami (USA)"
  *   "Halo 3 (USA)/default.xex"        -> "Halo 3 (USA)"   (Xbox 360)
  *   "Shenmue (USA)/disc.gdi"          -> "Shenmue (USA)"  (Dreamcast)
- *   "Zelda [ABC]/code/zelda.rpx"      -> "Zelda [ABC]"    (Wii U en carpetas)
+ *   "Zelda [ABC]/code/zelda.rpx"      -> "Zelda [ABC]"    (Wii U in folders)
  * @param {string} relPath
  */
 export function titleStem(relPath) {
@@ -82,11 +82,11 @@ export function titleStem(relPath) {
 }
 
 /**
- * Lee un gamelist.xml de ES-DE.
+ * Reads an ES-DE gamelist.xml.
  * @param {string} xml
- * @param {string} system  id del sistema (psx, ps2...)
- * @param {{ includeHidden?: boolean }} [options]  includeHidden: devolver también
- *   los juegos ocultos (con hidden: true), para que el escaneo no los vuelva a mostrar
+ * @param {string} system  the system's id (psx, ps2...)
+ * @param {{ includeHidden?: boolean }} [options]  includeHidden: also return
+ *   the hidden games (with hidden: true), so scanning doesn't show them again
  * @returns {Game[]}
  */
 export function parseGamelist(xml, system, { includeHidden = false } = {}) {
@@ -126,17 +126,17 @@ export function parseGamelist(xml, system, { includeHidden = false } = {}) {
   return games.filter((g) => includeHidden || !g.hidden).sort(bySortName)
 }
 
-/** Orden alfabético en español, sin distinguir mayúsculas ni tildes */
+/** Alphabetical order in Spanish, ignoring case and accents */
 export function bySortName(/** @type {Game} */ a, /** @type {Game} */ b) {
   return a.sortName.localeCompare(b.sortName, 'es', { sensitivity: 'base' })
 }
 
 /**
- * Ruta absoluta (estilo Windows) del juego en la consola.
- * @param {string} romRoot  p. ej. "E:\\roms"
+ * The game's absolute path (Windows style) on the console.
+ * @param {string} romRoot  e.g. "E:\\roms"
  * @param {Game} game
- * @param {string} [folder]  carpeta real de la consola dentro de roms (p. ej. "ps1");
- *   por defecto, el id del sistema
+ * @param {string} [folder]  the console's real folder inside roms (e.g. "ps1");
+ *   by default, the system's id
  */
 export function romAbsolutePath(romRoot, game, folder = game.system) {
   const root = romRoot.replace(/[\\/]+$/, '')
@@ -144,15 +144,15 @@ export function romAbsolutePath(romRoot, game, folder = game.system) {
 }
 
 /**
- * URL de una imagen del juego servida por el shell (RelixShell).
- * Va sin extensión: el shell prueba .png, .jpg, .jpeg y .webp en el USB.
+ * The URL of a game image served by the shell (RelixShell).
+ * It has no extension: the shell tries .png, .jpg, .jpeg and .webp on the USB drive.
  *
  *   mediaUrl('https://relix.example/media', game, 'covers')
  *   -> https://relix.example/media/psx/covers/Final%20Fantasy%20VII%20(USA)/Final%20Fantasy%20VII%20(USA)
  *
  * @param {string} mediaBase
  * @param {Game} game
- * @param {string} type  uno de MEDIA_TYPES
+ * @param {string} type  one of MEDIA_TYPES
  */
 export function mediaUrl(mediaBase, game, type) {
   const parts = game.path.split('/')
@@ -161,10 +161,10 @@ export function mediaUrl(mediaBase, game, type) {
 }
 
 /**
- * Rutas posibles de una imagen del juego, en orden. El shell revisa cuál existe.
- * @param {string} mediaRoot  p. ej. "E:\\ES-DE\\downloaded_media"
+ * The possible paths of a game image, in order. The shell checks which one exists.
+ * @param {string} mediaRoot  e.g. "E:\\ES-DE\\downloaded_media"
  * @param {Game} game
- * @param {string} type       uno de MEDIA_TYPES
+ * @param {string} type       one of MEDIA_TYPES
  */
 export function mediaCandidates(mediaRoot, game, type) {
   const root = mediaRoot.replace(/[\\/]+$/, '')

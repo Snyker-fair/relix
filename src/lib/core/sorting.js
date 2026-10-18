@@ -1,13 +1,13 @@
 /**
- * Orden de la biblioteca y saltos con LT / RT.
+ * Library order and jumps with LT / RT.
  *
- *   az      A–Z (el normal). Los saltos van de letra en letra.
- *   recent  jugados recientemente primero; los nunca jugados al final, en A–Z.
- *           Los saltos avanzan de a una página.
- *   played  más tiempo jugado primero; los nunca jugados al final, en A–Z.
- *           Los saltos avanzan de a una página.
- *   year    por año de lanzamiento (dato de ES-DE); los sin año al final.
- *           Los saltos van de año en año.
+ *   az      A–Z (the normal one). Jumps go letter by letter.
+ *   recent  recently played first; the never played at the end, A–Z.
+ *           Jumps move a page at a time.
+ *   played  most time played first; the never played at the end, A–Z.
+ *           Jumps move a page at a time.
+ *   year    by release year (ES-DE data); the ones without a year at the end.
+ *           Jumps go year by year.
  */
 
 import { t } from '../i18n/i18n.svelte.js'
@@ -15,7 +15,7 @@ import { bySortName } from './esde.js'
 
 /** @typedef {'az'|'recent'|'played'|'year'} SortOrder */
 
-/** Nombre visible de cada orden */
+/** The visible name of each order */
 export const SORT_NAMES = /** @type {Record<SortOrder, string>} */ ({
   az: 'A–Z',
   recent: 'Recientes',
@@ -24,7 +24,7 @@ export const SORT_NAMES = /** @type {Record<SortOrder, string>} */ ({
 })
 
 /**
- * Letra de un nombre para el índice: sin tildes; números y símbolos van en "#".
+ * A name's letter for the index: without accents; digits and symbols go under "#".
  * @param {string} name
  */
 export function letterOf(name) {
@@ -36,13 +36,13 @@ export function letterOf(name) {
  * @template {import('./esde.js').Game} T
  * @param {T[]} games
  * @param {SortOrder} order
- * @param {Record<string, number>} [lastPlayed]  id -> fecha en que se jugó por última vez (ms)
- * @param {Record<string, { seconds: number }>} [playtime]  id -> tiempo jugado
+ * @param {Record<string, number>} [lastPlayed]  id -> the date it was last played (ms)
+ * @param {Record<string, { seconds: number }>} [playtime]  id -> time played
  * @returns {T[]}
  */
 export function sortGames(games, order, lastPlayed = {}, playtime = {}) {
   const az = [...games].sort(bySortName)
-  // sort es estable: dentro de un mismo año o sin jugar, queda el orden A–Z
+  // sort is stable: within the same year or unplayed, the A–Z order stays
   if (order === 'recent') return az.sort((a, b) => (lastPlayed[b.id] ?? 0) - (lastPlayed[a.id] ?? 0))
   if (order === 'played') return az.sort((a, b) => (playtime[b.id]?.seconds ?? 0) - (playtime[a.id]?.seconds ?? 0))
   if (order === 'year') return az.sort((a, b) => (a.year ?? 99999) - (b.year ?? 99999))
@@ -50,8 +50,8 @@ export function sortGames(games, order, lastPlayed = {}, playtime = {}) {
 }
 
 /**
- * A qué sección pertenece un juego en un orden (lo que se muestra al saltar).
- * null = ese orden no tiene secciones.
+ * Which section a game belongs to in an order (what's shown when jumping).
+ * null = that order has no sections.
  * @param {import('./esde.js').Game} game
  * @param {SortOrder} order
  */
@@ -62,11 +62,11 @@ export function sectionOf(game, order) {
 }
 
 /**
- * A dónde lleva LT (-1) o RT (+1) desde un juego.
- *   RT: al primer juego de la sección siguiente.
- *   LT: al primero de la sección actual o, si ya está ahí, al de la anterior.
- * Sin secciones, avanza o retrocede una página.
- * @param {import('./esde.js').Game[]} games  ya ordenados
+ * Where LT (-1) or RT (+1) takes you from a game.
+ *   RT: to the first game of the next section.
+ *   LT: to the first one of the current section or, if it's already there, of the previous one.
+ * Without sections, it moves a page forward or back.
+ * @param {import('./esde.js').Game[]} games  already sorted
  * @param {number} index
  * @param {1|-1} direction
  * @param {SortOrder} order
@@ -85,7 +85,7 @@ export function jumpIndex(games, index, direction, order, pageSize = 15) {
     for (let i = at + 1; i < games.length; i++) {
       if (sectionOf(games[i], order) !== current) return i
     }
-    return at // ya está en la última sección
+    return at // it's already in the last section
   }
 
   let start = at

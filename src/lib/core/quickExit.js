@@ -1,24 +1,24 @@
 /**
- * Cuando vuelves a Relix pocos segundos después de lanzar un juego, casi
- * siempre es porque el emulador no pudo abrirlo: falta la BIOS, falta algo
- * del emulador o el archivo está dañado. El emulador no le avisa nada a
- * Relix (se cierra y la Xbox vuelve sola), así que Relix lo deduce por el
- * tiempo y te dice qué revisar.
+ * When you come back to Relix a few seconds after launching a game, it's
+ * almost always because the emulator couldn't open it: the BIOS is missing,
+ * something from the emulator is missing or the file is damaged. The emulator
+ * doesn't tell Relix anything (it closes and the Xbox goes back by itself), so
+ * Relix works it out from the time and tells you what to check.
  */
 import { t } from '../i18n/i18n.svelte.js'
 import { regionsOf } from './coverMatch.js'
 
-/** Volver antes de esto cuenta como "se cerró al abrir" */
+/** Coming back before this counts as "closed on opening" */
 export const QUICK_EXIT_SECONDS = 15
 
-/** BIOS de PS1 que busca SwanStation en la carpeta system de RetroArch */
+/** The PS1 BIOS files SwanStation looks for in RetroArch's system folder */
 export const PS1_BIOS = {
   japan: { file: 'scph5500.bin', label: 'japonesa' },
   usa: { file: 'scph5501.bin', label: 'de EE. UU.' },
   europe: { file: 'scph5502.bin', label: 'europea' },
 }
 
-/** Etiquetas del nombre del archivo que dicen la región de la BIOS (NTSC-J, NTSC-U o PAL) */
+/** File name tags that tell the BIOS region (NTSC-J, NTSC-U or PAL) */
 const BIOS_REGION_OF = /** @type {Record<string, 'japan'|'usa'|'europe'>} */ ({
   Japan: 'japan', Asia: 'japan', Korea: 'japan', China: 'japan', Taiwan: 'japan', 'Hong Kong': 'japan',
   USA: 'usa', Canada: 'usa', 'Latin America': 'usa', Mexico: 'usa', Brazil: 'usa', Argentina: 'usa',
@@ -28,8 +28,8 @@ const BIOS_REGION_OF = /** @type {Record<string, 'japan'|'usa'|'europe'>} */ ({
 })
 
 /**
- * Qué BIOS de PS1 necesita un juego según su nombre: "(Europe)" -> europe.
- * null si el nombre no lo dice ("(World)" o sin etiquetas).
+ * Which PS1 BIOS a game needs according to its name: "(Europe)" -> europe.
+ * null if the name doesn't say ("(World)" or without tags).
  * @param {string} fileName
  */
 export function ps1BiosRegion(fileName) {
@@ -40,10 +40,10 @@ export function ps1BiosRegion(fileName) {
 }
 
 /**
- * El aviso cuando un juego se cerró al abrir.
+ * The notice when a game closed on opening.
  * @param {{ name: string, path: string }} game
  * @param {{ id: string, emulators: unknown[] }} platform
- * @param {import('./platforms.js').Emulator} emulator  con el que se intentó abrir
+ * @param {import('./platforms.js').Emulator} emulator  the one it was opened with
  */
 export function quickExitMessage(game, platform, emulator) {
   const { launcher } = emulator
@@ -68,7 +68,7 @@ export function quickExitMessage(game, platform, emulator) {
       { game: game.name, emulator: emulator.name },
     )
   }
-  // Con otra opción a mano, cambiar de emulador suele ser la solución más rápida
+  // With another option at hand, switching emulators is usually the quickest fix
   const tryOther = platform.emulators.length > 1 ? ` ${t('También puedes probar otro con Y › Abrir con…')}` : ''
   if (launcher.kind === 'retroarch') {
     return (

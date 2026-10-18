@@ -1,7 +1,7 @@
 <script>
   /**
-   * Pantallas de carga y de error del inicio.
-   * El error siempre ofrece una salida: A vuelve a intentar.
+   * The startup loading and error screens.
+   * The error always offers a way out: A tries again.
    */
   import HintBar from '../lib/ui/HintBar.svelte'
   import { pushHandler } from '../lib/ui/input.js'

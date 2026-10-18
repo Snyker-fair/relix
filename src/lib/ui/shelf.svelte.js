@@ -1,10 +1,10 @@
 /**
- * Qué canales se muestran en el inicio y en las pestañas de la biblioteca, y
- * qué juegos tiene cada uno.
+ * Which channels show on the home screen and in the library's tabs, and
+ * which games each one has.
  *
- * Por defecto solo los que tienen algo: las consolas con juegos, Favoritos
- * cuando hay al menos uno y Colecciones cuando hay alguna. En Opciones se
- * pueden mostrar también los vacíos.
+ * By default only the ones with something: the consoles with games, Favorites
+ * when there's at least one and Collections when there's any. In Options the
+ * empty ones can be shown too.
  */
 import { CHANNELS, COLLECTION_PREFIX, COLLECTIONS, collectionChannel, isCollectionId } from './channels.js'
 import { collections } from './collections.svelte.js'
@@ -14,13 +14,13 @@ import { settings } from './settings.svelte.js'
 class Shelf {
   channels = $derived(CHANNELS.filter((ch) => settings.showEmptyConsoles || this.gamesFor(ch.id).length > 0))
 
-  /** Consolas que quedaron ocultas por no tener juegos */
+  /** Consoles that ended up hidden for having no games */
   hiddenCount = $derived(CHANNELS.length - this.channels.length)
 
   /**
-   * Pestañas de la biblioteca: dentro de una colección, las colecciones;
-   * si no, los canales del inicio (sin el canal Colecciones).
-   * @param {string} id  canal abierto
+   * The library's tabs: inside a collection, the collections;
+   * otherwise, the home screen's channels (without the Collections channel).
+   * @param {string} id  the open channel
    */
   tabsFor(id) {
     if (isCollectionId(id)) return collections.visible.map((c) => collectionChannel(c.name))
@@ -28,7 +28,7 @@ class Shelf {
   }
 
   /**
-   * Datos del canal (nombre y colores), también para una colección.
+   * The channel's data (name and colors), also for a collection.
    * @param {string} id
    */
   channelFor(id) {
@@ -37,7 +37,7 @@ class Shelf {
   }
 
   /**
-   * Juegos de un canal: consola, Favoritos, una colección o todas las colecciones.
+   * A channel's games: a console, Favorites, a collection or every collection.
    * @param {string} id
    */
   gamesFor(id) {

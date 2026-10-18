@@ -1,30 +1,30 @@
 /**
- * Registro de diagnóstico (E:\relix\registro.txt): qué pasó y cuándo, para
- * entender un "no abre" sin estar frente a la consola. Las líneas se juntan
- * un momento y se mandan al shell de a varias; antes de abrir un juego, en el acto.
+ * The diagnostic log (E:\relix\log.txt): what happened and when, to
+ * understand a "won't open" without being in front of the console. The lines
+ * are gathered for a moment and sent to the shell a few at a time; right away before a game opens.
  *
- * Se anotan: el inicio, cada lanzamiento con su URI, la vuelta (y los juegos
- * que se cerraron al abrir), los errores del shell y de la interfaz, la
- * revisión del sistema, los problemas al guardar tus datos y las portadas que
- * no se pudieron bajar.
+ * What's logged: the start, each launch with its URI, the return (and the games
+ * that closed on opening), the shell's and the interface's errors, the
+ * system checkup, problems saving your data and the covers that
+ * couldn't be downloaded.
  */
 import { appendLog, onShellError, ShellError } from '../core/bridge.js'
 import { logLine } from '../core/diagnostics.js'
 
-/** Pedidos cuyos errores se anotan en otro lado (o son el registro mismo) */
+/** Requests whose errors are logged elsewhere (or are the log itself) */
 const NOT_LOGGED = new Set(['launch', 'appendLog', 'readLog'])
-/** El mismo error dentro de este tiempo no se repite */
+/** The same error within this time isn't repeated */
 const REPEAT_MS = 60_000
 
 class Diagnostics {
-  /** Cuándo se anotó lo último en esta sesión (para la fila de Revisión) */
+  /** When the last thing was logged this session (for the Checkup row) */
   lastAt = $state(0)
 
   /** @type {string[]} */
   #queue = []
   /** @type {ReturnType<typeof setTimeout> | undefined} */
   #timer
-  /** @type {Map<string, number>} texto -> cuándo se anotó */
+  /** @type {Map<string, number>} text -> when it was logged */
   #recent = new Map()
   #started = false
 
@@ -39,7 +39,7 @@ class Diagnostics {
     this.#timer = setTimeout(() => this.flush(), 1500)
   }
 
-  /** Un error; si se repite igual dentro de un minuto, no se vuelve a anotar @param {string} text */
+  /** An error; if it repeats the same within a minute, it isn't logged again @param {string} text */
   error(text) {
     const now = Date.now()
     const last = this.#recent.get(text)
@@ -48,14 +48,14 @@ class Diagnostics {
     this.log('error', text)
   }
 
-  /** Manda lo pendiente ya (antes de abrir un juego, o si la Xbox esconde Relix) */
+  /** Sends what's pending right now (before a game opens, or if the Xbox hides Relix) */
   flush() {
     clearTimeout(this.#timer)
     const lines = this.#queue.splice(0)
     if (lines.length > 0) appendLog(lines)
   }
 
-  /** Empieza a escuchar los errores del shell y de la interfaz */
+  /** Starts listening to the shell's and the interface's errors */
   start() {
     if (this.#started) return
     this.#started = true
@@ -68,7 +68,7 @@ class Diagnostics {
       this.error(`Interfaz: ${e.message}${where}`)
     })
     window.addEventListener('unhandledrejection', (e) => {
-      if (e.reason instanceof ShellError) return // ya anotado al llegar del shell
+      if (e.reason instanceof ShellError) return // already logged when it came from the shell
       this.error(`Interfaz: ${e.reason instanceof Error ? e.reason.message : String(e.reason)}`)
     })
     document.addEventListener('visibilitychange', () => {

@@ -1,6 +1,6 @@
 /**
- * Tema de Relix: Claro, Oscuro ("Noche azul") o Automático, que es oscuro de
- * noche. Los colores de cada tema están en app.css; aquí solo se decide cuál toca.
+ * Relix's theme: Light, Dark ("Night blue") or Automatic, which is dark at
+ * night. Each theme's colors are in app.css; here it's only decided which one applies.
  */
 
 /** @typedef {'light'|'dark'|'auto'} ThemeChoice */
@@ -10,12 +10,12 @@ export const THEMES = ['light', 'dark', 'auto']
 
 export const THEME_NAMES = { light: 'Claro', dark: 'Oscuro', auto: 'Automático' }
 
-/** En Automático es de noche desde las 20:00 hasta las 7:00 */
+/** In Automatic, night is from 20:00 to 7:00 */
 export const NIGHT = { from: 20, to: 7 }
 
 /**
- * Color de fondo del shell mientras carga la interfaz (AARRGGBB), para que al
- * abrir de noche no haya un destello celeste.
+ * The shell's background color while the interface loads (AARRGGBB), so that
+ * opening at night has no light blue flash.
  */
 export const SHELL_BACKGROUND = { light: 'FFDDEBF7', dark: 'FF0F1524' }
 
@@ -26,8 +26,8 @@ export function isNight(date) {
 }
 
 /**
- * El tema que se ve ahora.
- * @param {string} choice  lo que eligió el jugador
+ * The theme shown now.
+ * @param {string} choice  what the player chose
  * @param {Date} [date]
  * @returns {'light'|'dark'}
  */

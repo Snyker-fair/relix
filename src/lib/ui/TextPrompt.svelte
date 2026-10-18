@@ -1,7 +1,7 @@
 <script>
   /**
-   * Ventana para escribir un texto corto con el teclado en pantalla
-   * (p. ej. el nombre de una colección nueva). ≡ o "Listo" confirman; B cancela.
+   * A window to type a short text with the on-screen keyboard
+   * (e.g. the name of a new collection). ≡ or "Done" confirm; B cancels.
    */
   import HintBar from './HintBar.svelte'
   import { pushHandler } from './input.js'

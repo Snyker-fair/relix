@@ -36,12 +36,12 @@
   let zone = $state('channels')
   let recentIndex = $state(0)
 
-  // Canales visibles y, al final, el ícono de Opciones
+  // The visible channels and, at the end, the Options icon
   const ids = $derived([...shelf.channels.map((c) => c.id), 'options'])
   const index = $derived.by(() => {
     const found = focusedId ? ids.indexOf(focusedId) : -1
     if (found >= 0) return found
-    // Por defecto, la primera consola (no Favoritos ni Colecciones)
+    // By default, the first console (not Favorites or Collections)
     const firstConsole = shelf.channels.findIndex((c) => c.id !== 'favorites' && c.id !== 'collections')
     return firstConsole >= 0 ? firstConsole : 0
   })
@@ -50,25 +50,25 @@
   const games = $derived(onOptionsTile ? [] : shelf.gamesFor(channel.id))
   const optionsFocused = $derived(zone === 'channels' && onOptionsTile)
   const emptyLibrary = $derived(library.all.length === 0)
-  // Tres juegos: así "Seguir jugando" nunca llega hasta la barra de pistas
+  // Three games: that way "Continue playing" never reaches the hint bar
   const recent = $derived(library.recent.slice(0, 3))
 
-  // Fila de canales. Si caben todos (hasta unos siete), los íconos se achican
-  // un poco para repartirse en el ancho. Con más, quedan de 168 px y la fila se
-  // desliza para mostrar el enfocado, como el menú de Wii U o Switch.
-  // El canal enfocado crece 10 % y suma un aro de 15 px: con 48 px de
-  // separación quedan al menos 20 px libres hasta el vecino. Opciones mide 0,85.
-  const SHELF_WIDTH = 1600 // ancho útil dentro de la bandeja
+  // The row of channels. If they all fit (up to about seven), the icons shrink
+  // a little to spread across the width. With more, they stay at 168 px and the row
+  // slides to show the focused one, like the Wii U or Switch menu.
+  // The focused channel grows 10 % and adds a 15 px ring: with 48 px
+  // gaps there are at least 20 px free up to the neighbor. Options measures 0.85.
+  const SHELF_WIDTH = 1600 // the usable width inside the tray
   const SHELF_GAP = 48
-  const SHELF_PAD = 48 // margen de la bandeja a cada lado
-  const VIEW_WIDTH = 1696 // la bandeja: de 112 a 1808 px
+  const SHELF_PAD = 48 // the tray's margin on each side
+  const VIEW_WIDTH = 1696 // the tray: from 112 to 1808 px
   const fitTile = $derived(
     Math.floor((SHELF_WIDTH - shelf.channels.length * SHELF_GAP) / (shelf.channels.length + 0.85)),
   )
   const sliding = $derived(fitTile < 150)
   const tileSize = $derived(sliding ? 168 : Math.min(184, fitTile))
   const trackWidth = $derived(SHELF_PAD * 2 + shelf.channels.length * (tileSize + SHELF_GAP) + tileSize * 0.85)
-  // La fila se corre para dejar el canal enfocado al centro (sin pasarse de los extremos)
+  // The row shifts to leave the focused channel in the center (without going past the ends)
   const shelfOffset = $derived.by(() => {
     if (!sliding) return 0
     const width = index < shelf.channels.length ? tileSize : tileSize * 0.85
@@ -76,7 +76,7 @@
     return Math.round(Math.max(0, Math.min(center - VIEW_WIDTH / 2, trackWidth - VIEW_WIDTH)))
   })
 
-  // Tres portadas en abanico para el canal enfocado: favoritos primero
+  // Three covers fanned out for the focused channel: favorites first
   const fan = $derived(
     [...games].sort((a, b) => Number(library.isFavorite(b)) - Number(library.isFavorite(a))).slice(0, 3),
   )
@@ -229,7 +229,7 @@
       <ChannelIcon id="options" color="currentColor" size={Math.round(tileSize * 0.42)} />
     </span>
     {#if systemStatus.summary.errors > 0}
-      <!-- algo por arreglar: se ve en Opciones › Revisión -->
+      <!-- something to fix: it shows in Options › Checkup -->
       <span class="alert" aria-label={plural(systemStatus.summary.errors, 'cosa por arreglar', 'cosas por arreglar')}>
         {systemStatus.summary.errors}
       </span>
@@ -303,7 +303,7 @@
     color: var(--ink-soft);
     text-align: center;
   }
-  /* ── Héroe ─────────────────────────────── */
+  /* ── Hero ──────────────────────────────── */
   .hero {
     position: absolute;
     top: 170px;
@@ -327,7 +327,7 @@
     letter-spacing: -0.03em;
     white-space: nowrap;
   }
-  /* "PlayStation Portable", "Game Boy Advance": en una línea, sin tocar el abanico */
+  /* "PlayStation Portable", "Game Boy Advance": on one line, without touching the fan */
   h1.long {
     font-size: 88px;
   }
@@ -399,7 +399,7 @@
     color: var(--ink-soft);
   }
 
-  /* ── Fila de canales ───────────────────── */
+  /* ── Row of channels ───────────────────── */
   .shelf {
     position: absolute;
     left: 112px;
@@ -408,15 +408,15 @@
     padding-top: 30px;
     transition: opacity 200ms ease;
   }
-  /* de izquierda a derecha: con pocas consolas no quedan separadas a los extremos */
+  /* from left to right: with few consoles they don't end up apart at the ends */
   .track {
     position: relative;
     display: flex;
     padding: 0 48px;
     transition: transform 320ms var(--spring);
   }
-  /* al deslizarse, los canales se cortan en los bordes de la bandeja (eso
-     avisa que hay más); arriba y abajo hay espacio para el aro y la sombra */
+  /* when sliding, the channels are cut at the tray's edges (that
+     says there are more); above and below there's room for the ring and the shadow */
   .shelf.sliding {
     clip-path: inset(-80px 0 -120px 0);
   }
@@ -451,7 +451,7 @@
   .channel.focused {
     transform: translateY(-14px) scale(1.1);
   }
-  /* el botón ya se escala; el tile solo aporta el aro */
+  /* the button already scales; the tile only adds the ring */
   .tile.focus-ring.focused {
     transform: none;
     box-shadow:
@@ -468,7 +468,7 @@
     border-radius: calc(var(--tile) * 0.3);
     box-shadow: inset 0 -10px 0 rgb(0 0 0 / 0.1);
   }
-  /* cosas por arreglar (Opciones › Revisión), sobre el borde del ícono */
+  /* things to fix (Options › Checkup), on the icon's edge */
   .alert {
     position: absolute;
     top: calc(var(--tile) * 0.03);
@@ -487,7 +487,7 @@
     font-size: 24px;
     line-height: 1;
   }
-  /* Opciones: redondo y blanco, para que se lea como herramienta y no como consola */
+  /* Options: round and white, so it reads as a tool and not as a console */
   .tile.round {
     width: calc(var(--tile) * 0.85);
     height: calc(var(--tile) * 0.85);
@@ -499,7 +499,7 @@
   .label {
     font-family: var(--font-display);
     font-weight: 700;
-    /* se achica junto con los íconos cuando hay muchos canales */
+    /* it shrinks along with the icons when there are many channels */
     font-size: min(30px, calc(var(--tile) * 0.163));
     white-space: nowrap;
     padding-bottom: 6px;
@@ -509,7 +509,7 @@
     animation-delay: calc(250ms + var(--delay));
   }
 
-  /* ── Seguir jugando ────────────────────── */
+  /* ── Continue playing ──────────────────── */
   .recent {
     position: absolute;
     left: 112px;
@@ -523,7 +523,7 @@
     font-size: 28px;
     color: var(--ink-soft);
   }
-  /* el aro del enfocado (11 px + 2,5 %) deja 20 px libres hasta el vecino */
+  /* the focused one's ring (11 px + 2.5 %) leaves 20 px free up to the neighbor */
   .recent-row {
     display: flex;
     gap: 40px;
@@ -538,7 +538,7 @@
     background: var(--cloud);
     text-align: left;
   }
-  /* abajo de todo no hay espacio para subir: solo crece un poco y gana el aro */
+  /* at the very bottom there's no room to rise: it only grows a little and gets the ring */
   .recent-item.focus-ring.focused {
     transform: scale(1.04);
   }

@@ -1,7 +1,7 @@
 /**
- * Estado de la revisión del sistema (Opciones › Revisión y el primer uso).
- * El shell mide; core/systemCheck.js arma los chequeos con lo que Relix ya
- * sabe (juegos, emuladores instalados, respaldo de tus datos).
+ * The state of the system checkup (Options › Checkup and the first run).
+ * The shell measures; core/systemCheck.js builds the checks with what Relix
+ * already knows (games, installed emulators, your data's backup).
  */
 import { systemCheck } from '../core/bridge.js'
 import { PLATFORMS } from '../core/platforms.js'
@@ -16,16 +16,16 @@ import { library } from './library.svelte.js'
 import { userData } from './userData.svelte.js'
 
 class SystemStatus {
-  /** Lo último que midió el shell (null: todavía no, o el shell es anterior) */
+  /** What the shell measured last (null: not yet, or the shell is older) */
   /** @type {import('../core/systemCheck.js').ShellCheck | null} */
   shell = $state(null)
   running = $state(false)
-  /** El shell no respondió la última vez (o es anterior al paso 6) */
+  /** The shell didn't answer last time (or is from before step 6) */
   failed = $state(false)
-  /** Cuándo terminó la última revisión (ms) */
+  /** When the last checkup finished (ms) */
   checkedAt = $state(0)
 
-  /** Cada consola con sus juegos y su emulador */
+  /** Each console with its games and its emulator */
   consoles = $derived(
     PLATFORMS.map((platform) => {
       const emulator = emulators.forPlatform(platform)
@@ -38,7 +38,7 @@ class SystemStatus {
     }),
   )
 
-  // La versión nueva de Relix (si hay) va primero; no cuenta como problema
+  // The new version of Relix (if there is one) goes first; it doesn't count as a problem
   checks = $derived([
     ...[updateCheck(updates.latest, VERSION)].filter((c) => c !== null),
     ...buildChecks({
@@ -54,9 +54,9 @@ class SystemStatus {
   summary = $derived(summarize(this.checks))
 
   /**
-   * Vuelve a medir todo (también qué emuladores hay instalados y si hay una
-   * versión nueva de Relix).
-   * @param {{ forceUpdate?: boolean }} [options]  forceUpdate: preguntar a GitHub aunque ya se haya hecho hoy
+   * Measures everything again (also which emulators are installed and whether there's a
+   * new version of Relix).
+   * @param {{ forceUpdate?: boolean }} [options]  forceUpdate: ask GitHub even if it was already done today
    */
   async run({ forceUpdate = false } = {}) {
     if (this.running) return
@@ -70,7 +70,7 @@ class SystemStatus {
       this.shell = shell
       this.failed = false
     } catch {
-      // Sin respuesta del shell: quedan los chequeos que no lo necesitan, y uno que lo dice
+      // No answer from the shell: the checks that don't need it stay, plus one that says so
       this.shell = null
       this.failed = true
     } finally {
@@ -80,10 +80,10 @@ class SystemStatus {
     this.#log()
   }
 
-  /** Lo que se anotó la última vez: solo se vuelve a anotar si cambia */
+  /** What was logged last time: it's only logged again if it changes */
   #logged = ''
 
-  /** "1 por arreglar, 1 aviso: Nintendo 3DS: falta RetroArch 3DS · BIOS de PS1: falta scph5502.bin" */
+  /** "1 to fix, 1 warning: Nintendo 3DS: RetroArch 3DS is missing · PS1 BIOS: missing scph5502.bin" */
   #log() {
     const { errors, warnings } = this.summary
     const problems = this.checks.filter((c) => c.state === 'error' || c.state === 'warn').map((c) => c.title)

@@ -1,22 +1,22 @@
 /**
- * Tus datos de Relix, guardados en el USB para que viajen con tus juegos:
+ * Your Relix data, saved on the USB drive so it travels with your games:
  *
- *   E:\relix\datos.json                 lo último (se guarda solo tras cada cambio)
- *   E:\relix\datos.anterior.json        la versión justo antes de la última
- *   E:\relix\respaldos\datos-<día>.json una copia por día, las últimas 7
+ *   E:\relix\data.json                  the latest (saved by itself after each change)
+ *   E:\relix\data.previous.json         the version right before the latest
+ *   E:\relix\backups\data-<day>.json    a copy per day, the last 7
  *
- * Los juegos se identifican por su ruta dentro del USB ("ps2/Okami.chd"),
- * así que la letra del disco puede cambiar sin perder nada.
+ * Games are identified by their path inside the USB drive ("ps2/Okami.chd"),
+ * so the drive letter can change without losing anything.
  *
- * Este módulo no toca archivos: arma y lee el contenido, decide qué copia
- * manda (la del USB o la de la app) y suma el tiempo de cada partida.
+ * This module doesn't touch files: it builds and reads the content, decides which
+ * copy rules (the USB drive's or the app's) and adds up each session's time.
  */
 
 export const DATA_VERSION = 1
 
 /**
- * Lo que se respalda. Cada clave es también la que usa storage.js en la app.
- * No van los cachés (lista escaneada, miniaturas): se rearman solos.
+ * What gets backed up. Each key is also the one storage.js uses in the app.
+ * The caches (scanned list, thumbnails) don't go: they rebuild themselves.
  */
 export const SYNCED_KEYS = /** @type {const} */ ([
   'favorites',
@@ -33,9 +33,9 @@ export const SYNCED_KEYS = /** @type {const} */ ([
   'gameEmulators',
 ])
 
-/** Una partida de menos de esto no cuenta (el emulador no abrió, o fue un vistazo) */
+/** A session shorter than this doesn't count (the emulator didn't open, or it was a quick look) */
 export const MIN_SESSION_SECONDS = 60
-/** Una partida de más de esto se descarta: seguro quedó abierta sin jugar */
+/** A session longer than this is dropped: it surely stayed open without playing */
 export const MAX_SESSION_SECONDS = 12 * 60 * 60
 
 /** @typedef {{ seconds: number, plays: number }} PlayStats */
@@ -45,7 +45,7 @@ export const MAX_SESSION_SECONDS = 12 * 60 * 60
 const isObject = (/** @type {unknown} */ v) => typeof v === 'object' && v !== null && !Array.isArray(v)
 const isStringArray = (/** @type {unknown} */ v) => Array.isArray(v) && v.every((x) => typeof x === 'string')
 
-/** Revisa cada clave por separado: una dañada no arrastra a las demás */
+/** Checks each key separately: a damaged one doesn't drag down the others */
 const CHECKS = {
   favorites: isObject,
   hidden: isStringArray,
@@ -62,7 +62,7 @@ const CHECKS = {
 }
 
 /**
- * El contenido de datos.json, legible si lo abres en el PC.
+ * The content of data.json, readable if you open it on the PC.
  * @param {SyncedValues} values
  * @param {number} savedAt  ms
  */
@@ -76,7 +76,7 @@ export function serializeUserData(values, savedAt) {
 }
 
 /**
- * Lee datos.json. Devuelve null si no es un archivo de Relix.
+ * Reads data.json. Returns null if it isn't a Relix file.
  * @param {string|null|undefined} text
  * @returns {{ savedAt: number, values: SyncedValues } | null}
  */
@@ -112,21 +112,21 @@ function cleanPlaytime(playtime) {
 }
 
 /**
- * Qué copia manda al iniciar. El USB es la copia principal:
- *   'usb'    la del USB. Siempre que el archivo cambió por fuera de esta app
- *            (otra Xbox, o un respaldo que copiaste encima en el PC), si la app
- *            no tiene nada nuevo, o si lo de la app era de otro USB.
- *   'local'  la de la app: el USB sigue como Relix lo dejó y en la app hay
- *            cambios más nuevos (p. ej. el USB no dejaba escribir), o el USB
- *            aún no tiene datos (la primera vez: se copian).
- *   'fresh'  el USB no tiene datos y lo de la app es de OTRO USB: se parte de
- *            cero en este (solo se conservan las preferencias).
+ * Which copy rules at startup. The USB drive is the main copy:
+ *   'usb'    the USB drive's. Whenever the file changed outside this app
+ *            (another Xbox, or a backup you copied over it on the PC), if the app
+ *            has nothing new, or if the app's data was from another USB drive.
+ *   'local'  the app's: the USB drive is as Relix left it and the app has
+ *            newer changes (e.g. the drive couldn't be written to), or the drive
+ *            has no data yet (the first time: they're copied).
+ *   'fresh'  the USB drive has no data and the app's is from ANOTHER drive: this
+ *            one starts from scratch (only the preferences are kept).
  *
- * @param {{ savedAt: number } | null} usb   lo leído del USB (null = no hay archivo)
+ * @param {{ savedAt: number } | null} usb   what was read from the USB drive (null = no file)
  * @param {{ savedAt: number, synced: number, drive: string }} local
- *   savedAt: último cambio en la app; synced: fecha del último datos.json que
- *   la app escribió o leyó; drive vacío = datos de antes del respaldo
- * @param {string} drive  el USB conectado ahora
+ *   savedAt: the last change in the app; synced: the date of the last data.json
+ *   the app wrote or read; an empty drive = data from before the backup existed
+ * @param {string} drive  the USB drive plugged in now
  * @returns {'usb'|'local'|'fresh'}
  */
 export function chooseSource(usb, local, drive) {
@@ -138,12 +138,12 @@ export function chooseSource(usb, local, drive) {
 }
 
 /**
- * Cierra la partida en curso y suma su tiempo al juego.
+ * Closes the session in progress and adds its time to the game.
  * @param {Record<string, PlayStats>} playtime
  * @param {Session|null} session
  * @param {number} now  ms
  * @returns {{ playtime: Record<string, PlayStats>, seconds: number }}
- *   seconds: lo que se sumó (0 si la partida no cuenta)
+ *   seconds: what was added (0 if the session doesn't count)
  */
 export function closeSession(playtime, session, now) {
   if (!session) return { playtime, seconds: 0 }
@@ -157,9 +157,9 @@ export function closeSession(playtime, session, now) {
 }
 
 /**
- * Juegos con más tiempo, de mayor a menor.
+ * The games with the most time, from most to least.
  * @param {Record<string, PlayStats>} playtime
- * @param {(id: string) => boolean} [keep]  p. ej. solo los que siguen en el USB
+ * @param {(id: string) => boolean} [keep]  e.g. only the ones still on the USB drive
  * @param {number} [limit]
  */
 export function mostPlayed(playtime, keep = () => true, limit = 3) {
@@ -171,7 +171,7 @@ export function mostPlayed(playtime, keep = () => true, limit = 3) {
 }
 
 /**
- * Tiempo total jugado.
+ * Total time played.
  * @param {Record<string, PlayStats>} playtime
  * @param {(id: string) => boolean} [keep]
  */

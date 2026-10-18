@@ -1,11 +1,11 @@
 /**
- * Entrada unificada: control de Xbox (Gamepad API) + teclado.
+ * Unified input: Xbox controller (Gamepad API) + keyboard.
  *
- * Todo se traduce a acciones simples:
+ * Everything becomes simple actions:
  *   up down left right   a b x y   lb rb   lt rt   start view
  *
- * Las pantallas registran un manejador con `pushHandler`; solo el de arriba
- * de la pila recibe acciones (así un overlay "tapa" a la pantalla de abajo).
+ * Screens register a handler with `pushHandler`; only the one on top
+ * of the stack receives actions (that way an overlay "covers" the screen below).
  */
 
 /** @typedef {'up'|'down'|'left'|'right'|'a'|'b'|'x'|'y'|'lb'|'rb'|'lt'|'rt'|'start'|'view'} Action */
@@ -13,7 +13,7 @@
 /** @type {Array<(action: Action) => void>} */
 const handlers = []
 
-/** @param {(action: Action) => void} fn  @returns {() => void} para quitarlo */
+/** @param {(action: Action) => void} fn  @returns {() => void} to remove it */
 export function pushHandler(fn) {
   handlers.push(fn)
   return () => {
@@ -22,15 +22,15 @@ export function pushHandler(fn) {
   }
 }
 
-/** La última vez que se tocó el control, el teclado o el mouse (para el protector) */
+/** The last time the controller, the keyboard or the mouse was touched (for the screensaver) */
 let lastInput = Date.now()
 
-/** Cuenta como actividad (también al volver de un emulador) */
+/** Counts as activity (also when coming back from an emulator) */
 export function markActivity() {
   lastInput = Date.now()
 }
 
-/** Cuánto hace que nadie toca nada, en ms */
+/** How long nobody has touched anything, in ms */
 export function idleFor() {
   return Date.now() - lastInput
 }
@@ -41,7 +41,7 @@ export function dispatch(action) {
   handlers.at(-1)?.(action)
 }
 
-// ── Teclado ──────────────────────────────────────────────────────────────
+// ── Keyboard ─────────────────────────────────────────────────────────────
 /** @type {Record<string, Action>} */
 const KEYS = {
   ArrowUp: 'up',
@@ -56,18 +56,18 @@ const KEYS = {
   y: 'y',
   q: 'lb',
   e: 'rb',
-  m: 'start', // botón Menú: abre Opciones
+  m: 'start', // Menu button: opens Options
   o: 'start',
-  z: 'lt', // gatillos: letra anterior / siguiente
+  z: 'lt', // triggers: previous / next letter
   c: 'rt',
-  v: 'view', // botón Vista: buscar
+  v: 'view', // View button: search
   '/': 'view',
   PageUp: 'lb',
   PageDown: 'rb',
 }
 
-// ── Control ──────────────────────────────────────────────────────────────
-// Índices del "Standard Gamepad" (el control de Xbox calza con este mapeo)
+// ── Controller ───────────────────────────────────────────────────────────
+// "Standard Gamepad" indices (the Xbox controller matches this mapping)
 /** @type {Array<[number, Action]>} */
 const BUTTONS = [
   [0, 'a'],
@@ -85,13 +85,13 @@ const BUTTONS = [
   [14, 'left'],
   [15, 'right'],
 ]
-/** Acciones que se repiten al mantenerlas (moverse y saltar de letra) */
+/** Actions that repeat while held (moving and jumping by letter) */
 const REPEATING = new Set(['up', 'down', 'left', 'right', 'lt', 'rt'])
 const STICK_DEADZONE = 0.5
-const REPEAT_DELAY = 380 // ms antes de empezar a repetir al mantener
-const REPEAT_RATE = 110 // ms entre repeticiones
+const REPEAT_DELAY = 380 // ms before repeating starts while holding
+const REPEAT_RATE = 110 // ms between repeats
 
-/** @type {Map<Action, number>} acción -> momento de la próxima repetición */
+/** @type {Map<Action, number>} action -> the moment of the next repeat */
 const held = new Map()
 
 function readPad() {
@@ -130,16 +130,16 @@ function poll(t) {
 let started = false
 
 /**
- * Activa las fuentes de entrada del navegador.
- * En la Xbox ambas van apagadas: el shell lee el control en C# y llama a
- * `dispatch` por cada botón (ver App.svelte), así nunca llega dos veces.
+ * Turns on the browser's input sources.
+ * On the Xbox both stay off: the shell reads the controller in C# and calls
+ * `dispatch` for each button (see App.svelte), so nothing arrives twice.
  * @param {{ keyboard?: boolean, gamepad?: boolean }} [sources]
  */
 export function startInput({ keyboard = true, gamepad = true } = {}) {
   if (started) return
   started = true
   if (keyboard) {
-    // En el navegador, mover el mouse también despierta (no hace nada más)
+    // In the browser, moving the mouse also wakes it up (it does nothing else)
     window.addEventListener('pointermove', markActivity, { passive: true })
     window.addEventListener('keydown', (e) => {
       const action = KEYS[e.key] ?? KEYS[e.key.toLowerCase()]

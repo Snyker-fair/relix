@@ -1,15 +1,15 @@
 /**
- * Relix en inglés: cada texto en español del código (la clave) con su
- * traducción. Si cambias un texto en español, cambia también su clave aquí;
- * `node scripts/i18n.mjs` lista los que faltan.
+ * Relix in English: each Spanish text in the code (the key) with its
+ * translation. If you change a Spanish text, change its key here too;
+ * `node scripts/i18n.mjs` lists the missing ones.
  *
- * Los {nombre} se reemplazan por valores y deben quedar iguales en ambos lados.
+ * The {name}s are replaced with values and must match on both sides.
  */
 
 /** @type {Record<string, string>} */
 export default {
 
-  // ── Comunes y Opciones ──
+  // ── Common and Options ──
   'juego': 'game',
   'juegos': 'games',
   'consola': 'console',
@@ -179,7 +179,7 @@ export default {
   'Nunca': 'Never',
   'Volver': 'Back',
 
-  // ── Acerca de ──
+  // ── About ──
   'Juegos': 'Games',
   '<consola>': '<console>',
   'Colecciones': 'Collections',
@@ -211,7 +211,7 @@ export default {
   'Tu biblioteca': 'Your library',
   'En tu USB': 'On your USB drive',
 
-  // ── App: avisos y registro ──
+  // ── App: notices and log ──
   '{game} tras {time} (Relix estaba cerrado)': '{game} after {time} (Relix was closed)',
   'Tus datos se recuperaron de {file}': 'Your data was recovered from {file}',
   'Relix encontró {found}: ≡ › Revisión': 'Relix found {found}: ≡ › Checkup',
@@ -234,7 +234,7 @@ export default {
   '{emulator} no está instalado en la consola. Instálalo desde el Device Portal.': "{emulator} isn't installed on the console. Install it from the Device Portal.",
   'No se pudo abrir {emulator}. Revisa que esté instalado en la consola.': "Couldn't open {emulator}. Make sure it's installed on the console.",
 
-  // ── Registro de diagnóstico ──
+  // ── Diagnostic log ──
   'INICIO': 'START',
   'LANZAR': 'LAUNCH',
   'VOLVIÓ': 'RETURNED',
@@ -251,7 +251,7 @@ export default {
   'Todavía no hay nada anotado. Relix anota cada juego que abres, cómo volvió y los errores, para revisarlos aquí o en el PC.': 'Nothing logged yet. Relix writes down every game you open, how it came back and any errors, so you can review them here or on the PC.',
   'Página': 'Page',
 
-  // ── Revisión, teclado y avisos ──
+  // ── Checkup, keyboard and notices ──
   'EE. UU.': 'USA',
   'Europa': 'Europe',
   'Japón': 'Japan',
@@ -322,7 +322,7 @@ export default {
   'No se pudo descargar la portada.': "Couldn't download the cover.",
   '{errors} por arreglar, {warnings}: {problems}': '{errors} to fix, {warnings}: {problems}',
 
-  // ── Guías, avisos y nombres ──
+  // ── Guides, notices and names ──
   'Instala {emulator}': 'Install {emulator}',
   'xbdev.store › Emuladores': 'xbdev.store › Emulators',
   'En el PC, entra a **{store}** y descarga **{emulator}**.': 'On the PC, go to **{store}** and download **{emulator}**.',
@@ -396,7 +396,7 @@ export default {
   '2 o más jugadores': '2 or more players',
   'Sin año': 'No year',
 
-  // ── Regiones ──
+  // ── Regions ──
   'El shell no respondió.': "The shell didn't answer.",
   'El shell no respondió a tiempo.': "The shell didn't answer in time.",
   'El gamelist.xml de "{system}" no es un XML válido.': "The gamelist.xml for \"{system}\" isn't valid XML.",
@@ -413,7 +413,7 @@ export default {
   'Australia': 'Australia',
   'Brasil': 'Brazil',
 
-  // ── Inicio, biblioteca, búsqueda y carga ──
+  // ── Home, library, search and loading ──
   'Favoritos': 'Favorites',
   '{things} por arreglar en Revisión': '{things} to fix in Checkup',
   'Escaneo, emuladores y revisión': 'Scanning, emulators and checkup',
@@ -472,7 +472,7 @@ export default {
   'para volver a intentar.': 'to try again.',
   'Reintentar': 'Retry',
 
-  // ── Menú del juego ──
+  // ── Game menu ──
   'Abrir con…': 'Open with…',
   'Quitar de favoritos': 'Remove from favorites',
   'Agregar a favoritos': 'Add to favorites',
@@ -506,7 +506,7 @@ export default {
   'Nueva colección': 'New collection',
   'Por ejemplo: Con amigos': 'For example: With friends',
 
-  // ── Portadas a mano y guías ──
+  // ── Covers by hand and guides ──
   'No se pudieron cargar las portadas.': "Couldn't load the covers.",
   'Portada guardada: {game}': 'Cover saved: {game}',
   'No se pudo guardar la portada.': "Couldn't save the cover.",
@@ -546,7 +546,7 @@ export default {
   'Falta': 'Missing',
   'Otra consola': 'Another console',
 
-  // ── Primeros pasos ──
+  // ── Getting started ──
   'Empezar': 'Get started',
   '¡A jugar!': "Let's play!",
   'Buscar portadas': 'Search covers',
@@ -615,7 +615,7 @@ export default {
   // ── Demo ──
   'Con amigos': 'With friends',
 
-  // ── Versión nueva ──
+  // ── New version ──
   'Relix {version} está disponible': 'Relix {version} is available',
   'Tienes la {current}. Bájala en el PC desde {url} e instálala con el Device Portal: tus datos quedan en el USB.': 'You have {current}. Download it on the PC from {url} and install it with the Device Portal: your data stays on the USB drive.',
   'Relix {version} ya está disponible: ≡ › Revisión': 'Relix {version} is out: ≡ › Checkup',

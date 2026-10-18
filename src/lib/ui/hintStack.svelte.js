@@ -1,6 +1,6 @@
 /**
- * Solo se ve la barra de pistas de lo que está más arriba (una ventana sobre
- * la pantalla), igual que solo lo de más arriba recibe el control.
+ * Only the hint bar of whatever is on top shows (a window over the
+ * screen), just as only what's on top receives the controller.
  */
 class HintStack {
   /** @type {symbol[]} */

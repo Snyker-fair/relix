@@ -1,59 +1,59 @@
 /**
- * Puente entre la interfaz (Svelte) y el shell nativo en C# (RelixShell).
+ * The bridge between the interface (Svelte) and the native C# shell (RelixShell).
  *
- * En la Xbox, la interfaz vive dentro de un control WebView2 de una app UWP.
- * La web no puede leer el USB, abrir otras apps ni leer el control de forma
- * confiable, así que se comunica con el shell por mensajes:
+ * On the Xbox, the interface lives inside a WebView2 control in a UWP app.
+ * The web page can't read the USB drive, open other apps or read the controller
+ * reliably, so it talks to the shell through messages:
  *
- *   Pedidos (web -> shell, con respuesta):
+ *   Requests (web -> shell, with an answer):
  *     { id, type: 'loadLibrary', payload: { systems: [{ id: 'psx', folders: ['psx', 'ps1'] }, ...] } }
  *        -> { id, ok: true, result: {
  *             romRoot, driveId, mediaBase, thumbBase,
- *             gamelists: { psx: '<xml>' },                          (los que existan)
- *             covers: { psx: ['Okami (USA).png', 'Sub/Juego.jpg'] }  (portadas en el USB)
+ *             gamelists: { psx: '<xml>' },                          (the ones that exist)
+ *             covers: { psx: ['Okami (USA).png', 'Sub/Game.jpg'] }   (covers on the USB drive)
  *           } }
  *     { id, type: 'scanRoms', payload: { systems: [{ id: 'ps2', folders: ['ps2', 'playstation2'] }] } }
  *        -> { id, ok: true, result: {
- *             roms: { ps2: { folder: 'ps2', files: ['Okami (USA).chd', 'Sub/Juego.iso'] } }
- *           } }                                                   (solo las consolas pedidas)
+ *             roms: { ps2: { folder: 'ps2', files: ['Okami (USA).chd', 'Sub/Game.iso'] } }
+ *           } }                                                   (only the consoles asked for)
  *     { id, type: 'launch', payload: { uri, romPath } }
  *        -> { id, ok: true, result: true }
  *     { id, type: 'listCovers', payload: { systems: ['ps2'] } }
  *        -> { id, ok: true, result: { covers: { ps2: ['Okami (USA).png'] } } }
  *     { id, type: 'coverIndex', payload: { system: 'ps2', libretro: 'Sony - PlayStation 2' } }
- *        -> { id, ok: true, result: { names: ['Ookami (USA)', ...] } }   (sin ".png")
+ *        -> { id, ok: true, result: { names: ['Ookami (USA)', ...] } }   (without ".png")
  *     { id, type: 'downloadCovers', payload: { system, libretro, items: [{ key, remote }] } }
  *        -> { id, ok: true, result: { saved: ['Okami (USA)'], failed: [{ key, error }] } }
  *     { id, type: 'deleteCover', payload: { system: 'ps2', key: 'Okami (USA)' } }
- *        -> { id, ok: true, result: true }                       (y su miniatura)
+ *        -> { id, ok: true, result: true }                       (and its thumbnail)
  *     { id, type: 'listCollections' }
- *        -> { id, ok: true, result: { collections: [{ file: 'custom-Con amigos.cfg', text }] } }
- *     { id, type: 'saveCollection', payload: { file: 'custom-Con amigos.cfg', text } }
- *        -> { id, ok: true, result: true }                       (text vacío = borrar)
+ *        -> { id, ok: true, result: { collections: [{ file: 'custom-With friends.cfg', text }] } }
+ *     { id, type: 'saveCollection', payload: { file: 'custom-With friends.cfg', text } }
+ *        -> { id, ok: true, result: true }                       (empty text = delete)
  *     { id, type: 'emulatorStatus', payload: { protocols: ['retroarch', 'duckstation'] } }
  *        -> { id, ok: true, result: { status: { retroarch: true, duckstation: false } } }
  *     { id, type: 'systemCheck', payload: { folders: ['RetroArch\\system', ...] } }
  *        -> { id, ok: true, result: { drive, writable, space: { free, total } | null,
  *             romFolders: ['psx', 'nes'], folders: { 'RetroArch\\system': ['scph5501.bin'] | null },
- *             internet } }                       (Opciones › Revisión)
+ *             internet } }                       (Options › Checkup)
  *     { id, type: 'loadUserData' }
- *        -> { id, ok: true, result: { driveId, text, source } }  (E:\relix\datos.json;
- *             text null si aún no hay; source: 'datos.json', 'datos.anterior.json' o un respaldo)
+ *        -> { id, ok: true, result: { driveId, text, source } }  (E:\relix\data.json;
+ *             text null if there's none yet; source: 'data.json', 'data.previous.json' or a backup)
  *     { id, type: 'saveUserData', payload: { text } }
- *        -> { id, ok: true, result: true }      (guarda la anterior y un respaldo por día)
- *     Error: { id, ok: false, error: 'mensaje para el jugador', code: 'rom-missing' | ... }
+ *        -> { id, ok: true, result: true }      (keeps the previous one and a backup per day)
+ *     Error: { id, ok: false, error: 'message for the player', code: 'rom-missing' | ... }
  *
- *   Avisos (web -> shell, sin respuesta):
- *     { type: 'ready' }                  la interfaz ya puede recibir el control
+ *   Notices (web -> shell, no answer):
+ *     { type: 'ready' }                  the interface can now receive the controller
  *
- *   Eventos (shell -> web):
- *     { event: 'input', action: 'up' }   botón del control (leído en C#)
- *     { event: 'resumed' }               la consola volvió a Relix desde un emulador
- *     { event: 'visible' }               Relix volvió a verse (por cualquier camino)
- *     { event: 'coverProgress', system, done, total }   avance de downloadCovers
+ *   Events (shell -> web):
+ *     { event: 'input', action: 'up' }   a controller button (read in C#)
+ *     { event: 'resumed' }               the console came back to Relix from an emulator
+ *     { event: 'visible' }               Relix is visible again (by any path)
+ *     { event: 'coverProgress', system, done, total }   downloadCovers progress
  *
- * En el navegador (desarrollo / demo) no hay shell: se usan datos de prueba y
- * el lanzamiento solo se muestra en pantalla.
+ * In the browser (development / demo) there's no shell: test data is used and
+ * a launch is only shown on screen.
  */
 
 import { i18n, t } from '../i18n/i18n.svelte.js'
@@ -78,8 +78,8 @@ import xbox360 from '../../mock/gamelists/xbox360/gamelist.xml?raw'
 const MOCK_GAMELISTS = { psx, psp, ps2, gc, wiiu, snes, n64, gba, n3ds, megadrive, dreamcast, xbox360 }
 
 /**
- * Los gamelists de prueba de la demo. En inglés, con sus descripciones y
- * géneros en inglés (src/mock/en.json): con tu USB, Relix muestra lo que dejó ES-DE.
+ * The demo's test gamelists. In English, with their descriptions and genres
+ * translated (src/mock/en.json): with your USB drive, Relix shows what ES-DE left.
  * @returns {Record<string, string>}
  */
 function demoGamelists() {
@@ -99,10 +99,10 @@ function webview() {
   return /** @type {any} */ (globalThis).chrome?.webview ?? null
 }
 
-/** 'xbox' dentro de RelixShell; 'browser' en el PC o en la demo */
+/** 'xbox' inside RelixShell; 'browser' on the PC or in the demo */
 export const mode = webview() ? 'xbox' : 'browser'
 
-/** Error que viene del shell. `code` permite mostrar un mensaje a medida. */
+/** An error that comes from the shell. `code` lets a tailored message be shown. */
 export class ShellError extends Error {
   /** @param {string} message @param {string} [code] */
   constructor(message, code) {
@@ -120,7 +120,7 @@ const pending = new Map()
 const listeners = new Set()
 
 /**
- * Quién se entera de los errores del shell (el registro de diagnóstico).
+ * Who hears about the shell's errors (the diagnostic log).
  * @type {((type: string, error: ShellError) => void) | null}
  */
 let errorListener = null
@@ -147,8 +147,8 @@ if (webview()) {
 
 /**
  * @param {string} type @param {any} [payload]
- * @param {{ timeout?: number }} [options]  timeout (ms): para mensajes que un
- *   shell anterior no conoce y nunca respondería
+ * @param {{ timeout?: number }} [options]  timeout (ms): for messages an
+ *   older shell doesn't know and would never answer
  */
 function request(type, payload, { timeout = 0 } = {}) {
   return new Promise((resolve, reject) => {
@@ -164,39 +164,39 @@ function request(type, payload, { timeout = 0 } = {}) {
   })
 }
 
-/** Avisa del error a quien escucha y lo devuelve @param {string} type @param {ShellError} error */
+/** Reports the error to whoever listens and returns it @param {string} type @param {ShellError} error */
 function reportError(type, error) {
   try {
     errorListener?.(type, error)
   } catch {
-    // el registro nunca rompe un pedido
+    // the log never breaks a request
   }
   return error
 }
 
 /**
- * Escucha los eventos del shell (control, regreso desde un emulador).
+ * Listens to the shell's events (controller, coming back from an emulator).
  * @param {(e: ShellEvent) => void} fn
- * @returns {() => void} para dejar de escuchar
+ * @returns {() => void} to stop listening
  */
 export function onShellEvent(fn) {
   listeners.add(fn)
   return () => listeners.delete(fn)
 }
 
-/** Avisa al shell que la interfaz está lista para recibir el control. */
+/** Tells the shell the interface is ready to receive the controller. */
 export function notifyReady() {
   if (mode === 'xbox') webview().postMessage({ type: 'ready' })
 }
 
-// ── Registro de diagnóstico (E:\relix\registro.txt) ─────────────────
+// ── Diagnostic log (E:\relix\log.txt) ───────────────────────────────
 
 const DEMO_LOG_KEY = 'relix:demo-log'
 const DEMO_LOG_MAX = 300
 
 /**
- * Agrega líneas al registro. Sin respuesta: nunca hace esperar a nadie, y un
- * shell anterior simplemente las ignora.
+ * Adds lines to the log. No answer: it never makes anyone wait, and an
+ * older shell simply ignores them.
  * @param {string[]} lines
  */
 export function appendLog(lines) {
@@ -209,12 +209,12 @@ export function appendLog(lines) {
     const saved = JSON.parse(localStorage.getItem(DEMO_LOG_KEY) ?? '[]')
     localStorage.setItem(DEMO_LOG_KEY, JSON.stringify([...saved, ...lines].slice(-DEMO_LOG_MAX)))
   } catch {
-    // sin almacenamiento: la demo no guarda el registro
+    // no storage: the demo doesn't keep the log
   }
 }
 
 /**
- * Las últimas líneas del registro, de la más vieja a la más nueva.
+ * The last lines of the log, oldest to newest.
  * @param {number} count
  * @returns {Promise<string[]>}
  */
@@ -228,8 +228,8 @@ export async function readLog(count) {
 }
 
 /**
- * El idioma de la interfaz ('es' o 'en'), para que el shell escriba sus
- * mensajes en el mismo. Sin respuesta: un shell anterior lo ignora.
+ * The interface's language ('es' or 'en'), so the shell writes its messages
+ * in the same one. No answer: an older shell ignores it.
  * @param {'es'|'en'} language
  */
 export function setShellLanguage(language) {
@@ -238,8 +238,8 @@ export function setShellLanguage(language) {
 }
 
 /**
- * Color de fondo del shell la próxima vez que abra (el del tema, AARRGGBB).
- * Sin respuesta: si el shell es anterior, simplemente no lo usa.
+ * The shell's background color the next time it opens (the theme's, AARRGGBB).
+ * No answer: if the shell is older, it simply doesn't use it.
  * @param {string} color
  */
 export function setShellBackground(color) {
@@ -250,12 +250,12 @@ export function setShellBackground(color) {
  * @typedef {{folder: string, files: string[]}} RomScan
  *
  * @typedef {Object} RawLibrary
- * @property {string} romRoot                  Carpeta de ROMs en la consola
- * @property {string} driveId                  Identifica el disco (si cambia, se vuelve a escanear)
- * @property {string|null} mediaBase           URL base de las imágenes de ES-DE (null = sin portadas)
- * @property {string|null} [thumbBase]         URL base de las miniaturas
- * @property {Record<string, string>} gamelists  XML de ES-DE por sistema
- * @property {Record<string, string[]>} [covers] Portadas en el USB por consola (falta si el shell es anterior)
+ * @property {string} romRoot                  ROM folder on the console
+ * @property {string} driveId                  Identifies the drive (if it changes, it's scanned again)
+ * @property {string|null} mediaBase           Base URL of ES-DE's images (null = no covers)
+ * @property {string|null} [thumbBase]         Base URL of the thumbnails
+ * @property {Record<string, string>} gamelists  ES-DE's XML per system
+ * @property {Record<string, string[]>} [covers] Covers on the USB drive per console (missing if the shell is older)
  */
 
 /** @param {import('./platforms.js').Platform} p */
@@ -277,7 +277,7 @@ export async function loadLibrary() {
 }
 
 /**
- * Recorre las carpetas de roms de las consolas indicadas.
+ * Walks the roms folders of the given consoles.
  * @param {string[]} systemIds
  * @returns {Promise<Record<string, RomScan>>}
  */
@@ -287,8 +287,8 @@ export async function scanRoms(systemIds) {
     const result = await request('scanRoms', { systems: platforms.map(systemRequest) })
     return result.roms
   }
-  // Navegador: "encuentra" los juegos de los gamelists de prueba, con una pausa
-  // para que se vea el estado de escaneo en la demo.
+  // Browser: "finds" the games in the test gamelists, with a pause
+  // so the scanning state shows in the demo.
   await new Promise((resolve) => setTimeout(resolve, 150))
   /** @type {Record<string, RomScan>} */
   const roms = {}
@@ -301,19 +301,19 @@ export async function scanRoms(systemIds) {
 }
 
 /**
- * Abre el emulador. En el navegador emite un evento para mostrar la URI.
+ * Opens the emulator. In the browser it emits an event to show the URI.
  * @param {string} uri
- * @param {string} romPath  Ruta del juego; el shell revisa que exista antes de lanzar
+ * @param {string} romPath  The game's path; the shell checks it exists before launching
  */
 export async function launch(uri, romPath) {
   if (mode === 'xbox') return request('launch', { uri, romPath })
   window.dispatchEvent(new CustomEvent('relix:launch-preview', { detail: { uri } }))
 }
 
-// ── Portadas ─────────────────────────────────────────────────────────────
+// ── Covers ──────────────────────────────────────────────────────────────
 
 /**
- * Portadas que ya están en el USB, con su extensión.
+ * Covers already on the USB drive, with their extension.
  * @param {string[]} systemIds
  * @returns {Promise<Record<string, string[]>>}
  */
@@ -323,7 +323,7 @@ export async function listCovers(systemIds) {
 }
 
 /**
- * Nombres de las portadas de una consola en libretro (sin ".png").
+ * The names of a console's covers on libretro (without ".png").
  * @param {import('./platforms.js').Platform} platform
  * @returns {Promise<string[]>}
  */
@@ -341,11 +341,11 @@ export async function coverIndex(platform) {
  */
 
 /**
- * Baja portadas (o capturas) de libretro al USB.
+ * Downloads covers (or screenshots) from libretro to the USB drive.
  * @param {import('./platforms.js').Platform} platform
  * @param {CoverDownload[]} items
  * @param {(done: number, total: number) => void} [onProgress]
- * @param {'covers'|'screenshots'|'titlescreens'} [kind]  carpeta de ES-DE donde se guardan
+ * @param {'covers'|'screenshots'|'titlescreens'} [kind]  the ES-DE folder they're saved in
  * @returns {Promise<CoverDownloadResult>}
  */
 export async function downloadCovers(platform, items, onProgress, kind = 'covers') {
@@ -354,14 +354,14 @@ export async function downloadCovers(platform, items, onProgress, kind = 'covers
       if (e.event === 'coverProgress' && e.system === platform.id) onProgress?.(e.done ?? 0, e.total ?? 0)
     })
     try {
-      // Sin "kind" el shell baja portadas: así un shell anterior sigue sirviendo para ellas
+      // Without "kind" the shell downloads covers: that way an older shell still works for them
       const payload = { system: platform.id, libretro: platform.libretro, items }
       return await request('downloadCovers', kind === 'covers' ? payload : { ...payload, kind })
     } finally {
       stop()
     }
   }
-  // Navegador: "guarda" la imagen recordando su nombre en libretro
+  // Browser: "saves" the image by remembering its name on libretro
   const saved = kind === 'covers' ? demoCovers() : demoMedia()
   const prefix = kind === 'covers' ? '' : `${kind}/`
   for (const [i, item] of items.entries()) {
@@ -374,15 +374,15 @@ export async function downloadCovers(platform, items, onProgress, kind = 'covers
   return { saved: items.map((i) => i.key), failed: [] }
 }
 
-// ── Fondos, logos y videos (ES-DE/downloaded_media) ─────────────────────
+// ── Backgrounds, logos and videos (ES-DE/downloaded_media) ──────────────
 
-/** Carpeta de libretro de cada tipo que se puede bajar (para la demo) */
+/** The libretro folder of each type that can be downloaded (for the demo) */
 const LIBRETRO_FOLDERS = /** @type {Record<string, string>} */ ({ screenshots: 'Named_Snaps', titlescreens: 'Named_Titles' })
 
 /**
- * Lo que hay en downloaded_media de cada consola: capturas, fanart, logos y videos.
- * Un shell anterior no lo conoce: responde un error (o no responde) y la
- * interfaz sigue solo con portadas.
+ * What's in each console's downloaded_media: screenshots, fan art, logos and videos.
+ * An older shell doesn't know it: it answers with an error (or doesn't answer) and
+ * the interface carries on with covers only.
  * @param {string[]} systemIds
  * @returns {Promise<Record<string, import('./media.js').MediaFiles>>}
  */
@@ -405,10 +405,10 @@ export async function listMedia(systemIds) {
 }
 
 /**
- * URL de una imagen o video de downloaded_media.
+ * The URL of an image or video in downloaded_media.
  * @param {string} system
  * @param {string} type   screenshots, fanart, marquees, videos…
- * @param {string} file   relativo a esa carpeta, con extensión
+ * @param {string} file   relative to that folder, with the extension
  * @param {string|null} mediaBase
  */
 export function mediaFileUrl(system, type, file, mediaBase) {
@@ -422,9 +422,9 @@ export function mediaFileUrl(system, type, file, mediaBase) {
 }
 
 /**
- * URLs de una portada que está en el USB: la original y su miniatura.
+ * The URLs of a cover on the USB drive: the original and its thumbnail.
  * @param {string} system
- * @param {string} file          relativa a covers, con extensión
+ * @param {string} file          relative to covers, with the extension
  * @param {{ mediaBase: string|null, thumbBase?: string|null }} bases
  */
 export function coverUrls(system, file, { mediaBase, thumbBase }) {
@@ -439,11 +439,11 @@ export function coverUrls(system, file, { mediaBase, thumbBase }) {
   return { cover, thumb: thumbBase ? `${thumbBase}/${system}/${path}` : cover }
 }
 
-// En el navegador las portadas "descargadas" se recuerdan en el navegador
+// In the browser, the "downloaded" covers are remembered in the browser
 const DEMO_KEY = 'relix:demo-covers'
 const DEMO_MEDIA_KEY = 'relix:demo-media'
 
-/** @returns {Record<string, string>} "<tipo>/<consola>/<clave>" -> nombre en libretro */
+/** @returns {Record<string, string>} "<type>/<console>/<key>" -> name on libretro */
 function demoMedia() {
   try {
     return JSON.parse(localStorage.getItem(DEMO_MEDIA_KEY) ?? '{}')
@@ -457,11 +457,11 @@ function saveDemo(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value))
   } catch {
-    // sin almacenamiento: se olvidan al recargar
+    // no storage: forgotten on reload
   }
 }
 
-/** @returns {Record<string, string>} "<consola>/<clave>" -> nombre en libretro */
+/** @returns {Record<string, string>} "<console>/<key>" -> name on libretro */
 function demoCovers() {
   try {
     return JSON.parse(localStorage.getItem(DEMO_KEY) ?? '{}')
@@ -475,7 +475,7 @@ function saveDemoCovers(covers) {
   try {
     localStorage.setItem(DEMO_KEY, JSON.stringify(covers))
   } catch {
-    // sin almacenamiento: se olvidan al recargar
+    // no storage: forgotten on reload
   }
 }
 
@@ -491,9 +491,9 @@ function demoCoverFiles(systemIds) {
 }
 
 /**
- * Borra la portada de un juego (queda la de color).
+ * Deletes a game's cover (the color one is left).
  * @param {string} system
- * @param {string} key  ruta del juego sin extensión
+ * @param {string} key  the game's path without its extension
  */
 export async function deleteCover(system, key) {
   if (mode === 'xbox') return request('deleteCover', { system, key })
@@ -503,7 +503,7 @@ export async function deleteCover(system, key) {
   return true
 }
 
-// ── Colecciones (ES-DE/collections/custom-*.cfg) ─────────────────────────
+// ── Collections (ES-DE/collections/custom-*.cfg) ────────────────────────
 
 /** @typedef {{ file: string, text: string }} CollectionFile */
 
@@ -514,8 +514,8 @@ export async function listCollections() {
 }
 
 /**
- * Guarda una colección; con texto vacío, la borra.
- * @param {string} file  "custom-Nombre.cfg"
+ * Saves a collection; with an empty text, it deletes it.
+ * @param {string} file  "custom-Name.cfg"
  * @param {string} text
  */
 export async function saveCollection(file, text) {
@@ -526,7 +526,7 @@ export async function saveCollection(file, text) {
   try {
     localStorage.setItem(DEMO_COLLECTIONS_KEY, JSON.stringify(all))
   } catch {
-    // sin almacenamiento: se olvidan al recargar
+    // no storage: forgotten on reload
   }
   return true
 }
@@ -534,8 +534,8 @@ export async function saveCollection(file, text) {
 const DEMO_COLLECTIONS_KEY = 'relix:demo-collections'
 
 /**
- * En la demo hay una colección de ejemplo (con un juego de una consola que Relix
- * no maneja). Su nombre, en el idioma con que se abrió la demo por primera vez.
+ * The demo has a sample collection (with a game from a console Relix
+ * doesn't handle). Its name is in the language the demo first opened in.
  * @returns {Record<string, string>}
  */
 const demoSeed = () => ({
@@ -559,31 +559,31 @@ function demoCollections() {
   }
 }
 
-// ── Emuladores instalados ────────────────────────────────────────────────
+// ── Installed emulators ─────────────────────────────────────────────────
 
 /**
- * Qué emuladores tiene la Xbox, por protocolo.
+ * Which emulators the Xbox has, by protocol.
  * @param {string[]} protocols
  * @returns {Promise<Record<string, boolean>>}
  */
 export async function emulatorStatus(protocols) {
   if (mode === 'xbox') return (await request('emulatorStatus', { protocols })).status
-  // Demo: una Xbox con RetroArch, PPSSPP, XBSX2 y Xenia Canary
+  // Demo: an Xbox with RetroArch, PPSSPP, XBSX2 and Xenia Canary
   const demo = new Set(['retroarch', 'ppsspp', 'xbsx2', 'xeniacanary'])
   return Object.fromEntries(protocols.map((p) => [p, demo.has(p)]))
 }
 
-// ── Revisión del sistema ─────────────────────────────────────────────────
+// ── System checkup ──────────────────────────────────────────────────────
 
 /**
- * Mide el USB y la consola (ver SystemCheck.cs).
- * @param {string[]} folders  carpetas de BIOS a listar, relativas al USB
+ * Measures the USB drive and the console (see SystemCheck.cs).
+ * @param {string[]} folders  BIOS folders to list, relative to the USB drive
  * @returns {Promise<import('./systemCheck.js').ShellCheck>}
  */
 export async function systemCheck(folders) {
-  // La prueba de internet espera hasta 6 s; un shell anterior al paso 6 no responde
+  // The internet test waits up to 6 s; a shell from before step 6 doesn't answer
   if (mode === 'xbox') return request('systemCheck', { folders }, { timeout: 15_000 })
-  // Demo: un USB de 465 GB con la BIOS de EE. UU. de PS1 (falta la europea) y una carpeta de NES
+  // Demo: a 465 GB USB drive with the US PS1 BIOS (the European one is missing) and a NES folder
   await new Promise((resolve) => setTimeout(resolve, 300))
   return {
     drive: 'E:\\',
@@ -597,7 +597,7 @@ export async function systemCheck(folders) {
   }
 }
 
-// ── Tus datos (E:\relix\datos.json) ─────────────────────────────────────
+// ── Your data (E:\relix\data.json) ──────────────────────────────────────
 
 /** @typedef {{ driveId: string, text: string|null, source: string|null }} UserDataFile */
 
@@ -608,23 +608,23 @@ export async function loadUserData() {
   try {
     text = localStorage.getItem(DEMO_USERDATA_KEY)
   } catch {
-    // sin almacenamiento: la demo parte con los datos de ejemplo
+    // no storage: the demo starts with the sample data
   }
   return { driveId: 'demo', text: text ?? DEMO_USERDATA, source: 'data.json' }
 }
 
-/** @param {string} text  contenido completo de datos.json */
+/** @param {string} text  the whole content of data.json */
 export async function saveUserData(text) {
   if (mode === 'xbox') return request('saveUserData', { text })
   try {
     localStorage.setItem(DEMO_USERDATA_KEY, text)
   } catch {
-    // sin almacenamiento: se olvida al recargar
+    // no storage: forgotten on reload
   }
   return true
 }
 
-// En la demo, el "USB" es el navegador. Trae algo de tiempo jugado de ejemplo.
+// In the demo, the "USB drive" is the browser. It comes with some sample playtime.
 const DEMO_USERDATA_KEY = 'relix:demo-userdata'
 const DEMO_USERDATA = JSON.stringify({
   app: 'relix',

@@ -37,20 +37,20 @@
    */
   let { systemId, onBack, onSwitch, onLaunch, onOptions, onMenu, onSearch, onGuide } = $props()
 
-  /** Consola sin juegos: Y abre su guía (no aplica a Favoritos ni Colecciones) */
+  /** A console without games: Y opens its guide (doesn't apply to Favorites or Collections) */
   const guideable = $derived(Boolean(getPlatform(systemId)))
 
   const COLUMNS = 5
   const COVER_W = 178
   const ROW_GAP = 44
-  const ROW_H = Math.round(COVER_W / TILE_ASPECT) + ROW_GAP // alto de portada + separación
+  const ROW_H = Math.round(COVER_W / TILE_ASPECT) + ROW_GAP // cover height + gap
 
   let index = $state(0)
 
-  // Pestañas: los canales visibles o, dentro de una colección, las colecciones
+  // Tabs: the visible channels or, inside a collection, the collections
   const tabs = $derived(shelf.tabsFor(systemId))
 
-  // Pestañas que se deslizan: la activa queda al centro, sin pasarse de los extremos
+  // Tabs that slide: the active one stays in the center, without going past the ends
   /** @type {HTMLElement | undefined} */
   let tabWindow = $state()
   /** @type {HTMLElement | undefined} */
@@ -72,7 +72,7 @@
   const channel = $derived(shelf.channelFor(systemId))
   const inCollection = $derived(isCollectionId(systemId))
 
-  // Orden: "Más jugados" solo si ya jugaste alguno; "Año", si algún juego trae el año (de ES-DE)
+  // Order: "Most played" only if you've played some; "Year", if any game has a year (from ES-DE)
   const unsorted = $derived(shelf.gamesFor(systemId))
   const sortOptions = $derived(
     /** @type {import('../lib/core/sorting.js').SortOrder[]} */ ([
@@ -83,7 +83,7 @@
     ]),
   )
   const order = $derived(sortOptions.includes(settings.sortOrder) ? settings.sortOrder : 'az')
-  // Filtro de este canal (Y › Filtrar). Si ya no deja ningún juego, se ignora
+  // This channel's filter (Y › Filter). If it no longer leaves any game, it's ignored
   const filter = $derived(activeFilters.get(systemId) ?? null)
   const filtered = $derived.by(() => {
     const list = applyFilter(unsorted, filter)
@@ -95,17 +95,17 @@
   const game = $derived(games[Math.min(index, games.length - 1)])
   const platform = $derived(game ? getPlatform(game.system) : null)
   const favorite = $derived(game ? library.isFavorite(game) : false)
-  /** Con qué se abre el juego enfocado (null: la consola aún no tiene emulador) */
+  /** What the focused game opens with (null: the console has no emulator yet) */
   const emulator = $derived(game ? emulators.forGame(game) : null)
-  /** Tiempo jugado del juego enfocado (si ya lo jugaste) */
+  /** The focused game's time played (if you've played it) */
   const played = $derived(game ? library.playtime[game.id] : undefined)
 
-  // Ficha con imagen: fanart o captura arriba, el logo encima y, si te quedas,
-  // el video. Sin nada de eso queda la caja grande, como siempre
+  // A panel with an image: fan art or a screenshot on top, the logo over it and, if you stay,
+  // the video. Without any of that, the big box stays, as always
   const background = $derived(usableMedia(game?.background))
   const logo = $derived(usableMedia(game?.logo))
   const video = $derived(usableMedia(game?.video))
-  // Con el video andando, el logo se desvanece para no taparlo
+  // With the video playing, the logo fades so it doesn't cover it
   let videoPlaying = $state(false)
   $effect(() => {
     game?.id
@@ -113,8 +113,8 @@
   })
   const framed = $derived(Boolean(background || video))
 
-  // Fondo de la pantalla: la imagen del juego, muy difuminada. Espera un
-  // momento antes de cambiar, para no parpadear al recorrer la grilla rápido
+  // The screen's background: the game's image, heavily blurred. It waits a
+  // moment before changing, so it doesn't flicker when going through the grid fast
   let ambient = $state('')
   $effect(() => {
     const next = background ?? usableMedia(game?.thumb) ?? ''
@@ -122,10 +122,10 @@
     const timer = setTimeout(() => (ambient = next), 280)
     return () => clearTimeout(timer)
   })
-  // Sección del juego enfocado: la letra en A–Z, el año en "Año"
+  // The focused game's section: the letter in A–Z, the year in "Year"
   const section = $derived(game ? (sectionOf(game, order) ?? '•') : '')
 
-  // Si la lista cambia (otro orden, un juego oculto...), el foco sigue en el mismo juego
+  // If the list changes (another order, a hidden game...), the focus stays on the same game
   let focusedGameId = ''
   $effect(() => {
     focusedGameId = game?.id ?? ''
@@ -139,7 +139,7 @@
     })
   })
 
-  // Desplazamiento de la grilla: mantiene visible la fila enfocada
+  // The grid's scroll: keeps the focused row visible
   const row = $derived(Math.floor(index / COLUMNS))
   let scrollRow = $state(0)
   $effect(() => {
@@ -147,7 +147,7 @@
     else if (row > scrollRow + 1) scrollRow = row - 1
   })
 
-  // Al cambiar de consola, volver al primer juego
+  // When the console changes, back to the first game
   $effect(() => {
     systemId
     untrack(() => {
@@ -157,9 +157,9 @@
     })
   })
 
-  // Letra grande al saltar con LT / RT
+  // The big letter when jumping with LT / RT
   let bubble = $state('')
-  /** Cambia en cada salto para que la animación vuelva a empezar */
+  /** Changes on every jump so the animation starts again */
   let bubbleId = $state(0)
   /** @type {ReturnType<typeof setTimeout>} */
   let bubbleTimer
@@ -247,7 +247,7 @@
     <button class="bumper" onclick={() => dispatch('lb')} aria-label={t('Anterior')}>
       <PadButton name="lb" size={30} />
     </button>
-    <!-- Con muchas consolas, las pestañas se deslizan para mostrar la activa -->
+    <!-- With many consoles, the tabs slide to show the active one -->
     <div class="tab-window" class:sliding={tabsOverflow} bind:this={tabWindow}>
       <div class="tab-strip" bind:this={tabStrip} style:transform="translateX({-tabOffset}px)">
         {#each tabs as ch (ch.id)}
@@ -308,7 +308,7 @@
           {#if background}
             <img class="shot" src={background} alt="" onerror={() => brokenMedia.add(background)} />
           {:else if game.cover}
-            <!-- Solo video: mientras espera, la portada difuminada -->
+            <!-- Video only: while it waits, the blurred cover -->
             <img class="shot blurred" src={game.cover} alt="" />
           {/if}
           {#if video}<PreviewVideo src={video} sound={settings.videoSound} onplaying={() => (videoPlaying = true)} />{/if}
@@ -326,7 +326,7 @@
         </div>
       {:else}
         <div class="detail-cover">
-          <!-- Aquí sí, la caja completa con su forma real -->
+          <!-- Here, yes, the whole box with its real shape -->
           <CoverArt {game} {platform} width={250} height={350} showTitle={false} real />
           {#if favorite}<span class="heart" aria-label={t('Favorito')}>♥</span>{/if}
         </div>
@@ -347,7 +347,7 @@
         {#if game.description}
           <p class="desc" class:short={framed}>{game.description}</p>
         {:else}
-          <!-- Sin datos de ES-DE: el nombre del archivo dice qué versión es -->
+          <!-- Without ES-DE data: the file name says which version it is -->
           <p class="file">{game.path.split('/').pop()}</p>
         {/if}
         <p class="via">
@@ -446,8 +446,8 @@
   .bumper {
     padding: 0 8px;
   }
-  /* la ventana cabe entre el logo y el reloj; si las pestañas no caben, se
-     deslizan y se desvanecen en los bordes (así se nota que hay más) */
+  /* the window fits between the logo and the clock; if the tabs don't fit, they
+     slide and fade at the edges (that way it shows there are more) */
   .tab-window {
     max-width: 1040px;
     overflow: hidden;
@@ -479,9 +479,9 @@
     color: var(--ink-c);
   }
 
-  /* ── Fondo difuminado ─────────────────── */
-  /* La imagen se dibuja chica y se agranda 4 veces: el desenfoque cuesta mucho
-     menos que hacerlo a pantalla completa y se ve igual de suave */
+  /* ── Blurred background ──────────────── */
+  /* The image is drawn small and enlarged 4 times: the blur costs much
+     less than doing it full screen and looks just as smooth */
   .ambient {
     position: absolute;
     inset: 0;
@@ -500,7 +500,7 @@
     filter: blur(9px) saturate(1.25);
     opacity: 0.4;
   }
-  /* un velo celeste: más fuerte abajo, donde van las pistas y la posición */
+  /* a light blue veil: stronger at the bottom, where the hints and the position go */
   .ambient::after {
     content: '';
     position: absolute;
@@ -513,7 +513,7 @@
     );
   }
 
-  /* ── Panel del juego enfocado ─────────── */
+  /* ── The focused game's panel ────────── */
   .detail {
     position: absolute;
     left: 112px;
@@ -564,7 +564,7 @@
     font-size: 44px;
   }
 
-  /* ── Ficha con imagen ─────────────────── */
+  /* ── Panel with an image ─────────────── */
   .media {
     position: relative;
     flex: none;
@@ -616,7 +616,7 @@
     top: 16px;
     box-shadow: none;
   }
-  /* la caja chica se sube sobre la imagen, con un borde blanco */
+  /* the small box rises over the image, with a white border */
   .headline {
     display: flex;
     align-items: flex-end;
@@ -696,14 +696,14 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  /* con imagen arriba queda menos lugar: dos líneas */
+  /* with an image on top there's less room: two lines */
   .desc.short {
     margin-top: 16px;
     font-size: 23px;
     -webkit-line-clamp: 2;
     line-clamp: 2;
   }
-  /* ── Posición en la lista ─────────────── */
+  /* ── Position in the list ────────────── */
   .position {
     position: absolute;
     left: 112px;
@@ -743,7 +743,7 @@
     background: var(--ink);
     color: var(--cloud);
   }
-  /* letra grande al saltar con LT / RT */
+  /* the big letter when jumping with LT / RT */
   .bubble {
     position: absolute;
     left: 1290px;
@@ -821,7 +821,7 @@
     line-height: 1.35;
   }
 
-  /* ── Grilla ───────────────────────────── */
+  /* ── Grid ─────────────────────────────── */
   .grid-window {
     position: absolute;
     left: 776px;
@@ -829,14 +829,14 @@
     top: 134px;
     height: 836px;
     overflow: hidden;
-    /* espacio extra para que el aro y el salto del foco no se corten */
+    /* extra room so the focus ring and jump aren't cut off */
     padding: 42px 20px 0;
     margin: 0 -20px;
   }
   .grid {
     display: grid;
     grid-template-columns: repeat(5, 178px);
-    gap: 44px 35px; /* filas, columnas: ver la regla de espacio en app.css */
+    gap: 44px 35px; /* rows, columns: see the spacing rule in app.css */
     transition: transform 320ms var(--spring);
   }
   .cell {
@@ -857,7 +857,7 @@
     font-size: 20px;
   }
 
-  /* ── Vacío ────────────────────────────── */
+  /* ── Empty ───────────────────────────── */
   .empty {
     position: absolute;
     left: 112px;

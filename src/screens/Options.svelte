@@ -37,12 +37,12 @@
    *   initialSection?: string,
    *   initialRow?: string,
    * }}
-   *   initialRow: fila con el foco al abrir (p. ej. la consola de la guía de la que vuelves).
-   *   En Revisión basta la consola: "psx" enfoca su primer chequeo ("emu:psx").
+   *   initialRow: the row with the focus on opening (e.g. the console of the guide you're coming back from).
+   *   In Checkup the console is enough: "psx" focuses its first check ("emu:psx").
    */
   let { onBack, onToast, onPickCovers, onGuide, onWelcome, initialSection = 'library', initialRow } = $props()
 
-  // Secciones: se cambian con LB/RB, igual que las consolas en la biblioteca
+  // Sections: they change with LB/RB, just like the consoles in the library
   const SECTIONS = $derived([
     { id: 'library', name: t('Biblioteca') },
     { id: 'consoles', name: t('Consolas') },
@@ -51,12 +51,12 @@
     { id: 'preferences', name: t('Preferencias') },
     { id: 'about', name: t('Acerca de') },
   ])
-  // Biblioteca: una fila por consola, "Escanear todo" y los juegos ocultos
+  // Library: a row per console, "Scan everything" and the hidden games
   const LIBRARY_ROWS = [...PLATFORMS.map((p) => p.id), 'all', 'hidden']
   const PREFERENCE_ROWS = ['language', 'theme', 'empty', 'sounds', 'region', 'video', 'screensaver']
-  // Consolas: con qué emulador se abre cada una
+  // Consoles: which emulator each one opens with
   const CONSOLE_ROWS = PLATFORMS.map((p) => p.id)
-  /** Cuántas apps de emulador distintas tiene la Xbox (RetroArch cuenta una vez) */
+  /** How many different emulator apps the Xbox has (RetroArch counts once) */
   const installedApps = $derived(
     new Set(
       PLATFORMS.flatMap((p) => p.emulators)
@@ -65,27 +65,27 @@
     ).size,
   )
 
-  // Portadas: las consolas con juegos, "Buscar en todas" y "Elegir a mano"
+  // Covers: the consoles with games, "Search all" and "Pick by hand"
   const coverPlatforms = $derived.by(() => {
     const withGames = PLATFORMS.filter((p) => library.gamesFor(p.id).length > 0)
     return withGames.length > 0 ? withGames : PLATFORMS
   })
   const COVER_ROWS = $derived([...coverPlatforms.map((p) => p.id), 'all', 'choose'])
 
-  // Revisión: primero lo que hay que arreglar, después los avisos y lo que está bien
+  // Checkup: first what needs fixing, then the warnings and what's fine
   const STATE_ORDER = { update: -1, error: 0, warn: 1, info: 2, ok: 3 }
   const sortedChecks = $derived(
     [...systemStatus.checks].sort((a, b) => STATE_ORDER[a.state] - STATE_ORDER[b.state]),
   )
   const checkById = $derived(new Map(sortedChecks.map((c) => [c.id, c])))
   const CHECK_ROWS = $derived([...sortedChecks.map((c) => c.id), 'recheck', 'log', 'welcome'])
-  /** El visor del registro de diagnóstico, encima de Revisión */
+  /** The diagnostic log viewer, on top of Checkup */
   let showLog = $state(false)
   const logDrive = $derived(library.romRoot.replace(/roms[\\/]*$/i, '') || 'E:\\')
   const MARKS = { ok: '✓', warn: '!', error: '✗', info: 'i', update: '↑' }
   const STATE_TINTS = { ok: '#3FAE49', warn: '#F2B705', error: 'var(--pop)', info: '#8FA3BF', update: 'var(--btn-x)' }
 
-  // Solo importa al abrir (p. ej. volver a Portadas desde "Elegir a mano")
+  // It only matters on opening (e.g. back to Covers from "Pick by hand")
   // svelte-ignore state_referenced_locally
   let section = $state(initialSection)
   const ROWS = $derived(
@@ -99,11 +99,11 @@
             ? COVER_ROWS
             : section === 'preferences'
               ? PREFERENCE_ROWS
-              : [], // Acerca de: solo para leer
+              : [], // About: read-only
   )
 
-  // Lista que se desliza: el desplazamiento justo para que la fila enfocada
-  // quede entera a la vista, con margen para su aro
+  // A list that slides: just enough scroll for the focused row to stay
+  // fully in view, with a margin for its ring
   let rowsScroll = $state(0)
   /** @type {HTMLElement | undefined} */
   let rowsEl = $state()
@@ -123,23 +123,23 @@
     })
   })
 
-  // Al entrar a Consolas se vuelve a preguntar qué hay instalado
+  // On entering Consoles it asks again what's installed
   $effect(() => {
     if (section === 'consoles') untrack(() => emulators.check())
   })
-  // Al entrar a Revisión se revisa de nuevo, salvo que se haya hecho recién
-  // (p. ej. al volver de una guía)
+  // On entering Checkup it checks again, unless it was just done
+  // (e.g. when coming back from a guide)
   $effect(() => {
     if (section !== 'check') return
     untrack(() => {
       if (Date.now() - systemStatus.checkedAt > 20_000) systemStatus.run().then(() => (now = Date.now()))
     })
   })
-  /** "2026-10-16" -> "16 oct 2026" ("Oct 16, 2026" en inglés) */
+  /** "2026-10-16" -> "16 oct 2026" in Spanish ("Oct 16, 2026" in English) */
   const buildDate = $derived(
     BUILD_DATE ? formatDate(new Date(`${BUILD_DATE}T12:00:00`), { day: 'numeric', month: 'short', year: 'numeric' }) : '',
   )
-  /** La fila de initialRow: exacta o, en Revisión, el primer chequeo de esa consola */
+  /** The initialRow row: exact or, in Checkup, that console's first check */
   function initialIndex() {
     if (!initialRow) return 0
     const exact = ROWS.indexOf(initialRow)
@@ -148,8 +148,8 @@
   }
   let index = $state(initialIndex())
 
-  // En Revisión las filas cambian al revisar de nuevo (aparecen, se arreglan):
-  // el foco sigue a la fila que tenía y no a su posición
+  // In Checkup the rows change when checking again (they appear, get fixed):
+  // the focus follows the row it had and not its position
   let focusedKey = ''
   $effect.pre(() => {
     const rows = ROWS
@@ -163,11 +163,11 @@
   $effect(() => {
     focusedKey = `${section}/${ROWS[index] ?? ''}`
   })
-  /** true mientras corre "Escanear todo" (las filas muestran cuál va) */
+  /** true while "Scan everything" runs (the rows show which one it's on) */
   let scanningAll = $state(false)
-  /** true mientras corre "Buscar en todas" */
+  /** true while "Search all" runs */
   const searchingAll = $derived(covers.all !== null)
-  /** Para refrescar los "hace X min" mientras la pantalla está abierta */
+  /** To refresh the "X min ago" while the screen is open */
   let now = $state(Date.now())
 
   $effect(() => {
@@ -231,7 +231,7 @@
       if (id !== 'all') {
         onToast(await scanOne(id))
       } else {
-        // Una consola tras otra, para que se vea el avance fila por fila
+        // One console after another, so the progress shows row by row
         let added = 0
         let removed = 0
         scanningAll = true
@@ -291,7 +291,7 @@
       if (id !== 'all') {
         onToast(coverSummary(getPlatform(id)?.shortName ?? id, await covers.find(id)))
       } else {
-        // Una consola tras otra, solo las que tienen juegos sin portada
+        // One console after another, only the ones with games without a cover
         onToast(coverSummary(t('Listo'), await covers.findAll()))
       }
       now = Date.now()
@@ -302,7 +302,7 @@
     }
   }
 
-  /** Consolas: A pasa al emulador siguiente */
+  /** Consoles: A moves to the next emulator */
   function consoleRow() {
     const platform = getPlatform(ROWS[index])
     if (!platform) return
@@ -325,7 +325,7 @@
     if (next?.note) onToast(`${next.name}: ${t(next.note)}.`)
   }
 
-  /** Revisión: A abre la guía del chequeo, revisa de nuevo o abre el recorrido */
+  /** Checkup: A opens the check's guide, checks again or opens the tour */
   async function checkRow() {
     const id = ROWS[index]
     if (id === 'welcome') {
@@ -370,10 +370,10 @@
     else if (id === 'screensaver') settings.cycleScreensaver()
     else if (id === 'theme') settings.cycleTheme()
     else if (id === 'language') settings.cycleLanguage()
-    sound.select() // con los sonidos recién apagados, este ya no suena
+    sound.select() // with the sounds just turned off, this one doesn't play
   }
 
-  /** "45 de 52 con portada" y qué tan llena está la consola (0 a 1) */
+  /** "45 of 52 with a cover" and how full the console is (0 to 1) */
   function coverMeta(/** @type {string} */ id) {
     const { withCover, total } = library.coverCount(id)
     return {
@@ -517,13 +517,13 @@
       {#if updates.available && updates.latest}
         <li class="new">{t('Hay una versión nueva: {version}', { version: updates.latest.version })}</li>
       {/if}
-      <!-- Con versión nueva, su aviso ocupa el lugar de la fecha (si no, los créditos no caben) -->
+      <!-- With a new version, its notice takes the date's place (otherwise the credits don't fit) -->
       {#if buildDate && !updates.available}<li>{t('Compilada el {date}', { date: buildDate })}</li>{/if}
       <li>{mode === 'xbox' ? t('Xbox · Modo Desarrollador') : t('Demo en el navegador')}</li>
     </ul>
     <div class="credits">
       <strong>© 2026 snyker-fair</strong>
-      <!-- Aviso que pide la GPL en un programa interactivo: autor, licencia, sin garantía y dónde leerla -->
+      <!-- The notice the GPL asks for in an interactive program: author, license, no warranty and where to read it -->
       <p class="legal">
         {t('Licencia GPL-3.0 o posterior, sin garantía: compártelo y modifícalo bajo sus términos (ver LICENSE).')}
       </p>
@@ -542,7 +542,7 @@
 {#if section === 'about'}
 <About />
 {:else}
-<!-- Con doce consolas las filas no caben: la lista se desliza para mostrar la enfocada -->
+<!-- With twelve consoles the rows don't fit: the list slides to show the focused one -->
 <div class="rows-window">
 {#if section === 'library'}
 <section class="rows compact" aria-label={t('Escanear consolas')} bind:this={rowsEl} style:transform="translateY({-rowsScroll}px)">
@@ -855,7 +855,7 @@
       </span>
       <span class="text">
         {#if id === 'language'}
-          <!-- En los dos idiomas a la vez, así lo encuentra quien no lee el que se ve -->
+          <!-- In both languages at once, so whoever can't read the one shown finds it -->
           <strong>{t('Idioma · Language')}</strong>
           <span>
             {settings.language === 'auto'
@@ -988,7 +988,7 @@
     background: var(--cloud);
   }
 
-  /* ── Columna izquierda ───────────────── */
+  /* ── Left column ─────────────────────── */
   .intro {
     position: absolute;
     left: 112px;
@@ -1063,7 +1063,7 @@
     vertical-align: -4px;
     margin: 0 2px;
   }
-  /* nota al pie del panel de Revisión */
+  /* a footnote on the Checkup panel */
   .intro p.note {
     margin-top: 26px;
     padding-top: 18px;
@@ -1071,7 +1071,7 @@
     font-size: 20px;
     line-height: 1.4;
   }
-  /* créditos, al pie del panel de Acerca de */
+  /* credits, at the foot of the About panel */
   .credits {
     margin-top: 18px;
     padding-top: 14px;
@@ -1091,12 +1091,12 @@
     color: var(--ink);
   }
 
-  /* ── Filas ───────────────────────────── */
-  /* El aro del foco (11 px) deja al menos 16 px libres hasta la fila vecina */
-  /* La ventana de las filas va de 142 a 970 px; la primera fila queda en 170
-     como el panel de la izquierda. Las filas tienen aire alrededor para el aro
-     del foco y se deslizan cuando no caben; arriba y abajo se desvanecen, así
-     una fila a medio salir no se ve como un borde cortado. */
+  /* ── Rows ────────────────────────────── */
+  /* The focus ring (11 px) leaves at least 16 px free up to the next row */
+  /* The rows' window goes from 142 to 970 px; the first row sits at 170
+     like the left panel. The rows have room around them for the focus
+     ring and slide when they don't fit; at the top and bottom they fade, so
+     a row halfway out doesn't look like a cut edge. */
   .rows-window {
     position: absolute;
     left: 760px;
@@ -1124,14 +1124,14 @@
     background: var(--cloud);
     text-align: left;
   }
-  /* las filas son anchas: no se mueven ni crecen (se saldrían del borde), solo el aro */
+  /* the rows are wide: they don't move or grow (they'd go past the edge), only the ring */
   .row.focus-ring.focused {
     transform: none;
   }
   .row.all {
     margin-top: 10px;
   }
-  /* Biblioteca y Portadas tienen siete filas: un poco más bajas para que quepan */
+  /* Library and Covers have seven rows: a bit shorter so they fit */
   .rows.compact {
     gap: 30px;
   }
@@ -1149,7 +1149,7 @@
   .badge.pick {
     background: var(--sun);
   }
-  /* Revisión: el detalle puede ocupar dos líneas, así que la fila crece */
+  /* Checkup: the detail can take two lines, so the row grows */
   .rows.review {
     gap: 30px;
   }
@@ -1255,7 +1255,7 @@
     background: var(--ok-bg);
     color: var(--ok-ink);
   }
-  /* "PlayStation  12 juegos" en la fila de Consolas */
+  /* "PlayStation  12 games" in the Consoles row */
   .text strong small {
     margin-left: 12px;
     font-family: var(--font-body);

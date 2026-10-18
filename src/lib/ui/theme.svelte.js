@@ -1,18 +1,18 @@
 /**
- * Aplica el tema elegido en Preferencias: pone data-theme en <html> (app.css
- * cambia los colores) y le avisa al shell qué fondo usar la próxima vez que
- * abra. En Automático revisa la hora cada minuto.
+ * Applies the theme chosen in Preferences: sets data-theme on <html> (app.css
+ * changes the colors) and tells the shell which background to use the next time it
+ * opens. In Automatic it checks the time every minute.
  *
- * index.html hace lo mismo antes de pintar, para que no haya destello.
+ * index.html does the same before painting, so there's no flash.
  */
 import { setShellBackground } from '../core/bridge.js'
 import { effectiveTheme, SHELL_BACKGROUND } from '../core/theme.js'
 import { settings } from './settings.svelte.js'
 
 class Theme {
-  /** Para que Automático se entere de la hora */
+  /** So Automatic knows the time */
   now = $state(Date.now())
-  /** 'light' o 'dark': el que se ve ahora */
+  /** 'light' or 'dark': the one shown now */
   current = $derived(effectiveTheme(settings.theme, new Date(this.now)))
 
   #started = false

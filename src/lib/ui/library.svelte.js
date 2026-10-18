@@ -1,16 +1,16 @@
 /**
- * Estado compartido de la biblioteca (runes de Svelte 5).
+ * The library's shared state (Svelte 5 runes).
  *
- * La biblioteca se arma con dos fuentes:
- *   - lo que hay en roms\<consola>\ (el escaneo), que se GUARDA para abrir al
- *     instante la próxima vez, y se actualiza desde Opciones consola por consola;
- *   - los gamelists de ES-DE (opcionales), que se leen en cada inicio porque
- *     son pocos archivos.
+ * The library is built from two sources:
+ *   - what's in roms\<console>\ (the scan), which is SAVED to open
+ *     instantly next time, and updated from Options console by console;
+ *   - ES-DE's gamelists (optional), which are read on every start because
+ *     they're few files.
  *
- * Las portadas están en ES-DE/downloaded_media/<consola>/covers/, con el
- * nombre del juego. El shell dice cuáles hay; así la interfaz solo pide las
- * que existen y sabe cuántas faltan. Lo mismo con los fondos (fanart,
- * capturas), los logos y los videos, que se leen después de abrir.
+ * The covers are in ES-DE/downloaded_media/<console>/covers/, with the
+ * game's name. The shell says which ones there are; that way the interface only
+ * asks for the ones that exist and knows how many are missing. The same with the
+ * backgrounds (fan art, screenshots), the logos and the videos, which are read after opening.
  */
 import { coverUrls, listCovers, listMedia, loadLibrary, mediaFileUrl, scanRoms } from '../core/bridge.js'
 import { coverKey } from '../core/coverMatch.js'
@@ -25,9 +25,9 @@ import { load, onReplaced, save } from './storage.js'
  * @typedef {import('../core/esde.js').Game & {
  *   cover?: string, thumb?: string, background?: string, backgroundKind?: string, logo?: string, video?: string
  * }} LibraryGame
- *   cover: portada original (panel de detalle); thumb: miniatura (grilla);
- *   background: fanart o captura (panel y protector); backgroundKind: de qué carpeta salió
- *   (fanart, screenshots, titlescreens); logo: el de ES-DE; video: vista previa
+ *   cover: the original cover (detail panel); thumb: the thumbnail (grid);
+ *   background: fan art or screenshot (panel and screensaver); backgroundKind: which folder it came from
+ *   (fanart, screenshots, titlescreens); logo: ES-DE's; video: the preview
  */
 /** @typedef {{ folder: string, files: string[], scannedAt: number }} SavedScan */
 /** @typedef {{ driveId: string, systems: Record<string, SavedScan> }} ScanCache */
@@ -41,39 +41,39 @@ class Library {
   status = $state('loading')
   error = $state('')
   romRoot = $state('')
-  /** Último escaneo de cada consola: la "lista guardada" */
+  /** Each console's last scan: the "saved list" */
   /** @type {Record<string, SavedScan>} */
   scans = $state({})
-  /** Consolas que se están escaneando en este momento */
+  /** Consoles being scanned right now */
   /** @type {string[]} */
   scanning = $state([])
-  /** Avance del primer escaneo, para la pantalla de carga */
+  /** The first scan's progress, for the loading screen */
   /** @type {{ name: string, current: number, total: number } | null} */
   progress = $state(null)
   /** @type {Record<string, LibraryGame[]>} */
   bySystem = $state({})
-  /** Favoritos marcados o desmarcados desde Relix (pisan el valor de ES-DE) */
+  /** Favorites set or unset from Relix (they override ES-DE's value) */
   /** @type {Record<string, boolean>} */
   favoriteOverrides = $state(load('favorites', {}))
   /** @type {string[]} */
   recentIds = $state(load('recent', []))
-  /** Portadas que hay en el USB, por consola: ["Okami (USA).png", ...] */
+  /** The covers on the USB drive, by console: ["Okami (USA).png", ...] */
   /** @type {Record<string, string[]>} */
   coverFiles = $state({})
-  /** Fondos, logos y videos en el USB, por consola y tipo (ver core/media.js) */
+  /** Backgrounds, logos and videos on the USB drive, by console and type (see core/media.js) */
   /** @type {Record<string, import('../core/media.js').MediaFiles>} */
   mediaFiles = $state({})
-  /** Juegos ocultos desde el menú del juego (BIOS, demos, duplicados...) */
+  /** Games hidden from the game menu (BIOS files, demos, duplicates...) */
   /** @type {string[]} */
   hiddenIds = $state(load('hidden', []))
-  /** Cuándo se jugó cada juego por última vez (para ordenar por recientes) */
+  /** When each game was last played (to sort by recent) */
   /** @type {Record<string, number>} */
   lastPlayed = $state(load('lastPlayed', {}))
-  /** Tiempo jugado y partidas de cada juego */
+  /** Each game's time played and sessions */
   /** @type {Record<string, import('../core/userData.js').PlayStats>} */
   playtime = $state(load('playtime', {}))
 
-  /** Lo que se muestra: todo menos los ocultos */
+  /** What's shown: everything but the hidden ones */
   /** @type {Record<string, LibraryGame[]>} */
   visibleBySystem = $derived.by(() => {
     const hidden = new Set(this.hiddenIds)
@@ -87,11 +87,11 @@ class Library {
   /** @type {Map<string, LibraryGame>} */
   byId = $derived(new Map(this.all.map((g) => [g.id, g])))
 
-  /** Por id en minúsculas (las colecciones de ES-DE no distinguen mayúsculas) */
+  /** By lowercase id (ES-DE's collections are case-insensitive) */
   /** @type {Map<string, LibraryGame>} */
   byKey = $derived(new Map(this.all.map((g) => [g.id.toLowerCase(), g])))
 
-  /** Carpeta en minúsculas -> consola: "ps1" -> "psx" (para leer colecciones) */
+  /** Lowercase folder -> console: "ps1" -> "psx" (to read collections) */
   /** @type {Map<string, string>} */
   folderToSystem = $derived.by(() => {
     const map = new Map()
@@ -107,22 +107,22 @@ class Library {
 
   recent = $derived(this.recentIds.map((id) => this.byId.get(id)).filter((g) => g !== undefined))
 
-  // Datos del inicio que no cambian al re-escanear
+  // Startup data that doesn't change when scanning again
   /** @type {Record<string, import('../core/esde.js').Game[]>} */
   #listed = {}
   /** @type {string|null} */
   #mediaBase = null
   /** @type {string|null} */
   #thumbBase = null
-  /** El shell manda la lista de portadas (si es una versión anterior, no) */
+  /** The shell sends the list of covers (an older version doesn't) */
   #knowsCovers = false
   #driveId = ''
-  /** Portadas reemplazadas desde Relix: cambia la URL para no ver la anterior guardada */
+  /** Covers replaced from Relix: the URL changes so the old saved one doesn't show */
   /** @type {Record<string, number>} */
   #coverRevisions = load('coverRevisions', {})
 
   constructor() {
-    // Llegaron tus datos del USB: se vuelven a leer
+    // Your data arrived from the USB drive: they're read again
     onReplaced(() => {
       this.favoriteOverrides = load('favorites', {})
       this.recentIds = load('recent', [])
@@ -150,12 +150,12 @@ class Library {
         }),
       )
 
-      // La lista guardada solo vale para el mismo disco
+      // The saved list is only valid for the same drive
       const cache = /** @type {ScanCache|null} */ (load(SCANS_KEY, null))
       this.scans = cache && cache.driveId === raw.driveId ? cache.systems : {}
 
-      // Primera vez o disco nuevo: se escanean las consolas que no tienen lista,
-      // de a una para mostrar el avance en la pantalla de carga
+      // The first time or a new drive: the consoles without a list are scanned,
+      // one at a time to show the progress on the loading screen
       const missing = PLATFORMS.filter((p) => !this.scans[p.id])
       for (const [i, p] of missing.entries()) {
         this.progress = { name: p.shortName, current: i + 1, total: missing.length }
@@ -172,9 +172,9 @@ class Library {
   }
 
   /**
-   * Demo en el navegador: vuelve a leer los gamelists de prueba, que traen sus
-   * descripciones en el idioma activo (con tu USB, los gamelists son los de ES-DE
-   * y no cambian con el idioma).
+   * Demo in the browser: reads the test gamelists again, which come with their
+   * descriptions in the active language (with your USB drive, the gamelists are ES-DE's
+   * and don't change with the language).
    */
   async reloadDemoGamelists() {
     const raw = await loadLibrary()
@@ -188,7 +188,7 @@ class Library {
   }
 
   /**
-   * Vuelve a escanear consolas y cuenta qué cambió en cada una.
+   * Scans consoles again and counts what changed in each.
    * @param {string[]} systemIds
    * @returns {Promise<ScanChange[]>}
    */
@@ -226,7 +226,7 @@ class Library {
     save(SCANS_KEY, { driveId: this.#driveId, systems: next })
   }
 
-  /** Arma los juegos de cada consola con el escaneo guardado, ES-DE y las portadas */
+  /** Builds each console's games from the saved scan, ES-DE and the covers */
   #rebuild() {
     /** @type {Record<string, LibraryGame[]>} */
     const bySystem = {}
@@ -246,11 +246,11 @@ class Library {
 
   /**
    * @param {import('../core/esde.js').Game} game
-   * @param {Map<string, string>} covers  portadas de su consola por clave en minúsculas
+   * @param {Map<string, string>} covers  its console's covers by lowercase key
    */
   #coverFor(game, covers) {
     if (!this.#knowsCovers) {
-      // Shell anterior: se pide la portada sin saber si existe (el shell prueba extensiones)
+      // An older shell: the cover is asked for without knowing if it exists (the shell tries extensions)
       const cover = this.#mediaBase ? mediaUrl(this.#mediaBase, game, 'covers') : undefined
       return { cover, thumb: cover }
     }
@@ -265,7 +265,7 @@ class Library {
   }
 
   /**
-   * Fondo, logo y video de un juego (undefined si no tiene).
+   * A game's background, logo and video (undefined if it has none).
    * @param {import('../core/esde.js').Game} game
    * @param {import('../core/media.js').MediaIndex} index
    */
@@ -283,8 +283,8 @@ class Library {
   }
 
   /**
-   * Lee qué fondos, logos y videos hay en el USB. Va después de abrir, para no
-   * demorar el inicio; un shell anterior no lo sabe hacer y queda sin ellos.
+   * Reads which backgrounds, logos and videos are on the USB drive. It goes after opening,
+   * so it doesn't slow down the start; an older shell can't do it and stays without them.
    * @param {string[]} [systemIds]
    */
   async loadMedia(systemIds = PLATFORMS.map((p) => p.id)) {
@@ -293,14 +293,14 @@ class Library {
       this.mediaFiles = { ...this.mediaFiles, ...files }
       this.#rebuild()
     } catch {
-      // sin fondos ni videos: el panel muestra la portada, como antes
+      // no backgrounds or videos: the panel shows the cover, as before
     }
   }
 
   /**
-   * Vuelve a leer qué portadas hay (después de descargar).
+   * Reads again which covers there are (after downloading).
    * @param {string[]} systemIds
-   * @param {string[]} [changedKeys]  portadas recién reemplazadas (coverKey de cada juego)
+   * @param {string[]} [changedKeys]  covers just replaced (each game's coverKey)
    */
   async refreshCovers(systemIds, changedKeys = []) {
     if (changedKeys.length > 0) {
@@ -317,7 +317,7 @@ class Library {
   }
 
   /**
-   * Cuántos juegos de una consola tienen portada.
+   * How many of a console's games have a cover.
    * @param {string} systemId
    */
   coverCount(systemId) {
@@ -325,7 +325,7 @@ class Library {
     return { withCover: games.filter((g) => g.cover).length, total: games.length }
   }
 
-  /** @param {string} systemId  id de consola o 'favorites' */
+  /** @param {string} systemId  a console id or 'favorites' */
   gamesFor(systemId) {
     return systemId === 'favorites' ? this.favorites : (this.visibleBySystem[systemId] ?? [])
   }
@@ -337,19 +337,19 @@ class Library {
     save('hidden', this.hiddenIds)
   }
 
-  /** Vuelve a mostrar todos los juegos ocultos */
+  /** Shows all the hidden games again */
   unhideAll() {
     this.hiddenIds = []
     save('hidden', this.hiddenIds)
   }
 
-  /** Ocultos que siguen existiendo en el USB */
+  /** Hidden games that still exist on the USB drive */
   hiddenCount() {
     const hidden = new Set(this.hiddenIds)
     return Object.values(this.bySystem).flat().filter((g) => hidden.has(g.id)).length
   }
 
-  /** @param {string} systemId  carpeta real de la consola dentro de roms ("ps1", "psx"...) */
+  /** @param {string} systemId  the console's real folder inside roms ("ps1", "psx"...) */
   folderOf(systemId) {
     return this.scans[systemId]?.folder ?? getPlatform(systemId)?.folders[0] ?? systemId
   }
@@ -379,8 +379,8 @@ class Library {
   }
 
   /**
-   * Empieza a contar una partida. Queda guardada: si la Xbox cierra Relix
-   * mientras juegas, se cierra igual la próxima vez que abra.
+   * Starts counting a session. It stays saved: if the Xbox closes Relix
+   * while you play, it's closed anyway the next time it opens.
    * @param {LibraryGame} game
    */
   startSession(game) {
@@ -388,12 +388,12 @@ class Library {
   }
 
   /**
-   * Volviste a Relix: cierra la partida en curso y suma su tiempo
-   * (las de menos de 1 minuto o más de 12 horas no cuentan).
-   * @param {boolean} [count]  false = descartarla (el emulador no abrió)
+   * You're back in Relix: closes the session in progress and adds its time
+   * (the ones under 1 minute or over 12 hours don't count).
+   * @param {boolean} [count]  false = drop it (the emulator didn't open)
    * @returns {{ id: string, seconds: number, elapsed: number } | null}
-   *   seconds: lo que se sumó; elapsed: cuánto pasó desde que se lanzó.
-   *   null si no había partida.
+   *   seconds: what was added; elapsed: how long since it was launched.
+   *   null if there was no session.
    */
   endSession(count = true) {
     /** @type {import('../core/userData.js').Session|null} */
@@ -408,13 +408,13 @@ class Library {
     if (seconds > 0) {
       this.playtime = playtime
       save('playtime', playtime)
-      // Por si Relix se cerró antes de anotarla como reciente
+      // In case Relix closed before noting it as recent
       if ((this.lastPlayed[session.id] ?? 0) < session.startedAt) this.#markPlayed(session.id, session.startedAt)
     }
     return { id: session.id, seconds, elapsed }
   }
 
-  /** @param {string} systemId  carpeta donde Relix busca los juegos de esa consola */
+  /** @param {string} systemId  the folder where Relix looks for that console's games */
   romFolderPath(systemId) {
     return `${this.romRoot}\\${this.folderOf(systemId)}`
   }

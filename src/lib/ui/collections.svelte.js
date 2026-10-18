@@ -1,9 +1,9 @@
 /**
- * Colecciones del jugador, guardadas en el USB con el formato de ES-DE
- * (ES-DE/collections/custom-<Nombre>.cfg). Se arman desde el menú del juego.
+ * The player's collections, saved on the USB drive in ES-DE's format
+ * (ES-DE/collections/custom-<Name>.cfg). They're put together from the game menu.
  *
- * Una colección se ve en Relix mientras tenga al menos un juego que Relix
- * reconozca; las líneas de otras consolas se conservan al guardar.
+ * A collection shows in Relix as long as it has at least one game Relix
+ * recognizes; the lines from other consoles are kept when saving.
  */
 import { listCollections, saveCollection } from '../core/bridge.js'
 import { t } from '../i18n/i18n.svelte.js'
@@ -23,11 +23,11 @@ import { library } from './library.svelte.js'
 /** @typedef {import('./library.svelte.js').LibraryGame} LibraryGame */
 
 class Collections {
-  /** Todas las colecciones del USB, en orden alfabético */
+  /** Every collection on the USB drive, in alphabetical order */
   /** @type {Collection[]} */
   list = $state([])
 
-  /** Juegos de cada colección que Relix reconoce (sin ocultos), en A–Z */
+  /** The games of each collection that Relix recognizes (without hidden ones), A–Z */
   /** @type {Record<string, LibraryGame[]>} */
   games = $derived.by(() => {
     /** @type {Record<string, LibraryGame[]>} */
@@ -42,10 +42,10 @@ class Collections {
     return result
   })
 
-  /** Las que se muestran: con al menos un juego */
+  /** The ones shown: with at least one game */
   visible = $derived(this.list.filter((c) => (this.games[c.name]?.length ?? 0) > 0))
 
-  /** Lee las colecciones del USB. Si falla, Relix sigue sin colecciones. */
+  /** Reads the collections from the USB drive. If it fails, Relix carries on without collections. */
   async load() {
     try {
       const files = await listCollections()
@@ -64,7 +64,7 @@ class Collections {
   }
 
   /**
-   * Nombres de las colecciones en que está un juego.
+   * The names of the collections a game is in.
    * @param {LibraryGame} game
    */
   namesFor(game) {
@@ -72,10 +72,10 @@ class Collections {
   }
 
   /**
-   * Agrega o quita un juego de una colección.
+   * Adds a game to a collection or removes it.
    * @param {LibraryGame} game
    * @param {string} name
-   * @returns {Promise<boolean>}  true si quedó adentro
+   * @returns {Promise<boolean>}  true if it ended up inside
    */
   async toggle(game, name) {
     const collection = this.list.find((c) => c.name === name)
@@ -86,10 +86,10 @@ class Collections {
   }
 
   /**
-   * Crea una colección con un juego (o lo agrega, si ya existe con ese nombre).
+   * Creates a collection with a game (or adds it, if one with that name already exists).
    * @param {string} rawName
    * @param {LibraryGame} game
-   * @returns {Promise<string>}  el nombre final
+   * @returns {Promise<string>}  the final name
    */
   async create(rawName, game) {
     const name = cleanCollectionName(rawName)

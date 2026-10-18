@@ -1,8 +1,8 @@
 <script>
   /**
-   * Logo de Relix: la gema con su destello en forma de X, y el nombre en
-   * minúsculas. El punto de la "i" es una gemita, para que el nombre y el
-   * símbolo se lean como una sola pieza.
+   * The Relix logo: the gem with its X-shaped sparkle, and the name in
+   * lowercase. The dot on the "i" is a small gem, so the name and the
+   * symbol read as one piece.
    */
   import mark from '../../../brand/relix-mark.svg?raw'
 
@@ -44,13 +44,13 @@
     font-size: calc(var(--size) * 0.92);
     letter-spacing: -0.035em;
     color: var(--ink);
-    /* Baloo 2 lleva aire arriba; esto lo centra ópticamente con la gema */
+    /* Baloo 2 has room on top; this centers it optically with the gem */
     padding-top: calc(var(--size) * 0.1);
   }
   .i {
     position: relative;
   }
-  /* El punto de la i: una gemita rosada */
+  /* The dot on the i: a small pink gem */
   .tittle {
     position: absolute;
     left: 50%;
@@ -62,7 +62,7 @@
     transform: translateX(-50%) rotate(45deg);
   }
 
-  /* ── El momento de arranque: la gema aparece y el destello titila ── */
+  /* ── The startup moment: the gem appears and the sparkle twinkles ── */
   .boot .mark :global(.gem),
   .boot .mark :global(.glint),
   .boot .tittle {

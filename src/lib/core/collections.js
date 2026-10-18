@@ -1,16 +1,16 @@
 /**
- * Colecciones personalizadas con el formato de ES-DE, para que sirvan en
- * Relix y en ES-DE a la vez:
+ * Custom collections in ES-DE's format, so they work in Relix and in
+ * ES-DE at the same time:
  *
- *   ES-DE/collections/custom-<Nombre>.cfg
+ *   ES-DE/collections/custom-<Name>.cfg
  *
- * Una línea por juego, relativa a la carpeta de ROMs:
+ * One line per game, relative to the ROM folder:
  *
  *   %ROMPATH%/psx/Final Fantasy VII (USA)/Final Fantasy VII (USA).m3u
  *   %ROMPATH%/ps2/Ookami (USA).chd
  *
- * Las líneas que Relix no reconoce (consolas que todavía no maneja, rutas a
- * otros discos) se conservan tal cual al guardar.
+ * The lines Relix doesn't recognize (consoles it doesn't handle yet, paths to
+ * other drives) are kept as they are when saving.
  */
 
 export const ROMPATH = '%ROMPATH%'
@@ -18,8 +18,8 @@ const PREFIX = 'custom-'
 const EXTENSION = '.cfg'
 
 /**
- * Nombre de colección apto para archivo: sin los caracteres que Windows no
- * acepta, sin espacios repetidos y de hasta 40 caracteres.
+ * A collection name fit for a file: without the characters Windows doesn't
+ * accept, without repeated spaces and up to 40 characters long.
  * @param {string} name
  */
 export function cleanCollectionName(name) {
@@ -31,12 +31,12 @@ export function cleanCollectionName(name) {
     .trim()
 }
 
-/** "Con amigos" -> "custom-Con amigos.cfg" */
+/** "With friends" -> "custom-With friends.cfg" */
 export function collectionFileName(/** @type {string} */ name) {
   return `${PREFIX}${cleanCollectionName(name)}${EXTENSION}`
 }
 
-/** "custom-Con amigos.cfg" -> "Con amigos"; null si no es una colección personalizada */
+/** "custom-With friends.cfg" -> "With friends"; null if it isn't a custom collection */
 export function collectionNameFromFile(/** @type {string} */ file) {
   const lower = file.toLowerCase()
   if (!lower.startsWith(PREFIX) || !lower.endsWith(EXTENSION)) return null
@@ -44,7 +44,7 @@ export function collectionNameFromFile(/** @type {string} */ file) {
 }
 
 /**
- * Líneas de un .cfg: sin vacías ni repetidas.
+ * The lines of a .cfg: without empty or repeated ones.
  * @param {string} text
  * @returns {string[]}
  */
@@ -67,19 +67,19 @@ export function serializeCollection(lines) {
 }
 
 /**
- * Línea para un juego. `folder` es la carpeta real de su consola dentro de roms.
- * @param {string} folder  p. ej. "ps1"
- * @param {string} path    ruta del juego dentro de esa carpeta, con "/"
+ * The line for a game. `folder` is its console's real folder inside roms.
+ * @param {string} folder  e.g. "ps1"
+ * @param {string} path    the game's path inside that folder, with "/"
  */
 export function lineForGame(folder, path) {
   return `${ROMPATH}/${folder}/${path}`
 }
 
 /**
- * Qué juego indica una línea.
+ * Which game a line points to.
  * @param {string} line
- * @param {Map<string, string>} folderToSystem  carpeta en minúsculas -> id de consola
- * @param {string} [romRoot]  p. ej. "E:\\roms", para líneas con ruta completa
+ * @param {Map<string, string>} folderToSystem  lowercase folder -> console id
+ * @param {string} [romRoot]  e.g. "E:\\roms", for lines with a full path
  * @returns {{ system: string, path: string } | null}
  */
 export function resolveLine(line, folderToSystem, romRoot = '') {
@@ -101,7 +101,7 @@ export function resolveLine(line, folderToSystem, romRoot = '') {
 }
 
 /**
- * Ids de juego ("psx/Juego.chd") de una colección, en minúsculas para compararlos.
+ * The game ids ("psx/Game.chd") of a collection, in lowercase to compare them.
  * @param {string[]} lines
  * @param {Map<string, string>} folderToSystem
  * @param {string} [romRoot]
@@ -117,10 +117,10 @@ export function collectionGameKeys(lines, folderToSystem, romRoot) {
 }
 
 /**
- * Agrega o quita un juego de una colección, sin tocar las demás líneas.
+ * Adds a game to a collection or removes it, without touching the other lines.
  * @param {string[]} lines
  * @param {{ system: string, path: string }} game
- * @param {string} folder  carpeta real de su consola (para la línea nueva)
+ * @param {string} folder  its console's real folder (for the new line)
  * @param {boolean} include
  * @param {Map<string, string>} folderToSystem
  * @param {string} [romRoot]

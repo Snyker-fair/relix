@@ -20,9 +20,9 @@
       }
     }),
   )
-  // En la Xbox, Relix queda en segundo plano mientras corre el emulador y la
-  // consola la vuelve a abrir con launchOnExit=relix:. El shell avisa con el
-  // evento 'resumed' y App.svelte cierra este overlay.
+  // On the Xbox, Relix stays in the background while the emulator runs and the
+  // console opens it again with launchOnExit=relix:. The shell reports it with the
+  // 'resumed' event and App.svelte closes this overlay.
 </script>
 
 <div class="overlay" role="dialog" aria-modal="true" aria-label={t('Abriendo {game}', { game: game.name })}>

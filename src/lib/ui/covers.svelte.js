@@ -1,14 +1,14 @@
 /**
- * Búsqueda de portadas en libretro (Opciones › Portadas).
+ * Looking for covers on libretro (Options › Covers).
  *
- *   find(consola)   baja las portadas seguras de los juegos que no tienen
- *                   y anota los que necesitan que el jugador elija; además,
- *                   a los juegos sin fondo les baja una captura (Named_Snaps)
- *                   para el panel del juego y el protector de pantalla
- *   pending         esos juegos, para la pantalla "Elegir portada"
- *   choose / skip   elegir una candidata o dejar la portada de color
+ *   find(console)   downloads the safe covers of the games that have none
+ *                   and notes the ones that need the player to choose; also,
+ *                   for games without a background it downloads a screenshot (Named_Snaps)
+ *                   for the game panel and the screensaver
+ *   pending         those games, for the "Pick a cover" screen
+ *   choose / skip   pick a candidate or keep the color cover
  *
- * Nunca se usa internet sin que el jugador lo pida.
+ * The internet is never used without the player asking.
  */
 import { coverIndex, deleteCover, downloadCovers } from '../core/bridge.js'
 import {
@@ -33,25 +33,25 @@ import { load, onReplaced, save } from './storage.js'
  */
 
 class Covers {
-  /** Consola que se está buscando ahora (de a una) */
+  /** The console being searched now (one at a time) */
   /** @type {string|null} */
   busy = $state(null)
   /** @type {CoverProgress|null} */
   progress = $state(null)
-  /** "Buscar en todas" en curso: cuántas consolas van de cuántas */
+  /** "Search all" in progress: how many consoles are done out of how many */
   /** @type {{ done: number, total: number } | null} */
   all = $state(null)
-  /** Juegos que esperan que el jugador elija su portada, por consola */
+  /** Games waiting for the player to pick their cover, by console */
   /** @type {Record<string, string[]>} */
   choices = $state(load('coverChoices', {}))
-  /** Juegos que el jugador prefirió dejar con la portada de color */
+  /** Games the player chose to keep with the color cover */
   /** @type {string[]} */
   skipped = $state(load('coverSkipped', []))
-  /** Último resultado de cada consola */
+  /** Each console's last result */
   /** @type {Record<string, CoverResult>} */
   results = $state(load('coverResults', {}))
 
-  /** Juegos por elegir: siguen sin portada y no se dejaron de color */
+  /** Games to pick: still without a cover and not kept in color */
   pending = $derived(
     PLATFORMS.flatMap((p) =>
       (this.choices[p.id] ?? [])
@@ -62,12 +62,12 @@ class Covers {
 
   /** @type {Map<string, Promise<import('../core/coverMatch.js').CoverIndex>>} */
   #indexes = new Map()
-  /** Juegos cuya captura no está en libretro: no se vuelve a pedir en esta sesión */
+  /** Games whose screenshot isn't on libretro: not asked for again this session */
   /** @type {Set<string>} */
   #noShot = new Set()
 
   constructor() {
-    // Llegaron tus datos del USB: se vuelven a leer
+    // Your data arrived from the USB drive: they're read again
     onReplaced(() => {
       this.choices = load('coverChoices', {})
       this.skipped = load('coverSkipped', [])
@@ -76,21 +76,21 @@ class Covers {
   }
 
   /**
-   * Lista de portadas de una consola (se pide una vez por sesión).
+   * A console's list of covers (asked for once per session).
    * @param {import('../core/platforms.js').Platform} platform
    */
   #index(platform) {
     let index = this.#indexes.get(platform.id)
     if (!index) {
       index = coverIndex(platform).then(buildCoverIndex)
-      index.catch(() => this.#indexes.delete(platform.id)) // si falló, se reintenta la próxima vez
+      index.catch(() => this.#indexes.delete(platform.id)) // if it failed, it's retried next time
       this.#indexes.set(platform.id, index)
     }
     return index
   }
 
   /**
-   * Busca y baja las portadas que faltan en una consola.
+   * Finds and downloads a console's missing covers.
    * @param {string} systemId
    * @returns {Promise<CoverResult>}
    */
@@ -121,7 +121,7 @@ class Covers {
           else if (coverCandidates(query, index, { region, altTitle: game.name, limit: 1 }).length > 0) toChoose.push(game.id)
           else notFound++
         }
-        // La captura se llama igual que la portada en libretro
+        // The screenshot has the same name as the cover on libretro
         for (const game of withoutBackground) {
           const match = matchCover(coverQuery(game), index, { region, altTitle: game.name })
           if (match) shots.push({ key: coverKey(game), remote: match.name, id: game.id })
@@ -140,7 +140,7 @@ class Covers {
         await library.refreshCovers([systemId], result.saved)
       }
 
-      // Capturas: si libretro no tiene la de un juego, no es un error (no se cuenta)
+      // Screenshots: if libretro doesn't have a game's, it isn't an error (it isn't counted)
       let shotsSaved = 0
       if (shots.length > 0) {
         this.progress = { system: systemId, phase: 'shots', done: 0, total: shots.length }
@@ -156,7 +156,7 @@ class Covers {
           for (const shot of shots) if (failedKeys.has(shot.key)) this.#noShot.add(shot.id)
           if (shotsSaved > 0) await library.loadMedia([systemId])
         } catch {
-          // Shell anterior (no baja capturas): quedan solo las portadas
+          // An older shell (it doesn't download screenshots): only the covers are left
           for (const shot of shots) this.#noShot.add(shot.id)
         }
       }
@@ -185,8 +185,8 @@ class Covers {
   }
 
   /**
-   * Juegos sin fondo (ni fanart, ni captura, ni pantalla de título) a los que
-   * todavía vale la pena buscarles captura.
+   * Games without a background (no fan art, screenshot or title screen) that
+   * are still worth looking for a screenshot for.
    * @param {string} systemId
    */
   #withoutBackground(systemId) {
@@ -194,7 +194,7 @@ class Covers {
   }
 
   /**
-   * ¿Hay algo que buscar en esta consola? (portadas o capturas que faltan)
+   * Is there anything to look for on this console? (missing covers or screenshots)
    * @param {string} systemId
    */
   needsSearch(systemId) {
@@ -203,8 +203,8 @@ class Covers {
   }
 
   /**
-   * Busca en todas las consolas a las que les faltan portadas, una tras otra
-   * (Opciones › Portadas y el primer uso).
+   * Searches every console that's missing covers, one after another
+   * (Options › Covers and the first run).
    */
   async findAll() {
     const ids = PLATFORMS.map((p) => p.id).filter((id) => this.needsSearch(id))
@@ -228,7 +228,7 @@ class Covers {
   }
 
   /**
-   * Portadas parecidas para elegir a mano, con su URL para verlas.
+   * Similar covers to pick by hand, with their URL to see them.
    * @param {import('./library.svelte.js').LibraryGame} game
    * @returns {Promise<PickerCandidate[]>}
    */
@@ -244,9 +244,9 @@ class Covers {
   }
 
   /**
-   * Baja la portada elegida para un juego.
+   * Downloads the cover chosen for a game.
    * @param {import('./library.svelte.js').LibraryGame} game
-   * @param {string} remoteName  nombre en libretro
+   * @param {string} remoteName  the name on libretro
    */
   async choose(game, remoteName) {
     const platform = getPlatform(game.system)
@@ -258,7 +258,7 @@ class Covers {
   }
 
   /**
-   * Quita la portada descargada de un juego y no la vuelve a buscar.
+   * Removes a game's downloaded cover and doesn't look for it again.
    * @param {import('./library.svelte.js').LibraryGame} game
    */
   async useColor(game) {
@@ -271,7 +271,7 @@ class Covers {
   }
 
   /**
-   * El jugador prefiere la portada de color para este juego.
+   * The player prefers the color cover for this game.
    * @param {import('./library.svelte.js').LibraryGame} game
    */
   skip(game) {

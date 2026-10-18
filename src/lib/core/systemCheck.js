@@ -1,35 +1,35 @@
 /**
- * Revisión del sistema: con lo que mide el shell (USB, espacio, carpetas,
- * archivos de BIOS, internet) y lo que Relix ya sabe (juegos, emuladores,
- * respaldo), arma una lista de chequeos con su estado y cómo arreglar cada uno.
+ * The system checkup: with what the shell measures (USB drive, space, folders,
+ * BIOS files, internet) and what Relix already knows (games, emulators,
+ * backup), it builds a list of checks with their state and how to fix each one.
  *
- * La BIOS solo se puede revisar si está en el USB, en las carpetas que indican
- * las guías. Si la pusiste dentro del emulador (Device Portal), Relix no la ve
- * y lo dice sin marcarlo como error.
+ * The BIOS can only be checked if it's on the USB drive, in the folders the
+ * guides point to. If you put it inside the emulator (Device Portal), Relix
+ * can't see it and says so without marking it as an error.
  */
 import { i18n, listJoin, plural, t } from '../i18n/i18n.svelte.js'
 import { PS1_BIOS, ps1BiosRegion } from './quickExit.js'
 
-/** Carpetas de BIOS en el USB, las mismas de las guías (relativas a la raíz) */
+/** BIOS folders on the USB drive, the same as in the guides (relative to the root) */
 export const BIOS_FOLDERS = {
   retroarch: 'RetroArch\\system',
   duckstation: 'DuckStation\\bios',
   xbsx2: 'XBSX2\\BIOS',
 }
-/** Lo que se le pide al shell que liste */
+/** What the shell is asked to list */
 export const CHECK_FOLDERS = Object.values(BIOS_FOLDERS)
 
-/** Menos que esto libre es poco para seguir sumando juegos */
+/** Less than this free is too little to keep adding games */
 const LOW_SPACE_BYTES = 2 * 1024 ** 3
 
 const REGION_NAMES = { japan: 'Japón', usa: 'EE. UU.', europe: 'Europa' }
 
 /**
- * @typedef {'ok'|'warn'|'error'|'info'|'update'} CheckState  update: hay una versión nueva de Relix
+ * @typedef {'ok'|'warn'|'error'|'info'|'update'} CheckState  update: there's a new version of Relix
  * @typedef {{ kind: 'guide', systemId: string }} CheckAction
  * @typedef {{ id: string, state: CheckState, title: string, detail: string, action?: CheckAction }} Check
  *
- * @typedef {Object} ShellCheck  lo que responde el shell (ver SystemCheck.cs)
+ * @typedef {Object} ShellCheck  what the shell answers (see SystemCheck.cs)
  * @property {string} drive
  * @property {boolean} writable
  * @property {{ free: number, total: number } | null} space
@@ -44,7 +44,7 @@ const REGION_NAMES = { japan: 'Japón', usa: 'EE. UU.', europe: 'Europa' }
  * @property {boolean | null} installed
  */
 
-/** "182 GB", "1,5 GB" ("1.5 GB" en inglés) @param {number} bytes */
+/** "182 GB", "1,5 GB" in Spanish ("1.5 GB" in English) @param {number} bytes */
 export function formatBytes(bytes) {
   const gb = bytes / 1024 ** 3
   if (gb >= 10) return `${Math.round(gb)} GB`
@@ -52,12 +52,12 @@ export function formatBytes(bytes) {
   return `${Math.round(bytes / 1024 ** 2)} MB`
 }
 
-/** ¿Está el archivo en la lista? Sin distinguir mayúsculas (la Xbox no las distingue) */
+/** Is the file in the list? Case-insensitive (the Xbox doesn't tell them apart) */
 const hasFile = (/** @type {string[]} */ files, /** @type {string} */ name) =>
   files.some((f) => f.toLowerCase() === name.toLowerCase())
 
 /**
- * La BIOS de PS1: qué archivos hacen falta según la región de tus juegos.
+ * The PS1 BIOS: which files are needed according to your games' regions.
  * @param {ConsoleInfo} info
  * @param {Record<string, string[] | null>} folders
  * @param {string} driveRoot  "E:\"
@@ -83,7 +83,7 @@ function ps1Bios(info, folders, driveRoot) {
     }
   }
 
-  // Cuántos juegos de cada región: cada una pide su archivo
+  // How many games from each region: each one needs its own file
   /** @type {Record<string, number>} */
   const byRegion = {}
   for (const game of games) {
@@ -131,17 +131,17 @@ function ps1Bios(info, folders, driveRoot) {
 }
 
 /**
- * Archivos que acompañan a una BIOS de PS2 pero no son la BIOS: los que deja el
- * programa que la copia de tu consola (.nvm, .mec, .rom1, .rom2, .erom) y textos.
+ * Files that come with a PS2 BIOS but aren't the BIOS: the ones left by the
+ * program that copies it from your console (.nvm, .mec, .rom1, .rom2, .erom) and texts.
  */
 const PS2_COMPANION = /\.(nvm|mec|rom1|rom2|erom|ini|txt|cfg|json|xml|md|nfo|url|db)$/i
-/** Una BIOS comprimida: XBSX2 no la lee hasta descomprimirla */
+/** A compressed BIOS: XBSX2 doesn't read it until it's extracted */
 const ARCHIVE = /\.(zip|7z|rar|gz)$/i
 
 /**
- * La BIOS de PS2 (XBSX2). XBSX2, como PCSX2, la reconoce por su contenido y no
- * por la extensión (.bin, .rom0, sin extensión…): sirve cualquier archivo que no
- * sea de apoyo ni esté comprimido.
+ * The PS2 BIOS (XBSX2). XBSX2, like PCSX2, recognizes it by its content and not
+ * by its extension (.bin, .rom0, no extension…): any file works as long as it
+ * isn't a companion file or compressed.
  * @param {ConsoleInfo} info
  * @param {Record<string, string[] | null>} folders
  * @param {string} driveRoot
@@ -200,14 +200,14 @@ function ps2Bios(info, folders, driveRoot) {
 }
 
 /**
- * La lista de chequeos, en orden: USB, consolas, internet y tus datos.
+ * The list of checks, in order: USB drive, consoles, internet and your data.
  * @param {Object} input
- * @param {ShellCheck | null} input.shell        null = el shell aún no responde
+ * @param {ShellCheck | null} input.shell        null = the shell isn't answering yet
  * @param {string} input.romRoot                  "E:\roms"
- * @param {ConsoleInfo[]} input.consoles          todas las consolas
- * @param {string[]} input.knownFolders           carpetas que Relix reconoce (ps1, psx, snes...)
+ * @param {ConsoleInfo[]} input.consoles          every console
+ * @param {string[]} input.knownFolders           folders Relix recognizes (ps1, psx, snes...)
  * @param {'saved'|'pending'|'error'|'off'} input.dataStatus
- * @param {boolean} [input.shellFailed]           el shell no respondió (o es anterior al paso 6)
+ * @param {boolean} [input.shellFailed]           the shell didn't answer (or is from before step 6)
  * @returns {Check[]}
  */
 export function buildChecks({ shell, romRoot, consoles, knownFolders, dataStatus, shellFailed = false }) {
@@ -281,7 +281,7 @@ export function buildChecks({ shell, romRoot, consoles, knownFolders, dataStatus
     }
   }
 
-  // ── Consolas con juegos: su emulador y su BIOS ──
+  // ── Consoles with games: their emulator and their BIOS ──
   for (const info of withGames) {
     const { platform, emulator, installed, games } = info
     const action = /** @type {CheckAction} */ ({ kind: 'guide', systemId: platform.id })
@@ -319,7 +319,7 @@ export function buildChecks({ shell, romRoot, consoles, knownFolders, dataStatus
     }
   }
 
-  // ── Internet y tus datos ──
+  // ── Internet and your data ──
   if (shell) {
     checks.push(
       shell.internet
@@ -352,7 +352,7 @@ export function buildChecks({ shell, romRoot, consoles, knownFolders, dataStatus
   return checks
 }
 
-/** Cuántos errores y advertencias hay @param {Check[]} checks */
+/** How many errors and warnings there are @param {Check[]} checks */
 export function summarize(checks) {
   return {
     errors: checks.filter((c) => c.state === 'error').length,

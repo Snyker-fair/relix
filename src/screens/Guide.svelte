@@ -1,11 +1,11 @@
 <script>
   /**
-   * Guía de una consola: cómo instalar su emulador, qué archivos pide, dónde
-   * van los juegos y cómo probar. Arriba a la izquierda, lo que Relix ya sabe
-   * (emulador instalado, juegos encontrados); abajo, un QR a DevStore para
-   * abrirlo en el celular.
+   * A console's guide: how to install its emulator, which files it needs, where
+   * the games go and how to test. At the top left, what Relix already knows
+   * (emulator installed, games found); at the bottom, a QR code to DevStore to
+   * open it on the phone.
    *
-   *   ↑ ↓  recorrer los pasos    LB / RB  otra consola    B  volver
+   *   ↑ ↓  go through the steps    LB / RB  another console    B  back
    */
   import { untrack } from 'svelte'
   import { DEVSTORE_LABEL, DEVSTORE_URL, guideSteps, richText } from '../lib/core/guides.js'
@@ -26,7 +26,7 @@
   /** @type {{ systemId: string, onBack: (systemId: string) => void }} */
   let { systemId, onBack } = $props()
 
-  // Se puede pasar a otra consola con LB / RB sin salir de la guía
+  // You can move to another console with LB / RB without leaving the guide
   // svelte-ignore state_referenced_locally
   let currentId = $state(systemId)
   let index = $state(0)
@@ -39,12 +39,12 @@
   const folder = $derived(library.romFolderPath(currentId))
   const steps = $derived(guideSteps(platform, emulator, { folder, installed, games }))
 
-  // Al entrar se vuelve a preguntar qué hay instalado (quizás lo acabas de instalar)
+  // On entering, it asks again what's installed (maybe you just installed it)
   $effect(() => {
     untrack(() => emulators.check())
   })
 
-  // Pasos que se deslizan: el enfocado queda entero a la vista
+  // Steps that slide: the focused one stays fully in view
   let scroll = $state(0)
   /** @type {HTMLElement | undefined} */
   let list = $state()
@@ -60,7 +60,7 @@
       let next = scroll
       if (top - next < MARGIN) next = top - MARGIN
       else if (bottom - next > view - MARGIN) next = bottom - view + MARGIN
-      // Un paso más alto que la ventana: se muestra desde su título
+      // A step taller than the window: it's shown from its title
       if (el.offsetHeight > view - 2 * MARGIN) next = top - MARGIN
       scroll = Math.max(0, Math.min(next, max))
     })
@@ -93,7 +93,7 @@
     }),
   )
 
-  /** Estado de un paso: listo, falta o (null) no se puede saber desde Relix */
+  /** A step's state: ready, missing or (null) can't be known from Relix */
   /** @param {boolean | null | undefined} done */
   const stateOf = (done) => (done === true ? 'ok' : done === false ? 'missing' : 'info')
 </script>
@@ -255,7 +255,7 @@
     background: rgb(255 255 255 / 0.35);
   }
 
-  /* ── Panel de la consola ──────────────── */
+  /* ── The console's panel ──────────────── */
   .intro {
     position: absolute;
     left: 112px;
@@ -371,8 +371,8 @@
     font-size: 17px;
   }
 
-  /* ── Pasos ───────────────────────────── */
-  /* La ventana va de 142 a 970 px, como las filas de Opciones */
+  /* ── Steps ───────────────────────────── */
+  /* The window goes from 142 to 970 px, like the Options rows */
   .steps-window {
     position: absolute;
     left: 760px;
@@ -399,7 +399,7 @@
     border-radius: 34px;
     background: var(--cloud);
   }
-  /* los pasos son anchos: no se mueven ni crecen, solo el aro */
+  /* the steps are wide: they don't move or grow, only the ring */
   .step.focus-ring.focused {
     transform: none;
   }
