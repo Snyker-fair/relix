@@ -7,6 +7,7 @@ Un lanzador de juegos para emuladores en Xbox Series X|S en Modo Desarrollador.<
   <a href="https://github.com/Snyker-fair/relix/actions/workflows/ci.yml"><img src="https://github.com/Snyker-fair/relix/actions/workflows/ci.yml/badge.svg" alt="Tests"></a>
   <a href="https://github.com/Snyker-fair/relix/releases/latest"><img src="https://img.shields.io/github/v/release/Snyker-fair/relix" alt="Última versión"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/licencia-GPL--3.0-blue" alt="GPL-3.0"></a>
+  <a href="https://ko-fi.com/snyker"><img src="https://img.shields.io/badge/Ko--fi-apoya_Relix-FF5E5B?logo=kofi&logoColor=white" alt="Apoya Relix en Ko-fi"></a>
 </p>
 
 <p align="center">
@@ -317,6 +318,12 @@ Switch se suma cuando haya un emulador con protocolo que sea jugable.
 | LT / RT | Letra anterior / siguiente (año, si ordenas por año) |
 | Vista ⧉ | Buscar en todas las consolas |
 | Menú ≡ | Opciones |
+
+## Apoya Relix
+
+Relix es gratis y lo seguirá siendo. Si te sirve y quieres ayudar a que siga
+creciendo, puedes invitarme un café en [Ko-fi](https://ko-fi.com/snyker). Es
+totalmente voluntario: Relix es el mismo con o sin donación.
 
 ## Licencia
 
