@@ -17,6 +17,7 @@ import {
   setInCollection,
 } from '../core/collections.js'
 import { bySortName } from '../core/esde.js'
+import { renameInCollection } from '../core/rename.js'
 import { library } from './library.svelte.js'
 
 /** @typedef {{ name: string, file: string, lines: string[] }} Collection */
@@ -98,6 +99,30 @@ class Collections {
     const collection = existing ?? { name, file: collectionFileName(name), lines: [] }
     await this.#save(collection, this.#withGame(collection.lines, game, true))
     return collection.name
+  }
+
+  /**
+   * A game was renamed: its line in each collection points to the new path, in
+   * the same place. Returns how many collections changed.
+   * @param {{ system: string, path: string }} game  as it was before
+   * @param {string} newPath
+   */
+  async renameGame(game, newPath) {
+    let changed = 0
+    for (const collection of [...this.list]) {
+      const lines = renameInCollection(
+        collection.lines,
+        game,
+        newPath,
+        library.folderOf(game.system),
+        library.folderToSystem,
+        library.romRoot,
+      )
+      if (!lines) continue
+      await this.#save(collection, lines)
+      changed++
+    }
+    return changed
   }
 
   /** @param {string[]} lines @param {LibraryGame} game @param {boolean} include */

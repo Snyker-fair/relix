@@ -161,6 +161,34 @@ describe('bridge with the Xbox shell', () => {
     await expect(saving).rejects.toMatchObject({ code: 'usb-readonly' })
   })
 
+  it('asks what a rename would move, then renames', async () => {
+    const plan = {
+      kind: /** @type {const} */ ('file'),
+      newPath: 'Ookami (USA).chd',
+      files: [{ from: 'okami.chd', to: 'Ookami (USA).chd' }],
+      media: [{ from: 'okami', to: 'Ookami (USA)', folder: false }],
+      gamelist: [{ from: 'okami.chd', to: 'Ookami (USA).chd', folder: false }],
+      saves: [{ from: 'okami', to: 'Ookami (USA)' }],
+    }
+    const answer = { files: 1, media: 2, thumbnails: 1, gamelist: 1, saves: 1, savesFolder: true, failed: 0 }
+
+    const preview = bridge.renameGame('ps2', 'ps2', plan, { preview: true })
+    const asked = shell.sent.at(-1)
+    expect(asked).toMatchObject({
+      type: 'renamePreview',
+      payload: { system: 'ps2', folder: 'ps2', files: plan.files, media: plan.media, gamelist: plan.gamelist, saves: plan.saves },
+    })
+    expect(asked.payload).not.toHaveProperty('newPath')
+    shell.emit({ id: asked.id, ok: true, result: answer })
+    await expect(preview).resolves.toEqual(answer)
+
+    const renaming = bridge.renameGame('ps2', 'ps2', plan)
+    const msg = shell.sent.at(-1)
+    expect(msg.type).toBe('renameGame')
+    shell.emit({ id: msg.id, ok: false, error: 'Ya hay un archivo llamado Ookami (USA).chd.', code: 'rename-exists' })
+    expect((await renaming.catch((e) => e)).code).toBe('rename-exists')
+  })
+
   it("checks the system and doesn't keep waiting for an older shell", async () => {
     vi.useFakeTimers()
     try {

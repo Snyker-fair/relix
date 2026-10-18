@@ -72,13 +72,22 @@ const GENERIC_STEMS = /^(default|disc|disco|game|track\s*0*1)$/i
  * @param {string} relPath
  */
 export function titleStem(relPath) {
+  const folder = titleFolderIndex(relPath)
+  return folder >= 0 ? normalizeRelativePath(relPath).split('/')[folder] : fileStem(relPath)
+}
+
+/**
+ * Which part of the path the game's name comes from: the index of that folder in
+ * the path's parts ("Halo 3 (USA)/default.xex" -> 0), or -1 for the file itself.
+ * @param {string} relPath
+ */
+export function titleFolderIndex(relPath) {
   const parts = normalizeRelativePath(relPath).split('/')
-  const stem = fileStem(relPath)
   if (/\.rpx$/i.test(relPath) && parts.length >= 3 && parts.at(-2)?.toLowerCase() === 'code') {
-    return parts.at(-3) ?? stem
+    return parts.length - 3
   }
-  if (GENERIC_STEMS.test(stem) && parts.length >= 2) return parts.at(-2) ?? stem
-  return stem
+  if (GENERIC_STEMS.test(fileStem(relPath)) && parts.length >= 2) return parts.length - 2
+  return -1
 }
 
 /**

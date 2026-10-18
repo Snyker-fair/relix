@@ -41,6 +41,9 @@
  *             text null if there's none yet; source: 'data.json', 'data.previous.json' or a backup)
  *     { id, type: 'saveUserData', payload: { text } }
  *        -> { id, ok: true, result: true }      (keeps the previous one and a backup per day)
+ *     { id, type: 'renameGame', payload: { system, folder, files, media, gamelist, saves } }
+ *        -> { id, ok: true, result: { files, media, thumbnails, gamelist, saves, savesFolder, failed, errors } }
+ *             (core/rename.js plans it; 'renamePreview' answers the same without renaming)
  *     Error: { id, ok: false, error: 'message for the player', code: 'rom-missing' | ... }
  *
  *   Notices (web -> shell, no answer):
@@ -83,15 +86,21 @@ const MOCK_GAMELISTS = { psx, psp, ps2, gc, wiiu, snes, n64, gba, n3ds, megadriv
  * @returns {Record<string, string>}
  */
 function demoGamelists() {
-  if (i18n.current !== 'en') return MOCK_GAMELISTS
   /** @type {{ descriptions: Record<string, string>, genres: Record<string, string> }} */
   const english = mockEnglish
   /** @param {string} xml */
   const swap = (xml) =>
-    xml
-      .replace(/<desc>(.*?)<\/desc>/g, (_, text) => `<desc>${english.descriptions[text] ?? text}</desc>`)
-      .replace(/<genre>(.*?)<\/genre>/g, (_, text) => `<genre>${english.genres[text] ?? text}</genre>`)
-  return Object.fromEntries(Object.entries(MOCK_GAMELISTS).map(([id, xml]) => [id, swap(xml)]))
+    i18n.current !== 'en'
+      ? xml
+      : xml
+          .replace(/<desc>(.*?)<\/desc>/g, (_, text) => `<desc>${english.descriptions[text] ?? text}</desc>`)
+          .replace(/<genre>(.*?)<\/genre>/g, (_, text) => `<genre>${english.genres[text] ?? text}</genre>`)
+  return Object.fromEntries(
+    Object.entries(MOCK_GAMELISTS).map(([id, xml]) => [
+      id,
+      swap(xml).replace(/<path>\.\/(.*?)<\/path>/g, (_, path) => `<path>./${demoRenamed(id, path.replace(/&amp;/g, '&')).replace(/&/g, '&amp;')}</path>`),
+    ]),
+  )
 }
 
 /** @returns {any} */
@@ -294,7 +303,7 @@ export async function scanRoms(systemIds) {
   const roms = {}
   for (const p of platforms) {
     const xml = /** @type {Record<string, string>} */ (MOCK_GAMELISTS)[p.id] ?? ''
-    const files = [...xml.matchAll(/<path>\.\/(.*?)<\/path>/g)].map((m) => m[1].replace(/&amp;/g, '&'))
+    const files = [...xml.matchAll(/<path>\.\/(.*?)<\/path>/g)].map((m) => demoRenamed(p.id, m[1].replace(/&amp;/g, '&')))
     roms[p.id] = { folder: p.id, files }
   }
   return roms
@@ -532,6 +541,98 @@ export async function saveCollection(file, text) {
 }
 
 const DEMO_COLLECTIONS_KEY = 'relix:demo-collections'
+
+// ── Renaming a game's file (Y › Rename file…) ───────────────────────────
+
+/**
+ * @typedef {{ files: number, media: number, thumbnails: number, gamelist: number, saves: number,
+ *   savesFolder: boolean, failed: number, errors?: string[] }} RenameResult
+ *   how much moved (with preview: how much would move); savesFolder: RetroArch's
+ *   saves are on the USB drive; failed: steps after the game itself that went wrong;
+ *   errors: "step: message" for each of them (core/rename.js › RENAME_STEPS)
+ */
+
+/**
+ * Renames a game on the USB drive, and everything tied to its name (see core/rename.js).
+ * An older shell doesn't know it: it answers with an error.
+ * @param {string} system
+ * @param {string} folder  its console's real folder inside roms
+ * @param {import('./rename.js').RenamePlan} plan
+ * @param {{ preview?: boolean }} [options]  preview: only count what would move
+ * @returns {Promise<RenameResult>}
+ */
+export async function renameGame(system, folder, plan, { preview = false } = {}) {
+  const payload = { system, folder, files: plan.files, media: plan.media, gamelist: plan.gamelist, saves: plan.saves }
+  if (mode === 'xbox') return request(preview ? 'renamePreview' : 'renameGame', payload)
+
+  // Demo: the browser remembers the new names, and the "downloaded" covers and images move along
+  await new Promise((resolve) => setTimeout(resolve, 250))
+  const covers = demoCovers()
+  const media = demoMedia()
+  let movedMedia = 0
+  /** @param {Record<string, string>} store @param {string} prefix */
+  const move = (store, prefix) => {
+    for (const key of Object.keys(store)) {
+      if (!key.startsWith(prefix)) continue
+      const renamed = renamedKey(key.slice(prefix.length), plan.media)
+      if (renamed === null) continue
+      movedMedia++
+      if (!preview) {
+        store[prefix + renamed] = store[key]
+        delete store[key]
+      }
+    }
+  }
+  move(covers, `${system}/`)
+  for (const type of new Set(Object.keys(media).map((k) => k.split('/')[0]))) move(media, `${type}/${system}/`)
+
+  const listed = [...(demoGamelists()[system] ?? '').matchAll(/<path>\.\/(.*?)<\/path>/g)].map((m) => m[1].replace(/&amp;/g, '&'))
+  const gamelist = listed.filter((path) => renamedKey(path, plan.gamelist) !== null).length
+  if (!preview) {
+    saveDemoCovers(covers)
+    saveDemo(DEMO_MEDIA_KEY, media)
+    const renames = demoRenames()
+    renames.push(...plan.files.map((f) => ({ system, from: f.from, to: f.to, folder: plan.kind === 'folder' })))
+    saveDemo(DEMO_RENAMES_KEY, /** @type {any} */ (renames))
+  }
+  return { files: plan.files.length, media: movedMedia, thumbnails: 0, gamelist, saves: 0, savesFolder: false, failed: 0, errors: [] }
+}
+
+const DEMO_RENAMES_KEY = 'relix:demo-renames'
+
+/** @returns {Array<{ system: string, from: string, to: string, folder: boolean }>} */
+function demoRenames() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(DEMO_RENAMES_KEY) ?? '[]')
+    return Array.isArray(saved) ? saved : []
+  } catch {
+    return []
+  }
+}
+
+/** A demo path with the renames done in the browser @param {string} system @param {string} path */
+function demoRenamed(system, path) {
+  let current = path
+  for (const r of demoRenames()) {
+    if (r.system !== system) continue
+    const renamed = renamedKey(current, [r])
+    if (renamed !== null) current = renamed
+  }
+  return current
+}
+
+/**
+ * A path (or key) under its new name, or null if the renames don't touch it.
+ * @param {string} key
+ * @param {Array<{ from: string, to: string, folder?: boolean }>} renames
+ */
+function renamedKey(key, renames) {
+  for (const r of renames) {
+    if (key.toLowerCase() === r.from.toLowerCase()) return r.to
+    if (r.folder && key.toLowerCase().startsWith(`${r.from.toLowerCase()}/`)) return r.to + key.slice(r.from.length)
+  }
+  return null
+}
 
 /**
  * The demo has a sample collection (with a game from a console Relix

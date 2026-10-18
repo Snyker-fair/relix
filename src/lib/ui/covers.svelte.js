@@ -76,9 +76,15 @@ class Covers {
   }
 
   /**
-   * A console's list of covers (asked for once per session).
+   * A console's list of covers (asked for once per session). Renaming files uses it
+   * too: libretro's names are the standard ones.
    * @param {import('../core/platforms.js').Platform} platform
    */
+  index(platform) {
+    return this.#index(platform)
+  }
+
+  /** @param {import('../core/platforms.js').Platform} platform */
   #index(platform) {
     let index = this.#indexes.get(platform.id)
     if (!index) {

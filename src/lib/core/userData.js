@@ -31,6 +31,7 @@ export const SYNCED_KEYS = /** @type {const} */ ([
   'settings',
   'emulators',
   'gameEmulators',
+  'renameSkipped',
 ])
 
 /** A session shorter than this doesn't count (the emulator didn't open, or it was a quick look) */
@@ -59,6 +60,7 @@ const CHECKS = {
   settings: isObject,
   emulators: isObject,
   gameEmulators: isObject,
+  renameSkipped: isStringArray,
 }
 
 /**

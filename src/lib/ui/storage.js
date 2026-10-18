@@ -75,6 +75,18 @@ export function onReplaced(fn) {
   onReplacedFns.add(fn)
 }
 
+/**
+ * Changes several backed-up keys at once (renaming a game moves its data):
+ * they're saved like any other change and every state reads them again.
+ * @param {Record<string, unknown>} values  only the keys that change
+ */
+export function changeSynced(values) {
+  const keys = Object.keys(values)
+  if (keys.length === 0) return
+  for (const key of keys) save(key, values[key])
+  for (const fn of onReplacedFns) fn()
+}
+
 /** What gets backed up, as it's saved in the app */
 export function readSynced() {
   /** @type {Record<string, unknown>} */

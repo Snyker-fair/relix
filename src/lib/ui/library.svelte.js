@@ -17,6 +17,7 @@ import { coverKey } from '../core/coverMatch.js'
 import { mediaUrl, parseGamelist, romAbsolutePath } from '../core/esde.js'
 import { indexMedia, pickMedia } from '../core/media.js'
 import { getPlatform, PLATFORMS } from '../core/platforms.js'
+import { movedPath } from '../core/rename.js'
 import { gamesFromFiles, mergeWithGamelist } from '../core/scan.js'
 import { closeSession } from '../core/userData.js'
 import { load, onReplaced, save } from './storage.js'
@@ -314,6 +315,33 @@ class Library {
     this.coverFiles = { ...this.coverFiles, ...files }
     this.#knowsCovers = true
     this.#rebuild()
+  }
+
+  /**
+   * A game was renamed on the USB drive (see ui/renamer.svelte.js): the saved
+   * scan and ES-DE's entries move to the new names without scanning again, and
+   * the covers and images are read again.
+   * @param {string} systemId
+   * @param {import('../core/rename.js').RenamePlan} plan
+   */
+  async applyRename(systemId, plan) {
+    const folder = plan.kind === 'folder'
+    const scan = this.scans[systemId]
+    if (scan) {
+      const files = scan.files.map((f) => movedPath(f, plan.files.map((r) => ({ ...r, folder }))) ?? f)
+      this.scans = { ...this.scans, [systemId]: { ...scan, files } }
+      save(SCANS_KEY, { driveId: this.#driveId, systems: this.scans })
+    }
+    this.#listed[systemId] = (this.#listed[systemId] ?? []).map((g) => {
+      const path = movedPath(g.path, plan.gamelist)
+      return path ? { ...g, path, id: `${systemId}/${path}` } : g
+    })
+    try {
+      await this.refreshCovers([systemId])
+    } catch {
+      this.#rebuild()
+    }
+    await this.loadMedia([systemId])
   }
 
   /**

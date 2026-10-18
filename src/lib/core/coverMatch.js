@@ -102,7 +102,7 @@ function rank(name, order) {
 function best(names, order) {
   return names
     .map((name) => ({ name, r: rank(name, order) }))
-    .sort((a, b) => a.r[0] - b.r[0] || a.r[1] - b.r[1] || a.r[2] - b.r[2] || a.r[3] - b.r[3] || (a.name < b.name ? -1 : 1))[0]
+    .sort((a, b) => compareRanks(a.r, b.r) || (a.name < b.name ? -1 : 1))[0]
     .name
 }
 
@@ -232,6 +232,54 @@ const REGION_LABELS = /** @type {Record<string, string>} */ ({
 export function regionLabel(/** @type {string} */ name) {
   const region = regionsOf(name)[0]
   return region ? (REGION_LABELS[region] ? t(REGION_LABELS[region]) : region) : ''
+}
+
+const DISC = /\s*\(Disc\s*(\d+)(?:\s*of\s*\d+)?\)/i
+
+/**
+ * libretro's name as a file name. libretro writes "_" for "&" too ("Ratchet _ Clank
+ * (USA)"), and Windows does accept "&": " _ " goes back to " & ".
+ * @param {string} name
+ */
+export function fromLibretroName(name) {
+  return name.replace(/ _ /g, ' & ')
+}
+
+/**
+ * Standard names to rename a game's file to (Y › Rename file…): every version
+ * (region, revision) of the closest titles, the best for you first; the safe
+ * match's title, if there is one, goes at the very front. A disc file only gets that same
+ * disc's names; a file without a disc tag (an .m3u, say) gets them without it.
+ * @param {string} query  the name the game's file or folder has now
+ * @param {CoverIndex} index
+ * @param {{ region?: RegionPreference, altTitle?: string, limit?: number }} [options]
+ * @returns {Array<CoverCandidate & { libretro: string }>}  libretro: its name there (for the cover)
+ */
+export function nameCandidates(query, index, { region = 'usa', altTitle, limit = 8 } = {}) {
+  const order = regionOrder(query, region)
+  const match = matchCover(query, index, { region, altTitle })
+  const keys = [...new Set([
+    ...(match ? [titleKey(match.name)] : []),
+    ...coverCandidates(query, index, { region, altTitle, limit: 4 }).map((c) => titleKey(c.name)),
+  ])]
+  const disc = DISC.exec(query)?.[1]
+  /** @type {Map<string, string>} name -> libretro's name */
+  const names = new Map()
+  for (const key of keys) {
+    const versions = [...(index.byTitle.get(key) ?? [])].sort((a, b) => compareRanks(rank(a, order), rank(b, order)) || (a < b ? -1 : 1))
+    for (const version of versions) {
+      const versionDisc = DISC.exec(version)?.[1]
+      if (disc ? versionDisc && versionDisc !== disc : versionDisc && versionDisc !== '1') continue
+      const name = fromLibretroName(disc ? version : version.replace(DISC, ''))
+      if (!names.has(name)) names.set(name, version)
+    }
+  }
+  return [...names].slice(0, limit).map(([name, libretro]) => ({ name, libretro, title: baseTitle(name), region: regionLabel(name) }))
+}
+
+/** @param {number[]} a @param {number[]} b */
+function compareRanks(a, b) {
+  return a[0] - b[0] || a[1] - b[1] || a[2] - b[2] || a[3] - b[3]
 }
 
 /**
