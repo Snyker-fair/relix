@@ -2,7 +2,7 @@
 
 Each version's section becomes the notes of its GitHub release.
 
-## [Unreleased]
+## [1.2.0] - 2026-10-21
 
 - **Back where you were:** the Xbox closes Relix while you play (it does that to
   apps of the Game type), so coming back used to mean starting from the home
