@@ -5,6 +5,7 @@
    * It's read-only: there's nothing to focus.
    */
   import { getPlatform, PLATFORMS } from '../lib/core/platforms.js'
+  import { weeklyTotals } from '../lib/core/playDays.js'
   import { mostPlayed, totalSeconds } from '../lib/core/userData.js'
   import { collections } from '../lib/ui/collections.svelte.js'
   import { emulators } from '../lib/ui/emulators.svelte.js'
@@ -12,6 +13,7 @@
   import { t } from '../lib/i18n/i18n.svelte.js'
   import { library } from '../lib/ui/library.svelte.js'
   import { userData } from '../lib/ui/userData.svelte.js'
+  import WeekBars from '../lib/ui/WeekBars.svelte'
 
   /** "E:\roms" -> "E:" */
   const drive = $derived(library.romRoot.replace(/[\\/]+roms[\\/]*$/i, '') || 'E:')
@@ -34,11 +36,15 @@
     Object.entries(library.playtime).reduce((n, [id, s]) => n + (inLibrary(id) ? s.plays : 0), 0),
   )
   const top = $derived(
-    mostPlayed(library.playtime, inLibrary).map((entry) => {
+    mostPlayed(library.playtime, inLibrary, 5).map((entry) => {
       const game = /** @type {import('../lib/ui/library.svelte.js').LibraryGame} */ (library.byId.get(entry.id))
       return { ...entry, game, platform: getPlatform(game.system) }
     }),
   )
+  // The last 8 weeks; they're counted since 1.3.0
+  const weeks = $derived(weeklyTotals(library.playDays, { now: Date.now(), weeks: 8, keep: inLibrary }))
+  const thisWeek = $derived(weeks.at(-1)?.seconds ?? 0)
+  const hasWeeks = $derived(weeks.some((w) => w.seconds > 0))
 
   const stats = $derived.by(() => {
     const covers = PLATFORMS.reduce((n, p) => n + library.coverCount(p.id).withCover, 0)
@@ -107,12 +113,29 @@
     </article>
 
     <article class="card">
-      <h3>{t('Tiempo de juego')}</h3>
+      <div class="head">
+        <h3>{t('Tiempo de juego')}</h3>
+        {#if total > 0}
+          <p class="total">
+            <strong>{formatPlaytime(total)}</strong>
+            <span>{t('en {sessions}', { sessions: plural(plays, 'partida', 'partidas') })}</span>
+          </p>
+        {/if}
+      </div>
       {#if total > 0}
-        <p class="total">
-          <strong>{formatPlaytime(total)}</strong>
-          <span>{t('en {sessions}', { sessions: plural(plays, 'partida', 'partidas') })}</span>
-        </p>
+        {#if hasWeeks}
+          <div class="chart">
+            <WeekBars
+              {weeks}
+              height={64}
+              values={false}
+              nowLabel={t('esta semana: {time}', { time: thisWeek > 0 ? formatPlaytime(thisWeek) : '0 min' })}
+              label={t('Tiempo jugado por semana')}
+            />
+          </div>
+        {:else}
+          <p class="since">{t('Las semanas se cuentan desde la 1.3.0.')}</p>
+        {/if}
         <ol class="top">
           {#each top as entry, i (entry.id)}
             <li>
@@ -246,43 +269,54 @@
   }
 
   /* ── Playtime ─────────────────── */
+  /* the total, beside the title: so the chart and the five fit above the hint bar */
   .total {
     display: flex;
     align-items: baseline;
-    gap: 12px;
-    margin: 0 0 14px;
+    gap: 10px;
+    margin: 0;
+    white-space: nowrap;
   }
   .total strong {
     font-family: var(--font-display);
     font-weight: 800;
-    font-size: 40px;
+    font-size: 32px;
     line-height: 1;
   }
   .total span {
     font-weight: 700;
-    font-size: 20px;
+    font-size: 19px;
     color: var(--ink-soft);
   }
+  .chart {
+    margin: 4px 0 12px;
+  }
+  .since {
+    margin: -4px 0 14px;
+    font-size: 19px;
+    color: var(--ink-soft);
+  }
+  /* five rows: compact, so everything fits above the hint bar */
   .top {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 5px;
   }
   .top li {
     display: grid;
-    grid-template-columns: 36px 1fr auto;
+    grid-template-columns: 30px 1fr auto;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
   }
   .rank {
     display: grid;
     place-items: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 12px;
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
     font-family: var(--font-display);
     font-weight: 800;
-    font-size: 21px;
+    font-size: 18px;
     padding-top: 2px;
   }
   .name {

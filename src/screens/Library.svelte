@@ -11,7 +11,7 @@
   import ChannelIcon from '../lib/ui/ChannelIcon.svelte'
   import { emulators } from '../lib/ui/emulators.svelte.js'
   import { formatPlaytime, plural, timeAgo } from '../lib/ui/format.js'
-  import { listJoin, t } from '../lib/i18n/i18n.svelte.js'
+  import { i18n, listJoin, t } from '../lib/i18n/i18n.svelte.js'
   import { shelf } from '../lib/ui/shelf.svelte.js'
   import Clock from '../lib/ui/Clock.svelte'
   import CoverArt, { TILE_ASPECT } from '../lib/ui/CoverArt.svelte'
@@ -33,11 +33,12 @@
    *   onMenu: (game: any, sortOptions: import('../lib/core/sorting.js').SortOrder[], filterChannel: string) => void,
    *   onSearch: () => void,
    *   onGuide: (systemId: string) => void,
+   *   onSheet: (game: any) => void,
    *   focusGameId?: string,
    * }}
    *   focusGameId: the game focused on opening (you're back from it and the Xbox had closed Relix)
    */
-  let { systemId, onBack, onSwitch, onLaunch, onOptions, onMenu, onSearch, onGuide, focusGameId } = $props()
+  let { systemId, onBack, onSwitch, onLaunch, onOptions, onMenu, onSearch, onGuide, onSheet, focusGameId } = $props()
 
   /** A console without games: Y opens its guide (doesn't apply to Favorites or Collections) */
   const guideable = $derived(Boolean(getPlatform(systemId)))
@@ -126,6 +127,28 @@
   })
   // The focused game's section: the letter in A–Z, the year in "Year"
   const section = $derived(game ? (sectionOf(game, order) ?? '•') : '')
+
+  // The description takes the lines left in the panel: 3 (2 under an image), or fewer if
+  // the name, the data and the time played take more room (Wikipedia's are long)
+  /** @type {HTMLElement | undefined} */
+  let detailEl = $state()
+  $effect(() => {
+    game?.id
+    chips.length
+    played
+    framed
+    i18n.current
+    const panel = detailEl
+    const desc = /** @type {HTMLElement | null | undefined} */ (panel?.querySelector('.desc'))
+    const last = /** @type {HTMLElement | null | undefined} */ (panel?.lastElementChild)
+    if (!panel || !desc || !last) return
+    const bottom = panel.clientHeight - parseFloat(getComputedStyle(panel).paddingBottom)
+    for (let lines = framed ? 2 : 3; lines >= 1; lines--) {
+      desc.style.setProperty('-webkit-line-clamp', String(lines))
+      desc.style.setProperty('line-clamp', String(lines))
+      if (last.offsetTop + last.offsetHeight <= bottom + 1) break
+    }
+  })
 
   // If the list changes (another order, a hidden game...), the focus stays on the same game
   let focusedGameId = ''
@@ -230,6 +253,7 @@
       else if (action === 'y' && game) (sound.select(), onMenu(game, sortOptions, systemId))
       else if (action === 'y' && guideable) (sound.select(), onGuide(systemId))
       else if (action === 'a' && game) onLaunch(game)
+      else if (action === 'rs' && game) (sound.select(), onSheet(game))
       else if (action === 'view') (sound.select(), onSearch())
       else if (action === 'start') (sound.select(), onOptions())
     }),
@@ -306,7 +330,7 @@
     {/if}
   </section>
 {:else}
-  <section class="detail" style:--tint={platform.color}>
+  <section class="detail" style:--tint={platform.color} bind:this={detailEl}>
     {#key game.id}
       {#if framed}
         <div class="media" class:video-on={videoPlaying}>
@@ -316,7 +340,7 @@
             <!-- Video only: while it waits, the blurred cover -->
             <img class="shot blurred" src={game.cover} alt="" />
           {/if}
-          {#if video}<PreviewVideo src={video} sound={settings.videoSound} onplaying={() => (videoPlaying = true)} />{/if}
+          {#if video}<PreviewVideo src={video} onplaying={() => (videoPlaying = true)} />{/if}
           {#if logo}
             <span class="logo-shade"></span>
             <img class="logo" src={logo} alt="" onerror={() => brokenMedia.add(logo)} />

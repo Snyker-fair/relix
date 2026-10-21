@@ -15,6 +15,7 @@
   import { activity } from './lib/ui/activity.svelte.js'
   import { dispatch, idleFor, markActivity, startInput } from './lib/ui/input.js'
   import { library } from './lib/ui/library.svelte.js'
+  import { memory } from './lib/ui/memory.svelte.js'
   import { settings } from './lib/ui/settings.svelte.js'
   import { shelf } from './lib/ui/shelf.svelte.js'
   import { sound } from './lib/ui/sound.js'
@@ -28,6 +29,7 @@
   import RenamePicker from './screens/RenamePicker.svelte'
   import InfoPicker from './screens/InfoPicker.svelte'
   import GameMenu from './screens/GameMenu.svelte'
+  import GameSheet from './screens/GameSheet.svelte'
   import Guide from './screens/Guide.svelte'
   import Home from './screens/Home.svelte'
   import LaunchOverlay from './screens/LaunchOverlay.svelte'
@@ -47,6 +49,7 @@
    *   | { name: 'coverPicker', back: any, gameId?: string }
    *   | { name: 'renamer', back: any, gameId?: string }
    *   | { name: 'info', back: any, gameId?: string }
+   *   | { name: 'sheet', back: any, gameId: string }
    *   | { name: 'guide', systemId: string, back: any }
    *   | { name: 'welcome', step: number, row?: string, back: any, auto?: boolean }} Screen
    *   welcome.auto: it opened by itself the first time (not from Options)
@@ -106,6 +109,7 @@
       userData.resync()
       library.loadMedia()
       systemStatus.run().then(startNotices)
+      memory.start(screenLabel)
       if (finishedWhileClosed) {
         diagnostics.log(
           'back',
@@ -210,6 +214,32 @@
     const game = library.byId.get(id)
     if (!game) return id
     return `${game.name} (${getPlatform(game.system)?.shortName ?? game.system})`
+  }
+
+  /** What's on screen, in a few words, for the memory log ("biblioteca de PS2") */
+  function screenLabel() {
+    if (activity.quiet) return t('protector de pantalla')
+    if (screen.name === 'library') {
+      const id = screen.systemId
+      const channel = isCollectionId(id)
+        ? id.slice(COLLECTION_PREFIX.length)
+        : id === 'favorites'
+          ? t('Favoritos')
+          : (getPlatform(id)?.shortName ?? id)
+      return t('biblioteca de {channel}', { channel })
+    }
+    const labels = {
+      home: t('inicio'),
+      search: t('búsqueda'),
+      options: t('opciones'),
+      coverPicker: t('portadas'),
+      renamer: t('renombrar'),
+      info: t('información de juegos'),
+      sheet: t('ficha del juego'),
+      guide: t('guía'),
+      welcome: t('bienvenida'),
+    }
+    return labels[/** @type {keyof typeof labels} */ (screen.name)] ?? screen.name
   }
 
   /** @type {Promise<void>} */
@@ -374,6 +404,16 @@
     screen = { name: 'info', back: screen, gameId: game.id }
   }
 
+  /**
+   * The game's full sheet. Coming back from it, the library has that game focused.
+   * @param {any} game
+   */
+  function openSheet(game) {
+    menu = null
+    const back = screen.name === 'library' ? { ...screen, gameId: game.id } : screen
+    screen = { name: 'sheet', back, gameId: game.id }
+  }
+
   /** @param {any} game */
   async function startGame(game) {
     const platform = getPlatform(game.system)
@@ -407,6 +447,7 @@
     // emulator, with where you were: if the Xbox closes Relix, it opens there again
     library.startSession(game, placeFor(screen, focusedId))
     diagnostics.log('launch', t('{game} con {emulator} · {uri}', { game: gameLabel(game.id), emulator: emulator.name, uri }))
+    await memory.beforeGame(gameLabel(game.id))
     diagnostics.flush()
     await userData.flush()
     try {
@@ -469,6 +510,7 @@
       onMenu={openMenu}
       onSearch={openSearch}
       onGuide={openGuide}
+      onSheet={openSheet}
     />
   {:else if screen.name === 'search'}
     {@const from = screen.from}
@@ -521,6 +563,9 @@
   {:else if screen.name === 'info'}
     {@const back = screen.back}
     <InfoPicker gameId={screen.gameId} onBack={() => (screen = back)} onToast={showToast} />
+  {:else if screen.name === 'sheet'}
+    {@const back = screen.back}
+    <GameSheet gameId={screen.gameId} onBack={() => (screen = back)} onLaunch={startGame} onMenu={(game) => openMenu(game)} />
   {:else}
     {@const back = screen.back}
     <CoverPicker gameId={screen.gameId} onBack={() => (screen = back)} onToast={showToast} />
@@ -536,6 +581,7 @@
       onChangeCover={changeCover}
       onRename={renameFile}
       onFindInfo={findInfo}
+      onSheet={screen.name === 'sheet' ? undefined : openSheet}
       onToast={showToast}
     />
   {/if}

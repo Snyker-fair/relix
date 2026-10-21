@@ -67,7 +67,7 @@
   ])
   // Library: a row per console, "Scan everything", the file names, the games' information and the hidden games
   const LIBRARY_ROWS = [...PLATFORMS.map((p) => p.id), 'all', 'rename', 'info', 'hidden']
-  const PREFERENCE_ROWS = ['language', 'theme', 'empty', 'sounds', 'region', 'video', 'screensaver']
+  const PREFERENCE_ROWS = ['language', 'theme', 'empty', 'sounds', 'region', 'screensaver']
   // Consoles: which emulator each one opens with
   const CONSOLE_ROWS = PLATFORMS.map((p) => p.id)
   /** How many different emulator apps the Xbox has (RetroArch counts once) */
@@ -386,7 +386,6 @@
     if (id === 'empty') settings.toggleEmptyConsoles()
     else if (id === 'sounds') settings.toggleSounds()
     else if (id === 'region') settings.cycleCoverRegion()
-    else if (id === 'video') settings.toggleVideoSound()
     else if (id === 'screensaver') settings.cycleScreensaver()
     else if (id === 'theme') settings.cycleTheme()
     else if (id === 'language') settings.cycleLanguage()
@@ -458,6 +457,12 @@
         onclick={() => s.id !== section && ((section = s.id), (index = 0), sound.move())}
       >
         {s.name}
+        {#if s.id === 'check' && systemStatus.summary.errors > 0}
+          <!-- the same count as the Options tile on the home screen: what's left to fix -->
+          <span class="tab-alert" aria-label={plural(systemStatus.summary.errors, 'cosa por arreglar', 'cosas por arreglar')}>
+            {systemStatus.summary.errors}
+          </span>
+        {/if}
       </button>
     {/each}
     <button class="bumper" onclick={() => dispatch('rb')} aria-label={t('Sección siguiente')}>
@@ -896,15 +901,13 @@
         ? settings.showEmptyConsoles
         : id === 'sounds'
           ? settings.sounds
-          : id === 'video'
-            ? settings.videoSound
-            : id === 'screensaver'
-              ? settings.screensaverMinutes > 0
-              : id === 'theme'
-                ? settings.theme !== 'light'
-                : id === 'language'
-                  ? false
-                  : true}
+          : id === 'screensaver'
+            ? settings.screensaverMinutes > 0
+            : id === 'theme'
+              ? settings.theme !== 'light'
+              : id === 'language'
+                ? false
+                : true}
     <button
       class="row focus-ring"
       class:focused
@@ -914,7 +917,7 @@
     >
       <span class="badge neutral">
         <ChannelIcon
-          id={id === 'language' ? 'language' : id === 'theme' ? 'theme' : id === 'empty' ? 'eye' : id === 'sounds' ? 'sound' : id === 'video' ? 'video' : id === 'screensaver' ? 'moon' : 'globe'}
+          id={id === 'language' ? 'language' : id === 'theme' ? 'theme' : id === 'empty' ? 'eye' : id === 'sounds' ? 'sound' : id === 'screensaver' ? 'moon' : 'globe'}
           color="currentColor"
           size={52}
         />
@@ -953,9 +956,6 @@
         {:else if id === 'sounds'}
           <strong>{t('Sonidos de la interfaz')}</strong>
           <span>{t('El tic al moverte y el pop al elegir')}</span>
-        {:else if id === 'video'}
-          <strong>{t('Sonido de los videos')}</strong>
-          <span>{t('La vista previa en la ficha del juego (si escrapeaste videos con ES-DE)')}</span>
         {:else if id === 'screensaver'}
           <strong>{t('Protector de pantalla')}</strong>
           <span>{t('Tus juegos, uno tras otro, cuando dejas el control quieto')}</span>
@@ -975,8 +975,6 @@
             {on ? t('Visibles') : t('Ocultas')}
           {:else if id === 'sounds'}
             {on ? t('Activados') : t('Desactivados')}
-          {:else if id === 'video'}
-            {on ? t('Con sonido') : t('Sin sonido')}
           {:else if id === 'screensaver'}
             {settings.screensaverMinutes > 0 ? t('A los {n} min', { n: settings.screensaverMinutes }) : t('Nunca')}
           {:else}
@@ -1031,6 +1029,7 @@
     padding: 0 8px;
   }
   .tab {
+    position: relative;
     font-family: var(--font-display);
     font-weight: 700;
     font-size: 26px;
@@ -1040,6 +1039,23 @@
     transition:
       background 160ms ease,
       color 160ms ease;
+  }
+  .tab-alert {
+    position: absolute;
+    top: -14px;
+    right: -10px;
+    display: grid;
+    place-items: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 3px 8px 0;
+    border-radius: 999px;
+    border: 3px solid var(--cloud);
+    background: var(--pop);
+    color: var(--on-color);
+    font-weight: 800;
+    font-size: 19px;
+    line-height: 1;
   }
   .tab.active {
     background: var(--ink);

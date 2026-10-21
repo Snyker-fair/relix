@@ -131,6 +131,11 @@
     <!-- an open book: the game's information -->
     <path d="M48 26c-8-6-20-8-34-6v52c14-2 26 0 34 6 8-6 20-8 34-6V20c-14-2-26 0-34 6Z" />
     <path d="M48 26v52" />
+  {:else if id === 'sheet'}
+    <!-- a card with a picture and lines: the game sheet -->
+    <rect x="14" y="18" width="68" height="60" rx="10" />
+    <rect x="24" y="30" width="20" height="26" rx="4" fill={color} />
+    <path d="M54 34h18M54 46h18M24 66h48" />
   {:else if id === 'rename'}
     <!-- pencil over a line: rename the file -->
     <path d="M60 14l20 20-40 40H20V54Z" />
@@ -198,10 +203,6 @@
   {:else if id === 'moon'}
     <!-- moon: screensaver -->
     <path d="M62 14a34 34 0 1 0 20 46A28 28 0 0 1 62 14Z" fill={color} />
-  {:else if id === 'video'}
-    <!-- screen with a triangle: video -->
-    <rect x="12" y="22" width="72" height="52" rx="10" />
-    <path d="M42 36v24l20-12Z" fill={color} />
   {:else if id === 'gamepad'}
     <!-- controller -->
     <path d="M30 28h36c11 0 17 8 19 20l3 17c1 9-9 13-15 6l-8-9H31l-8 9c-6 7-16 3-15-6l3-17c2-12 8-20 19-20Z" />

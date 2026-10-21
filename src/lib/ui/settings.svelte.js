@@ -42,8 +42,6 @@ class Settings {
   }
   /** The welcome tour is already done (or skipped) */
   onboarded = $state(false)
-  /** The preview videos have sound (muted by default) */
-  videoSound = $state(false)
   /** Minutes for the screensaver (0 = never) */
   screensaverMinutes = $state(5)
 
@@ -61,7 +59,6 @@ class Settings {
     this.onboarded = saved.onboarded === true
     this.theme = THEMES.includes(saved.theme) ? saved.theme : 'light'
     i18n.choice = LANGUAGES.includes(saved.language) ? saved.language : 'auto'
-    this.videoSound = saved.videoSound === true
     this.screensaverMinutes = SCREENSAVER_CHOICES.includes(saved.screensaverMinutes) ? saved.screensaverMinutes : 5
     sound.setMuted(!this.sounds)
   }
@@ -90,11 +87,6 @@ class Settings {
   cycleSortOrder(available = SORTS) {
     const options = SORTS.filter((s) => available.includes(s))
     this.sortOrder = options[(options.indexOf(this.sortOrder) + 1) % options.length] ?? 'az'
-    this.#save()
-  }
-
-  toggleVideoSound() {
-    this.videoSound = !this.videoSound
     this.#save()
   }
 
@@ -141,7 +133,6 @@ class Settings {
       onboarded: this.onboarded,
       theme: this.theme,
       language: i18n.choice,
-      videoSound: this.videoSound,
       screensaverMinutes: this.screensaverMinutes,
     })
   }

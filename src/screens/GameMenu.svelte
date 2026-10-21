@@ -33,12 +33,14 @@
    *   onChangeCover: (game: any) => void,
    *   onRename: (game: any) => void,
    *   onFindInfo: (game: any) => void,
+   *   onSheet?: (game: any) => void,
    *   onToast: (message: string) => void,
    * }}
+   *   onSheet: opens the game's sheet (without it, "Game sheet" isn't shown: you're on it)
    *   sortOptions: the orders that make sense in that list (without it, "Sort" isn't shown)
    *   filterChannel: the open library channel (without it, "Filter" isn't shown)
    */
-  let { game, sortOptions, filterChannel, onClose, onLaunch, onChangeCover, onRename, onFindInfo, onToast } = $props()
+  let { game, sortOptions, filterChannel, onClose, onLaunch, onChangeCover, onRename, onFindInfo, onSheet, onToast } = $props()
 
   /** @typedef {{ id: string, icon: string, label: string, value?: string, checked?: boolean, disabled?: boolean, tag?: string }} Item */
 
@@ -67,6 +69,7 @@
   /** @type {Item[]} */
   const mainItems = $derived([
     { id: 'play', icon: 'play', label: t('Jugar'), disabled: !emulator },
+    ...(onSheet ? [{ id: 'sheet', icon: 'sheet', label: t('Ver ficha') }] : []),
     // Only if the console has more than one emulator to choose from
     ...(platform && platform.emulators.length > 1
       ? [{ id: 'emulator', icon: 'swap', label: t('Abrir con…'), value: shortName(emulator?.name ?? '') }]
@@ -236,6 +239,9 @@
       sound.select()
       onClose()
       onFindInfo(current)
+    } else if (item.id === 'sheet' && onSheet) {
+      sound.select()
+      onSheet(current)
     } else if (item.id === 'hide') {
       library.hide(current)
       sound.back()

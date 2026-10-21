@@ -49,7 +49,7 @@ namespace RelixShell
         /// (View details › App type), and the limit starts low and grows: ExpectedAppMemoryUsageLimit
         /// is the one it will reach, and that tells the interface which type Relix is.
         /// </summary>
-        private static IJsonValue Memory()
+        public static IJsonValue Memory()
         {
             try
             {

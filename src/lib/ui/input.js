@@ -8,7 +8,7 @@
  * of the stack receives actions (that way an overlay "covers" the screen below).
  */
 
-/** @typedef {'up'|'down'|'left'|'right'|'a'|'b'|'x'|'y'|'lb'|'rb'|'lt'|'rt'|'start'|'view'} Action */
+/** @typedef {'up'|'down'|'left'|'right'|'a'|'b'|'x'|'y'|'lb'|'rb'|'lt'|'rt'|'start'|'view'|'rs'} Action */
 
 /** @type {Array<(action: Action) => void>} */
 const handlers = []
@@ -61,6 +61,7 @@ const KEYS = {
   z: 'lt', // triggers: previous / next letter
   c: 'rt',
   v: 'view', // View button: search
+  f: 'rs', // right stick (click): the game sheet
   '/': 'view',
   PageUp: 'lb',
   PageDown: 'rb',
@@ -80,6 +81,7 @@ const BUTTONS = [
   [7, 'rt'],
   [8, 'view'],
   [9, 'start'],
+  [11, 'rs'],
   [12, 'up'],
   [13, 'down'],
   [14, 'left'],

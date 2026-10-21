@@ -23,6 +23,7 @@ export const LOG_KINDS = {
   usb: 'USB',
   rename: 'RENOMBRAR',
   info: 'FICHAS',
+  memory: 'MEMORIA',
 }
 
 /** Longer lines are cut (URIs with long paths can go past 400) */

@@ -333,6 +333,11 @@ namespace RelixShell
                         Reply(id, await EmulatorStatusAsync(payload));
                         break;
 
+                    case "memory":
+                        // How much Relix uses now: the interface asks every so often and logs the peaks
+                        Reply(id, SystemCheck.Memory());
+                        break;
+
                     case "systemCheck":
                         await EnsurePathsAsync(refresh: false);
                         Reply(id, await SystemCheck.RunAsync(paths, payload.GetNamedArray("folders", new JsonArray())));

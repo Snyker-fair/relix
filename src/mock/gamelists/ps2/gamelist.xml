@@ -3,7 +3,14 @@
 	<game>
 		<path>./Okami (USA).chd</path>
 		<name>Ōkami</name>
-		<desc>Una diosa loba restaura el color de Japón con un pincel celestial.</desc>
+		<desc>Una diosa loba restaura el color de Japón con un pincel celestial.
+
+Amaterasu despierta cuando una sombra cubre la tierra y las aldeas pierden su color. Con el Pincel Celestial detienes el tiempo y dibujas sobre la pantalla: un círculo hace salir el sol, una línea corta a los enemigos y un trazo sobre un árbol seco lo hace florecer.
+
+El viaje cruza llanuras, bosques y ciudades inspirados en grabados en madera, con mazmorras, combates y decenas de personajes que piden ayuda. Cada técnica nueva del pincel abre caminos en lugares que ya visitaste.
+
+Su estilo de acuarela y tinta sigue siendo uno de los más reconocibles de su generación.</desc>
+		<rating>0.9</rating>
 		<releasedate>20060919T000000</releasedate>
 		<developer>Clover Studio</developer>
 		<publisher>Capcom</publisher>

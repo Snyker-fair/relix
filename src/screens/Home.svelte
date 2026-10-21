@@ -153,12 +153,15 @@
   )
 </script>
 
+<!-- The focused channel's color, soft from the top left: only a color, so it costs next to nothing -->
+<div class="tint" aria-hidden="true" style:--c={onOptionsTile ? 'var(--ink-soft)' : channel.color}></div>
+
 <header class="top">
   <Logo size={64} {boot} />
   {#if mode === 'browser'}
     <p class="kbd-help">
       {t(
-        'Sin control: flechas, Enter elige, Esc vuelve, X favorito, Y menú del juego, Q/E cambian de consola, Z/C saltan de letra, V busca, M abre Opciones. También sirve el mouse.',
+        'Sin control: flechas, Enter elige, Esc vuelve, X favorito, Y menú del juego, F ficha, Q/E cambian de consola, Z/C saltan de letra, V busca, M abre Opciones. También sirve el mouse.',
       )}
     </p>
   {/if}
@@ -283,6 +286,22 @@
 />
 
 <style>
+  .tint {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-color: color-mix(in oklab, var(--c) 24%, transparent);
+    mask-image: radial-gradient(120% 95% at 22% 8%, #000 0%, rgb(0 0 0 / 0.5) 45%, transparent 78%);
+    transition: background-color 600ms ease;
+  }
+  :global(:root[data-theme='dark']) .tint {
+    background-color: color-mix(in oklab, var(--c) 18%, transparent);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tint {
+      transition: none;
+    }
+  }
   .top {
     position: absolute;
     top: 56px;

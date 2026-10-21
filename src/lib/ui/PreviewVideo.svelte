@@ -3,18 +3,18 @@
    * The preview video of the focused game. It only starts loading once you
    * stay on the game for a moment (moving fast through the grid doesn't ask
    * for videos), shows up over the screenshot once it's playing, and
-   * loops. Muted unless you turn the sound on in Options › Preferences.
+   * loops, always muted (it's a preview: the sound is the game's).
    * It stops with the screensaver or when a game opens.
    */
   import { activity, brokenMedia } from './activity.svelte.js'
+  import { memory } from './memory.svelte.js'
 
-  /** @type {{ src: string, delay?: number, sound?: boolean, onplaying?: () => void }} */
-  let { src, delay = 1500, sound = false, onplaying } = $props()
+  /** @type {{ src: string, delay?: number, onplaying?: () => void }} */
+  let { src, delay = 1500, onplaying } = $props()
 
   let waited = $state(false)
   let playing = $state(false)
-  /** @type {HTMLVideoElement | undefined} */
-  let video = $state()
+  const shown = $derived(waited && !activity.quiet && !brokenMedia.has(src))
 
   $effect(() => {
     src
@@ -24,17 +24,16 @@
     return () => clearTimeout(timer)
   })
 
-  // The sound can change without loading the video again
+  // While it plays, the memory log knows (see memory.svelte.js)
   $effect(() => {
-    if (!video) return
-    video.muted = !sound
-    video.volume = 0.6
+    if (!playing || !shown) return
+    memory.videoStarted()
+    return () => memory.videoStopped()
   })
 </script>
 
-{#if waited && !activity.quiet && !brokenMedia.has(src)}
+{#if shown}
   <video
-    bind:this={video}
     class:playing
     {src}
     muted

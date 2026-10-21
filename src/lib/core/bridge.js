@@ -67,6 +67,7 @@
 import { i18n, t } from '../i18n/i18n.svelte.js'
 import { remoteCoverUrl } from './coverMatch.js'
 import { MEDIA_LISTED } from './media.js'
+import { dayKey } from './playDays.js'
 import { getPlatform, PLATFORMS } from './platforms.js'
 import mockCoverNames from '../../mock/libretro-names.json'
 import mockEnglish from '../../mock/en.json'
@@ -99,7 +100,7 @@ function demoGamelists() {
     i18n.current !== 'en'
       ? xml
       : xml
-          .replace(/<desc>(.*?)<\/desc>/g, (_, text) => `<desc>${english.descriptions[text] ?? text}</desc>`)
+          .replace(/<desc>([\s\S]*?)<\/desc>/g, (_, text) => `<desc>${english.descriptions[text] ?? text}</desc>`)
           .replace(/<genre>(.*?)<\/genre>/g, (_, text) => `<genre>${english.genres[text] ?? text}</genre>`)
   return Object.fromEntries(
     Object.entries(MOCK_GAMELISTS).map(([id, xml]) => [
@@ -757,6 +758,16 @@ export async function systemCheck(folders) {
   }
 }
 
+/**
+ * How much memory Relix uses now and how much the Xbox gives it (see SystemCheck.cs).
+ * null in the demo, and with a shell from before 1.3.0.
+ * @returns {Promise<import('./systemCheck.js').ShellMemory | null>}
+ */
+export async function memoryUsage() {
+  if (mode !== 'xbox') return null
+  return request('memory', {}, { timeout: 3000 }).catch(() => null)
+}
+
 // ── Your data (E:\relix\data.json) ──────────────────────────────────────
 
 /** @typedef {{ driveId: string, text: string|null, source: string|null }} UserDataFile */
@@ -784,6 +795,31 @@ export async function saveUserData(text) {
   return true
 }
 
+/** The demo's days played, counted back from today so the charts always have weeks */
+function demoPlayDays() {
+  /** @type {Array<[number, string, number]>} days ago, game, seconds */
+  const sessions = [
+    [1, 'ps2/Okami (USA).chd', 3_900],
+    [2, 'gc/F-Zero GX (USA).rvz', 1_500],
+    [4, 'ps2/Okami (USA).chd', 5_400],
+    [9, 'psx/Tekken 3 (USA).chd', 2_700],
+    [11, 'ps2/Okami (USA).chd', 7_200],
+    [12, 'gc/F-Zero GX (USA).rvz', 2_400],
+    [17, 'ps2/Burnout 3 - Takedown (USA).chd', 3_000],
+    [23, 'ps2/Okami (USA).chd', 4_500],
+    [30, 'gc/F-Zero GX (USA).rvz', 3_600],
+    [38, 'ps2/Okami (USA).chd', 2_100],
+    [45, 'psx/Tekken 3 (USA).chd', 4_800],
+  ]
+  /** @type {Record<string, Record<string, number>>} */
+  const days = {}
+  for (const [ago, id, seconds] of sessions) {
+    const key = dayKey(Date.now() - ago * 86_400_000)
+    days[key] = { ...days[key], [id]: (days[key]?.[id] ?? 0) + seconds }
+  }
+  return days
+}
+
 // In the demo, the "USB drive" is the browser. It comes with some sample playtime.
 const DEMO_USERDATA_KEY = 'relix:demo-userdata'
 const DEMO_USERDATA = JSON.stringify({
@@ -803,4 +839,5 @@ const DEMO_USERDATA = JSON.stringify({
     'psx/Tekken 3 (USA).chd': Date.parse('2026-09-20T19:30:00Z'),
   },
   recent: ['ps2/Okami (USA).chd', 'gc/F-Zero GX (USA).rvz', 'psx/Tekken 3 (USA).chd'],
+  playDays: demoPlayDays(),
 })
