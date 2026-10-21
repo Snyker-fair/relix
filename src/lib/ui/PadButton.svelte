@@ -1,5 +1,5 @@
 <script>
-  /** The icon of an Xbox controller button (A, B, X, Y, LB, RB, LT, RT, Menu, View, the right stick, the d-pad). */
+  /** The icon of an Xbox controller button (A, B, X, Y, LB, RB, LT, RT, Menu, View, the sticks, the d-pad). */
   import { t } from '../i18n/i18n.svelte.js'
 
   let { name, size = 34 } = $props()
@@ -8,7 +8,7 @@
   const isTrigger = $derived(name === 'lt' || name === 'rt')
   const isMenu = $derived(name === 'start')
   const isView = $derived(name === 'view')
-  const isStick = $derived(name === 'rs')
+  const isStick = $derived(name === 'rs' || name === 'ls')
   /** The d-pad: an arrow, rotated to where it points */
   const ARROWS = { up: 0, right: 90, down: 180, left: 270 }
   const arrow = $derived(/** @type {Record<string, number>} */ (ARROWS)[name])
@@ -18,7 +18,9 @@
       : name === 'view'
         ? t('Botón Vista')
         : isStick
-          ? t('Stick derecho')
+          ? name === 'rs'
+            ? t('Stick derecho')
+            : t('Stick izquierdo')
           : arrow !== undefined
             ? t('Cruceta')
             : t('Botón {name}', { name: name.toUpperCase() }),
@@ -46,10 +48,10 @@
       <path d="M7 4.5V4a1.5 1.5 0 0 1 1.5-1.5h8A1.5 1.5 0 0 1 18 4v8a1.5 1.5 0 0 1-1.5 1.5H15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
     </svg>
   {:else if isStick}
-    <!-- the right stick, pressed: its round cap with an R -->
+    <!-- a stick, pressed: its round cap with an R or an L -->
     <svg viewBox="0 0 20 20" width={size * 0.78} height={size * 0.78} aria-hidden="true">
       <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.8" />
-      <text x="10" y="14" text-anchor="middle" font-size="10.5" font-weight="800" fill="currentColor">R</text>
+      <text x="10" y="14" text-anchor="middle" font-size="10.5" font-weight="800" fill="currentColor">{name === 'rs' ? 'R' : 'L'}</text>
     </svg>
   {:else if arrow !== undefined}
     <svg viewBox="0 0 20 20" width={size * 0.5} height={size * 0.5} aria-hidden="true" style:rotate="{arrow}deg">

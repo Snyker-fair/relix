@@ -4,6 +4,7 @@
   import { buildLaunchUri } from './lib/core/launchUri.js'
   import { getPlatform } from './lib/core/platforms.js'
   import { placeFor, returnTo } from './lib/core/place.js'
+  import { pickSurprise } from './lib/core/surprise.js'
   import { QUICK_EXIT_SECONDS, quickExitMessage } from './lib/core/quickExit.js'
   import { shortDuration } from './lib/core/diagnostics.js'
   import { VERSION } from './lib/core/version.js'
@@ -49,10 +50,11 @@
    *   | { name: 'coverPicker', back: any, gameId?: string }
    *   | { name: 'renamer', back: any, gameId?: string }
    *   | { name: 'info', back: any, gameId?: string }
-   *   | { name: 'sheet', back: any, gameId: string }
+   *   | { name: 'sheet', back: any, gameId: string, surprise?: { pool: string[], shown: string[] } }
    *   | { name: 'guide', systemId: string, back: any }
    *   | { name: 'welcome', step: number, row?: string, back: any, auto?: boolean }} Screen
    *   welcome.auto: it opened by itself the first time (not from Options)
+   *   sheet.surprise: opened by "Surprise me": the games it picks from and the ones it already showed
    */
   /** @type {Screen} */
   let screen = $state({ name: 'home' })
@@ -416,6 +418,39 @@
     screen = { name: 'sheet', back, gameId: game.id }
   }
 
+  /**
+   * "Surprise me" (core/surprise.js): a random game that can be played, in its sheet.
+   * From the home screen, among every console; from a library, among the games it shows.
+   * @param {any[]} games
+   * @param {string} [focusedGameId]  the game focused in the library: coming back, it's still there
+   */
+  function surprise(games, focusedGameId) {
+    const playable = games.filter((g) => emulators.forGame(g))
+    const pool = (playable.length > 0 ? playable : games).map((g) => g.id)
+    const back = screen.name === 'library' && focusedGameId ? { ...screen, gameId: focusedGameId } : screen
+    showSurprise(pool, [], back)
+  }
+
+  /** The sheet's "Another": the next one, without repeating until all were shown */
+  function anotherSurprise() {
+    if (screen.name !== 'sheet' || !screen.surprise) return
+    showSurprise(screen.surprise.pool, screen.surprise.shown, screen.back)
+  }
+
+  /** @param {string[]} pool @param {string[]} shown @param {any} back */
+  function showSurprise(pool, shown, back) {
+    const games = pool.map((id) => library.byId.get(id)).filter((g) => g !== undefined)
+    const game = pickSurprise(games, { playtime: library.playtime, lastPlayed: library.lastPlayed, shown })
+    if (!game) {
+      sound.error()
+      showToast(t('Todavía no hay juegos para elegir.'))
+      return
+    }
+    // Once every game was shown, the round starts over
+    const round = shown.length >= games.length ? [] : shown
+    screen = { name: 'sheet', back, gameId: game.id, surprise: { pool, shown: [...round, game.id] } }
+  }
+
   /** @param {any} game */
   async function startGame(game) {
     const platform = getPlatform(game.system)
@@ -500,6 +535,7 @@
       onOptions={openOptions}
       onSearch={openSearch}
       onMenu={(game) => openMenu(game)}
+      onSurprise={() => surprise(library.all)}
     />
   {:else if screen.name === 'library'}
     <Library
@@ -513,6 +549,7 @@
       onSearch={openSearch}
       onGuide={openGuide}
       onSheet={openSheet}
+      onSurprise={surprise}
     />
   {:else if screen.name === 'search'}
     {@const from = screen.from}
@@ -567,7 +604,16 @@
     <InfoPicker gameId={screen.gameId} onBack={() => (screen = back)} onToast={showToast} />
   {:else if screen.name === 'sheet'}
     {@const back = screen.back}
-    <GameSheet gameId={screen.gameId} onBack={() => (screen = back)} onLaunch={startGame} onMenu={(game) => openMenu(game)} />
+    <!-- each surprise is a new sheet: it comes in with its animation and the description from the top -->
+    {#key screen.gameId}
+      <GameSheet
+        gameId={screen.gameId}
+        onBack={() => (screen = back)}
+        onLaunch={startGame}
+        onMenu={(game) => openMenu(game)}
+        onAnother={screen.surprise ? anotherSurprise : undefined}
+      />
+    {/key}
   {:else}
     {@const back = screen.back}
     <CoverPicker gameId={screen.gameId} onBack={() => (screen = back)} onToast={showToast} />

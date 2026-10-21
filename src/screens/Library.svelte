@@ -34,11 +34,12 @@
    *   onSearch: () => void,
    *   onGuide: (systemId: string) => void,
    *   onSheet: (game: any) => void,
+   *   onSurprise: (games: any[], focusedGameId?: string) => void,
    *   focusGameId?: string,
    * }}
    *   focusGameId: the game focused on opening (you're back from it and the Xbox had closed Relix)
    */
-  let { systemId, onBack, onSwitch, onLaunch, onOptions, onMenu, onSearch, onGuide, onSheet, focusGameId } = $props()
+  let { systemId, onBack, onSwitch, onLaunch, onOptions, onMenu, onSearch, onGuide, onSheet, onSurprise, focusGameId } = $props()
 
   /** A console without games: Y opens its guide (doesn't apply to Favorites or Collections) */
   const guideable = $derived(Boolean(getPlatform(systemId)))
@@ -254,6 +255,7 @@
       else if (action === 'y' && guideable) (sound.select(), onGuide(systemId))
       else if (action === 'a' && game) onLaunch(game)
       else if (action === 'rs' && game) (sound.select(), onSheet(game))
+      else if (action === 'ls' && game) (sound.select(), onSurprise(games, game.id))
       else if (action === 'view') (sound.select(), onSearch())
       else if (action === 'start') (sound.select(), onOptions())
     }),

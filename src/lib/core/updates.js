@@ -20,7 +20,7 @@ export const CHECK_EVERY_MS = 24 * 60 * 60 * 1000
  * update (or the first time, with games). In Spanish, translated with t().
  */
 export const NEWS = /** @type {Record<string, string>} */ ({
-  '1.3.0': 'Nuevo en la {version}: clic en el stick derecho sobre un juego abre su ficha completa',
+  '1.3.0': 'Nuevo en la {version}: clic en el stick derecho para ver la ficha de un juego, y en el izquierdo para que Relix te sorprenda',
 })
 
 /**

@@ -34,6 +34,7 @@ namespace RelixShell
                 { GamepadButtons.RightShoulder, "rb" },
                 { GamepadButtons.Menu, "start" },
                 { GamepadButtons.View, "view" },
+                { GamepadButtons.LeftThumbstick, "ls" },
                 { GamepadButtons.RightThumbstick, "rs" },
                 { GamepadButtons.DPadUp, "up" },
                 { GamepadButtons.DPadDown, "down" },

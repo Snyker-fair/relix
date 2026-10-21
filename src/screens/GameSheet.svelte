@@ -7,6 +7,8 @@
    *
    *   ↑ ↓  scroll the description     A  play       X  favorite
    *   Y    the game menu              B (or the right stick)  back
+   *
+   * Opened by "Surprise me", it says so at the top and the left stick picks another.
    */
   import { untrack } from 'svelte'
   import { getPlatform } from '../lib/core/platforms.js'
@@ -33,9 +35,11 @@
    *   onBack: () => void,
    *   onLaunch: (game: any) => void,
    *   onMenu: (game: any) => void,
+   *   onAnother?: () => void,
    * }}
+   *   onAnother: it's a surprise (core/surprise.js); picks another one
    */
-  let { gameId, onBack, onLaunch, onMenu } = $props()
+  let { gameId, onBack, onLaunch, onMenu, onAnother } = $props()
 
   const game = $derived(library.byId.get(gameId))
   // Hidden from its menu, or renamed to another id: back where it was opened from
@@ -117,6 +121,7 @@
       else if (action === 'x') (library.toggleFavorite(game), sound.favorite())
       else if (action === 'y') (sound.select(), onMenu(game))
       else if (action === 'b' || action === 'rs') (sound.back(), onBack())
+      else if (action === 'ls' && onAnother) (sound.select(), onAnother())
     }),
   )
 </script>
@@ -131,9 +136,14 @@
       <PadButton name="b" size={30} />
       <Logo size={34} />
     </button>
-    <span class="console" style:background={platform.color} style:color={platform.ink}>
-      <ChannelIcon id={platform.id} color="currentColor" size={30} />
-      {platform.shortName}
+    <span class="pills">
+      {#if onAnother}
+        <span class="surprise"><ChannelIcon id="dice" color="currentColor" size={30} />{t('Sorpréndeme')}</span>
+      {/if}
+      <span class="console" style:background={platform.color} style:color={platform.ink}>
+        <ChannelIcon id={platform.id} color="currentColor" size={30} />
+        {platform.shortName}
+      </span>
     </span>
     <Clock />
   </header>
@@ -201,6 +211,7 @@
       { button: 'a', label: emulator ? t('Jugar') : t('No disponible') },
       { button: 'y', label: t('Menú') },
       { button: 'x', label: favorite ? t('Quitar favorito') : t('Favorito') },
+      ...(onAnother ? [{ button: /** @type {const} */ ('ls'), label: t('Otro') }] : []),
       ...(maxScroll > 0 ? [{ button: /** @type {const} */ ('down'), also: /** @type {const} */ ('up'), label: t('Desplazar') }] : []),
       { button: 'b', label: t('Volver') },
     ]}
@@ -226,7 +237,12 @@
     border-radius: 999px;
     background: var(--cloud);
   }
-  .console {
+  .pills {
+    display: flex;
+    gap: 12px;
+  }
+  .console,
+  .surprise {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -235,6 +251,10 @@
     font-family: var(--font-display);
     font-weight: 700;
     font-size: 26px;
+  }
+  .surprise {
+    background: var(--pop);
+    color: var(--on-color);
   }
 
   /* ── Blurred background (as in the library: small and enlarged, so the blur is cheap) ── */

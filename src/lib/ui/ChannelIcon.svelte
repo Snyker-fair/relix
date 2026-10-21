@@ -131,6 +131,14 @@
     <!-- an open book: the game's information -->
     <path d="M48 26c-8-6-20-8-34-6v52c14-2 26 0 34 6 8-6 20-8 34-6V20c-14-2-26 0-34 6Z" />
     <path d="M48 26v52" />
+  {:else if id === 'dice'}
+    <!-- a die showing five: surprise me -->
+    <rect x="18" y="18" width="60" height="60" rx="14" />
+    <circle cx="35" cy="35" r="5" fill={color} stroke="none" />
+    <circle cx="61" cy="35" r="5" fill={color} stroke="none" />
+    <circle cx="48" cy="48" r="5" fill={color} stroke="none" />
+    <circle cx="35" cy="61" r="5" fill={color} stroke="none" />
+    <circle cx="61" cy="61" r="5" fill={color} stroke="none" />
   {:else if id === 'sheet'}
     <!-- a card with a picture and lines: the game sheet -->
     <rect x="14" y="18" width="68" height="60" rx="10" />

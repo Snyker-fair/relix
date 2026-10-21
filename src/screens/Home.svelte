@@ -26,18 +26,21 @@
    *   onOptions: () => void,
    *   onSearch: () => void,
    *   onMenu: (game: any) => void,
+   *   onSurprise: () => void,
    * }}
+   *   onSurprise: "Surprise me", among every console (the die, or the left stick)
    */
-  let { focusedId, boot, onOpen, onLaunch, onFocusChange, onOptions, onSearch, onMenu } = $props()
+  let { focusedId, boot, onOpen, onLaunch, onFocusChange, onOptions, onSearch, onMenu, onSurprise } = $props()
 
   const OPTIONS = $derived({ id: 'options', name: t('Opciones'), shortName: t('Opciones') })
+  const SURPRISE = $derived({ id: 'surprise', name: t('Sorpréndeme'), shortName: t('Sorpréndeme') })
 
   /** @type {'channels'|'recent'} */
   let zone = $state('channels')
   let recentIndex = $state(0)
 
-  // The visible channels and, at the end, the Options icon
-  const ids = $derived([...shelf.channels.map((c) => c.id), 'options'])
+  // The visible channels and, at the end, the die ("Surprise me") and the Options icon
+  const ids = $derived([...shelf.channels.map((c) => c.id), 'surprise', 'options'])
   const index = $derived.by(() => {
     const found = focusedId ? ids.indexOf(focusedId) : -1
     if (found >= 0) return found
@@ -46,9 +49,15 @@
     return firstConsole >= 0 ? firstConsole : 0
   })
   const onOptionsTile = $derived(ids[index] === 'options')
-  const channel = $derived(onOptionsTile ? OPTIONS : shelf.channels[index])
-  const games = $derived(onOptionsTile ? [] : shelf.gamesFor(channel.id))
+  const onSurpriseTile = $derived(ids[index] === 'surprise')
+  /** One of the two round tools at the end (not a channel with games) */
+  const onTool = $derived(onOptionsTile || onSurpriseTile)
+  const channel = $derived(onOptionsTile ? OPTIONS : onSurpriseTile ? SURPRISE : shelf.channels[index])
+  const games = $derived(onTool ? [] : shelf.gamesFor(channel.id))
   const optionsFocused = $derived(zone === 'channels' && onOptionsTile)
+  const surpriseFocused = $derived(zone === 'channels' && onSurpriseTile)
+  /** The games you've never opened, for the die's chips */
+  const unplayed = $derived(library.all.filter((g) => !library.playtime[g.id] && !library.lastPlayed[g.id]).length)
   const emptyLibrary = $derived(library.all.length === 0)
   // Three games: that way "Continue playing" never reaches the hint bar
   const recent = $derived(library.recent.slice(0, 3))
@@ -57,22 +66,25 @@
   // a little to spread across the width. With more, they stay at 168 px and the row
   // slides to show the focused one, like the Wii U or Switch menu.
   // The focused channel grows 10 % and adds a 15 px ring: with 48 px
-  // gaps there are at least 20 px free up to the neighbor. Options measures 0.85.
+  // gaps there are at least 20 px free up to the neighbor. The die and Options measure 0.85.
   const SHELF_WIDTH = 1600 // the usable width inside the tray
   const SHELF_GAP = 48
   const SHELF_PAD = 48 // the tray's margin on each side
   const VIEW_WIDTH = 1696 // the tray: from 112 to 1808 px
   const fitTile = $derived(
-    Math.floor((SHELF_WIDTH - shelf.channels.length * SHELF_GAP) / (shelf.channels.length + 0.85)),
+    Math.floor((SHELF_WIDTH - (shelf.channels.length + 1) * SHELF_GAP) / (shelf.channels.length + 1.7)),
   )
   const sliding = $derived(fitTile < 150)
   const tileSize = $derived(sliding ? 168 : Math.min(184, fitTile))
-  const trackWidth = $derived(SHELF_PAD * 2 + shelf.channels.length * (tileSize + SHELF_GAP) + tileSize * 0.85)
+  const trackWidth = $derived(SHELF_PAD * 2 + shelf.channels.length * (tileSize + SHELF_GAP) + tileSize * 0.85 * 2 + SHELF_GAP)
   // The row shifts to leave the focused channel in the center (without going past the ends)
   const shelfOffset = $derived.by(() => {
     if (!sliding) return 0
-    const width = index < shelf.channels.length ? tileSize : tileSize * 0.85
-    const center = SHELF_PAD + index * (tileSize + SHELF_GAP) + width / 2
+    const channels = shelf.channels.length
+    const width = index < channels ? tileSize : tileSize * 0.85
+    // past the channels, the tools are smaller
+    const before = Math.min(index, channels) * (tileSize + SHELF_GAP) + Math.max(0, index - channels) * (tileSize * 0.85 + SHELF_GAP)
+    const center = SHELF_PAD + before + width / 2
     return Math.round(Math.max(0, Math.min(center - VIEW_WIDTH / 2, trackWidth - VIEW_WIDTH)))
   })
 
@@ -82,6 +94,12 @@
   )
 
   const meta = $derived.by(() => {
+    if (onSurpriseTile) {
+      return [
+        t('Un juego al azar entre tus {games}', { games: plural(library.all.length, 'juego', 'juegos') }),
+        ...(unplayed > 0 ? [t('{n} sin abrir todavía', { n: unplayed })] : []),
+      ]
+    }
     if (onOptionsTile) {
       const consoles = shelf.channels.filter((c) => c.id !== 'favorites' && c.id !== 'collections').length
       const { errors } = systemStatus.summary
@@ -132,7 +150,11 @@
         } else if (action === 'a') {
           sound.select()
           if (onOptionsTile) onOptions()
+          else if (onSurpriseTile) onSurprise()
           else onOpen(channel.id)
+        } else if (action === 'ls') {
+          sound.select()
+          onSurprise()
         } else if (action === 'start') {
           sound.select()
           onOptions()
@@ -154,14 +176,14 @@
 </script>
 
 <!-- The focused channel's color, soft from the top left: only a color, so it costs next to nothing -->
-<div class="tint" aria-hidden="true" style:--c={onOptionsTile ? 'var(--ink-soft)' : channel.color}></div>
+<div class="tint" aria-hidden="true" style:--c={onOptionsTile ? 'var(--ink-soft)' : onSurpriseTile ? 'var(--pop)' : channel.color}></div>
 
 <header class="top">
   <Logo size={64} {boot} />
   {#if mode === 'browser'}
     <p class="kbd-help">
       {t(
-        'Sin control: flechas, Enter elige, Esc vuelve, X favorito, Y menú del juego, F ficha, Q/E cambian de consola, Z/C saltan de letra, V busca, M abre Opciones. También sirve el mouse.',
+        'Sin control: flechas, Enter elige, Esc vuelve, X favorito, Y menú del juego, F ficha, R sorpréndeme, Q/E cambian de consola, Z/C saltan de letra, V busca, M abre Opciones. También sirve el mouse.',
       )}
     </p>
   {/if}
@@ -188,12 +210,18 @@
       {/if}
     </div>
     <div class="fan" class:hidden={onOptionsTile}>
+      {#if onSurpriseTile}
+        <!-- three cards face down: which one will it be? -->
+        {#each [0, 1, 2] as i (i)}
+          <div class="fan-card mystery" style:--i={i - 1}><span>?</span></div>
+        {/each}
+      {/if}
       {#each fan as game, i (game.id)}
         <div class="fan-card" style:--i={i - (fan.length - 1) / 2}>
           <CoverArt {game} platform={getPlatform(game.system)} width={210} thumb />
         </div>
       {:else}
-        <p class="empty">{t('Todavía no hay juegos aquí.')}</p>
+        {#if !onSurpriseTile}<p class="empty">{t('Todavía no hay juegos aquí.')}</p>{/if}
       {/each}
     </div>
   {/key}
@@ -220,11 +248,25 @@
     </button>
   {/each}
   <button
-    class="channel options"
+    class="channel tool"
+    class:focused={surpriseFocused}
+    class:boot
+    style:--tint="var(--pop)"
+    style:--delay="{shelf.channels.length * 70}ms"
+    onmouseenter={() => ((zone = 'channels'), focusChannel(ids.length - 2))}
+    onclick={() => (sound.select(), onSurprise())}
+  >
+    <span class="tile round dice focus-ring" class:focused={surpriseFocused}>
+      <ChannelIcon id="dice" color="currentColor" size={Math.round(tileSize * 0.46)} />
+    </span>
+    <span class="label">{t('Sorpréndeme')}</span>
+  </button>
+  <button
+    class="channel tool"
     class:focused={optionsFocused}
     class:boot
     style:--tint="#8FA3BF"
-    style:--delay="{shelf.channels.length * 70}ms"
+    style:--delay="{(shelf.channels.length + 1) * 70}ms"
     onmouseenter={() => ((zone = 'channels'), focusChannel(ids.length - 1))}
     onclick={() => (sound.select(), onOptions())}
   >
@@ -408,6 +450,22 @@
   .fan-card:nth-child(2) {
     z-index: 1;
   }
+  /* the die's cards: face down, with the cover's size */
+  .fan-card.mystery {
+    display: grid;
+    place-items: center;
+    width: 210px;
+    height: 296px;
+    background: linear-gradient(160deg, color-mix(in oklab, var(--pop) 70%, white), var(--pop));
+    color: var(--on-color);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 120px;
+    line-height: 1;
+  }
+  .fan-card.mystery span {
+    padding-top: 12px;
+  }
   .empty {
     position: absolute;
     right: 0;
@@ -443,7 +501,7 @@
     width: var(--tile);
     flex: none;
   }
-  .shelf.sliding .channel.options {
+  .shelf.sliding .channel.tool {
     width: calc(var(--tile) * 0.85);
   }
   .shelf.dimmed {
@@ -506,7 +564,7 @@
     font-size: 24px;
     line-height: 1;
   }
-  /* Options: round and white, so it reads as a tool and not as a console */
+  /* the die and Options: round, so they read as tools and not as consoles */
   .tile.round {
     width: calc(var(--tile) * 0.85);
     height: calc(var(--tile) * 0.85);
@@ -514,6 +572,11 @@
     border-radius: 50%;
     background: var(--cloud);
     box-shadow: inset 0 -8px 0 rgb(var(--shadow) / 0.08);
+  }
+  .tile.round.dice {
+    background: var(--pop);
+    color: var(--on-color);
+    box-shadow: inset 0 -8px 0 rgb(0 0 0 / 0.12);
   }
   .label {
     font-family: var(--font-display);
