@@ -3,6 +3,7 @@
   import { launch, mode, notifyReady, onShellEvent, ShellError } from './lib/core/bridge.js'
   import { buildLaunchUri } from './lib/core/launchUri.js'
   import { getPlatform } from './lib/core/platforms.js'
+  import { placeFor, returnTo } from './lib/core/place.js'
   import { QUICK_EXIT_SECONDS, quickExitMessage } from './lib/core/quickExit.js'
   import { shortDuration } from './lib/core/diagnostics.js'
   import { VERSION } from './lib/core/version.js'
@@ -15,6 +16,7 @@
   import { dispatch, idleFor, markActivity, startInput } from './lib/ui/input.js'
   import { library } from './lib/ui/library.svelte.js'
   import { settings } from './lib/ui/settings.svelte.js'
+  import { shelf } from './lib/ui/shelf.svelte.js'
   import { sound } from './lib/ui/sound.js'
   import { systemStatus } from './lib/ui/systemStatus.svelte.js'
   import { userData } from './lib/ui/userData.svelte.js'
@@ -39,7 +41,7 @@
   /**
    * Screens. The ones that open "on top" remember where from, to go back with B.
    * @typedef {{ name: 'home' }
-   *   | { name: 'library', systemId: string }
+   *   | { name: 'library', systemId: string, gameId?: string }
    *   | { name: 'search', from: any }
    *   | { name: 'options', from: any, section?: string, row?: string }
    *   | { name: 'coverPicker', back: any, gameId?: string }
@@ -100,7 +102,7 @@
         loggedStart = true
         diagnostics.log('start', startSummary())
       }
-      collections.load()
+      collectionsRead = collections.load()
       userData.resync()
       library.loadMedia()
       systemStatus.run().then(() => {
@@ -116,6 +118,10 @@
           }),
         )
         announcePlaytime(finishedWhileClosed)
+        const finished = finishedWhileClosed
+        // A collection's games are known once the collections are read
+        if (isCollectionId(String(/** @type {any} */ (finished.from)?.channel ?? ''))) collectionsRead.then(() => goBackTo(finished))
+        else goBackTo(finished)
         finishedWhileClosed = null
       }
       if (userData.recoveredFrom) showToast(t('Tus datos se recuperaron de {file}', { file: `relix\\${userData.recoveredFrom}` }))
@@ -209,6 +215,27 @@
     const game = library.byId.get(id)
     if (!game) return id
     return `${game.name} (${getPlatform(game.system)?.shortName ?? game.system})`
+  }
+
+  /** @type {Promise<void>} */
+  let collectionsRead = Promise.resolve()
+
+  /**
+   * The Xbox closed Relix while you played: back where you were when the game opened,
+   * the same library with that game focused (see core/place.js). Only if you haven't
+   * moved from the home screen yet.
+   * @param {{ id: string, from: unknown }} finished
+   */
+  function goBackTo({ id, from }) {
+    const place = returnTo(from, library.byId.get(id), (channel) => shelf.gamesFor(channel).some((g) => g.id === id))
+    if (!place || screen.name !== 'home') return
+    boot = false
+    if (place.view === 'library') {
+      focusedId = isCollectionId(place.channel) ? COLLECTIONS.id : place.channel
+      screen = { name: 'library', systemId: place.channel, gameId: place.gameId }
+    } else if (place.channel) {
+      focusedId = place.channel
+    }
   }
 
   /**
@@ -381,8 +408,9 @@
     }
     sound.select()
     launching = { game, uri, emulatorName: emulator.name }
-    // The session starts counting and is on the USB drive before the Xbox switches to the emulator
-    library.startSession(game)
+    // The session starts counting and is on the USB drive before the Xbox switches to the
+    // emulator, with where you were: if the Xbox closes Relix, it opens there again
+    library.startSession(game, placeFor(screen, focusedId))
     diagnostics.log('launch', t('{game} con {emulator} · {uri}', { game: gameLabel(game.id), emulator: emulator.name, uri }))
     diagnostics.flush()
     await userData.flush()
@@ -438,6 +466,7 @@
   {:else if screen.name === 'library'}
     <Library
       systemId={screen.systemId}
+      focusGameId={screen.gameId}
       onBack={() => (screen = { name: 'home' })}
       onSwitch={openLibrary}
       onLaunch={startGame}

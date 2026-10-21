@@ -41,7 +41,10 @@ export const MIN_SESSION_SECONDS = 60
 export const MAX_SESSION_SECONDS = 12 * 60 * 60
 
 /** @typedef {{ seconds: number, plays: number }} PlayStats */
-/** @typedef {{ id: string, startedAt: number }} Session */
+/**
+ * @typedef {{ id: string, startedAt: number, from?: import('./place.js').Place }} Session
+ *   from: where you were when it opened (to go back there if the Xbox closes Relix)
+ */
 /** @typedef {Partial<Record<typeof SYNCED_KEYS[number], any>>} SyncedValues */
 
 const isObject = (/** @type {unknown} */ v) => typeof v === 'object' && v !== null && !Array.isArray(v)

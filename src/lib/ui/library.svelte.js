@@ -419,20 +419,22 @@ class Library {
 
   /**
    * Starts counting a session. It stays saved: if the Xbox closes Relix
-   * while you play, it's closed anyway the next time it opens.
+   * while you play, it's closed anyway the next time it opens, and Relix goes
+   * back where you were (core/place.js).
    * @param {LibraryGame} game
+   * @param {import('../core/place.js').Place} [from]  where you opened it from
    */
-  startSession(game) {
-    save('session', { id: game.id, startedAt: Date.now() })
+  startSession(game, from) {
+    save('session', { id: game.id, startedAt: Date.now(), ...(from ? { from } : {}) })
   }
 
   /**
    * You're back in Relix: closes the session in progress and adds its time
    * (the ones under 1 minute or over 12 hours don't count).
    * @param {boolean} [count]  false = drop it (the emulator didn't open)
-   * @returns {{ id: string, seconds: number, elapsed: number } | null}
-   *   seconds: what was added; elapsed: how long since it was launched.
-   *   null if there was no session.
+   * @returns {{ id: string, seconds: number, elapsed: number, from: unknown } | null}
+   *   seconds: what was added; elapsed: how long since it was launched; from: where
+   *   you were (core/place.js; it comes from the USB drive, unchecked). null if there was no session.
    */
   endSession(count = true) {
     /** @type {import('../core/userData.js').Session|null} */
@@ -441,7 +443,8 @@ class Library {
     save('session', null)
     const now = Date.now()
     const elapsed = Math.round((now - session.startedAt) / 1000)
-    if (!count) return { id: session.id, seconds: 0, elapsed }
+    const from = session.from ?? null
+    if (!count) return { id: session.id, seconds: 0, elapsed, from }
 
     const { playtime, seconds } = closeSession(this.playtime, session, now)
     if (seconds > 0) {
@@ -450,7 +453,7 @@ class Library {
       // In case Relix closed before noting it as recent
       if ((this.lastPlayed[session.id] ?? 0) < session.startedAt) this.#markPlayed(session.id, session.startedAt)
     }
-    return { id: session.id, seconds, elapsed }
+    return { id: session.id, seconds, elapsed, from }
   }
 
   /** @param {string} systemId  the folder where Relix looks for that console's games */

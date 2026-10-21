@@ -33,9 +33,11 @@
    *   onMenu: (game: any, sortOptions: import('../lib/core/sorting.js').SortOrder[], filterChannel: string) => void,
    *   onSearch: () => void,
    *   onGuide: (systemId: string) => void,
+   *   focusGameId?: string,
    * }}
+   *   focusGameId: the game focused on opening (you're back from it and the Xbox had closed Relix)
    */
-  let { systemId, onBack, onSwitch, onLaunch, onOptions, onMenu, onSearch, onGuide } = $props()
+  let { systemId, onBack, onSwitch, onLaunch, onOptions, onMenu, onSearch, onGuide, focusGameId } = $props()
 
   /** A console without games: Y opens its guide (doesn't apply to Favorites or Collections) */
   const guideable = $derived(Boolean(getPlatform(systemId)))
@@ -147,13 +149,16 @@
     else if (row > scrollRow + 1) scrollRow = row - 1
   })
 
-  // When the console changes, back to the first game
+  // When the console changes, back to the first game (on opening, the one you were coming back from)
+  let pendingFocus = untrack(() => focusGameId ?? '')
   $effect(() => {
     systemId
     untrack(() => {
-      index = 0
+      const wanted = pendingFocus ? games.findIndex((g) => g.id === pendingFocus) : -1
+      pendingFocus = ''
+      index = Math.max(0, wanted)
       scrollRow = 0
-      focusedGameId = ''
+      focusedGameId = wanted >= 0 ? games[wanted].id : ''
     })
   })
 
