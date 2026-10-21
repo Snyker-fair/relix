@@ -142,8 +142,8 @@
   /**
    * When Relix opens, after the checkup, one notice after another (not during the
    * welcome tour, which already shows the checkup): what's left to fix, once per
-   * session; that Relix is of the Game type, the first time it's seen; and a new
-   * version, once per version.
+   * session; that Relix is of the Game type, the first time it's seen; what's new
+   * in this version, once; and a new version, once per version.
    */
   let warnedSystem = false
   function startNotices() {
@@ -158,6 +158,8 @@
     if (systemStatus.takeAppTypeNotice()) {
       notices.push(t('Relix está como Game: cámbialo a App para volver al instante (≡ › Revisión)'))
     }
+    const news = updates.takeNews(library.all.length > 0)
+    if (news) notices.push(t(news, { version: VERSION }))
     const version = updates.takeNotice()
     if (version) notices.push(t('Relix {version} ya está disponible: ≡ › Revisión', { version }))
     // If another notice is on screen (the playtime, e.g.), these go after it

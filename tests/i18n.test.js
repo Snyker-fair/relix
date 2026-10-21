@@ -13,7 +13,7 @@ import { RENAME_ERRORS, RENAME_STEPS } from '../src/lib/core/rename.js'
 import { sectionOf, SORT_NAMES } from '../src/lib/core/sorting.js'
 import { buildChecks, formatBytes } from '../src/lib/core/systemCheck.js'
 import { THEME_NAMES } from '../src/lib/core/theme.js'
-import { updateCheck } from '../src/lib/core/updates.js'
+import { NEWS, updateCheck } from '../src/lib/core/updates.js'
 import EN from '../src/lib/i18n/en.js'
 import { i18n, listJoin, plural, t, tn } from '../src/lib/i18n/i18n.svelte.js'
 import { coverSummary, formatHour, formatPlaytime, scanSummary, timeAgo } from '../src/lib/ui/format.js'
@@ -177,6 +177,7 @@ describe('in English', () => {
       ...Object.values(RENAME_ERRORS),
       ...Object.values(RENAME_STEPS),
       ...Object.values(INFO_FIELD_NAMES),
+      ...Object.values(NEWS),
       ...Object.values(PS1_BIOS).map((b) => b.label),
       ...PLATFORMS.flatMap((p) => [p.noEmulatorNote ?? '', ...p.emulators.map((e) => e.note ?? '')]).filter(Boolean),
       DEVSTORE_LABEL,

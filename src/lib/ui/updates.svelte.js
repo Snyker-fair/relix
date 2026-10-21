@@ -5,12 +5,14 @@
  * opens without internet. The browser demo doesn't ask.
  */
 import { mode } from '../core/bridge.js'
-import { CHECK_EVERY_MS, isNewer, readRelease, RELEASES_API } from '../core/updates.js'
+import { CHECK_EVERY_MS, isNewer, NEWS, readRelease, RELEASES_API } from '../core/updates.js'
 import { VERSION } from '../core/version.js'
 import { load, save } from './storage.js'
 
 const KEY = 'updateCheck'
 const NOTIFIED_KEY = 'updateNotified'
+/** The version whose news was already said */
+const NEWS_KEY = 'newsSeen'
 
 class Updates {
   /** The latest release GitHub answered with */
@@ -63,6 +65,19 @@ class Updates {
     if (load(NOTIFIED_KEY, '') === version) return null
     save(NOTIFIED_KEY, version)
     return version
+  }
+
+  /**
+   * This version's news (core/updates.js), if it has any and it wasn't said yet.
+   * Reading it marks it. Without games it waits: it talks about them.
+   * @param {boolean} hasGames
+   * @returns {string | null}  the text in Spanish, to translate with { version }
+   */
+  takeNews(hasGames) {
+    const news = NEWS[VERSION]
+    if (!news || !hasGames || load(NEWS_KEY, '') === VERSION) return null
+    save(NEWS_KEY, VERSION)
+    return news
   }
 }
 

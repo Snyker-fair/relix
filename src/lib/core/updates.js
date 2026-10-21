@@ -16,6 +16,14 @@ export const RELEASES_LABEL = 'github.com/Snyker-fair/relix/releases'
 export const CHECK_EVERY_MS = 24 * 60 * 60 * 1000
 
 /**
+ * What's new in a version that's worth saying when it opens: once, after the
+ * update (or the first time, with games). In Spanish, translated with t().
+ */
+export const NEWS = /** @type {Record<string, string>} */ ({
+  '1.3.0': 'Nuevo en la {version}: clic en el stick derecho sobre un juego abre su ficha completa',
+})
+
+/**
  * "v1.2.3" -> { numbers: [1, 2, 3], pre: '' }; "1.0.0-beta.2" -> pre "beta.2".
  * null if it isn't a version.
  * @param {string} text
