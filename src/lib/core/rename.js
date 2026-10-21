@@ -18,6 +18,7 @@
  */
 import { lineForGame, resolveLine } from './collections.js'
 import { fileStem, normalizeRelativePath, titleFolderIndex } from './esde.js'
+import { renameInPlayDays } from './playDays.js'
 
 const DISC = /\s*\(Disc\s*(\d+)(?:\s*of\s*\d+)?\)/i
 /** Windows doesn't accept these in a file or folder name */
@@ -203,7 +204,7 @@ export function planRename(game, newName, files) {
 
 /**
  * Relix's data moved from a game's old id to its new one: favorites, hidden,
- * playtime, recent, the session in progress, the cover choices and its emulator.
+ * playtime (and its days), recent, the session in progress, the cover choices and its emulator.
  * Only the keys that change come back.
  * @param {Record<string, any>} values  as readSynced() returns them
  * @param {string} oldId
@@ -226,6 +227,11 @@ export function renameInUserData(values, oldId, newId) {
   for (const key of ['hidden', 'recent', 'coverSkipped', 'renameSkipped', 'infoSkipped']) {
     const list = values[key]
     if (Array.isArray(list) && list.includes(oldId)) set(key, list.map((id) => (id === oldId ? newId : id)))
+  }
+  const days = values.playDays
+  if (days && typeof days === 'object' && !Array.isArray(days)) {
+    const next = renameInPlayDays(days, oldId, newId)
+    if (next) set('playDays', next)
   }
   const session = values.session
   if (session && typeof session === 'object' && session.id === oldId) set('session', { ...session, id: newId })

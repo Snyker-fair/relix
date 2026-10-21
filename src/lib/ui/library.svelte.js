@@ -16,6 +16,7 @@ import { coverUrls, listCovers, listMedia, loadLibrary, mediaFileUrl, scanRoms }
 import { coverKey } from '../core/coverMatch.js'
 import { mediaUrl, parseGamelist, romAbsolutePath } from '../core/esde.js'
 import { indexMedia, pickMedia } from '../core/media.js'
+import { addSession } from '../core/playDays.js'
 import { getPlatform, PLATFORMS } from '../core/platforms.js'
 import { movedPath } from '../core/rename.js'
 import { gamesFromFiles, mergeWithGamelist } from '../core/scan.js'
@@ -73,6 +74,9 @@ class Library {
   /** Each game's time played and sessions */
   /** @type {Record<string, import('../core/userData.js').PlayStats>} */
   playtime = $state(load('playtime', {}))
+  /** The time played day by day, since 1.3.0 (core/playDays.js) */
+  /** @type {import('../core/playDays.js').PlayDays} */
+  playDays = $state(load('playDays', {}))
 
   /** What's shown: everything but the hidden ones */
   /** @type {Record<string, LibraryGame[]>} */
@@ -130,6 +134,7 @@ class Library {
       this.hiddenIds = load('hidden', [])
       this.lastPlayed = load('lastPlayed', {})
       this.playtime = load('playtime', {})
+      this.playDays = load('playDays', {})
     })
   }
 
@@ -450,6 +455,8 @@ class Library {
     if (seconds > 0) {
       this.playtime = playtime
       save('playtime', playtime)
+      this.playDays = addSession(this.playDays, session.id, session.startedAt, now)
+      save('playDays', this.playDays)
       // In case Relix closed before noting it as recent
       if ((this.lastPlayed[session.id] ?? 0) < session.startedAt) this.#markPlayed(session.id, session.startedAt)
     }

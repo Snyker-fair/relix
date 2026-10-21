@@ -12,6 +12,8 @@
  * copy rules (the USB drive's or the app's) and adds up each session's time.
  */
 
+import { cleanPlayDays } from './playDays.js'
+
 export const DATA_VERSION = 1
 
 /**
@@ -24,6 +26,7 @@ export const SYNCED_KEYS = /** @type {const} */ ([
   'recent',
   'lastPlayed',
   'playtime',
+  'playDays',
   'session',
   'coverChoices',
   'coverSkipped',
@@ -57,6 +60,7 @@ const CHECKS = {
   recent: isStringArray,
   lastPlayed: isObject,
   playtime: isObject,
+  playDays: isObject,
   session: (/** @type {any} */ v) => v === null || (isObject(v) && typeof v.id === 'string' && Number.isFinite(v.startedAt)),
   coverChoices: isObject,
   coverSkipped: isStringArray,
@@ -103,6 +107,7 @@ export function parseUserData(text) {
     if (key in data && CHECKS[key](data[key])) values[key] = data[key]
   }
   if (values.playtime) values.playtime = cleanPlaytime(values.playtime)
+  if (values.playDays) values.playDays = cleanPlayDays(values.playDays)
   return { savedAt: Date.parse(data.savedAt) || 0, values }
 }
 
