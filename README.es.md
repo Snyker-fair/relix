@@ -61,7 +61,8 @@ cada botón. Logo, colores, tipografía y voz de la marca están en
   instalados.
 - **Encuentra rápido.** Búsqueda en todas las consolas con teclado en pantalla,
   saltos por letra con los gatillos, orden (A–Z, recientes, más jugados, año) y
-  filtros por género o jugadores.
+  filtros por género o jugadores. ¿No sabes qué jugar? *Sorpréndeme* (el dado del
+  inicio, o el stick izquierdo) elige uno, casi siempre uno que no has jugado.
 - **Ficha viva.** Fanart, logo y video sin sonido cuando ES-DE los escrapeó; una
   captura de libretro como fondo cuando no. Con clic del stick derecho (o *Y › Ver
   ficha*) se abre la ficha completa: la descripción entera, todos los datos y tus
@@ -326,6 +327,7 @@ Switch se suma cuando haya un emulador con protocolo que sea jugable.
 | X | Favorito (en la búsqueda: borrar letra) |
 | Y | Menú del juego: jugar, ver ficha, abrir con…, favorito, colecciones, cambiar portada, ocultar, ordenar, filtrar. En Opciones › Consolas, o en una consola sin juegos: la guía |
 | Stick derecho (clic) | La ficha completa del juego |
+| Stick izquierdo (clic) | Sorpréndeme: un juego al azar (en una biblioteca, entre sus juegos) |
 | LB / RB | Consola anterior / siguiente (o colección, dentro de Colecciones) |
 | LT / RT | Letra anterior / siguiente (año, si ordenas por año) |
 | Vista ⧉ | Buscar en todas las consolas |

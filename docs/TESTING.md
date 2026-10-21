@@ -316,8 +316,15 @@ the USB drive a game ES-DE hasn't scraped (it has no description in Relix).
 
 ## Game sheet, weeks and memory (1.3.0)
 - [ ] After installing 1.3.0, when Relix opens: "New in 1.3.0: click the right
-      stick on a game…" shows up once (not again on the next start). In a console,
-      the button bar shows **R Game sheet**.
+      stick for a game's sheet, and the left one…" shows up once (not again on the
+      next start). In a console, the button bar shows **R Game sheet**.
+- [ ] Home: at the end of the channels, before Options, the pink die
+      **Surprise me** with three face-down cards. **A** opens a random game's
+      sheet with the **Surprise me** pill at the top; **L Another** (the left
+      stick) shows a different one each time; **B** goes back to the die.
+- [ ] Inside a console, the left stick picks among that console's games (inside a
+      collection, among the collection's). **B** goes back with the same game
+      focused as before. Mostly games you haven't played come up.
 - [ ] In a console, click the right stick on a game: its sheet opens with the
       cover, the data, the whole description (**↑ ↓** scroll it when it's long) and
       the time played. **B** (or the stick again) goes back with the same game
