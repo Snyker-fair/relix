@@ -2,6 +2,14 @@
 
 Each version's section becomes the notes of its GitHub release.
 
+## [Unreleased]
+
+- **Back where you were:** the Xbox closes Relix while you play (it does that to
+  apps of the Game type), so coming back used to mean starting from the home
+  screen. Now Relix remembers the library and the game you opened, and when it
+  opens again after a game it takes you there, with that game focused and the
+  time you played. Opened from the home screen, it goes back to the same channel.
+
 ## [1.1.0] - 2026-10-18
 
 - **Game info from Wikipedia:** *Y › Find info…* on a game, or *≡ › Library ›

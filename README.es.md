@@ -65,7 +65,8 @@ cada botón. Logo, colores, tipografía y voz de la marca están en
 - **Ficha viva.** Fanart, logo y video cuando ES-DE los escrapeó; una captura de
   libretro como fondo cuando no.
 - **Tiempo de juego.** Tiempo y partidas por juego, salgas desde el emulador o
-  vuelvas con el botón Xbox.
+  vuelvas con el botón Xbox. Si la Xbox cerró Relix mientras jugabas, se abre donde
+  estabas: la misma biblioteca, con ese juego enfocado.
 - **Te dice qué falla.** La *Revisión* comprueba el USB, el espacio, los
   emuladores y las BIOS que faltan (según la región de tus juegos de PS1). Si un
   juego se cierra al abrir, Relix dice qué BIOS o núcleo revisar. Cada consola
@@ -303,6 +304,9 @@ El primero de cada fila es el recomendado. Los núcleos de RetroArch se abren co
 | Mega Drive | RetroArch Genesis Plus GX, RetroArch PicoDrive |
 | Dreamcast | RetroArch Flycast, Flycast |
 | Xbox 360 | Xenia Canary, Xenia |
+
+Algunos emuladores independientes no abren Relix solos al cerrarse. Vuelve desde
+Inicio: Relix sigue donde estabas y suma el tiempo que jugaste.
 
 Switch se suma cuando haya un emulador con protocolo que sea jugable.
 

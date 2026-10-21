@@ -64,7 +64,8 @@ what each button does.
 - **A living game page.** Fan art, logo and video preview when ES-DE scraped
   them; a background screenshot from libretro when it didn't.
 - **Playtime.** Time and sessions per game, counted whether you quit from the
-  emulator or come back with the Xbox button.
+  emulator or come back with the Xbox button. If the Xbox closed Relix while you
+  played, it opens again where you were: the same library, with that game focused.
 - **It tells you what's wrong.** *Checkup* verifies the USB drive, free space,
   missing emulators and BIOS files (per region of your PS1 games). If a game
   closes right after launching, Relix tells you which BIOS or core to check.
@@ -301,6 +302,9 @@ standalone protocols are the ones [RetroPass](https://github.com/retropassdev/Re
 | Mega Drive | RetroArch Genesis Plus GX, RetroArch PicoDrive |
 | Dreamcast | RetroArch Flycast, Flycast |
 | Xbox 360 | Xenia Canary, Xenia |
+
+Some standalone emulators don't open Relix by themselves when they close. Come
+back from Home: Relix picks up where you were and adds the time you played.
 
 Switch will join when an emulator with a launch protocol becomes playable.
 

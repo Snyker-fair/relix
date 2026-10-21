@@ -286,5 +286,20 @@ the USB drive a game ES-DE hasn't scraped (it has no description in Relix).
       Wikipedia.
 - [ ] Without internet: it says it couldn't reach Wikipedia, and nothing changes.
 
+## Back where you were (1.2.0)
+- [ ] In a console's library, move to a game that isn't the first one and open it.
+      Play a couple of minutes and quit **from the emulator's menu**.
+- [ ] If Relix comes back by itself: it's on the same library and game, as before.
+- [ ] With an emulator that doesn't come back by itself (XBSX2, PPSSPP, Dolphin,
+      Xenia…): open Relix from Home. It opens on that library, with that game
+      focused, and says "<Game>: N min played". **B** goes to the home screen with
+      that console's channel focused.
+- [ ] **≡ → Checkup → Diagnostic log**: after a game, a new **START** line means
+      the Xbox had closed Relix; the line before it says "(Relix was closed)".
+- [ ] A game opened from a collection or Favorites comes back to that collection
+      or Favorites.
+- [ ] A game opened from the home screen (*Continue playing*) comes back to the
+      home screen, on the same channel.
+
 If something fails, the **If something fails** table in
 [`shell/README.md`](../shell/README.md) has the most common causes.
