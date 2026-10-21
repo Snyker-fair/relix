@@ -2,6 +2,28 @@
 
 Each version's section becomes the notes of its GitHub release.
 
+## [Unreleased]
+
+- **Game sheet:** click the right stick on a game (or *Y › Game sheet*) for its
+  full page: the cover, the whole description (scroll it with ↑ ↓), every detail
+  ES-DE or Wikipedia left (developer, publisher, players, rating, file, emulator)
+  and the time you've played it, with its last 8 weeks. No video plays there, to
+  keep Relix light.
+- **Playtime by week:** Relix now keeps the minutes played per day (in
+  `data.json`, the last 26 weeks). *≡ › About* shows your last 8 weeks and your
+  top 5. The weeks count from this version on.
+- **The home screen takes each console's color** at the top left as you move
+  through the channels.
+- **A count on the Checkup tab** in Options, the same as on the home screen's
+  Options tile: what's left to fix.
+- **Videos are always muted:** the *Video sound* option is gone. Relix has about
+  1 GB of memory as an App, so it now logs how much it uses (when it opens, before
+  each game and on each new peak, saying whether a video was playing) to decide
+  with data whether the videos stay.
+- **Fix:** in the library panel, a long description (like Wikipedia's) with time
+  played could push "Opens with…" out of the card. The description now takes the
+  lines that fit.
+
 ## [1.2.0] - 2026-10-21
 
 - **Back where you were:** the Xbox closes Relix while you play (it does that to

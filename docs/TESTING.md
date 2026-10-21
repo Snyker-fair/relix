@@ -159,7 +159,7 @@ copy the message from the **Output** window.
 - [ ] Stay about 2 seconds on a game with a video: it starts muted, loops and the
       logo fades. Moving to another game stops it. **The most important thing to
       check on the Xbox: that the video loops without cutting.**
-- [ ] **≡ → Preferences → Video sound**: with **On**, the video has sound.
+- [ ] Videos always play muted (since 1.3.0 there's no *Video sound* option).
 - [ ] **≡ → Preferences → Screensaver**: set it to 3 minutes and let go of the
       controller. Your games show up one after another; **A** plays the one on
       screen and any other button goes back to where you were.
@@ -313,6 +313,30 @@ the USB drive a game ES-DE hasn't scraped (it has no description in Relix).
       from Home: it's where you left it, without the loading screen.
 - [ ] As App, with every console scanned and covers on, browse a few libraries for
       a while: Relix doesn't close by itself.
+
+## Game sheet, weeks and memory (1.3.0)
+- [ ] In a console, click the right stick on a game: its sheet opens with the
+      cover, the data, the whole description (**↑ ↓** scroll it when it's long) and
+      the time played. **B** (or the stick again) goes back with the same game
+      focused.
+- [ ] **Y → Game sheet** opens it too (also from *Continue playing* and the
+      search). Inside the sheet, the menu doesn't offer *Game sheet*. **A** plays
+      and **X** sets or removes the favorite.
+- [ ] Play a game for more than a minute and come back: its sheet shows this
+      week's bar and "This week: N min". **≡ → About → Playtime** shows the 8 weeks
+      and the top 5, and it all fits above the hint bar.
+- [ ] Home: moving through the channels, the top left takes each one's color,
+      softly, in both themes.
+- [ ] With something to fix (an emulator missing, e.g.), **≡** shows the red
+      number on the **Checkup** tab, the same as the Options tile on the home screen.
+- [ ] **≡ → Preferences** no longer has *Video sound*.
+- [ ] **≡ → Checkup → Diagnostic log**: **MEMORY** lines when Relix opens ("Relix
+      opened: N MB of 1.0 GB"), before each game ("Opening <game>: …") and on each
+      new peak ("Peak: … · <screen> · with a video"). Browse a console with ES-DE
+      videos for a while, and one without: write down both peaks. That decides
+      whether the videos stay.
+- [ ] A game with a long description (from Wikipedia) and time played: in the
+      library panel, "Opens with …" stays inside the card.
 
 If something fails, the **If something fails** table in
 [`shell/README.md`](../shell/README.md) has the most common causes.

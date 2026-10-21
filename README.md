@@ -61,11 +61,14 @@ what each button does.
 - **Find games fast.** Search across every console with an on-screen keyboard,
   jump by letter with the triggers, sort (A–Z, recent, most played, year) and
   filter by genre or players.
-- **A living game page.** Fan art, logo and video preview when ES-DE scraped
-  them; a background screenshot from libretro when it didn't.
+- **A living game page.** Fan art, logo and a muted video preview when ES-DE
+  scraped them; a background screenshot from libretro when it didn't. Click the
+  right stick (or *Y › Game sheet*) for the full sheet: the whole description,
+  every detail and your weeks with that game.
 - **Playtime.** Time and sessions per game, counted whether you quit from the
-  emulator or come back with the Xbox button. If the Xbox closed Relix while you
-  played, it opens again where you were: the same library, with that game focused.
+  emulator or come back with the Xbox button, and your last 8 weeks with your top
+  5 in *Options › About*. If the Xbox closed Relix while you played, it opens
+  again where you were: the same library, with that game focused.
 - **It tells you what's wrong.** *Checkup* verifies the USB drive, free space,
   missing emulators and BIOS files (per region of your PS1 games), and whether
   Relix is set as App in Dev Home. If a game closes right after launching, Relix
@@ -75,8 +78,9 @@ what each button does.
 - **Your data travels with the USB drive.** Favorites, collections, playtime and
   settings are saved to `relix\data.json`, with the previous copy and a daily
   backup for a week. Reinstall Relix or move to another Xbox and it's all there.
-- **Diagnostic log.** Every launch (with its exact URI), how it came back, and
-  every error, in `relix\log.txt` and on screen in Checkup.
+- **Diagnostic log.** Every launch (with its exact URI), how it came back, every
+  error and how much memory Relix uses, in `relix\log.txt` and on screen in
+  Checkup.
 - **English and Spanish**, automatic from the console language. **Light and dark
   themes**, with an automatic mode for the evening. A **screensaver** with your
   games, and a **new version notice** when a release is out.
@@ -319,7 +323,8 @@ Switch will join when an emulator with a launch protocol becomes playable.
 | A | Open / play |
 | B | Back |
 | X | Favorite (in search: delete a letter) |
-| Y | Game menu: play, open with…, favorite, collections, change cover, hide, sort, filter |
+| Y | Game menu: play, game sheet, open with…, favorite, collections, change cover, hide, sort, filter |
+| Right stick (click) | The game's full sheet |
 | LB / RB | Previous / next console |
 | LT / RT | Previous / next letter (or year) |
 | View ⧉ | Search every console |

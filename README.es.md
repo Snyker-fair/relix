@@ -62,11 +62,14 @@ cada botón. Logo, colores, tipografía y voz de la marca están en
 - **Encuentra rápido.** Búsqueda en todas las consolas con teclado en pantalla,
   saltos por letra con los gatillos, orden (A–Z, recientes, más jugados, año) y
   filtros por género o jugadores.
-- **Ficha viva.** Fanart, logo y video cuando ES-DE los escrapeó; una captura de
-  libretro como fondo cuando no.
+- **Ficha viva.** Fanart, logo y video sin sonido cuando ES-DE los escrapeó; una
+  captura de libretro como fondo cuando no. Con clic del stick derecho (o *Y › Ver
+  ficha*) se abre la ficha completa: la descripción entera, todos los datos y tus
+  semanas con ese juego.
 - **Tiempo de juego.** Tiempo y partidas por juego, salgas desde el emulador o
-  vuelvas con el botón Xbox. Si la Xbox cerró Relix mientras jugabas, se abre donde
-  estabas: la misma biblioteca, con ese juego enfocado.
+  vuelvas con el botón Xbox, y tus últimas 8 semanas con tu top 5 en *Opciones ›
+  Acerca de*. Si la Xbox cerró Relix mientras jugabas, se abre donde estabas: la
+  misma biblioteca, con ese juego enfocado.
 - **Te dice qué falla.** La *Revisión* comprueba el USB, el espacio, los
   emuladores y las BIOS que faltan (según la región de tus juegos de PS1), y si
   Relix está como App en Dev Home. Si un juego se cierra al abrir, Relix dice qué
@@ -77,7 +80,8 @@ cada botón. Logo, colores, tipografía y voz de la marca están en
   respaldo por día de la última semana. Reinstala Relix o cambia de Xbox y todo
   sigue ahí.
 - **Registro de diagnóstico.** Cada juego que abres (con su URI exacta), cómo
-  volvió y cada error, en `relix\log.txt` y en pantalla en Revisión.
+  volvió, cada error y cuánta memoria usa Relix, en `relix\log.txt` y en pantalla
+  en Revisión.
 - **Español e inglés**, automático según el idioma de la consola. **Tema claro y
   oscuro**, con un modo automático para la noche. **Protector de pantalla** con
   tus juegos y **aviso de versión nueva** cuando sale una.
@@ -320,7 +324,8 @@ Switch se suma cuando haya un emulador con protocolo que sea jugable.
 | A | Abrir / jugar |
 | B | Volver |
 | X | Favorito (en la búsqueda: borrar letra) |
-| Y | Menú del juego: jugar, abrir con…, favorito, colecciones, cambiar portada, ocultar, ordenar, filtrar. En Opciones › Consolas, o en una consola sin juegos: la guía |
+| Y | Menú del juego: jugar, ver ficha, abrir con…, favorito, colecciones, cambiar portada, ocultar, ordenar, filtrar. En Opciones › Consolas, o en una consola sin juegos: la guía |
+| Stick derecho (clic) | La ficha completa del juego |
 | LB / RB | Consola anterior / siguiente (o colección, dentro de Colecciones) |
 | LT / RT | Letra anterior / siguiente (año, si ordenas por año) |
 | Vista ⧉ | Buscar en todas las consolas |
