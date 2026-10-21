@@ -8,7 +8,8 @@ Each version's section becomes the notes of its GitHub release.
   full page: the cover, the whole description (scroll it with ↑ ↓), every detail
   ES-DE or Wikipedia left (developer, publisher, players, rating, file, emulator)
   and the time you've played it, with its last 8 weeks. No video plays there, to
-  keep Relix light.
+  keep Relix light. The library's button bar shows the stick, and after updating
+  Relix says it once.
 - **Playtime by week:** Relix now keeps the minutes played per day (in
   `data.json`, the last 26 weeks). *≡ › About* shows your last 8 weeks and your
   top 5. The weeks count from this version on.

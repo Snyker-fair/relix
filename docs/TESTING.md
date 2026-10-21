@@ -315,6 +315,9 @@ the USB drive a game ES-DE hasn't scraped (it has no description in Relix).
       a while: Relix doesn't close by itself.
 
 ## Game sheet, weeks and memory (1.3.0)
+- [ ] After installing 1.3.0, when Relix opens: "New in 1.3.0: click the right
+      stick on a game…" shows up once (not again on the next start). In a console,
+      the button bar shows **R Game sheet**.
 - [ ] In a console, click the right stick on a game: its sheet opens with the
       cover, the data, the whole description (**↑ ↓** scroll it when it's long) and
       the time played. **B** (or the stick again) goes back with the same game
