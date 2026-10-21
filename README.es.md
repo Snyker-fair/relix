@@ -68,10 +68,10 @@ cada botón. Logo, colores, tipografía y voz de la marca están en
   vuelvas con el botón Xbox. Si la Xbox cerró Relix mientras jugabas, se abre donde
   estabas: la misma biblioteca, con ese juego enfocado.
 - **Te dice qué falla.** La *Revisión* comprueba el USB, el espacio, los
-  emuladores y las BIOS que faltan (según la región de tus juegos de PS1). Si un
-  juego se cierra al abrir, Relix dice qué BIOS o núcleo revisar. Cada consola
-  tiene su guía: qué instalar desde DevStore, qué archivos pide y dónde van, con
-  un QR para el celular.
+  emuladores y las BIOS que faltan (según la región de tus juegos de PS1), y si
+  Relix está como App en Dev Home. Si un juego se cierra al abrir, Relix dice qué
+  BIOS o núcleo revisar. Cada consola tiene su guía: qué instalar desde DevStore,
+  qué archivos pide y dónde van, con un QR para el celular.
 - **Tus datos viajan con el USB.** Favoritos, colecciones, tiempo de juego y
   preferencias se guardan en `relix\data.json`, con la copia anterior y un
   respaldo por día de la última semana. Reinstala Relix o cambia de Xbox y todo
@@ -111,8 +111,11 @@ un disco USB y un PC en la misma red.
 2. Abre el **Device Portal** (la dirección que muestra Dev Home) › **My games &
    apps** › **Add**. Elige el `.msix` y, cuando pida dependencias, agrega los
    archivos de la carpeta de dependencias.
-3. En **Dev Home**, sobre Relix: botón Vista ⧉ › **View details** › cambia el
-   tipo de **App** a **Game**: así tiene más memoria.
+3. Deja Relix como **App**, el tipo con que se instala: mientras juegas, la Xbox
+   solo lo pausa, así que al salir del juego vuelves a Relix al instante. Si lo
+   cambiaste a **Game** con una versión anterior, devuélvelo en **Dev Home**: sobre
+   Relix, botón Vista ⧉ › **View details**. **Opciones › Revisión** dice qué tipo
+   tiene. (Los emuladores sí van como Game: sus guías explican cómo.)
 4. En el PC, crea en el USB una carpeta por consola: `E:\roms\psx`,
    `E:\roms\ps2`, `E:\roms\snes`… (los nombres de ES-DE) y copia ahí tus juegos.
 5. Conecta el USB a la Xbox y abre Relix. El recorrido de bienvenida y

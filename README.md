@@ -67,10 +67,11 @@ what each button does.
   emulator or come back with the Xbox button. If the Xbox closed Relix while you
   played, it opens again where you were: the same library, with that game focused.
 - **It tells you what's wrong.** *Checkup* verifies the USB drive, free space,
-  missing emulators and BIOS files (per region of your PS1 games). If a game
-  closes right after launching, Relix tells you which BIOS or core to check.
-  Every console has a guide: what to install from DevStore, which files it
-  needs and where they go, with a QR code for your phone.
+  missing emulators and BIOS files (per region of your PS1 games), and whether
+  Relix is set as App in Dev Home. If a game closes right after launching, Relix
+  tells you which BIOS or core to check. Every console has a guide: what to
+  install from DevStore, which files it needs and where they go, with a QR code
+  for your phone.
 - **Your data travels with the USB drive.** Favorites, collections, playtime and
   settings are saved to `relix\data.json`, with the previous copy and a daily
   backup for a week. Reinstall Relix or move to another Xbox and it's all there.
@@ -109,8 +110,11 @@ a USB drive and a PC on the same network.
 2. Open the **Device Portal** (the address Dev Home shows) › **My games & apps** ›
    **Add**. Pick the `.msix`, then add the files from the dependencies folder
    when it asks for them.
-3. In **Dev Home**, highlight Relix › View button ⧉ › **View details** › change
-   the type from **App** to **Game**, so it gets more memory.
+3. Leave Relix as an **App**, the type it installs with: while you play, the Xbox
+   only pauses it, so you're back in Relix the moment you quit the game. If you
+   set it to **Game** with an earlier version, switch it back in **Dev Home**:
+   highlight Relix › View button ⧉ › **View details**. **Options › Checkup** says
+   which type it has. (The emulators do go as Game: their guides say how.)
 4. On the PC, create a folder per console on the USB drive: `E:\roms\psx`,
    `E:\roms\ps2`, `E:\roms\snes`… (ES-DE names) and copy your games there.
 5. Plug the drive into the Xbox and open Relix. The welcome tour and

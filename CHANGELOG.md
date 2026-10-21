@@ -9,6 +9,12 @@ Each version's section becomes the notes of its GitHub release.
   screen. Now Relix remembers the library and the game you opened, and when it
   opens again after a game it takes you there, with that game focused and the
   time you played. Opened from the home screen, it goes back to the same channel.
+- **Relix as App:** the README used to say to set Relix as Game in Dev Home, but
+  the Xbox closes a Game while another one plays. As an App it only pauses it, so
+  quitting a game takes you straight back. Relix can't change its own type, so
+  *≡ › Checkup* now says which one it has and, if it's Game, Relix says so once
+  when it opens, with the steps to switch it (Dev Home › View details). The
+  emulators stay as Game.
 
 ## [1.1.0] - 2026-10-18
 

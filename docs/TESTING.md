@@ -207,8 +207,8 @@ copy the message from the **Output** window.
 - [ ] Install the `.msix` from the release as the README says (**Install**). Open
       it: your favorites, collections and playtime are still there (they come from
       the USB drive).
-- [ ] Dev Home shows a single Relix. Switch it from **App** to **Game** if you
-      haven't.
+- [ ] Dev Home shows a single Relix, of the **App** type (since 1.2.0; before, the
+      README said Game).
 - [ ] **≡ → Checkup** with internet: there's no new-version row (you're on the
       latest).
 - [ ] When the next version comes out: when Relix opens, "Relix X.Y.Z is out:
@@ -300,6 +300,19 @@ the USB drive a game ES-DE hasn't scraped (it has no description in Relix).
       or Favorites.
 - [ ] A game opened from the home screen (*Continue playing*) comes back to the
       home screen, on the same channel.
+
+## Relix as App (1.2.0)
+- [ ] With Relix as **Game** (Dev Home › View details): when it opens, "Relix is set
+      as Game: switch it to App…" shows up once, and **≡ → Checkup** has the
+      warning "Relix is set as Game" with the steps. Close and open Relix: the
+      notice doesn't show again (the warning in Checkup stays).
+- [ ] Switch it to **App** and open Relix: Checkup says "Relix is set as App" and
+      "Memory: up to" about 1 GB. If it says Game, or a number far from 1 GB, write
+      down what it says.
+- [ ] As App, open a game with XBSX2, quit from the emulator's menu and open Relix
+      from Home: it's where you left it, without the loading screen.
+- [ ] As App, with every console scanned and covers on, browse a few libraries for
+      a while: Relix doesn't close by itself.
 
 If something fails, the **If something fails** table in
 [`shell/README.md`](../shell/README.md) has the most common causes.
