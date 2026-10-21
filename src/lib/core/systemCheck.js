@@ -1,7 +1,8 @@
 /**
  * The system checkup: with what the shell measures (USB drive, space, folders,
- * BIOS files, internet) and what Relix already knows (games, emulators,
- * backup), it builds a list of checks with their state and how to fix each one.
+ * BIOS files, internet, Relix's memory on the Xbox) and what Relix already knows
+ * (games, emulators, backup), it builds a list of checks with their state and how
+ * to fix each one.
  *
  * The BIOS can only be checked if it's on the USB drive, in the folders the
  * guides point to. If you put it inside the emulator (Device Portal), Relix
@@ -21,6 +22,8 @@ export const CHECK_FOLDERS = Object.values(BIOS_FOLDERS)
 
 /** Less than this free is too little to keep adding games */
 const LOW_SPACE_BYTES = 2 * 1024 ** 3
+/** On the Xbox an app gets about 1 GB of memory and a game about 5 GB: more than this is a game */
+const GAME_MEMORY_BYTES = 2 * 1024 ** 3
 
 const REGION_NAMES = { japan: 'Japón', usa: 'EE. UU.', europe: 'Europa' }
 
@@ -36,6 +39,13 @@ const REGION_NAMES = { japan: 'Japón', usa: 'EE. UU.', europe: 'Europa' }
  * @property {string[]} romFolders
  * @property {Record<string, string[] | null>} folders
  * @property {boolean} internet
+ * @property {ShellMemory | null} [memory]  missing in a shell from before 1.2.0
+ *
+ * @typedef {Object} ShellMemory  in bytes
+ * @property {boolean} xbox            the shell runs on an Xbox
+ * @property {number} expectedLimit    the most the Xbox will give Relix (it starts with less)
+ * @property {number} limit            what it gives it now
+ * @property {number} usage            what Relix uses now
  *
  * @typedef {Object} ConsoleInfo
  * @property {import('./platforms.js').Platform} platform
@@ -50,6 +60,20 @@ export function formatBytes(bytes) {
   if (gb >= 10) return `${Math.round(gb)} GB`
   if (gb >= 1) return `${i18n.current === 'es' ? gb.toFixed(1).replace('.', ',') : gb.toFixed(1)} GB`
   return `${Math.round(bytes / 1024 ** 2)} MB`
+}
+
+/**
+ * Relix's type in Dev Home (View details › App type), by the memory the Xbox will give it.
+ * It matters because the Xbox closes a game while another one plays, and it only pauses
+ * an app: as an app, Relix is still there when you quit the emulator. Relix can't
+ * change its own type; it can only tell you.
+ * @param {ShellCheck | null} shell
+ * @returns {'app' | 'game' | null}  null: not on an Xbox, or the shell doesn't say
+ */
+export function appTypeOf(shell) {
+  const memory = shell?.memory
+  if (!memory?.xbox || !(memory.expectedLimit > 0)) return null
+  return memory.expectedLimit > GAME_MEMORY_BYTES ? 'game' : 'app'
 }
 
 /** Is the file in the list? Case-insensitive (the Xbox doesn't tell them apart) */
@@ -200,7 +224,7 @@ function ps2Bios(info, folders, driveRoot) {
 }
 
 /**
- * The list of checks, in order: USB drive, consoles, internet and your data.
+ * The list of checks, in order: USB drive, consoles, the Xbox, internet and your data.
  * @param {Object} input
  * @param {ShellCheck | null} input.shell        null = the shell isn't answering yet
  * @param {string} input.romRoot                  "E:\roms"
@@ -319,7 +343,29 @@ export function buildChecks({ shell, romRoot, consoles, knownFolders, dataStatus
     }
   }
 
-  // ── Internet and your data ──
+  // ── The Xbox, internet and your data ──
+  const appType = appTypeOf(shell)
+  if (shell?.memory && appType) {
+    checks.push(
+      appType === 'app'
+        ? {
+            id: 'apptype',
+            state: 'ok',
+            title: t('Relix está como App'),
+            detail: t('Mientras juegas queda en pausa y al salir vuelves al instante. Memoria: hasta {memory}.', {
+              memory: formatBytes(shell.memory.expectedLimit),
+            }),
+          }
+        : {
+            id: 'apptype',
+            state: 'warn',
+            title: t('Relix está como Game'),
+            detail: t(
+              'La Xbox lo cierra mientras juegas y al volver carga todo otra vez. En Dev Home, sobre Relix: botón Vista ⧉ › View details › cambia el tipo a App.',
+            ),
+          },
+    )
+  }
   if (shell) {
     checks.push(
       shell.internet

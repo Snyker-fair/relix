@@ -5,6 +5,8 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Windows.Data.Json;
 using Windows.Storage;
+using Windows.System;
+using Windows.System.Profile;
 
 namespace RelixShell
 {
@@ -25,7 +27,8 @@ namespace RelixShell
 
         /// <summary>
         /// { drive, writable, space: { free, total } | null, romFolders: [...],
-        ///   folders: { "RetroArch\\system": ["scph5501.bin"] | null }, internet }
+        ///   folders: { "RetroArch\\system": ["scph5501.bin"] | null }, internet,
+        ///   memory: { xbox, expectedLimit, limit, usage } | null }
         /// </summary>
         public static async Task<JsonObject> RunAsync(LibraryPaths paths, JsonArray folders)
         {
@@ -36,7 +39,33 @@ namespace RelixShell
             result.SetNamedValue("romFolders", await RomFoldersAsync(paths));
             result.SetNamedValue("folders", await ListFoldersAsync(paths, folders));
             result.SetNamedValue("internet", JsonValue.CreateBooleanValue(await InternetAsync()));
+            result.SetNamedValue("memory", Memory());
             return result;
+        }
+
+        /// <summary>
+        /// { xbox, expectedLimit, limit, usage } in bytes, or null if the console doesn't say.
+        /// On the Xbox an app gets about 1 GB and a game about 5 GB, by its type in Dev Home
+        /// (View details › App type), and the limit starts low and grows: ExpectedAppMemoryUsageLimit
+        /// is the one it will reach, and that tells the interface which type Relix is.
+        /// </summary>
+        private static IJsonValue Memory()
+        {
+            try
+            {
+                var memory = new JsonObject();
+                memory.SetNamedValue("xbox", JsonValue.CreateBooleanValue(
+                    AnalyticsInfo.VersionInfo.DeviceFamily == "Windows.Xbox"));
+                memory.SetNamedValue("expectedLimit", JsonValue.CreateNumberValue(MemoryManager.ExpectedAppMemoryUsageLimit));
+                memory.SetNamedValue("limit", JsonValue.CreateNumberValue(MemoryManager.AppMemoryUsageLimit));
+                memory.SetNamedValue("usage", JsonValue.CreateNumberValue(MemoryManager.AppMemoryUsage));
+                return memory;
+            }
+            catch (Exception)
+            {
+                // no memory data: the interface doesn't show that row
+                return JsonValue.CreateNullValue();
+            }
         }
 
         /// <summary>Writes and deletes a test file in E:\relix.</summary>

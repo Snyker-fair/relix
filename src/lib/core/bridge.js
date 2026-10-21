@@ -740,8 +740,10 @@ export async function emulatorStatus(protocols) {
 export async function systemCheck(folders) {
   // The internet test waits up to 6 s; a shell from before step 6 doesn't answer
   if (mode === 'xbox') return request('systemCheck', { folders }, { timeout: 15_000 })
-  // Demo: a 465 GB USB drive with the US PS1 BIOS (the European one is missing) and a NES folder
+  // Demo: a 465 GB USB drive with the US PS1 BIOS (the European one is missing) and a
+  // NES folder, on an Xbox where Relix is of the App type (?apptype=game: of the Game type)
   await new Promise((resolve) => setTimeout(resolve, 300))
+  const game = new URLSearchParams(globalThis.location?.search ?? '').get('apptype') === 'game'
   return {
     drive: 'E:\\',
     writable: true,
@@ -751,6 +753,7 @@ export async function systemCheck(folders) {
       folders.map((f) => [f, f === 'RetroArch\\system' ? ['scph5501.bin'] : f === 'XBSX2\\BIOS' ? ['SCPH-70012_BIOS_V12_USA_200.BIN'] : null]),
     ),
     internet: true,
+    memory: { xbox: true, expectedLimit: (game ? 5 : 1) * 1024 ** 3, limit: 512 * 1024 ** 2, usage: 310 * 1024 ** 2 },
   }
 }
 

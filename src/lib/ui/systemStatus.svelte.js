@@ -5,7 +5,7 @@
  */
 import { systemCheck } from '../core/bridge.js'
 import { PLATFORMS } from '../core/platforms.js'
-import { buildChecks, CHECK_FOLDERS, summarize } from '../core/systemCheck.js'
+import { appTypeOf, buildChecks, CHECK_FOLDERS, summarize } from '../core/systemCheck.js'
 import { updateCheck } from '../core/updates.js'
 import { VERSION } from '../core/version.js'
 import { updates } from './updates.svelte.js'
@@ -13,7 +13,11 @@ import { plural, t } from '../i18n/i18n.svelte.js'
 import { diagnostics } from './diagnostics.svelte.js'
 import { emulators } from './emulators.svelte.js'
 import { library } from './library.svelte.js'
+import { load, save } from './storage.js'
 import { userData } from './userData.svelte.js'
+
+/** Relix being of the Game type was already reported when it opened */
+const APP_TYPE_NOTIFIED_KEY = 'appTypeNotified'
 
 class SystemStatus {
   /** What the shell measured last (null: not yet, or the shell is older) */
@@ -52,6 +56,19 @@ class SystemStatus {
   ])
 
   summary = $derived(summarize(this.checks))
+
+  /** Relix's type in Dev Home: 'app', 'game' or null (not on an Xbox, or an older shell) */
+  appType = $derived(appTypeOf(this.shell))
+
+  /**
+   * Whether to say when Relix opens that it's of the Game type: only the first time
+   * it's seen (whoever leaves it like that on purpose isn't told again).
+   */
+  takeAppTypeNotice() {
+    if (this.appType !== 'game' || load(APP_TYPE_NOTIFIED_KEY, false)) return false
+    save(APP_TYPE_NOTIFIED_KEY, true)
+    return true
+  }
 
   /**
    * Measures everything again (also which emulators are installed and whether there's a

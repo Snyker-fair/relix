@@ -105,10 +105,7 @@
       collectionsRead = collections.load()
       userData.resync()
       library.loadMedia()
-      systemStatus.run().then(() => {
-        warnSystem()
-        notifyUpdate()
-      })
+      systemStatus.run().then(startNotices)
       if (finishedWhileClosed) {
         diagnostics.log(
           'back',
@@ -139,31 +136,29 @@
   })
 
   /**
-   * When Relix opens, if the checkup found something to fix, it's reported once
-   * (not during the welcome tour, which already shows it).
+   * When Relix opens, after the checkup, one notice after another (not during the
+   * welcome tour, which already shows the checkup): what's left to fix, once per
+   * session; that Relix is of the Game type, the first time it's seen; and a new
+   * version, once per version.
    */
   let warnedSystem = false
-  function warnSystem() {
-    const { errors } = systemStatus.summary
-    if (warnedSystem || errors === 0 || screen.name === 'welcome') return
-    warnedSystem = true
-    // If another notice is on screen (the playtime, e.g.), this one goes after it
-    setTimeout(
-      () =>
-        showToast(t('Relix encontró {found}: ≡ › Revisión', { found: plural(errors, 'cosa por arreglar', 'cosas por arreglar') }), 6000),
-      toast ? 3600 : 0,
-    )
-  }
-
-  /** There's a new version of Relix: it's reported once per version (after the other notices) */
-  function notifyUpdate() {
+  function startNotices() {
     if (screen.name === 'welcome') return
+    /** @type {string[]} */
+    const notices = []
+    const { errors } = systemStatus.summary
+    if (!warnedSystem && errors > 0) {
+      warnedSystem = true
+      notices.push(t('Relix encontró {found}: ≡ › Revisión', { found: plural(errors, 'cosa por arreglar', 'cosas por arreglar') }))
+    }
+    if (systemStatus.takeAppTypeNotice()) {
+      notices.push(t('Relix está como Game: cámbialo a App para volver al instante (≡ › Revisión)'))
+    }
     const version = updates.takeNotice()
-    if (!version) return
-    setTimeout(
-      () => showToast(t('Relix {version} ya está disponible: ≡ › Revisión', { version }), 6000),
-      toast ? 6500 : 0,
-    )
+    if (version) notices.push(t('Relix {version} ya está disponible: ≡ › Revisión', { version }))
+    // If another notice is on screen (the playtime, e.g.), these go after it
+    const first = toast ? 3600 : 0
+    notices.forEach((message, i) => setTimeout(() => showToast(message, 6000), first + i * 6500))
   }
 
   // If the USB drive doesn't let your data be saved, it's reported once (and each different error is logged)
@@ -516,10 +511,7 @@
         settings.markOnboarded()
         screen = to
         // If something was left to fix (or you skipped the tour), it says so once
-        if (to.name === 'home') {
-          warnSystem()
-          notifyUpdate()
-        }
+        if (to.name === 'home') startNotices()
       }}
       onToast={showToast}
     />

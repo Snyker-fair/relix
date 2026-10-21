@@ -215,6 +215,8 @@ export default {
   '{game} tras {time} (Relix estaba cerrado)': '{game} after {time} (Relix was closed)',
   'Tus datos se recuperaron de {file}': 'Your data was recovered from {file}',
   'Relix encontró {found}: ≡ › Revisión': 'Relix found {found}: ≡ › Checkup',
+  'Relix está como Game: cámbialo a App para volver al instante (≡ › Revisión)':
+    'Relix is set as Game: switch it to App to come back instantly (≡ › Checkup)',
   'navegador': 'browser',
   '{games} en {consoles}': '{games} on {consoles}',
   'tema oscuro': 'dark theme',
@@ -298,6 +300,12 @@ export default {
   'Tienes {games} y el emulador no está instalado. La guía explica cómo.': "You have {games} and the emulator isn't installed. The guide explains how.",
   '{games}. Instalado.': '{games}. Installed.',
   '{games}. Se revisa en la Xbox.': '{games}. Checked on the Xbox.',
+  'Relix está como App': 'Relix is set as App',
+  'Mientras juegas queda en pausa y al salir vuelves al instante. Memoria: hasta {memory}.':
+    'While you play it stays paused, and you come back instantly. Memory: up to {memory}.',
+  'Relix está como Game': 'Relix is set as Game',
+  'La Xbox lo cierra mientras juegas y al volver carga todo otra vez. En Dev Home, sobre Relix: botón Vista ⧉ › View details › cambia el tipo a App.':
+    'The Xbox closes it while you play, and it loads everything again when you come back. In Dev Home, on Relix: View button ⧉ › View details › change the type to App.',
   'Conexión a internet': 'Internet connection',
   'Para bajar portadas.': 'For downloading covers.',
   'Sin conexión al servidor de portadas': "Can't reach the cover server",

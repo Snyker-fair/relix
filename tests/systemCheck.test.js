@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { getEmulator, getPlatform, PLATFORMS } from '../src/lib/core/platforms.js'
-import { buildChecks, formatBytes, summarize } from '../src/lib/core/systemCheck.js'
+import { appTypeOf, buildChecks, formatBytes, summarize } from '../src/lib/core/systemCheck.js'
 
 const GB = 1024 ** 3
 const platform = (/** @type {string} */ id) => /** @type {import('../src/lib/core/platforms.js').Platform} */ (getPlatform(id))
@@ -115,6 +115,28 @@ describe('system checkup', () => {
   it('Wii U: reports that it opens from Dev Home', () => {
     const checks = buildChecks({ ...base, shell: null, consoles: [console_('wiiu', ['Pikmin 3 (USA).wua'])] })
     expect(checks.find((c) => c.id === 'emu:wiiu')?.state).toBe('info')
+  })
+
+  it("Relix's type in Dev Home, by the memory the Xbox will give it", () => {
+    const memory = (/** @type {number} */ expectedLimit, xbox = true) => ({ ...shell, memory: { xbox, expectedLimit, limit: 0.5 * GB, usage: 0.3 * GB } })
+    expect(appTypeOf(memory(1 * GB))).toBe('app')
+    expect(appTypeOf(memory(5 * GB))).toBe('game')
+    // a PC gives it all its memory: that says nothing about Dev Home
+    expect(appTypeOf(memory(16 * GB, false))).toBeNull()
+    // a shell from before 1.2.0, or one that couldn't tell
+    expect(appTypeOf(shell)).toBeNull()
+    expect(appTypeOf(memory(0))).toBeNull()
+    expect(appTypeOf(null)).toBeNull()
+
+    const consoles = [console_('psx', ['Crash Bandicoot (USA).chd'])]
+    const asApp = buildChecks({ ...base, shell: memory(1 * GB), consoles })
+    expect(asApp.map((c) => c.id)).toEqual(['usb', 'write', 'space', 'folders', 'emu:psx', 'bios:psx', 'apptype', 'internet', 'data'])
+    expect(asApp.find((c) => c.id === 'apptype')).toMatchObject({ state: 'ok', title: 'Relix está como App' })
+    expect(asApp.find((c) => c.id === 'apptype')?.detail).toContain('hasta 1,0 GB')
+    const asGame = buildChecks({ ...base, shell: memory(5 * GB), consoles }).find((c) => c.id === 'apptype')
+    expect(asGame).toMatchObject({ state: 'warn', title: 'Relix está como Game' })
+    expect(asGame?.detail).toContain('cambia el tipo a App')
+    expect(buildChecks({ ...base, shell, consoles }).some((c) => c.id === 'apptype')).toBe(false)
   })
 
   it('readable sizes', () => {
