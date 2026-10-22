@@ -2,6 +2,8 @@
   import { untrack } from 'svelte'
   import { flip } from 'svelte/animate'
   import { moveConsole } from '../lib/core/consoleOrder.js'
+  import { afterScanText } from '../lib/core/afterScan.js'
+  import { afterScan } from '../lib/ui/afterScan.svelte.js'
   import { mode } from '../lib/core/bridge.js'
   import { REGION_NAMES } from '../lib/core/coverMatch.js'
   import { BUILD_DATE, VERSION } from '../lib/core/version.js'
@@ -248,12 +250,24 @@
     return scanSummary(platform?.shortName ?? id, change)
   }
 
+  /**
+   * After scanning, the covers and descriptions its games are missing, without
+   * asking (ui/afterScan.svelte.js): copying the games and scanning is all there is.
+   * @param {string[]} ids
+   */
+  function completeAfterScan(ids) {
+    afterScan.complete(ids).then((result) => {
+      const text = result && afterScanText(result)
+      if (text) onToast(text)
+    })
+  }
+
   async function scanRow() {
     const id = ROWS[index]
     if (id === 'hidden') return unhideRow()
     if (id === 'rename') return (sound.select(), onRenameFiles())
     if (id === 'info') return (sound.select(), onGameInfo())
-    if (busy || scanningAll) return
+    if (busy || scanningAll || afterScan.working) return
     sound.select()
     try {
       if (id !== 'all') {
@@ -283,6 +297,7 @@
         )
       }
       sound.favorite()
+      completeAfterScan(id === 'all' ? shelf.consoles.map((p) => p.id) : [id])
     } catch (e) {
       sound.error()
       onToast(e instanceof Error ? e.message : t('No se pudo escanear. Revisa que el USB esté conectado.'))
@@ -523,7 +538,7 @@
     <h2>{t('Biblioteca')}</h2>
     <p>
       {t(
-        'Relix guarda la lista de juegos de cada consola para abrir al instante. Escanea una consola cuando agregues o quites juegos de su carpeta.',
+        'Relix guarda la lista de juegos de cada consola para abrir al instante. Escanea una consola cuando agregues o quites juegos de su carpeta: también busca sus portadas y su información.',
       )}
     </p>
     <ul class="chips">
@@ -638,7 +653,11 @@
         <span class="state">
           {#if scanning}
             <span class="spinner" aria-hidden="true"></span> {t('Escaneando…')}
-          {:else if focused && !busy}
+          {:else if covers.busy === id}
+            <span class="spinner" aria-hidden="true"></span> {t('Buscando portadas…')}
+          {:else if gameInfo.finding?.console === platform.shortName}
+            <span class="spinner" aria-hidden="true"></span> {t('Buscando información…')}
+          {:else if focused && !busy && !afterScan.working}
             <PadButton name="a" size={30} /> {t('Escanear')}
           {:else}
             {meta.when}
@@ -721,6 +740,8 @@
         <span class="state">
           {#if scanningAll}
             <span class="spinner" aria-hidden="true"></span> {t('Escaneando…')}
+          {:else if afterScan.working}
+            <span class="spinner" aria-hidden="true"></span> {t('Portadas e información…')}
           {:else if focused && !busy}
             <PadButton name="a" size={30} /> {t('Escanear')}
           {/if}

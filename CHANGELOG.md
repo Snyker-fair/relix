@@ -7,6 +7,11 @@ Each version's section becomes the notes of its GitHub release.
 - **"New" games:** the games a scan brings to a console get a *New* tag on their
   cover until you play them or for 14 days, and the home screen counts them
   ("10 games · 2 new"). The first scan of a console doesn't mark anything.
+- **Scanning is the only step:** after scanning a console (*≡ › Library*), Relix
+  also finds the covers and screenshots its games are missing and the
+  descriptions Wikipedia is sure about, without asking. The row says what it's
+  doing, and a notice says what came and what's left to pick by hand. Without
+  internet, your games are in and the rest waits for the next scan.
 - **Your consoles in your order:** in *≡ › Consoles*, **X** on a console lets you
   move it with ↑ ↓ (**A** saves, **B** leaves it as it was). The home screen, the
   library's tabs and Options follow that order; Favorites and Collections stay

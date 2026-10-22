@@ -6,6 +6,7 @@
  *   save(game, candidate) writes what the game is missing; nothing is replaced
  *   findAll()             console by console, the games without a description:
  *                         the sure matches are saved, the rest stay to pick (pending)
+ *   findFor(systemIds)    the same, only in those consoles (after a scan)
  *
  * The requests go one at a time and slowly (politeGetJson): Wikimedia turns away
  * a program that asks fast.
@@ -187,11 +188,22 @@ class GameInfo {
    * written in each gamelist (once per console) and the rest stay to pick.
    * @returns {Promise<FindResult | null>}  null if it was already running
    */
-  async findAll() {
+  findAll() {
+    return this.findFor(PLATFORMS.map((p) => p.id))
+  }
+
+  /**
+   * Like findAll, only in those consoles (after scanning them). What it isn't sure
+   * of is added to the list to pick, next to what was already there.
+   * @param {string[]} systemIds
+   * @returns {Promise<FindResult | null>}  null if it was already running
+   */
+  async findFor(systemIds) {
     if (this.finding) return null
     /** @param {LibraryGame} g */
     const wanted = (g) => !g.description && !this.skipped.includes(g.id)
-    const consoles = PLATFORMS.filter((p) => library.gamesFor(p.id).some(wanted))
+    const consoles = PLATFORMS.filter((p) => systemIds.includes(p.id) && library.gamesFor(p.id).some(wanted))
+    const every = consoles.length === PLATFORMS.filter((p) => library.gamesFor(p.id).some(wanted)).length
     this.finding = { console: '', done: 0, total: consoles.length }
     /** @type {FindResult} */
     const result = { saved: 0, unsure: 0, notFound: 0, failed: [], at: Date.now() }
@@ -225,7 +237,10 @@ class GameInfo {
         }
         this.finding = { ...this.finding, done: this.finding.done + 1 }
       }
-      this.pendingIds = unsure
+      // A search of every console replaces the list; one of a few consoles adds to it
+      const searched = new Set(consoles.map((p) => p.id))
+      const kept = every ? [] : (this.pendingIds ?? []).filter((id) => !searched.has(library.byId.get(id)?.system ?? ''))
+      this.pendingIds = [...kept, ...unsure]
       this.result = result
       diagnostics.log(
         'info',

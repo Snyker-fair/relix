@@ -92,7 +92,8 @@ export default {
   'Sección anterior': 'Previous section',
   'Sección siguiente': 'Next section',
   'Opciones': 'Options',
-  'Relix guarda la lista de juegos de cada consola para abrir al instante. Escanea una consola cuando agregues o quites juegos de su carpeta.': "Relix keeps a list of each console's games so it opens instantly. Scan a console when you add or remove games from its folder.",
+  'Relix guarda la lista de juegos de cada consola para abrir al instante. Escanea una consola cuando agregues o quites juegos de su carpeta: también busca sus portadas y su información.':
+    "Relix keeps a list of each console's games so it opens instantly. Scan a console when you add or remove games from its folder: it also finds their covers and info.",
   'Con qué emulador se abre cada consola. Para un juego puntual, en la biblioteca usa': 'Which emulator opens each console. For a single game, in the library use',
   'Y › Abrir con…': 'Y › Open with…',
   'Relix revisa tu USB, los emuladores y las BIOS. Si algo falta,': 'Relix checks your USB drive, emulators and BIOS files. If something is missing,',
@@ -786,6 +787,20 @@ export default {
   'información de juegos': 'game info',
   'guía': 'guide',
   'bienvenida': 'welcome tour',
+
+  // ── After a scan: covers and info ──
+  'Buscando portadas…': 'Finding covers…',
+  'Portadas e información…': 'Covers and info…',
+  'Sin conexión a internet: tus juegos ya están, pero sus portadas y su información quedan para después.':
+    "No internet connection: your games are in, but their covers and info will have to wait.",
+  '{covers} en Portadas': '{covers} in Covers',
+  'portada': 'cover',
+  'descripción': 'description',
+  'descripciones': 'descriptions',
+  '{games} en Información de los juegos': '{games} in Game info',
+  'Listo: {saved}.': 'Done: {saved}.',
+  'Por elegir a mano: {list}.': 'To pick by hand: {list}.',
+  '{console}: no se pudieron buscar las portadas después de escanear ({error})': "{console}: couldn't find the covers after scanning ({error})",
 
   // ── The consoles' order ──
   'Mover': 'Move',
