@@ -315,8 +315,8 @@ the USB drive a game ES-DE hasn't scraped (it has no description in Relix).
       a while: Relix doesn't close by itself.
 
 ## Game sheet, weeks and memory (1.3.0)
-- [ ] After installing 1.3.0, when Relix opens: "New in 1.3.0: click the right
-      stick for a game's sheet, and the left one…" and then "Tip: inside a
+- [ ] After installing 1.3.0, when Relix opens: "New in 1.3.0: inside a
+      console, click the right stick for a game's sheet and the left one…" and then "Tip: inside a
       console, LT and RT jump from letter to letter" show up once (not again on the
       next start). In a console, the button bar shows **R Game sheet** and no
       longer LT / RT (they still jump by letter).
@@ -324,6 +324,7 @@ the USB drive a game ES-DE hasn't scraped (it has no description in Relix).
       **Surprise me** with three face-down cards. **A** opens a random game's
       sheet with the **Surprise me** pill at the top; **L Another** (the left
       stick) shows a different one each time; **B** goes back to the die.
+- [ ] On the home screen, the left stick does nothing: *Surprise me* is the die.
 - [ ] Inside a console, the left stick picks among that console's games (inside a
       collection, among the collection's). **B** goes back with the same game
       focused as before. Mostly games you haven't played come up.
