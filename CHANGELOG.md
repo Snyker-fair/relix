@@ -10,12 +10,6 @@ Each version's section becomes the notes of its GitHub release.
   and the time you've played it, with its last 8 weeks. No video plays there, to
   keep Relix light. The library's button bar shows the stick, and after updating
   Relix says it once (along with the left stick for *Surprise me*).
-- **Your saves in the sheet, like a memory card:** if RetroArch keeps its saves
-  on the USB drive, a game's sheet says when you last saved, how many quick saves
-  it has and shows the picture of the newest one. Each RetroArch console's guide
-  now has an optional step to keep them in `E:\RetroArch\saves` and `states`
-  (they also travel with the USB drive that way), and *Checkup* mentions it when
-  they're not there. Relix only reads them: it never changes or deletes a save.
 - **Surprise me:** can't choose what to play? The die at the end of the home
   screen's channels (or clicking the left stick) picks a game for you, almost
   always one you never opened or barely played, and shows its sheet. **A** plays

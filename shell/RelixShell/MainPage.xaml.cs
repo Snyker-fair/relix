@@ -333,12 +333,6 @@ namespace RelixShell
                         Reply(id, await EmulatorStatusAsync(payload));
                         break;
 
-                    case "listSaves":
-                        // RetroArch's saves on the USB drive, for the game sheet
-                        await EnsurePathsAsync(refresh: false);
-                        Reply(id, await SaveIndex.ListAsync(paths));
-                        break;
-
                     case "memory":
                         // How much Relix uses now: the interface asks every so often and logs the peaks
                         Reply(id, SystemCheck.Memory());

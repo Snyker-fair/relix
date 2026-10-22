@@ -131,11 +131,6 @@
     <!-- an open book: the game's information -->
     <path d="M48 26c-8-6-20-8-34-6v52c14-2 26 0 34 6 8-6 20-8 34-6V20c-14-2-26 0-34 6Z" />
     <path d="M48 26v52" />
-  {:else if id === 'save'}
-    <!-- a memory card: saved games -->
-    <path d="M26 14h36l14 14v50a6 6 0 0 1-6 6H26a6 6 0 0 1-6-6V20a6 6 0 0 1 6-6Z" />
-    <path d="M32 14v14h24V14" />
-    <rect x="32" y="52" width="32" height="20" rx="4" fill={color} stroke="none" />
   {:else if id === 'dice'}
     <!-- a die showing five: surprise me -->
     <rect x="18" y="18" width="60" height="60" rx="14" />

@@ -139,18 +139,6 @@ describe('system checkup', () => {
     expect(buildChecks({ ...base, shell, consoles }).some((c) => c.id === 'apptype')).toBe(false)
   })
 
-  it("RetroArch's saves: it only says so when the folder isn't on the USB drive", () => {
-    const consoles = [console_('psx', ['Crash Bandicoot (USA).chd'])]
-    const without = buildChecks({ ...base, shell: { ...shell, folders: { ...shell.folders, 'RetroArch\\saves': null } }, consoles })
-    expect(without.find((c) => c.id === 'saves')).toMatchObject({ state: 'info', action: { kind: 'guide', systemId: 'psx' } })
-    expect(without.find((c) => c.id === 'saves')?.detail).toContain('E:\\RetroArch\\saves')
-    const withFolder = buildChecks({ ...base, shell: { ...shell, folders: { ...shell.folders, 'RetroArch\\saves': [] } }, consoles })
-    expect(withFolder.some((c) => c.id === 'saves')).toBe(false)
-    // only PS2 (XBSX2): RetroArch isn't used
-    const ps2 = buildChecks({ ...base, shell: { ...shell, folders: { ...shell.folders, 'RetroArch\\saves': null } }, consoles: [console_('ps2', ['Okami (USA).chd'])] })
-    expect(ps2.some((c) => c.id === 'saves')).toBe(false)
-  })
-
   it('readable sizes', () => {
     expect(formatBytes(182 * GB)).toBe('182 GB')
     expect(formatBytes(1.5 * GB)).toBe('1,5 GB')

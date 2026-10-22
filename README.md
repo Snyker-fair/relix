@@ -65,9 +65,7 @@ what each button does.
 - **A living game page.** Fan art, logo and a muted video preview when ES-DE
   scraped them; a background screenshot from libretro when it didn't. Click the
   right stick (or *Y › Game sheet*) for the full sheet: the whole description,
-  every detail, your weeks with that game and, like a memory card, when you last
-  saved and the picture of your latest quick save (RetroArch, with its saves on
-  the USB drive).
+  every detail and your weeks with that game.
 - **Playtime.** Time and sessions per game, counted whether you quit from the
   emulator or come back with the Xbox button, and your last 8 weeks with your top
   5 in *Options › About*. If the Xbox closed Relix while you played, it opens
@@ -254,7 +252,6 @@ untranslated.
 | Collections | `E:\ES-DE\collections\custom-<Name>.cfg` (ES-DE sees them too) |
 | Your data | `E:\relix\data.json`, `data.previous.json` and `backups\` (last 7 days) |
 | Diagnostic log | `E:\relix\log.txt` (and `log.previous.txt`) |
-| RetroArch saves | `E:\RetroArch\saves\` and `states\` (if RetroArch keeps them there: each console's guide explains it; Relix only reads them) |
 | Cache | `E:\relix\cache\` (libretro lists and thumbnails; safe to delete) |
 
 Multi-disc games go in an `.m3u`; Xbox 360 and Dreamcast games can live in a

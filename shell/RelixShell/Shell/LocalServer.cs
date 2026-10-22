@@ -16,7 +16,6 @@ namespace RelixShell
     ///   /media/psx/covers/Game           without an extension: tries .png, .jpg, .jpeg and .webp
     ///   /media/psx/videos/Game.mp4       ES-DE videos, in ranges (Range) so they can loop
     ///   /thumb/psx/Game.png              the JPG thumbnail of that cover (see CoverService)
-    ///   /saves/states/Game.state1.png    the picture of a RetroArch quick save (see SaveIndex)
     ///
     /// Everything goes through the same origin, so the interface has no CORS problems.
     /// </summary>
@@ -24,7 +23,6 @@ namespace RelixShell
     {
         private const string MediaPrefix = "/media/";
         private const string ThumbPrefix = "/thumb/";
-        private const string SavesPrefix = "/saves/";
 
         private static readonly string[] ImageExtensions = { ".png", ".jpg", ".jpeg", ".webp" };
         private static readonly string[] VideoExtensions = { ".mp4", ".webm", ".m4v" };
@@ -75,15 +73,12 @@ namespace RelixShell
                 string path = Uri.UnescapeDataString(new Uri(args.Request.Uri).AbsolutePath);
                 bool isMedia = path.StartsWith(MediaPrefix, StringComparison.Ordinal);
                 bool isThumb = path.StartsWith(ThumbPrefix, StringComparison.Ordinal);
-                bool isSave = path.StartsWith(SavesPrefix, StringComparison.Ordinal);
 
                 StorageFile file = isThumb
                     ? await FindThumbnailAsync(path.Substring(ThumbPrefix.Length))
                     : isMedia
                         ? await FindMediaAsync(path.Substring(MediaPrefix.Length))
-                        : isSave
-                            ? await SaveIndex.FindImageAsync(getPaths(), path.Substring(SavesPrefix.Length))
-                            : await FindUiFileAsync(path);
+                        : await FindUiFileAsync(path);
 
                 if (file == null)
                 {

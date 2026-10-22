@@ -347,15 +347,6 @@ the USB drive a game ES-DE hasn't scraped (it has no description in Relix).
       whether the videos stay.
 - [ ] A game with a long description (from Wikipedia) and time played: in the
       library panel, "Opens with …" stays inside the card.
-- [ ] Saves: follow **Your saves on the USB drive** in the PS1 (or SNES…) guide:
-      in RetroArch, *Savefile* → `E:\RetroArch\saves`, *Savestate* →
-      `E:\RetroArch\states`, *Savestate Thumbnails* on, and save the
-      configuration. Before that, **≡ → Checkup** shows "RetroArch saves: they're
-      not on the USB drive"; after it (and **Check again**), it doesn't.
-- [ ] Play a RetroArch game, save inside the game and make a quick save, quit and
-      open its sheet: "Saved: just now" and "1 quick save", with the picture of
-      that moment. Quick save again and come back: the picture is the new one.
-- [ ] On the PC, `E:\RetroArch\saves` and `states` have the files, untouched.
 
 If something fails, the **If something fails** table in
 [`shell/README.md`](../shell/README.md) has the most common causes.

@@ -9,8 +9,6 @@
    *   Y    the game menu              B (or the right stick)  back
    *
    * Opened by "Surprise me", it says so at the top and the left stick picks another.
-   * If RetroArch keeps its saves on the USB drive, it says when you last saved,
-   * with the picture of your newest quick save (core/saves.js).
    */
   import { untrack } from 'svelte'
   import { getPlatform } from '../lib/core/platforms.js'
@@ -25,7 +23,6 @@
   import HintBar from '../lib/ui/HintBar.svelte'
   import { dispatch, pushHandler } from '../lib/ui/input.js'
   import { library } from '../lib/ui/library.svelte.js'
-  import { saves } from '../lib/ui/saves.svelte.js'
   import Logo from '../lib/ui/Logo.svelte'
   import PadButton from '../lib/ui/PadButton.svelte'
   import { sound } from '../lib/ui/sound.js'
@@ -58,14 +55,6 @@
   const weeks = $derived(game ? weeklyTotals(library.playDays, { now: Date.now(), weeks: 8, id: game.id }) : [])
   const thisWeek = $derived(weeks.at(-1)?.seconds ?? 0)
   const hasWeeks = $derived(weeks.some((w) => w.seconds > 0))
-
-  // Its saves (read the first time a sheet opens)
-  $effect(() => {
-    saves.load()
-  })
-  const saved = $derived(game ? saves.forGame(game) : null)
-  const picture = $derived(saved?.picture ? saves.pictureUrl(saved.picture) : '')
-  let pictureFailed = $state(false)
 
   /** ES-DE's rating (0 to 1) out of 5: "4,5" in Spanish, "4.5" in English */
   const stars = $derived(new Intl.NumberFormat(i18n.dateLocale, { maximumFractionDigits: 1 }))
@@ -201,36 +190,6 @@
           </div>
         {/each}
       </dl>
-    {/if}
-
-    {#if saved}
-      <section class="saves" aria-label={t('Partidas guardadas')}>
-        {#if picture && !pictureFailed}
-          <img class="shot" src={picture} alt={t('Tu último guardado rápido')} onerror={() => (pictureFailed = true)} />
-        {:else}
-          <span class="card"><ChannelIcon id="save" color="currentColor" size={56} /></span>
-        {/if}
-        <div class="saves-text">
-          <strong>
-            {saved.save
-              ? t('Partida guardada: {when}', { when: timeAgo(saved.save) })
-              : t('Guardado rápido: {when}', { when: timeAgo(/** @type {number} */ (saved.lastState)) })}
-          </strong>
-          {#if saved.states > 0}
-            <!-- with only quick saves, the first line already says when the last one was -->
-            <span>
-              {saved.save && saved.lastState
-                ? t('{states} · el último, {when}', {
-                    states: plural(saved.states, 'guardado rápido', 'guardados rápidos'),
-                    when: timeAgo(saved.lastState),
-                  })
-                : plural(saved.states, 'guardado rápido', 'guardados rápidos')}
-            </span>
-          {:else}
-            <span>{t('En la carpeta de partidas de RetroArch, en el USB')}</span>
-          {/if}
-        </div>
-      </section>
     {/if}
 
     <div class="desc-box" class:more={scroll < maxScroll} class:scrolled={scroll > 0}>
@@ -457,48 +416,6 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-  /* ── Its saves, like a memory card's icon ── */
-  .saves {
-    display: flex;
-    align-items: center;
-    gap: 22px;
-    margin-top: 22px;
-    padding: 14px 26px 14px 14px;
-    border-radius: 28px;
-    background: rgb(var(--glass) / 0.75);
-  }
-  .saves .shot,
-  .saves .card {
-    flex: none;
-    width: 128px;
-    height: 96px;
-    border-radius: 16px;
-  }
-  .saves .shot {
-    object-fit: cover;
-    /* the emulator's pictures are small: they're enlarged keeping their pixels */
-    image-rendering: pixelated;
-    background: var(--sky);
-  }
-  .saves .card {
-    display: grid;
-    place-items: center;
-    background: color-mix(in oklab, var(--tint) 22%, var(--cloud));
-    color: var(--ink);
-  }
-  .saves-text {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-width: 0;
-  }
-  .saves-text strong {
-    font-size: 25px;
-  }
-  .saves-text span {
-    font-size: 20px;
-    color: var(--ink-soft);
   }
   .desc-box {
     position: relative;
