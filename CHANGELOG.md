@@ -2,7 +2,7 @@
 
 Each version's section becomes the notes of its GitHub release.
 
-## [Unreleased]
+## [1.3.0] - 2026-10-21
 
 - **Game sheet:** click the right stick on a game (or *Y › Game sheet*) for its
   full page: the cover, the whole description (scroll it with ↑ ↓), every detail
