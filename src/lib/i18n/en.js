@@ -741,7 +741,7 @@ export default {
   'Relix {version} está disponible': 'Relix {version} is available',
   'Tienes la {current}. Bájala en el PC desde {url} e instálala con el Device Portal: tus datos quedan en el USB.': 'You have {current}. Download it on the PC from {url} and install it with the Device Portal: your data stays on the USB drive.',
   'Relix {version} ya está disponible: ≡ › Revisión': 'Relix {version} is out: ≡ › Checkup',
-  'Nuevo en la {version}: clic en el stick derecho para ver la ficha de un juego, y en el izquierdo para que Relix te sorprenda': 'New in {version}: click the right stick for a game\'s sheet, and the left one to let Relix surprise you',
+  'Nuevo en la {version}: dentro de una consola, clic en el stick derecho para ver la ficha de un juego y en el izquierdo para que Relix te sorprenda': 'New in {version}: inside a console, click the right stick for a game\'s sheet and the left one to let Relix surprise you',
   'Truco: dentro de una consola, LT y RT saltan de letra en letra': 'Tip: inside a console, LT and RT jump from letter to letter',
   'Hay una versión nueva: {version}': 'New version available: {version}',
 

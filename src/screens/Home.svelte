@@ -28,7 +28,7 @@
    *   onMenu: (game: any) => void,
    *   onSurprise: () => void,
    * }}
-   *   onSurprise: "Surprise me", among every console (the die, or the left stick)
+   *   onSurprise: "Surprise me", among every console (the die; the left stick only works inside a console)
    */
   let { focusedId, boot, onOpen, onLaunch, onFocusChange, onOptions, onSearch, onMenu, onSurprise } = $props()
 
@@ -152,9 +152,6 @@
           if (onOptionsTile) onOptions()
           else if (onSurpriseTile) onSurprise()
           else onOpen(channel.id)
-        } else if (action === 'ls') {
-          sound.select()
-          onSurprise()
         } else if (action === 'start') {
           sound.select()
           onOptions()

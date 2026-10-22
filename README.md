@@ -61,7 +61,8 @@ what each button does.
 - **Find games fast.** Search across every console with an on-screen keyboard,
   jump by letter with the triggers, sort (A–Z, recent, most played, year) and
   filter by genre or players. Can't choose? *Surprise me* (the die on the home
-  screen, or the left stick) picks one, almost always one you haven't played.
+  screen, or the left stick inside a console) picks one, almost always one you
+  haven't played.
 - **A living game page.** Fan art, logo and a muted video preview when ES-DE
   scraped them; a background screenshot from libretro when it didn't. Click the
   right stick (or *Y › Game sheet*) for the full sheet: the whole description,
@@ -326,7 +327,7 @@ Switch will join when an emulator with a launch protocol becomes playable.
 | X | Favorite (in search: delete a letter) |
 | Y | Game menu: play, game sheet, open with…, favorite, collections, change cover, hide, sort, filter |
 | Right stick (click) | The game's full sheet |
-| Left stick (click) | Surprise me: a random game (in a library, among its games) |
+| Left stick (click) | Inside a console or collection: Surprise me, among its games |
 | LB / RB | Previous / next console |
 | LT / RT | Previous / next letter (or year) |
 | View ⧉ | Search every console |

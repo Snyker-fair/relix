@@ -23,7 +23,7 @@ export const CHECK_EVERY_MS = 24 * 60 * 60 * 1000
  */
 export const NEWS = /** @type {Record<string, string[]>} */ ({
   '1.3.0': [
-    'Nuevo en la {version}: clic en el stick derecho para ver la ficha de un juego, y en el izquierdo para que Relix te sorprenda',
+    'Nuevo en la {version}: dentro de una consola, clic en el stick derecho para ver la ficha de un juego y en el izquierdo para que Relix te sorprenda',
     'Truco: dentro de una consola, LT y RT saltan de letra en letra',
   ],
 })

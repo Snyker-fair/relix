@@ -11,11 +11,10 @@ Each version's section becomes the notes of its GitHub release.
   keep Relix light. The library's button bar shows the stick, and after updating
   Relix says it once (along with the left stick for *Surprise me*).
 - **Surprise me:** can't choose what to play? The die at the end of the home
-  screen's channels (or clicking the left stick) picks a game for you, almost
-  always one you never opened or barely played, and shows its sheet. **A** plays
-  it, the left stick picks another one (no repeats until it has shown them all)
-  and **B** goes back. In a library, it picks among that console's or
-  collection's games.
+  screen's channels picks a game for you, almost always one you never opened or
+  barely played, and shows its sheet. **A** plays it, the left stick picks
+  another one (no repeats until it has shown them all) and **B** goes back.
+  Inside a console or collection, clicking the left stick picks among its games.
 - **Playtime by week:** Relix now keeps the minutes played per day (in
   `data.json`, the last 26 weeks). *≡ › About* shows your last 8 weeks and your
   top 5. The weeks count from this version on.
