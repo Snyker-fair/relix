@@ -350,6 +350,9 @@ the USB drive a game ES-DE hasn't scraped (it has no description in Relix).
       whether the videos stay.
 - [ ] A game with a long description (from Wikipedia) and time played: in the
       library panel, "Opens with …" stays inside the card.
+- [ ] Home, on the first channel: go down to *Continue playing* and press **Y**.
+      The menu comes in against the right edge, and when you close it the home
+      screen is where it was. The same in a console, on a game at the far right.
 
 ## Play together and new games (1.4.0)
 - [ ] With one controller, the home screen shows *Continue playing* as always.
