@@ -2,7 +2,7 @@
 
 Each version's section becomes the notes of its GitHub release.
 
-## [1.3.0] - 2026-10-21
+## [1.3.0] - 2026-10-22
 
 - **Game sheet:** click the right stick on a game (or *Y › Game sheet*) for its
   full page: the cover, the whole description (scroll it with ↑ ↓), every detail
@@ -34,6 +34,9 @@ Each version's section becomes the notes of its GitHub release.
 - **Fix:** with a background image, a long name (*Castlevania: Symphony of the
   Night*) climbed over the image and was hard to read. It now always starts below
   it.
+- **Fix:** opening the game menu (**Y**) from *Continue playing* on the home
+  screen moved the whole screen to the left, and it stayed that way after closing
+  the menu. The menu now sits against the right edge and the screen stays put.
 
 ## [1.2.0] - 2026-10-21
 
