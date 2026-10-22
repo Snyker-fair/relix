@@ -90,6 +90,14 @@ chore(release): 1.0.1
 
 `npm version` writes the last one by itself: it's set up in `.npmrc`.
 
+## The next version: the `next` branch
+
+While a version is being tested on the Xbox, the next one is built on the `next`
+branch, so the tag doesn't take anything that isn't finished. GitHub runs the
+tests on it too and, when the shell changes, builds a test package (**Actions ›
+Release**, artifact `Relix_<version>_test`). Once the version is published,
+`next` is merged into `main` and the new version starts from there.
+
 ## Release a version
 
 GitHub builds and signs the package by itself from a tag, and leaves it as a

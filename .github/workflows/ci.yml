@@ -5,7 +5,8 @@ name: Tests
 
 on:
   push:
-    branches: [main]
+    # next: the version in progress, before it's merged into main
+    branches: [main, next]
   pull_request:
 
 permissions:

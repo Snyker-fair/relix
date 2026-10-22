@@ -10,7 +10,7 @@
 #
 # Release: npm version 1.0.1  ->  git push --follow-tags  (see docs/BUILDING.md)
 #
-# Every shell change on main (and Actions › Release › Run workflow) builds the
+# Every shell change on main or next (and Actions › Release › Run workflow) builds the
 # same package as a test, without releasing it: it stays as a workflow artifact.
 # Without the secrets, that test package comes out unsigned.
 name: Release
@@ -18,7 +18,7 @@ name: Release
 on:
   push:
     tags: ['v[0-9]+.[0-9]+.[0-9]+']
-    branches: [main]
+    branches: [main, next]
     paths: ['shell/**', '.github/workflows/release.yml']
   workflow_dispatch:
 
