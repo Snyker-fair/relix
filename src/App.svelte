@@ -5,7 +5,6 @@
   import { getPlatform } from './lib/core/platforms.js'
   import { placeFor, returnTo } from './lib/core/place.js'
   import { pickSurprise } from './lib/core/surprise.js'
-  import { isMultiplayer } from './lib/core/together.js'
   import { QUICK_EXIT_SECONDS, quickExitMessage } from './lib/core/quickExit.js'
   import { shortDuration } from './lib/core/diagnostics.js'
   import { VERSION } from './lib/core/version.js'
@@ -13,7 +12,6 @@
   import { theme } from './lib/ui/theme.svelte.js'
   import { COLLECTIONS, COLLECTION_PREFIX, isCollectionId } from './lib/ui/channels.js'
   import { collections } from './lib/ui/collections.svelte.js'
-  import { controllers } from './lib/ui/controllers.svelte.js'
   import { emulators } from './lib/ui/emulators.svelte.js'
   import { activity } from './lib/ui/activity.svelte.js'
   import { dispatch, idleFor, markActivity, startInput } from './lib/ui/input.js'
@@ -77,14 +75,11 @@
   // In the browser: keyboard and controller with the Gamepad API.
   // On the Xbox: the C# shell reads the controller and it arrives as an 'input' event.
   startInput({ keyboard: mode === 'browser', gamepad: mode === 'browser' })
-  if (mode === 'browser') controllers.watchBrowser()
   // Diagnostic log: errors from the shell and the interface, from the start
   diagnostics.start()
 
   onShellEvent((e) => {
     if (e.event === 'input' && e.action) dispatch(/** @type {any} */ (e.action))
-    // How many controllers there are (with two or more, games to play together)
-    else if (e.event === 'controllers') controllers.set(Number(e.action))
     // You're back in Relix: when the emulator closes (resumed) or another way, like the Xbox button (visible)
     else if (e.event === 'resumed' || e.event === 'visible') {
       markActivity() // time spent playing doesn't count toward the screensaver
@@ -172,22 +167,6 @@
     const first = toast ? 3600 : 0
     notices.forEach((message, i) => setTimeout(() => showToast(message, 6000), first + i * 6500))
   }
-
-  // A second controller turned on: the home screen has games to play together (once each time)
-  let wasTogether = false
-  $effect(() => {
-    const together = controllers.together
-    const count = controllers.count
-    untrack(() => {
-      if (together && !wasTogether && library.status === 'ready' && screen.name !== 'welcome' && library.all.some(isMultiplayer)) {
-        setTimeout(
-          () => showToast(t('{n} controles conectados: en el inicio tienes juegos para jugar juntos', { n: count }), 5000),
-          toast ? 3600 : 0,
-        )
-      }
-      wasTogether = together
-    })
-  })
 
   // If the USB drive doesn't let your data be saved, it's reported once (and each different error is logged)
   let warnedSave = false
@@ -446,9 +425,7 @@
    */
   function surprise(games, focusedGameId) {
     const playable = games.filter((g) => emulators.forGame(g))
-    // With two or more controllers, among the games for several players (if there are any)
-    const together = controllers.together ? playable.filter(isMultiplayer) : []
-    const pool = (together.length > 0 ? together : playable.length > 0 ? playable : games).map((g) => g.id)
+    const pool = (playable.length > 0 ? playable : games).map((g) => g.id)
     const back = screen.name === 'library' && focusedGameId ? { ...screen, gameId: focusedGameId } : screen
     showSurprise(pool, [], back)
   }

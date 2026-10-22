@@ -4,11 +4,6 @@ Each version's section becomes the notes of its GitHub release.
 
 ## [Unreleased]
 
-- **Play together:** turn on a second controller and Relix says so, and the
-  home screen shows *Play together* (games for 2 or more players, the ones you
-  played most recently first) where *Continue playing* goes. *Surprise me* picks
-  among them too. A game counts if its data says 2 or more players (from ES-DE,
-  or *Y › Find info…*).
 - **"New" games:** the games a scan brings to a console get a *New* tag on their
   cover until you play them or for 14 days, and the home screen counts them
   ("10 games · 2 new"). The first scan of a console doesn't mark anything.

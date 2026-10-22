@@ -354,14 +354,7 @@ the USB drive a game ES-DE hasn't scraped (it has no description in Relix).
       The menu comes in against the right edge, and when you close it the home
       screen is where it was. The same in a console, on a game at the far right.
 
-## Play together and new games (1.4.0)
-- [ ] With one controller, the home screen shows *Continue playing* as always.
-      Turn on a second one: "2 controllers connected: the home screen has games to
-      play together" shows up, and the row becomes **Play together** (games for 2
-      or more players, with "1-4 players" under each name).
-- [ ] With two controllers, the die says "A random pick among your N games for
-      several players" and *Surprise me* only brings games for 2 or more players.
-      Turn the second one off: the row goes back to *Continue playing*.
+## New games (1.4.0)
 - [ ] Copy a new game to a console's folder on the USB drive and scan it
       (**≡ → Library**): its cover shows a **New** tag in the grid, and the console
       on the home screen says "N games · 1 new". Play it and come back: the tag is

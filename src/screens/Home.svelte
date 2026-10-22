@@ -1,7 +1,6 @@
 <script>
   import { mode } from '../lib/core/bridge.js'
   import { getPlatform } from '../lib/core/platforms.js'
-  import { isMultiplayer, togetherGames } from '../lib/core/together.js'
   import ChannelIcon from '../lib/ui/ChannelIcon.svelte'
   import Clock from '../lib/ui/Clock.svelte'
   import CoverArt from '../lib/ui/CoverArt.svelte'
@@ -10,7 +9,6 @@
   import HintBar from '../lib/ui/HintBar.svelte'
   import { pushHandler } from '../lib/ui/input.js'
   import { collections } from '../lib/ui/collections.svelte.js'
-  import { controllers } from '../lib/ui/controllers.svelte.js'
   import { emulators } from '../lib/ui/emulators.svelte.js'
   import { library } from '../lib/ui/library.svelte.js'
   import Logo from '../lib/ui/Logo.svelte'
@@ -61,17 +59,8 @@
   /** The games you've never opened, for the die's chips */
   const unplayed = $derived(library.all.filter((g) => !library.playtime[g.id] && !library.lastPlayed[g.id]).length)
   const emptyLibrary = $derived(library.all.length === 0)
-  // With two or more controllers: games to play together (core/together.js), where
-  // "Continue playing" goes. Three games: that way the row never reaches the hint bar
-  const together = $derived(
-    controllers.together
-      ? togetherGames(
-          library.all.filter((g) => emulators.forGame(g)),
-          { lastPlayed: library.lastPlayed, playtime: library.playtime, isFavorite: (g) => library.isFavorite(g) },
-        )
-      : [],
-  )
-  const recent = $derived(together.length > 0 ? together : library.recent.slice(0, 3))
+  // Three games: that way "Continue playing" never reaches the hint bar
+  const recent = $derived(library.recent.slice(0, 3))
 
   // The row of channels. If they all fit (up to about seven), the icons shrink
   // a little to spread across the width. With more, they stay at 168 px and the row
@@ -106,10 +95,6 @@
 
   const meta = $derived.by(() => {
     if (onSurpriseTile) {
-      const multiplayer = controllers.together ? library.all.filter((g) => isMultiplayer(g) && emulators.forGame(g)).length : 0
-      if (multiplayer > 0) {
-        return [t('Un juego al azar entre tus {games} para varios jugadores', { games: plural(multiplayer, 'juego', 'juegos') })]
-      }
       return [
         t('Un juego al azar entre tus {games}', { games: plural(library.all.length, 'juego', 'juegos') }),
         ...(unplayed > 0 ? [t('{n} sin abrir todavía', { n: unplayed })] : []),
@@ -301,7 +286,7 @@
 
 {#if recent.length > 0}
   <section class="recent">
-    <h2>{together.length > 0 ? t('Para jugar juntos') : t('Seguir jugando')}</h2>
+    <h2>{t('Seguir jugando')}</h2>
     <div class="recent-row">
       {#each recent as game, i (game.id)}
         {@const platform = getPlatform(game.system)}
@@ -317,11 +302,9 @@
           <span class="recent-text">
             <strong>{game.name}</strong>
             <span
-              >{together.length > 0
-                ? `${platform.shortName} · ${t('{n} jugadores', { n: game.players })}`
-                : played
-                  ? `${platform.shortName} · ${t('Jugado {time}', { time: formatPlaytime(played.seconds) })}`
-                  : platform.shortName}</span
+              >{played
+                ? `${platform.shortName} · ${t('Jugado {time}', { time: formatPlaytime(played.seconds) })}`
+                : platform.shortName}</span
             >
           </span>
         </button>
