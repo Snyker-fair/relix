@@ -1,8 +1,8 @@
 <script>
   /**
-   * A game's information from Wikipedia: its description, year, genre, developer,
-   * publisher and players, written in ES-DE's gamelist.xml (nothing already there
-   * is replaced). From its menu (Y › Find info…) for one game, or from Options ›
+   * A game's information from Wikipedia: its description, year, genre, developer
+   * and publisher, written in ES-DE's gamelist.xml (nothing already there is
+   * replaced). From its menu (Y › Find info…) for one game, or from Options ›
    * Library › Game info: first every console is gone through and the sure
    * matches are saved, then this shows the games where it wasn't sure.
    * A saves the focused one, X leaves the game without information (only in the
@@ -140,13 +140,6 @@
     onToast(t('{game} queda sin información', { game: game.name }))
   }
 
-  /** "1-4" -> "1 a 4 jugadores" @param {string} players */
-  function playersText(players) {
-    const [min, max] = players.split('-').map(Number)
-    if (!max || min === max) return plural(min || max, 'jugador', 'jugadores')
-    return t('{min} a {max} jugadores', { min, max })
-  }
-
   /** The focused candidate's data, as chips */
   const facts = $derived.by(() => {
     if (!focused) return []
@@ -154,7 +147,6 @@
     return [
       focused.year ? String(focused.year) : '',
       info.genre ?? '',
-      info.players ? playersText(info.players) : '',
       info.developer ?? '',
     ].filter(Boolean)
   })

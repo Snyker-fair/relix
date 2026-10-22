@@ -7,6 +7,10 @@ Each version's section becomes the notes of its GitHub release.
 - **"New" games:** the games a scan brings to a console get a *New* tag on their
   cover until you play them or for 14 days, and the home screen counts them
   ("10 games · 2 new"). The first scan of a console doesn't mark anything.
+- **No more number of players:** many games' data gets it wrong (fighting games
+  often say 1 player), so Relix no longer shows it in the library panel or the
+  sheet, *Y › Filter* drops *2 or more players* (genres stay) and *Find info…*
+  no longer writes it to `gamelist.xml`. What ES-DE already saved there stays.
 
 ## [1.3.0] - 2026-10-22
 

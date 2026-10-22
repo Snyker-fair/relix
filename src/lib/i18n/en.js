@@ -398,7 +398,6 @@ export default {
   'Año': 'Year',
   'su última versión no abre juegos desde otras apps': "its latest version can't open games from other apps",
   'experimental': 'experimental',
-  '2 o más jugadores': '2 or more players',
   'Sin año': 'No year',
 
   // ── Regions ──
@@ -438,8 +437,6 @@ export default {
   'Abriendo {emulator}': 'Opening {emulator}',
   'Esto es una vista previa en el navegador. En la Xbox, Relix abriría esta dirección y la consola volvería aquí al cerrar el emulador:': 'This is a browser preview. On the Xbox, Relix would open this address and the console would come back here when the emulator closes:',
   'Al cerrar el emulador vuelves aquí.': "You'll come back here when the emulator closes.",
-  '1 jugador': '1 player',
-  '{n} jugadores': '{n} players',
   'Anterior': 'Previous',
   'Siguiente': 'Next',
   'Aún no tienes favoritos': 'No favorites yet',
@@ -695,9 +692,6 @@ export default {
   'Información guardada: {game}': 'Info saved: {game}',
   '{game} ya tenía todo lo que trae Wikipedia': '{game} already had everything Wikipedia has',
   '{game} queda sin información': '{game} stays without info',
-  'jugador': 'player',
-  'jugadores': 'players',
-  '{min} a {max} jugadores': '{min} to {max} players',
   'Guardar': 'Save',
   'Dejar sin información': 'Leave without info',
   'Información del juego': 'Game info',
@@ -730,7 +724,6 @@ export default {
   'Desarrolladora': 'Developer',
   'Editora': 'Publisher',
   'Género': 'Genre',
-  'Jugadores': 'Players',
   'FICHAS': 'INFO',
   'MEMORIA': 'MEMORY',
 

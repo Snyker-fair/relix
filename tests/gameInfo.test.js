@@ -176,7 +176,7 @@ describe('finding the game', () => {
     ])
   })
 
-  it('reads the date, genres, companies and players of the sure match', async () => {
+  it('reads the date, genres and companies of the sure match, not the players', async () => {
     const { getJson } = fakeApi({ search: { 'Okami haswbstatement:P400=PS2': ['Q2', 'Q1'] } })
     const { match, candidates } = await findCandidates({ name: 'Okami' }, { index: null, platformItem: 'PS2', lang: 'es', getJson })
     // the game, not its series with the same name, and first in the list
@@ -192,20 +192,22 @@ describe('finding the game', () => {
         developer: 'Clover Studio',
         publisher: 'Capcom',
         genre: 'Acción-aventura / Platform', // each with its own language's rules
-        players: '1',
       },
     })
+    // Wikidata says single-player, but that data is often wrong (fighting games): it isn't read
+    expect(match?.info).not.toHaveProperty('players')
   })
 
-  it('in English, and a year-only date and a number of players', async () => {
+  it('in English, and a year-only date', async () => {
     const { getJson } = fakeApi({ search: { 'Katamari Damacy haswbstatement:P400=PS2': ['Q3'] } })
     const { match } = await findCandidates({ name: 'Katamari Damacy' }, { index: null, platformItem: 'PS2', lang: 'es', getJson })
     expect(match).toMatchObject({
       title: 'Katamari Damacy', // no Spanish name: the English one
       year: 2004,
       article: { lang: 'en', title: 'Katamari Damacy' },
-      info: { releasedate: '20040101T000000', players: '1-2' },
+      info: { releasedate: '20040101T000000' },
     })
+    expect(match?.info).not.toHaveProperty('players')
   })
 })
 
@@ -333,7 +335,7 @@ describe('what gets saved', () => {
   })
 
   it('what a game is missing', () => {
-    const game = { description: '', year: 2006, developer: '', publisher: 'Capcom', genre: '', players: '1' }
+    const game = { description: '', year: 2006, developer: '', publisher: 'Capcom', genre: '' }
     expect(missingInfo(game)).toEqual(['desc', 'developer', 'genre'])
   })
 })
@@ -380,7 +382,7 @@ describe("writing in ES-DE's gamelist", () => {
 
   it('a game without an entry gets one, with its name; nothing to add changes nothing', () => {
     const { xml, changed } = mergeGameInfo(GAMELIST, [
-      { path: 'Sub/Ico & Co (USA).chd', name: 'Ico & Co', info: { desc: 'Two\n\nparagraphs', players: '1' } },
+      { path: 'Sub/Ico & Co (USA).chd', name: 'Ico & Co', info: { desc: 'Two\n\nparagraphs', genre: 'Action' } },
       { path: 'Empty.chd', name: 'Empty', info: {} },
     ])
     expect(changed).toBe(1)
@@ -391,7 +393,7 @@ describe("writing in ES-DE's gamelist", () => {
 		<desc>Two
 
 paragraphs</desc>
-		<players>1</players>
+		<genre>Action</genre>
 	</game>
 </gameList>
 `)

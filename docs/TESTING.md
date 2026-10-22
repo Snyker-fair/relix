@@ -163,7 +163,7 @@ copy the message from the **Output** window.
 - [ ] **≡ → Preferences → Screensaver**: set it to 3 minutes and let go of the
       controller. Your games show up one after another; **A** plays the one on
       screen and any other button goes back to where you were.
-- [ ] **Y → Filter** (if your gamelists have genre or players): pick a genre; the
+- [ ] **Y → Filter** (if your gamelists have genres): pick a genre; the
       grid shows only those and the filter shows up at the top. **Y → Filter → All
       games** removes it.
 - [ ] If a video doesn't show, write down its name and extension (`.mp4`, `.webm`…)
@@ -270,8 +270,8 @@ the USB drive a game ES-DE hasn't scraped (it has no description in Relix).
 - [ ] On that game, **Y**: the menu has **Find info…** (a game with everything
       doesn't show it).
 - [ ] **Find info…**: the left shows what it's missing; the right, the results
-      from Wikipedia with **Match** on the sure one, and its year, genre, players
-      and description. Moving through the results changes the description.
+      from Wikipedia with **Match** on the sure one, and its year, genre and
+      description. Moving through the results changes the description.
 - [ ] **A**: "Info saved: …". The game's panel now shows the description, with
       "Source: Wikipedia, …" at the end, and **Y › Sort library › Year** places it.
 - [ ] On the PC, `gamelist.xml` has the new entry (or the missing fields in the
@@ -354,7 +354,10 @@ the USB drive a game ES-DE hasn't scraped (it has no description in Relix).
       The menu comes in against the right edge, and when you close it the home
       screen is where it was. The same in a console, on a game at the far right.
 
-## New games (1.4.0)
+## New games, and no players (1.4.0)
+- [ ] Nowhere says how many players a game is for: not the library panel, not the
+      sheet, not *Find info…*. **Y → Filter** only has genres (no *2 or more
+      players*).
 - [ ] Copy a new game to a console's folder on the USB drive and scan it
       (**≡ → Library**): its cover shows a **New** tag in the grid, and the console
       on the home screen says "N games · 1 new". Play it and come back: the tag is

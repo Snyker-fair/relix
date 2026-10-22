@@ -1,7 +1,8 @@
 /**
  * A game's information from Wikidata and Wikipedia (Y › Find info…, and Options ›
- * Library › Game info): its description, year, genre, developer, publisher and how
- * many can play, for the games ES-DE didn't scrape. No accounts or keys.
+ * Library › Game info): its description, year, genre, developer and publisher, for
+ * the games ES-DE didn't scrape. Not how many can play: that data is often wrong
+ * (many fighting games say 1 player). No accounts or keys.
  *
  *   1. Wikidata finds the game by its name among the games of its console (the
  *      "platform" statement). Each console's item comes from its English Wikipedia
@@ -10,7 +11,7 @@
  *      whole list of names comes in one query (consoleIndex) and they're compared
  *      here, like libretro's list of covers; the search is only for one game
  *      that isn't on the list.
- *   2. The game's item says its date, genre, developer, publisher and players.
+ *   2. The game's item says its date, genre, developer and publisher.
  *   3. The description is the introduction of its Wikipedia article, in Relix's
  *      language if there's one (in the other one if not), with the credit the
  *      CC BY-SA license asks for. Wikidata's data is CC0.
@@ -37,13 +38,10 @@ const P = {
   genre: 'P136',
   developer: 'P178',
   publisher: 'P123',
-  mode: 'P404',
-  minPlayers: 'P1872',
-  maxPlayers: 'P1873',
 }
 
 /** The fields Relix fills in a gamelist entry, in ES-DE's order */
-export const INFO_FIELDS = /** @type {const} */ (['desc', 'releasedate', 'developer', 'publisher', 'genre', 'players'])
+export const INFO_FIELDS = /** @type {const} */ (['desc', 'releasedate', 'developer', 'publisher', 'genre'])
 
 /** What each field is called on screen (the screens translate it with t()) */
 export const INFO_FIELD_NAMES = /** @type {Record<(typeof INFO_FIELDS)[number], string>} */ ({
@@ -52,7 +50,6 @@ export const INFO_FIELD_NAMES = /** @type {Record<(typeof INFO_FIELDS)[number], 
   developer: 'Desarrolladora',
   publisher: 'Editora',
   genre: 'Género',
-  players: 'Jugadores',
 })
 
 /** A description longer than this is cut at the end of a paragraph */
@@ -64,7 +61,7 @@ const SEARCH_LIMIT = 5
  * @typedef {(url: string) => Promise<any>} GetJson
  * @typedef {'es' | 'en'} Lang
  * @typedef {Partial<Record<(typeof INFO_FIELDS)[number], string>>} GameInfo
- *   desc, releasedate ("20060420T000000"), developer, publisher, genre ("Action / Adventure"), players ("1-2")
+ *   desc, releasedate ("20060420T000000"), developer, publisher, genre ("Action / Adventure")
  *
  * @typedef {Object} InfoCandidate
  * @property {string} id            the Wikidata item ("Q123")
@@ -284,16 +281,9 @@ function itemValues(entity, property) {
     .filter((/** @type {any} */ id) => typeof id === 'string')
 }
 
-/** A number property's first value @param {any} entity @param {string} property */
-function amount(entity, property) {
-  const raw = statements(entity, property)[0]?.mainsnak?.datavalue?.value?.amount
-  const n = Number.parseFloat(raw)
-  return Number.isFinite(n) ? n : null
-}
-
 /** The items a game's statements point to, to ask for their names @param {any} entity */
 export function referencedItems(entity) {
-  return [P.genre, P.developer, P.publisher, P.mode].flatMap((p) => itemValues(entity, p))
+  return [P.genre, P.developer, P.publisher].flatMap((p) => itemValues(entity, p))
 }
 
 /**
@@ -368,22 +358,6 @@ export function cleanGenre(name, lang) {
 }
 
 /**
- * How many can play, as ES-DE writes it ("1", "1-4"). Without a number, only a
- * game that's single-player only says "1"; otherwise it's left empty.
- * @param {any} entity
- * @param {Map<string, any>} labels  the items the game points to
- */
-export function playersOf(entity, labels) {
-  const max = amount(entity, P.maxPlayers)
-  if (max !== null && max >= 1) {
-    const min = amount(entity, P.minPlayers) ?? 1
-    return max === min ? String(max) : `${Math.min(min, max)}-${max}`
-  }
-  const modes = itemValues(entity, P.mode).map((id) => label(labels.get(id), 'en').toLowerCase())
-  return modes.length > 0 && modes.every((m) => /single[- ]player/.test(m)) ? '1' : ''
-}
-
-/**
  * A search result turned into what Relix shows and saves.
  * @param {any} entity
  * @param {Map<string, any>} labels  the items the game points to (genres, companies, modes)
@@ -421,8 +395,6 @@ export function candidateFrom(entity, labels, lang, onPlatform) {
   const publisher = names(P.publisher, 2).join(', ')
   if (publisher) info.publisher = publisher
   if (genres.length > 0) info.genre = genres.slice(0, 2).join(' / ')
-  const players = playersOf(entity, labels)
-  if (players) info.players = players
   return {
     id: entity.id,
     title: label(entity, lang),
@@ -762,7 +734,7 @@ export function mergeGameInfo(xml, entries) {
 
 /**
  * What a game is missing, in ES-DE's fields (the ones Relix can fill).
- * @param {{ description: string, year: number | null, developer: string, publisher: string, genre: string, players: string }} game
+ * @param {{ description: string, year: number | null, developer: string, publisher: string, genre: string }} game
  * @returns {Array<(typeof INFO_FIELDS)[number]>}
  */
 export function missingInfo(game) {
@@ -773,6 +745,5 @@ export function missingInfo(game) {
   if (!game.developer) missing.push('developer')
   if (!game.publisher) missing.push('publisher')
   if (!game.genre) missing.push('genre')
-  if (!game.players) missing.push('players')
   return missing
 }

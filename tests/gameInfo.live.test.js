@@ -65,7 +65,7 @@ describe.runIf(process.env.RELIX_LIVE)('live Wikidata and Wikipedia', () => {
         for (const game of games) {
           const match = described.find((c) => c.id === sure.get(game.id)?.id)
           if (match) {
-            lines.push(`  sure "${game.name}" -> ${match.id} "${match.title}" ${match.info.genre ?? ''} | ${match.info.players ?? ''} | desc ${match.info.desc?.length ?? 0}: ${match.info.desc?.slice(0, 60)}`)
+            lines.push(`  sure "${game.name}" -> ${match.id} "${match.title}" ${match.info.genre ?? ''} | desc ${match.info.desc?.length ?? 0}: ${match.info.desc?.slice(0, 60)}`)
           } else {
             const { candidates } = await findCandidates(game, { index, platformItem: items[system], lang: 'es', getJson })
             lines.push(`  ${unsure.includes(game.id) ? 'unsure' : notFound.includes(game.id) ? 'not found' : '?'} "${game.name}" -> ${candidates.map((c) => `${c.id} "${c.title}" ${c.year ?? ''}`).join(' | ') || 'none'}`)

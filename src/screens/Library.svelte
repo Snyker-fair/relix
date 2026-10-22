@@ -211,7 +211,6 @@
       game.year && String(game.year),
       game.developer,
       game.genre,
-      game.players && (game.players === '1' ? t('1 jugador') : t('{n} jugadores', { n: game.players })),
     ].filter(Boolean)
   })
 

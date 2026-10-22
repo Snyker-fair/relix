@@ -46,8 +46,8 @@ cada botón. Logo, colores, tipografía y voz de la marca están en
   elegir entre las más parecidas.
 - **Información de los juegos desde Wikipedia.** Para los juegos que ES-DE no
   scrapeó: *Y › Buscar información…*, o *≡ › Biblioteca › Información de los
-  juegos* para todos, agrega la descripción, el año, el género, la desarrolladora,
-  la editora y los jugadores desde [Wikidata](https://www.wikidata.org) y
+  juegos* para todos, agrega la descripción, el año, el género, la desarrolladora
+  y la editora desde [Wikidata](https://www.wikidata.org) y
   [Wikipedia](https://es.wikipedia.org) al `gamelist.xml` de ES-DE, en español o
   inglés. Sin cuentas ni claves, y sin reemplazar nada de lo que ya hay.
 - **Nombres de archivo estándar.** *Y › Renombrar archivo…* (o *≡ › Biblioteca ›
@@ -61,7 +61,7 @@ cada botón. Logo, colores, tipografía y voz de la marca están en
   instalados.
 - **Encuentra rápido.** Búsqueda en todas las consolas con teclado en pantalla,
   saltos por letra con los gatillos, orden (A–Z, recientes, más jugados, año) y
-  filtros por género o jugadores. ¿No sabes qué jugar? *Sorpréndeme* (el dado del
+  filtros por género. ¿No sabes qué jugar? *Sorpréndeme* (el dado del
   inicio, o el stick izquierdo dentro de una consola) elige uno, casi siempre uno
   que no has jugado. Los juegos que trae un escaneo se marcan *Nuevo*.
 - **Ficha viva.** Fanart, logo y video sin sonido cuando ES-DE los escrapeó; una
@@ -280,8 +280,8 @@ usa lo que ES-DE deja en el USB. Una vez por consola:
    - **ACCOUNT SETTINGS**: activa **USE THIS ACCOUNT FOR SCREENSCRAPER** y escribe
      tu usuario y contraseña.
    - **CONTENT SETTINGS**: deja activados los videos, *fan art*, *marquee (wheel)*
-     (el logo), *screenshots*, *box covers* y *other metadata* (descripción, género
-     y jugadores, que usan los filtros).
+     (el logo), *screenshots*, *box covers* y *other metadata* (descripción y
+     género, que usan los filtros).
    - **SCRAPE THESE SYSTEMS**: las consolas que quieras → **START**.
 4. Copia al USB, desde la carpeta de datos de ES-DE en el PC (con el instalador,
    `C:\Users\<tu usuario>\ES-DE`), las carpetas `downloaded_media` y `gamelists`

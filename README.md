@@ -46,7 +46,7 @@ what each button does.
   you to pick from the closest matches.
 - **Game info from Wikipedia.** For the games ES-DE didn't scrape: *Y › Find
   info…*, or *≡ › Library › Game info* for all of them, adds the description,
-  year, genre, developer, publisher and players from
+  year, genre, developer and publisher from
   [Wikidata](https://www.wikidata.org) and [Wikipedia](https://www.wikipedia.org)
   to ES-DE's `gamelist.xml`, in Spanish or English. No accounts or keys, and
   nothing already there is replaced.
@@ -60,7 +60,7 @@ what each button does.
   which emulators are installed.
 - **Find games fast.** Search across every console with an on-screen keyboard,
   jump by letter with the triggers, sort (A–Z, recent, most played, year) and
-  filter by genre or players. Can't choose? *Surprise me* (the die on the home
+  filter by genre. Can't choose? *Surprise me* (the die on the home
   screen, or the left stick inside a console) picks one, almost always one you
   haven't played. Games a scan brings are tagged *New*.
 - **A living game page.** Fan art, logo and a muted video preview when ES-DE
@@ -281,8 +281,8 @@ what ES-DE leaves on the USB drive. Once per console:
    - **ACCOUNT SETTINGS**: turn on **USE THIS ACCOUNT FOR SCREENSCRAPER** and type
      your username and password.
    - **CONTENT SETTINGS**: leave on videos, *fan art*, *marquee (wheel)* (the
-     logo), *screenshots*, *box covers* and *other metadata* (description, genre
-     and players, which the filters use).
+     logo), *screenshots*, *box covers* and *other metadata* (description and
+     genre, which the filters use).
    - **SCRAPE THESE SYSTEMS**: the consoles you want → **START**.
 4. From ES-DE's data folder on the PC (with the installer,
    `C:\Users\<your user>\ES-DE`), copy the `downloaded_media` and `gamelists`

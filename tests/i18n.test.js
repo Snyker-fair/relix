@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { collectKeys, placeholders } from '../scripts/i18n.mjs'
 import { REGION_NAMES, regionLabel } from '../src/lib/core/coverMatch.js'
 import { LOG_KINDS, logLine, parseLogLine } from '../src/lib/core/diagnostics.js'
-import { filterLabel } from '../src/lib/core/filters.js'
 import { DEVSTORE_LABEL, guideSteps } from '../src/lib/core/guides.js'
 import { effectiveLanguage, interpolate, systemLanguage } from '../src/lib/core/language.js'
 import { buildLaunchUri } from '../src/lib/core/launchUri.js'
@@ -188,7 +187,6 @@ describe('in English', () => {
       expect(regionLabel(`Juego (${tag}).chd`)).not.toBe('')
     }
     updateCheck({ version: '9.9.9' }, '1.0.0')
-    filterLabel({ kind: 'players' })
     sectionOf(/** @type {any} */ ({ sortName: 'x', year: undefined }), 'year')
 
     expect([...i18n.missing]).toEqual([])

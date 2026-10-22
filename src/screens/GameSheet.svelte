@@ -68,10 +68,6 @@
       { label: t('Desarrolladora'), value: game.developer },
       { label: t('Distribuidora'), value: game.publisher },
       {
-        label: t('Jugadores'),
-        value: game.players ? (game.players === '1' ? t('1 jugador') : t('{n} jugadores', { n: game.players })) : '',
-      },
-      {
         label: t('Calificación'),
         value: game.rating ? t('{n} de 5', { n: stars.format(game.rating * 5) }) : '',
       },

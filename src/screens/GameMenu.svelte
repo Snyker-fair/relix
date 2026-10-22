@@ -54,10 +54,10 @@
   const favorite = $derived(library.isFavorite(game))
   const inCollections = $derived(collections.namesFor(game))
 
-  // Filters: the genres and "2 or more players" of that channel's games
+  // Filters: the genres of that channel's games
   const filterGames = $derived(filterChannel ? shelf.gamesFor(filterChannel) : [])
   const filters = $derived(filterOptions(filterGames))
-  const canFilter = $derived(filterChannel !== undefined && (filters.genres.length > 0 || filters.multiplayer > 0))
+  const canFilter = $derived(filterChannel !== undefined && filters.genres.length > 0)
   const currentFilter = $derived(filterChannel ? (activeFilters.get(filterChannel) ?? null) : null)
 
   const emulator = $derived(emulators.forGame(game))
@@ -99,21 +99,10 @@
       : []),
   ])
 
-  /** All, 2 or more players and each genre, with how many games */
+  /** All and each genre, with how many games */
   /** @type {Item[]} */
   const filterItems = $derived([
     { id: 'f:all', icon: 'collections', label: t('Todos los juegos'), tag: `${filterGames.length}`, checked: !currentFilter },
-    ...(filters.multiplayer > 0
-      ? [
-          {
-            id: 'f:players',
-            icon: 'gamepad',
-            label: t('2 o más jugadores'),
-            tag: `${filters.multiplayer}`,
-            checked: currentFilter?.kind === 'players',
-          },
-        ]
-      : []),
     ...filters.genres.map((g) => ({
       id: `f:g:${g.name}`,
       icon: 'filter',
@@ -255,8 +244,7 @@
       show('filters')
     } else if (item.id.startsWith('f:') && filterChannel) {
       /** @type {import('../lib/core/filters.js').GameFilter | null} */
-      const chosen =
-        item.id === 'f:all' ? null : item.id === 'f:players' ? { kind: 'players' } : { kind: 'genre', value: item.id.slice(4) }
+      const chosen = item.id === 'f:all' ? null : { kind: 'genre', value: item.id.slice(4) }
       if (chosen) activeFilters.set(filterChannel, chosen)
       else activeFilters.delete(filterChannel)
       sound.favorite()
