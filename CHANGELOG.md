@@ -7,6 +7,9 @@ Each version's section becomes the notes of its GitHub release.
 - **"New" games:** the games a scan brings to a console get a *New* tag on their
   cover until you play them or for 14 days, and the home screen counts them
   ("10 games · 2 new"). The first scan of a console doesn't mark anything.
+- **Remove from Continue playing:** on the home screen, **Y** on a game of the
+  row has *Remove from Continue playing*. Its time and the *Recent* order stay,
+  and if you play it again it comes back.
 - **Big consoles stay light:** the grid only draws the rows you see and a couple
   more, so a console with 1,000 games opens using the same memory as one with 20
   (in the browser, 380 MB less with 1,000). And when the Xbox says Relix is near

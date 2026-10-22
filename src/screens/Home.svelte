@@ -1,4 +1,5 @@
 <script>
+  import { untrack } from 'svelte'
   import { mode } from '../lib/core/bridge.js'
   import { getPlatform } from '../lib/core/platforms.js'
   import ChannelIcon from '../lib/ui/ChannelIcon.svelte'
@@ -61,6 +62,14 @@
   const emptyLibrary = $derived(library.all.length === 0)
   // Three games: that way "Continue playing" never reaches the hint bar
   const recent = $derived(library.recent.slice(0, 3))
+  // A game taken out of the row (Y): the focus stays on the row, or goes up if it's empty
+  $effect(() => {
+    const count = recent.length
+    untrack(() => {
+      if (count === 0) zone = 'channels'
+      else if (recentIndex >= count) recentIndex = count - 1
+    })
+  })
 
   // The row of channels. If they all fit (up to about seven), the icons shrink
   // a little to spread across the width. With more, they stay at 168 px and the row

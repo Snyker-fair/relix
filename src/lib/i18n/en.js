@@ -787,6 +787,10 @@ export default {
   'guía': 'guide',
   'bienvenida': 'welcome tour',
 
+  // ── Continue playing ──
+  'Quitar de Seguir jugando': 'Remove from Continue playing',
+  '{game} ya no aparece en Seguir jugando': '{game} is no longer in Continue playing',
+
   // ── Memory near the limit ──
   'Memoria alta, liberando: {usage} de {limit}': 'High memory, freeing: {usage} of {limit}',
   'Tras liberar: {usage} de {limit}': 'After freeing: {usage} of {limit}',

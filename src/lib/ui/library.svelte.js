@@ -433,6 +433,16 @@ class Library {
   }
 
   /** @param {LibraryGame} game */
+  /**
+   * Takes a game out of "Continue playing" (Y on the home screen). Its time and the
+   * "Recent" order stay; if you play it again, it comes back.
+   * @param {{ id: string }} game
+   */
+  forgetRecent(game) {
+    this.recentIds = this.recentIds.filter((id) => id !== game.id)
+    save('recent', this.recentIds)
+  }
+
   markPlayed(game) {
     this.#markPlayed(game.id, Date.now())
   }

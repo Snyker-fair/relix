@@ -59,7 +59,7 @@
   /** @type {Screen} */
   let screen = $state({ name: 'home' })
   /** The game menu (Y), on top of the current screen */
-  /** @type {{ game: any, sortOptions?: import('./lib/core/sorting.js').SortOrder[], filterChannel?: string } | null} */
+  /** @type {{ game: any, sortOptions?: import('./lib/core/sorting.js').SortOrder[], filterChannel?: string, fromRecent?: boolean } | null} */
   let menu = $state(null)
   /** The channel with the focus on the home screen (a console id, 'favorites' or 'options'). null = the first one */
   /** @type {string|null} */
@@ -384,9 +384,10 @@
    * @param {any} game
    * @param {import('./lib/core/sorting.js').SortOrder[]} [sortOptions]
    * @param {string} [filterChannel]  the library channel (for Y › Filter)
+   * @param {boolean} [fromRecent]  from "Continue playing" on the home screen (Y › Remove from Continue playing)
    */
-  function openMenu(game, sortOptions, filterChannel) {
-    menu = { game, sortOptions, filterChannel }
+  function openMenu(game, sortOptions, filterChannel, fromRecent = false) {
+    menu = { game, sortOptions, filterChannel, fromRecent }
   }
 
   /** The guide to get a console working @param {string} systemId */
@@ -535,7 +536,7 @@
       onLaunch={startGame}
       onOptions={openOptions}
       onSearch={openSearch}
-      onMenu={(game) => openMenu(game)}
+      onMenu={(game) => openMenu(game, undefined, undefined, true)}
       onSurprise={() => surprise(library.all)}
     />
   {:else if screen.name === 'library'}
@@ -625,6 +626,7 @@
       game={menu.game}
       sortOptions={menu.sortOptions}
       filterChannel={menu.filterChannel}
+      fromRecent={menu.fromRecent}
       onClose={() => (menu = null)}
       onLaunch={startGame}
       onChangeCover={changeCover}

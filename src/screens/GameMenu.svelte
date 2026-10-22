@@ -35,12 +35,15 @@
    *   onFindInfo: (game: any) => void,
    *   onSheet?: (game: any) => void,
    *   onToast: (message: string) => void,
+   *   fromRecent?: boolean,
    * }}
    *   onSheet: opens the game's sheet (without it, "Game sheet" isn't shown: you're on it)
    *   sortOptions: the orders that make sense in that list (without it, "Sort" isn't shown)
    *   filterChannel: the open library channel (without it, "Filter" isn't shown)
+   *   fromRecent: opened from "Continue playing" on the home screen (it offers to take it out)
    */
-  let { game, sortOptions, filterChannel, onClose, onLaunch, onChangeCover, onRename, onFindInfo, onSheet, onToast } = $props()
+  let { game, sortOptions, filterChannel, onClose, onLaunch, onChangeCover, onRename, onFindInfo, onSheet, onToast, fromRecent = false } =
+    $props()
 
   /** @typedef {{ id: string, icon: string, label: string, value?: string, checked?: boolean, disabled?: boolean, tag?: string }} Item */
 
@@ -90,6 +93,7 @@
     { id: 'rename', icon: 'rename', label: t('Renombrar archivo…') },
     // Only if it's missing something Wikipedia could give
     ...(gameInfo.canFill(game) ? [{ id: 'info', icon: 'info', label: t('Buscar información…') }] : []),
+    ...(fromRecent ? [{ id: 'recent', icon: 'time', label: t('Quitar de Seguir jugando') }] : []),
     { id: 'hide', icon: 'hide', label: t('Ocultar juego') },
     ...(sortOptions
       ? [{ id: 'sort', icon: 'sort', label: t('Ordenar biblioteca'), value: t(SORT_NAMES[settings.sortOrder]) }]
@@ -231,6 +235,11 @@
     } else if (item.id === 'sheet' && onSheet) {
       sound.select()
       onSheet(current)
+    } else if (item.id === 'recent') {
+      library.forgetRecent(current)
+      sound.back()
+      onToast(t('{game} ya no aparece en Seguir jugando', { game: current.name }))
+      onClose()
     } else if (item.id === 'hide') {
       library.hide(current)
       sound.back()
