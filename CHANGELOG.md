@@ -7,6 +7,11 @@ Each version's section becomes the notes of its GitHub release.
 - **"New" games:** the games a scan brings to a console get a *New* tag on their
   cover until you play them or for 14 days, and the home screen counts them
   ("10 games · 2 new"). The first scan of a console doesn't mark anything.
+- **Big consoles stay light:** the grid only draws the rows you see and a couple
+  more, so a console with 1,000 games opens using the same memory as one with 20
+  (in the browser, 380 MB less with 1,000). And when the Xbox says Relix is near
+  its memory limit, the web view lets go of the images it keeps; the diagnostic
+  log says how much it was using before and after.
 - **No more number of players:** many games' data gets it wrong (fighting games
   often say 1 player), so Relix no longer shows it in the library panel or the
   sheet, *Y › Filter* drops *2 or more players* (genres stay) and *Find info…*

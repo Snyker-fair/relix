@@ -3,6 +3,7 @@
   import { fade } from 'svelte/transition'
   import { applyFilter, filterLabel } from '../lib/core/filters.js'
   import { getPlatform } from '../lib/core/platforms.js'
+  import { gridWindow, jumpsTooFar } from '../lib/core/gridWindow.js'
   import { jumpIndex, sectionOf, SORT_NAMES, sortGames } from '../lib/core/sorting.js'
   import { brokenMedia, usableMedia } from '../lib/ui/activity.svelte.js'
   import { activeFilters } from '../lib/ui/filters.svelte.js'
@@ -48,6 +49,8 @@
   const COVER_W = 178
   const ROW_GAP = 44
   const ROW_H = Math.round(COVER_W / TILE_ASPECT) + ROW_GAP // cover height + gap
+  /** Rows that fit in the grid's window (the third one, partly) */
+  const VISIBLE_ROWS = 3
 
   let index = $state(0)
 
@@ -168,10 +171,17 @@
   // The grid's scroll: keeps the focused row visible
   const row = $derived(Math.floor(index / COLUMNS))
   let scrollRow = $state(0)
+  /** The last move went too far to slide (a jump by letter): it goes straight there */
+  let farJump = $state(false)
   $effect(() => {
-    if (row < scrollRow) scrollRow = row
-    else if (row > scrollRow + 1) scrollRow = row - 1
+    const next = row < scrollRow ? row : row > scrollRow + 1 ? row - 1 : scrollRow
+    if (next === scrollRow) return
+    farJump = jumpsTooFar(scrollRow, next)
+    scrollRow = next
   })
+  // Only the visible rows and a couple more are drawn (core/gridWindow.js): the
+  // memory stays the same with 20 games or with 1,000
+  const drawn = $derived(gridWindow(games.length, scrollRow, { columns: COLUMNS, rows: VISIBLE_ROWS }))
 
   // When the console changes, back to the first game (on opening, the one you were coming back from)
   let pendingFocus = untrack(() => focusGameId ?? '')
@@ -181,6 +191,8 @@
       const wanted = pendingFocus ? games.findIndex((g) => g.id === pendingFocus) : -1
       pendingFocus = ''
       index = Math.max(0, wanted)
+      // another console: its grid shows up in place, without sliding from the old one's row
+      farJump = true
       scrollRow = 0
       focusedGameId = wanted >= 0 ? games[wanted].id : ''
     })
@@ -393,8 +405,14 @@
   </section>
 
   <section class="grid-window">
-    <div class="grid" style:transform="translateY({-scrollRow * ROW_H}px)">
-      {#each games as g, i (g.id)}
+    <div
+      class="grid"
+      class:instant={farJump}
+      style:transform="translateY({-scrollRow * ROW_H}px)"
+      style:padding-top="{drawn.firstRow * ROW_H}px"
+    >
+      {#each games.slice(drawn.start, drawn.end) as g, k (g.id)}
+        {@const i = drawn.start + k}
         {@const p = getPlatform(g.system)}
         <button
           class="cell focus-ring"
@@ -870,6 +888,9 @@
     grid-template-columns: repeat(5, 178px);
     gap: 44px 35px; /* rows, columns: see the spacing rule in app.css */
     transition: transform 320ms var(--spring);
+  }
+  .grid.instant {
+    transition: none;
   }
   .cell {
     position: relative;

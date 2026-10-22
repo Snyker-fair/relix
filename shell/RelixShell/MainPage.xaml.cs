@@ -77,6 +77,10 @@ namespace RelixShell
             server = new LocalServer(core, () => paths, covers);
             core.WebMessageReceived += OnWebMessage;
 
+            // Near the limit, WebView2 lets go of what it keeps (see OnMemoryLevelChanged)
+            MemoryManager.AppMemoryUsageIncreased += (sender, e) => OnMemoryLevelChanged();
+            MemoryManager.AppMemoryUsageDecreased += (sender, e) => OnMemoryLevelChanged();
+
             // If the process that draws the web page crashes, the interface loads again.
             core.ProcessFailed += (s, failure) =>
             {
@@ -705,6 +709,40 @@ namespace RelixShell
             message.SetNamedValue("error", JsonValue.CreateStringValue(error));
             message.SetNamedValue("code", JsonValue.CreateStringValue(code));
             Post(message);
+        }
+
+        /// <summary>Whether WebView2 was asked to keep the minimum.</summary>
+        private bool memorySaving;
+
+        /// <summary>
+        /// WebView2 sizes what it keeps by the console's memory, not by Relix's (about
+        /// 1 GB as an App): going through games with fan art, it holds on to every image
+        /// it already showed. When the Xbox says Relix's use is high, WebView2 is asked
+        /// to keep the minimum, and once it's back down, the usual. With Relix on screen
+        /// the interface logs it, with how much it was using before and after.
+        /// </summary>
+        private void OnMemoryLevelChanged()
+        {
+            // The events arrive on another thread; the level is read here, when it changed
+            bool high = MemoryManager.AppMemoryUsageLevel >= AppMemoryUsageLevel.High;
+            _ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                CoreWebView2 core = Web.CoreWebView2;
+                if (core == null || high == memorySaving) return;
+                memorySaving = high;
+                try
+                {
+                    core.MemoryUsageTargetLevel = high
+                        ? CoreWebView2MemoryUsageTargetLevel.Low
+                        : CoreWebView2MemoryUsageTargetLevel.Normal;
+                }
+                catch (Exception)
+                {
+                    // An older WebView2 doesn't have it: the log still says the memory was high
+                }
+                // While a game plays the Xbox leaves Relix 128 MB, so it's always "high": not logged
+                if (high && Window.Current.Visible) SendEvent("memoryLevel", "high");
+            });
         }
 
         private void SendEvent(string name, string action)

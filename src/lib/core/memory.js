@@ -22,7 +22,9 @@ export function isNewPeak(logged, usage) {
 
 /**
  * A line for the log: "Peak: 412 MB of 1.0 GB · PS2 library · with a video".
- * @param {'start' | 'peak' | 'game'} kind  start: when Relix opens; game: before one opens
+ * @param {'start' | 'peak' | 'game' | 'high' | 'freed'} kind  start: when Relix opens; game: before
+ *   one opens; high: the Xbox says it's near the limit and WebView2 lets go of what it keeps;
+ *   freed: a moment later
  * @param {import('./systemCheck.js').ShellMemory} memory
  * @param {{ where?: string, video?: boolean, game?: string }} [context]
  */
@@ -33,6 +35,10 @@ export function memoryText(kind, memory, { where = '', video = false, game = '' 
       ? t('Al abrir Relix: {usage} de {limit}', amounts)
       : kind === 'game'
         ? t('Al abrir {game}: {usage} de {limit}', { ...amounts, game })
-        : t('Máximo: {usage} de {limit}', amounts)
+        : kind === 'high'
+          ? t('Memoria alta, liberando: {usage} de {limit}', amounts)
+          : kind === 'freed'
+            ? t('Tras liberar: {usage} de {limit}', amounts)
+            : t('Máximo: {usage} de {limit}', amounts)
   return [first, where, video ? t('con video') : ''].filter(Boolean).join(' · ')
 }

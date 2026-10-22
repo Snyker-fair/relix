@@ -21,6 +21,13 @@ describe('memory in the log', () => {
     expect(memoryText('game', sample(398 * MB), { game: 'Okami (PS2)' })).toBe('Al abrir Okami (PS2): 398 MB de 1,0 GB')
   })
 
+  it('near the limit, and how much is left after letting go', () => {
+    expect(memoryText('high', sample(870 * MB), { where: 'biblioteca de PS1' })).toBe(
+      'Memoria alta, liberando: 870 MB de 1,0 GB · biblioteca de PS1',
+    )
+    expect(memoryText('freed', sample(520 * MB))).toBe('Tras liberar: 520 MB de 1,0 GB')
+  })
+
   it('without the expected limit, the current one', () => {
     expect(memoryText('peak', { xbox: true, expectedLimit: 0, limit: 512 * MB, usage: 200 * MB })).toBe('Máximo: 200 MB de 512 MB')
   })

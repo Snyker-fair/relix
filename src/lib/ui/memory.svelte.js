@@ -12,6 +12,8 @@ const EVERY_MS = 20_000
 const AFTER_VIDEO_MS = 4000
 /** Before a game opens it waits for the shell this long at most */
 const BEFORE_GAME_MS = 800
+/** How long after asking WebView2 to let go it's measured again */
+const FREED_AFTER_MS = 5000
 
 class Memory {
   /** Preview videos playing right now */
@@ -59,6 +61,24 @@ class Memory {
     if (this.#off || !this.#timer) return
     const memory = await Promise.race([memoryUsage(), new Promise((resolve) => setTimeout(resolve, BEFORE_GAME_MS, null))])
     if (memory) diagnostics.log('memory', memoryText('game', memory, { game }))
+  }
+
+  /**
+   * The Xbox says Relix's memory is high and the shell asked WebView2 to keep the
+   * minimum: it's logged, and again a moment later, to see how much came back.
+   */
+  async nearLimit() {
+    if (this.#off) return
+    const before = await memoryUsage()
+    if (!before) return
+    diagnostics.log('memory', memoryText('high', before, { where: this.#where(), video: this.videos > 0 }))
+    setTimeout(async () => {
+      const after = await memoryUsage()
+      if (!after) return
+      diagnostics.log('memory', memoryText('freed', after))
+      // From here, the peaks count again from what's left
+      this.#peak = after.usage
+    }, FREED_AFTER_MS)
   }
 
   async #sample() {

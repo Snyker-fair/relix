@@ -80,6 +80,8 @@
 
   onShellEvent((e) => {
     if (e.event === 'input' && e.action) dispatch(/** @type {any} */ (e.action))
+    // Near the memory limit: the shell asked WebView2 to let go of what it keeps
+    else if (e.event === 'memoryLevel' && e.action === 'high') memory.nearLimit()
     // You're back in Relix: when the emulator closes (resumed) or another way, like the Xbox button (visible)
     else if (e.event === 'resumed' || e.event === 'visible') {
       markActivity() // time spent playing doesn't count toward the screensaver

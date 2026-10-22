@@ -787,6 +787,10 @@ export default {
   'guía': 'guide',
   'bienvenida': 'welcome tour',
 
+  // ── Memory near the limit ──
+  'Memoria alta, liberando: {usage} de {limit}': 'High memory, freeing: {usage} of {limit}',
+  'Tras liberar: {usage} de {limit}': 'After freeing: {usage} of {limit}',
+
   // ── New games ──
   'Nuevo': 'New',
   'nuevo': 'new',
