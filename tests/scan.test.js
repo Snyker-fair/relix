@@ -51,12 +51,41 @@ describe('gamesFromFiles', () => {
     expect(games[0]).toMatchObject({ name: 'Final Fantasy VII', path: 'Final Fantasy VII (USA)/Final Fantasy VII (USA).m3u' })
   })
 
-  it('several discs without .m3u: only disc 1', () => {
+  it('several discs without .m3u: only disc 1, with every disc to make the list', () => {
     const games = gamesFromFiles(
-      ['Metal Gear Solid (USA) (Disc 1).chd', 'Metal Gear Solid (USA) (Disc 2).chd'],
+      ['Metal Gear Solid (USA) (Disc 2).chd', 'Metal Gear Solid (USA) (Disc 1).chd', 'Crash Bandicoot (USA).chd'],
       getPlatform('psx'),
     )
-    expect(games.map((g) => [g.name, g.path])).toEqual([['Metal Gear Solid', 'Metal Gear Solid (USA) (Disc 1).chd']])
+    expect(games.map((g) => [g.name, g.path])).toEqual([
+      ['Crash Bandicoot', 'Crash Bandicoot (USA).chd'],
+      ['Metal Gear Solid', 'Metal Gear Solid (USA) (Disc 1).chd'],
+    ])
+    expect(games[1].discs).toEqual(['Metal Gear Solid (USA) (Disc 1).chd', 'Metal Gear Solid (USA) (Disc 2).chd'])
+    expect(games[0].discs).toBeUndefined()
+  })
+
+  it('the discs of a game go together only with the same name, folder and format', () => {
+    const games = gamesFromFiles(
+      [
+        'RPG/Final Fantasy VIII (USA) (Disc 1).chd',
+        'RPG/Final Fantasy VIII (USA) (Disc 3).chd',
+        'RPG/Final Fantasy VIII (USA) (Disc 2).chd',
+        'RPG/Final Fantasy VIII (USA) (Disc 4).chd',
+        'Final Fantasy VIII (USA) (Disc 2).chd', // another folder: not with them
+        'Parasite Eve (USA) (Disc 1).cue',
+        'Parasite Eve (USA) (Disc 2).chd', // another format
+      ],
+      getPlatform('psx'),
+    )
+    const ff8 = games.find((g) => g.path.startsWith('RPG/'))
+    expect(ff8?.discs).toEqual([1, 2, 3, 4].map((n) => `RPG/Final Fantasy VIII (USA) (Disc ${n}).chd`))
+    expect(games.find((g) => g.path.startsWith('Parasite'))?.discs).toBeUndefined()
+  })
+
+  it("on a console that doesn't open an .m3u, only disc 1 and no list", () => {
+    const games = gamesFromFiles(['Tales of Symphonia (USA) (Disc 1).rvz', 'Tales of Symphonia (USA) (Disc 2).rvz'], getPlatform('gc'))
+    expect(games).toHaveLength(1)
+    expect(games[0].discs).toBeUndefined()
   })
 
   it("Wii U in folders: takes the folder's name and ignores other .rpx files", () => {

@@ -31,6 +31,8 @@ import { t } from '../i18n/i18n.svelte.js'
  * @property {boolean} favorite
  * @property {boolean} hidden
  * @property {number} playCount
+ * @property {string[]} [discs]    A game on several discs without an .m3u: every disc, in order
+ *                                 (path is disc 1's). Relix makes the list to open it (core/discs.js)
  */
 
 /** ES-DE image types we use, in order of preference for the cover. */

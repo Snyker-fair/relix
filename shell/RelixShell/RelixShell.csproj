@@ -126,6 +126,7 @@
     <Compile Include="Shell\CollectionStore.cs" />
     <Compile Include="Shell\CoverService.cs" />
     <Compile Include="Shell\DiagnosticLog.cs" />
+    <Compile Include="Shell\DiscLists.cs" />
     <Compile Include="Shell\GamepadInput.cs" />
     <Compile Include="Shell\LegacyFileNames.cs" />
     <Compile Include="Shell\LibraryReader.cs" />

@@ -10,6 +10,7 @@
    *
    * Opened by "Surprise me", it says so at the top and the left stick picks another.
    */
+  import { discCount } from '../lib/core/discs.js'
   import { untrack } from 'svelte'
   import { getPlatform } from '../lib/core/platforms.js'
   import { weeklyTotals } from '../lib/core/playDays.js'
@@ -71,6 +72,7 @@
         label: t('Calificación'),
         value: game.rating ? t('{n} de 5', { n: stars.format(game.rating * 5) }) : '',
       },
+      { label: t('Discos'), value: discCount(game) > 0 ? String(discCount(game)) : '' },
       { label: t('Se abre con'), value: emulator?.name ?? '' },
       { label: t('Archivo'), value: game.path.split('/').pop() ?? '' },
     ].filter((f) => f.value)

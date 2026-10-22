@@ -7,8 +7,11 @@
   import { pushHandler } from '../lib/ui/input.js'
   import { sound } from '../lib/ui/sound.js'
 
-  /** @type {{ game: any, uri: string, emulatorName: string, onClose: () => void }} */
-  let { game, uri, emulatorName, onClose } = $props()
+  /**
+   * @type {{ game: any, uri: string, emulatorName: string, note?: string, onClose: () => void }}
+   *   note: something to know before playing (how to change discs, for a game on several)
+   */
+  let { game, uri, emulatorName, note = '', onClose } = $props()
 
   const platform = $derived(getPlatform(game.system))
 
@@ -44,6 +47,7 @@
       {:else}
         <p class="explain">{t('Al cerrar el emulador vuelves aquí.')}</p>
       {/if}
+      {#if note}<p class="note">{note}</p>{/if}
     </div>
   </div>
   <HintBar hints={[{ button: 'b', label: t('Volver') }]} />
@@ -102,6 +106,16 @@
     font-size: 25px;
     line-height: 1.45;
     color: var(--ink-soft);
+  }
+  /* how to change discs: what's left to know before playing */
+  .note {
+    margin: 18px 0 0;
+    padding: 16px 22px;
+    border-radius: 22px;
+    background: color-mix(in oklab, var(--tint) 16%, var(--cloud));
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 1.4;
   }
   code {
     display: block;

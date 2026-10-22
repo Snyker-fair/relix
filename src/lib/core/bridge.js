@@ -590,6 +590,19 @@ export async function readGamelist(system) {
 }
 
 /**
+ * Writes the list of a game's discs (core/discs.js) in E:\relix\discs\<console> and
+ * returns its full path, the one the emulator opens.
+ * @param {string} system
+ * @param {string} name  disc 1's, without its extension
+ * @param {string} text  one disc per line, with its full path
+ * @returns {Promise<string>}
+ */
+export async function writeDiscList(system, name, text) {
+  if (mode === 'xbox') return (await request('writeDiscList', { system, name, text })).path
+  return `E:\\relix\\discs\\${system}\\${name}.m3u`
+}
+
+/**
  * Saves a console's gamelist.xml (the shell writes it safely; see GamelistWriter.cs).
  * @param {string} system
  * @param {string} text

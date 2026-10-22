@@ -4,6 +4,7 @@
   import { applyFilter, filterLabel } from '../lib/core/filters.js'
   import { getPlatform } from '../lib/core/platforms.js'
   import { gridWindow, jumpsTooFar } from '../lib/core/gridWindow.js'
+  import { discCount } from '../lib/core/discs.js'
   import { jumpIndex, sectionOf, SORT_NAMES, sortGames } from '../lib/core/sorting.js'
   import { brokenMedia, usableMedia } from '../lib/ui/activity.svelte.js'
   import { activeFilters } from '../lib/ui/filters.svelte.js'
@@ -223,6 +224,7 @@
       game.year && String(game.year),
       game.developer,
       game.genre,
+      discCount(game) > 0 && plural(discCount(game), 'disco', 'discos'),
     ].filter(Boolean)
   })
 

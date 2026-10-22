@@ -511,6 +511,14 @@ class Library {
   romPath(game) {
     return romAbsolutePath(this.romRoot, game, this.scans[game.system]?.folder)
   }
+
+  /**
+   * Every disc's full path, for a game on several discs without an .m3u (core/discs.js).
+   * @param {LibraryGame} game
+   */
+  discPaths(game) {
+    return (game.discs ?? []).map((path) => this.romPath({ ...game, path }))
+  }
 }
 
 export const library = new Library()

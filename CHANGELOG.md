@@ -7,6 +7,13 @@ Each version's section becomes the notes of its GitHub release.
 - **"New" games:** the games a scan brings to a console get a *New* tag on their
   cover until you play them or for 14 days, and the home screen counts them
   ("10 games · 2 new"). The first scan of a console doesn't mark anything.
+- **Games on several discs, ready to change discs:** copy Final Fantasy VII as
+  three `.chd` files and that's it. Relix shows it once, says "3 discs", and when
+  you open it makes the list of its discs (an `.m3u`) in `E:\relix\discs`,
+  without touching your games folder, named like disc 1 so your saves stay the
+  same. The launch screen says where to change discs (in RetroArch, its menu ›
+  *Disc Control*). For PS1 and Dreamcast; a game that already has its `.m3u`
+  opens with it, as before.
 - **Scanning is the only step:** after scanning a console (*≡ › Library*), Relix
   also finds the covers and screenshots its games are missing and the
   descriptions Wikipedia is sure about, without asking. The row says what it's

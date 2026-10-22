@@ -310,6 +310,15 @@ namespace RelixShell
                         Reply(id, gamelist);
                         break;
 
+                    case "writeDiscList":
+                        // A game on several discs without an .m3u: Relix makes it in E:\relix\discs
+                        await EnsurePathsAsync(refresh: false);
+                        var discList = new JsonObject();
+                        discList.SetNamedValue("path", JsonValue.CreateStringValue(await DiscLists.WriteAsync(
+                            paths, payload.GetNamedString("system"), payload.GetNamedString("name"), payload.GetNamedString("text"))));
+                        Reply(id, discList);
+                        break;
+
                     case "writeGamelist":
                         await EnsurePathsAsync(refresh: false);
                         await GamelistWriter.WriteAsync(paths, payload.GetNamedString("system"), payload.GetNamedString("text"));

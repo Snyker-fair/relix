@@ -7,7 +7,8 @@
  *
  * Rules:
  *   - Only the console's formats (platforms.js). A .bin next to its .cue doesn't show up.
- *   - Multi-disc games: if there's an .m3u, only the .m3u is listed; otherwise, only disc 1.
+ *   - Multi-disc games: if there's an .m3u, only the .m3u is listed; otherwise, only disc 1,
+ *     with every disc in `discs` on the consoles that open an .m3u (Relix makes it: core/discs.js).
  *   - Wii U in folders (Game/code/game.rpx): the name is the folder's.
  *   - Files with a generic name (Game/default.xex, Game/disc.gdi): the same.
  *   - Clean names: "Legend of Zelda, The - Wind Waker (USA) [!]" -> "The Legend of Zelda: Wind Waker".
@@ -103,6 +104,11 @@ export function gamesFromFiles(files, platform) {
       .map((p) => `${folderOf(p)}/${fileStem(p).toLowerCase()}`),
   )
 
+  // Without an .m3u, each game's discs: "sub/metal gear solid (usa)|chd" -> [[1, path], [2, path]]
+  const makesLists = formats.has('m3u')
+  /** @type {Map<string, Array<[number, string]>>} */
+  const discSets = new Map()
+
   /** @type {Array<Game & { region: string }>} */
   const games = []
   for (const path of paths) {
@@ -122,9 +128,21 @@ export function gamesFromFiles(files, platform) {
     if (disc) {
       const withoutDisc = stem.replace(DISC, '').toLowerCase()
       if (playlists.has(`${folderOf(path)}/${withoutDisc}`)) continue // the .m3u opens it
+      if (makesLists) {
+        const key = `${folderOf(path)}/${withoutDisc}|${extension}`
+        discSets.set(key, [...(discSets.get(key) ?? []), [Number(disc[1]), path]])
+      }
       if (Number(disc[1]) !== 1) continue // without an .m3u: only disc 1
     }
     games.push(makeGame(platform.id, path, titleStem(path)))
+  }
+
+  // Disc 1 takes the list of every disc, if there's more than one
+  for (const set of discSets.values()) {
+    if (set.length < 2) continue
+    const ordered = [...set].sort((a, b) => a[0] - b[0])
+    const first = games.find((g) => g.path === ordered[0][1])
+    if (first && ordered[0][0] === 1) first.discs = ordered.map(([, path]) => path)
   }
 
   // The same name twice (e.g. the USA and Europe versions): the region is added
@@ -158,7 +176,7 @@ export function mergeWithGamelist(listed, scanned) {
   for (const game of scanned) {
     const info = byPath.get(game.path.toLowerCase())
     if (!info) games.push(game)
-    else if (!info.hidden) games.push({ ...info, path: game.path, id: game.id })
+    else if (!info.hidden) games.push({ ...info, path: game.path, id: game.id, ...(game.discs ? { discs: game.discs } : {}) })
   }
   return games.sort(bySortName)
 }

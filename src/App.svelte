@@ -1,10 +1,11 @@
 <script>
   import { untrack } from 'svelte'
-  import { launch, mode, notifyReady, onShellEvent, ShellError } from './lib/core/bridge.js'
+  import { launch, mode, notifyReady, onShellEvent, ShellError, writeDiscList } from './lib/core/bridge.js'
   import { buildLaunchUri } from './lib/core/launchUri.js'
   import { getPlatform } from './lib/core/platforms.js'
   import { placeFor, returnTo } from './lib/core/place.js'
   import { pickSurprise } from './lib/core/surprise.js'
+  import { discCount, discListName, discListText, discSwapHint } from './lib/core/discs.js'
   import { QUICK_EXIT_SECONDS, quickExitMessage } from './lib/core/quickExit.js'
   import { shortDuration } from './lib/core/diagnostics.js'
   import { VERSION } from './lib/core/version.js'
@@ -66,7 +67,8 @@
   let focusedId = $state(null)
   let boot = $state(true)
 
-  /** @type {{ game: any, uri: string, emulatorName: string } | null} */
+  /** note: how to change discs, for a game on several (core/discs.js) */
+  /** @type {{ game: any, uri: string, emulatorName: string, note?: string } | null} */
   let launching = $state(null)
   let toast = $state('')
   /** @type {ReturnType<typeof setTimeout>} */
@@ -467,9 +469,11 @@
       )
       return
     }
+    // A game on several discs without an .m3u opens with the list Relix makes (core/discs.js)
+    const romPath = await launchPath(game)
     let uri
     try {
-      uri = buildLaunchUri(emulator.launcher, library.romPath(game))
+      uri = buildLaunchUri(emulator.launcher, romPath)
     } catch (e) {
       sound.error()
       const message = e instanceof Error ? e.message : String(e)
@@ -481,7 +485,8 @@
       return
     }
     sound.select()
-    launching = { game, uri, emulatorName: emulator.name }
+    const discs = discCount(game)
+    launching = { game, uri, emulatorName: emulator.name, note: discs ? discSwapHint(discs, emulator) : '' }
     // The session starts counting and is on the USB drive before the Xbox switches to the
     // emulator, with where you were: if the Xbox closes Relix, it opens there again
     library.startSession(game, placeFor(screen, focusedId))
@@ -490,7 +495,7 @@
     diagnostics.flush()
     await userData.flush()
     try {
-      await launch(uri, library.romPath(game))
+      await launch(uri, romPath)
       library.markPlayed(game)
     } catch (e) {
       launching = null
@@ -507,6 +512,27 @@
       )
       diagnostics.flush()
       showToast(launchErrorMessage(e, emulator.name, platform.emulators.length > 1))
+    }
+  }
+
+  /**
+   * The file the emulator opens: the game's, or the list of its discs, written right
+   * before so it follows the discs that are there. If it can't be written, disc 1.
+   * @param {any} game
+   */
+  async function launchPath(game) {
+    if (!discCount(game)) return library.romPath(game)
+    try {
+      return await writeDiscList(game.system, discListName(game.discs[0]), discListText(library.discPaths(game)))
+    } catch (e) {
+      diagnostics.log(
+        'error',
+        t('No se pudo armar la lista de discos de {game}: {message}', {
+          game: gameLabel(game.id),
+          message: e instanceof Error ? e.message : String(e),
+        }),
+      )
+      return library.romPath(game)
     }
   }
 
@@ -642,6 +668,7 @@
       game={launching.game}
       uri={launching.uri}
       emulatorName={launching.emulatorName}
+      note={launching.note}
       onClose={() => backInRelix()}
     />
   {/if}

@@ -788,6 +788,16 @@ export default {
   'guía': 'guide',
   'bienvenida': 'welcome tour',
 
+  // ── Games on several discs ──
+  'Tiene {n} discos: cuando pida otro, cámbialo en el menú de RetroArch › Disc Control.':
+    'It has {n} discs: when it asks for another one, change it in the RetroArch menu › Disc Control.',
+  'Tiene {n} discos: cuando pida otro, cámbialo desde el menú del emulador.':
+    "It has {n} discs: when it asks for another one, change it from the emulator's menu.",
+  'No se pudo armar la lista de discos de {game}: {message}': "Couldn't make the disc list for {game}: {message}",
+  'Discos': 'Discs',
+  'disco': 'disc',
+  'discos': 'discs',
+
   // ── After a scan: covers and info ──
   'Buscando portadas…': 'Finding covers…',
   'Portadas e información…': 'Covers and info…',
