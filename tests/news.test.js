@@ -7,7 +7,10 @@ const { updates } = await import('../src/lib/ui/updates.svelte.js')
 
 describe("what's new in a version", () => {
   it('each entry is a real version', () => {
-    for (const version of Object.keys(NEWS)) expect(parseVersion(version)).not.toBeNull()
+    for (const [version, lines] of Object.entries(NEWS)) {
+      expect(parseVersion(version)).not.toBeNull()
+      expect(lines.length).toBeGreaterThan(0)
+    }
   })
 
   it('said once, and not before there are games', () => {

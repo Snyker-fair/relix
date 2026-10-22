@@ -160,8 +160,7 @@
     if (systemStatus.takeAppTypeNotice()) {
       notices.push(t('Relix está como Game: cámbialo a App para volver al instante (≡ › Revisión)'))
     }
-    const news = updates.takeNews(library.all.length > 0)
-    if (news) notices.push(t(news, { version: VERSION }))
+    for (const line of updates.takeNews(library.all.length > 0) ?? []) notices.push(t(line, { version: VERSION }))
     const version = updates.takeNotice()
     if (version) notices.push(t('Relix {version} ya está disponible: ≡ › Revisión', { version }))
     // If another notice is on screen (the playtime, e.g.), these go after it

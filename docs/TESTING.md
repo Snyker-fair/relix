@@ -316,8 +316,10 @@ the USB drive a game ES-DE hasn't scraped (it has no description in Relix).
 
 ## Game sheet, weeks and memory (1.3.0)
 - [ ] After installing 1.3.0, when Relix opens: "New in 1.3.0: click the right
-      stick for a game's sheet, and the left one…" shows up once (not again on the
-      next start). In a console, the button bar shows **R Game sheet**.
+      stick for a game's sheet, and the left one…" and then "Tip: inside a
+      console, LT and RT jump from letter to letter" show up once (not again on the
+      next start). In a console, the button bar shows **R Game sheet** and no
+      longer LT / RT (they still jump by letter).
 - [ ] Home: at the end of the channels, before Options, the pink die
       **Surprise me** with three face-down cards. **A** opens a random game's
       sheet with the **Surprise me** pill at the top; **L Another** (the left

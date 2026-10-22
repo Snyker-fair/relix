@@ -434,7 +434,6 @@
         { button: 'y', label: t('Menú') },
         { button: 'rs', label: t('Ficha') },
         { button: 'x', label: t('Favorito') },
-        { button: 'lt', also: 'rt', label: order === 'az' ? t('Letra') : order === 'year' ? t('Año') : t('Página') },
         { button: 'view', label: t('Buscar') },
         { button: 'b', label: t('Volver') },
       ]

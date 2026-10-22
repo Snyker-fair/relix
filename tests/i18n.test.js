@@ -177,7 +177,7 @@ describe('in English', () => {
       ...Object.values(RENAME_ERRORS),
       ...Object.values(RENAME_STEPS),
       ...Object.values(INFO_FIELD_NAMES),
-      ...Object.values(NEWS),
+      ...Object.values(NEWS).flat(),
       ...Object.values(PS1_BIOS).map((b) => b.label),
       ...PLATFORMS.flatMap((p) => [p.noEmulatorNote ?? '', ...p.emulators.map((e) => e.note ?? '')]).filter(Boolean),
       DEVSTORE_LABEL,

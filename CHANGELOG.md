@@ -27,6 +27,8 @@ Each version's section becomes the notes of its GitHub release.
   1 GB of memory as an App, so it now logs how much it uses (when it opens, before
   each game and on each new peak, saying whether a video was playing) to decide
   with data whether the videos stay.
+- **A lighter button bar in each console:** it no longer shows LT / RT. They
+  still jump from letter to letter, and after updating Relix mentions it once.
 - **Fix:** in the library panel, a long description (like Wikipedia's) with time
   played could push "Opens with…" out of the card. The description now takes the
   lines that fit.

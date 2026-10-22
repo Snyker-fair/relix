@@ -71,7 +71,7 @@ class Updates {
    * This version's news (core/updates.js), if it has any and it wasn't said yet.
    * Reading it marks it. Without games it waits: it talks about them.
    * @param {boolean} hasGames
-   * @returns {string | null}  the text in Spanish, to translate with { version }
+   * @returns {string[] | null}  the lines in Spanish, to translate with { version }
    */
   takeNews(hasGames) {
     const news = NEWS[VERSION]
