@@ -350,5 +350,19 @@ the USB drive a game ES-DE hasn't scraped (it has no description in Relix).
 - [ ] A game with a long description (from Wikipedia) and time played: in the
       library panel, "Opens with …" stays inside the card.
 
+## Play together and new games (1.4.0)
+- [ ] With one controller, the home screen shows *Continue playing* as always.
+      Turn on a second one: "2 controllers connected: the home screen has games to
+      play together" shows up, and the row becomes **Play together** (games for 2
+      or more players, with "1-4 players" under each name).
+- [ ] With two controllers, the die says "A random pick among your N games for
+      several players" and *Surprise me* only brings games for 2 or more players.
+      Turn the second one off: the row goes back to *Continue playing*.
+- [ ] Copy a new game to a console's folder on the USB drive and scan it
+      (**≡ → Library**): its cover shows a **New** tag in the grid, and the console
+      on the home screen says "N games · 1 new". Play it and come back: the tag is
+      gone.
+- [ ] A console scanned for the first time (a new folder) doesn't mark its games.
+
 If something fails, the **If something fails** table in
 [`shell/README.md`](../shell/README.md) has the most common causes.

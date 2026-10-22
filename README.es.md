@@ -63,6 +63,8 @@ cada botón. Logo, colores, tipografía y voz de la marca están en
   saltos por letra con los gatillos, orden (A–Z, recientes, más jugados, año) y
   filtros por género o jugadores. ¿No sabes qué jugar? *Sorpréndeme* (el dado del
   inicio, o el stick izquierdo) elige uno, casi siempre uno que no has jugado.
+  Los juegos que trae un escaneo se marcan *Nuevo*, y con dos controles
+  conectados el inicio sugiere juegos para jugar juntos.
 - **Ficha viva.** Fanart, logo y video sin sonido cuando ES-DE los escrapeó; una
   captura de libretro como fondo cuando no. Con clic del stick derecho (o *Y › Ver
   ficha*) se abre la ficha completa: la descripción entera, todos los datos y tus

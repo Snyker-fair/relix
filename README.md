@@ -62,6 +62,8 @@ what each button does.
   jump by letter with the triggers, sort (A–Z, recent, most played, year) and
   filter by genre or players. Can't choose? *Surprise me* (the die on the home
   screen, or the left stick) picks one, almost always one you haven't played.
+  Games a scan brings are tagged *New*, and with two controllers connected the
+  home screen suggests games to play together.
 - **A living game page.** Fan art, logo and a muted video preview when ES-DE
   scraped them; a background screenshot from libretro when it didn't. Click the
   right stick (or *Y › Game sheet*) for the full sheet: the whole description,
