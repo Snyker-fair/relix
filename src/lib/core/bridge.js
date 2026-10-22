@@ -751,11 +751,43 @@ export async function systemCheck(folders) {
     space: { free: 182 * 1024 ** 3, total: 465 * 1024 ** 3 },
     romFolders: [...PLATFORMS.map((p) => p.id), 'nes'],
     folders: Object.fromEntries(
-      folders.map((f) => [f, f === 'RetroArch\\system' ? ['scph5501.bin'] : f === 'XBSX2\\BIOS' ? ['SCPH-70012_BIOS_V12_USA_200.BIN'] : null]),
+      folders.map((f) => [
+        f,
+        f === 'RetroArch\\system'
+          ? ['scph5501.bin']
+          : f === 'XBSX2\\BIOS'
+            ? ['SCPH-70012_BIOS_V12_USA_200.BIN']
+            : f === 'RetroArch\\saves'
+              ? ['Crash Bandicoot (USA).srm']
+              : null,
+      ]),
     ),
     internet: true,
     memory: { xbox: true, expectedLimit: (game ? 5 : 1) * 1024 ** 3, limit: 512 * 1024 ** 2, usage: 310 * 1024 ** 2 },
   }
+}
+
+/**
+ * @typedef {{ found: boolean, base: string, files: import('./saves.js').SaveFile[] }} SaveList
+ *   found: RetroArch's saves or states folder is on the USB drive; base: where their pictures are asked for
+ */
+
+/**
+ * RetroArch's saves on the USB drive (see SaveIndex.cs). The demo has a few, without pictures.
+ * @returns {Promise<SaveList>}
+ */
+export async function listSaves() {
+  if (mode === 'xbox') return request('listSaves', {}, { timeout: 15_000 })
+  const hour = 3_600_000
+  const now = Date.now()
+  const files = [
+    ['saves/Crash Bandicoot (USA).srm', 3 * 24 * hour],
+    ['states/Crash Bandicoot (USA).state1', 5 * 24 * hour],
+    ['states/Crash Bandicoot (USA).state2', 2 * hour],
+    ['saves/Castlevania - Symphony of the Night (USA).srm', 26 * hour],
+    ['states/Super Metroid (Japan, USA) (En,Ja).state.auto', 9 * 24 * hour],
+  ].map(([path, ago]) => ({ path: String(path), size: 131_072, modified: now - Number(ago) }))
+  return { found: true, base: '', files }
 }
 
 /**

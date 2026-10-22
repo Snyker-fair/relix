@@ -17,8 +17,10 @@ export const BIOS_FOLDERS = {
   duckstation: 'DuckStation\\bios',
   xbsx2: 'XBSX2\\BIOS',
 }
+/** RetroArch's saves, if it keeps them on the USB drive (the game sheet shows them) */
+export const SAVES_FOLDER = 'RetroArch\\saves'
 /** What the shell is asked to list */
-export const CHECK_FOLDERS = Object.values(BIOS_FOLDERS)
+export const CHECK_FOLDERS = [...Object.values(BIOS_FOLDERS), SAVES_FOLDER]
 
 /** Less than this free is too little to keep adding games */
 const LOW_SPACE_BYTES = 2 * 1024 ** 3
@@ -341,6 +343,21 @@ export function buildChecks({ shell, romRoot, consoles, knownFolders, dataStatus
       const bios = platform.id === 'psx' ? ps1Bios(info, shell.folders, drive) : platform.id === 'ps2' ? ps2Bios(info, shell.folders, drive) : null
       if (bios) checks.push(bios)
     }
+  }
+
+  // ── RetroArch's saves: on the USB drive they travel with it and the sheet says when you saved ──
+  const retroarch = withGames.find((c) => c.emulator?.launcher.kind === 'retroarch' && c.installed !== false)
+  if (shell && retroarch && shell.folders[SAVES_FOLDER] === null) {
+    checks.push({
+      id: 'saves',
+      state: 'info',
+      title: t('Partidas de RetroArch: no las veo en el USB'),
+      detail: t(
+        'Si RetroArch las guarda en {where}, viajan con el USB y la ficha de cada juego dice cuándo guardaste. La guía explica cómo.',
+        { where: `${drive}${SAVES_FOLDER}` },
+      ),
+      action: { kind: 'guide', systemId: retroarch.platform.id },
+    })
   }
 
   // ── The Xbox, internet and your data ──

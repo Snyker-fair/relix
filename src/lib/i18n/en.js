@@ -793,4 +793,20 @@ export default {
   'información de juegos': 'game info',
   'guía': 'guide',
   'bienvenida': 'welcome tour',
+
+  // ── Saved games (RetroArch) ──
+  'Partidas guardadas': 'Saved games',
+  'Tu último guardado rápido': 'Your latest quick save',
+  'Partida guardada: {when}': 'Saved: {when}',
+  'Guardado rápido: {when}': 'Quick save: {when}',
+  '{states} · el último, {when}': '{states} · the latest, {when}',
+  'guardado rápido': 'quick save',
+  'guardados rápidos': 'quick saves',
+  'En la carpeta de partidas de RetroArch, en el USB': "In RetroArch's saves folder, on the USB drive",
+  'Partidas de RetroArch: no las veo en el USB': "RetroArch saves: they're not on the USB drive",
+  'Si RetroArch las guarda en {where}, viajan con el USB y la ficha de cada juego dice cuándo guardaste. La guía explica cómo.': "If RetroArch keeps them in {where}, they travel with the USB drive and each game's sheet says when you saved. The guide explains how.",
+  'Tus partidas en el USB (opcional)': 'Your saves on the USB drive (optional)',
+  'En RetroArch: **Settings › Directory › Savefile** → `{saves}` y **Savestate** → `{states}` (créalas desde el PC). Así tus partidas viajan con el USB y la ficha de cada juego dice cuándo guardaste.': "In RetroArch: **Settings › Directory › Savefile** → `{saves}` and **Savestate** → `{states}` (create them from the PC). That way your saves travel with the USB drive and each game's sheet says when you saved.",
+  'En **Settings › Saving**, activa **Savestate Thumbnails**: la ficha muestra la imagen de tu último guardado rápido.': 'In **Settings › Saving**, turn on **Savestate Thumbnails**: the sheet shows the picture of your latest quick save.',
+  'RetroArch no mueve las partidas que ya tenías: cópialas a esas carpetas con el **File explorer** del Device Portal.': "RetroArch doesn't move the saves you already had: copy them to those folders with the Device Portal's **File explorer**.",
 }

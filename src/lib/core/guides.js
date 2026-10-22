@@ -23,8 +23,18 @@ export const USB_TOOL = 'Xbox USB Permissions Tool'
 /** RetroArch with the cores included (the Lite version comes without cores) */
 const RETROARCH = 'RetroArch Full (Series S/X)'
 const RA_SYSTEM = 'E:\\RetroArch\\system'
-/** What replaces {system} and {tool} in the guides' texts */
-const PATHS = { system: RA_SYSTEM, tool: USB_TOOL }
+/** RetroArch's saves on the USB drive: they travel with it and the game sheet shows them (core/saves.js) */
+export const RA_SAVES = 'E:\\RetroArch\\saves'
+const RA_STATES = 'E:\\RetroArch\\states'
+/** What replaces {system}, {saves}, {states} and {tool} in the guides' texts */
+const PATHS = { system: RA_SYSTEM, saves: RA_SAVES, states: RA_STATES, tool: USB_TOOL }
+/** Every RetroArch console: its saves on the USB drive (optional) */
+const RA_SAVES_STEPS = [
+  'En RetroArch: **Settings › Directory › Savefile** → `{saves}` y **Savestate** → `{states}` (créalas desde el PC). Así tus partidas viajan con el USB y la ficha de cada juego dice cuándo guardaste.',
+  'En **Settings › Saving**, activa **Savestate Thumbnails**: la ficha muestra la imagen de tu último guardado rápido.',
+  'RetroArch no mueve las partidas que ya tenías: cópialas a esas carpetas con el **File explorer** del Device Portal.',
+  'Luego **Main Menu › Configuration File › Save Current Configuration**.',
+]
 /** So RetroArch looks for the BIOS on the USB drive and it can be copied from the PC */
 const RA_SETUP = [
   'En RetroArch: **Settings › Directory › System/BIOS** → elige `{system}` (créala desde el PC si no existe).',
@@ -210,6 +220,11 @@ export function guideSteps(platform, emulator, status) {
     lines: setup.length > 0 ? setup : [t('No necesita nada más: ni BIOS ni ajustes.')],
     done: setup.length > 0 ? null : true,
   })
+
+  // RetroArch: the saves on the USB drive (optional; without it, they stay inside RetroArch)
+  if (guide.download === RETROARCH) {
+    steps.push({ id: 'saves', title: t('Tus partidas en el USB (opcional)'), lines: RA_SAVES_STEPS.map(tr), done: null })
+  }
 
   const tip = GAME_TIPS[platform.id]
   steps.push({

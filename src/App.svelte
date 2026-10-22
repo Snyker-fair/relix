@@ -17,6 +17,7 @@
   import { dispatch, idleFor, markActivity, startInput } from './lib/ui/input.js'
   import { library } from './lib/ui/library.svelte.js'
   import { memory } from './lib/ui/memory.svelte.js'
+  import { saves } from './lib/ui/saves.svelte.js'
   import { settings } from './lib/ui/settings.svelte.js'
   import { shelf } from './lib/ui/shelf.svelte.js'
   import { sound } from './lib/ui/sound.js'
@@ -277,6 +278,8 @@
     launching = null
     const finished = library.endSession()
     if (!finished) return
+    // You may have saved: the sheets read RetroArch's saves again
+    saves.refresh()
     const quick = fromEmulator && finished.elapsed < QUICK_EXIT_SECONDS
     const game = library.byId.get(finished.id)
     const emulatorName = game ? (emulators.forGame(game)?.name ?? '') : ''

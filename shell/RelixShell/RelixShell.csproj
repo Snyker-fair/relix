@@ -132,6 +132,7 @@
     <Compile Include="Shell\LocalServer.cs" />
     <Compile Include="Shell\GamelistWriter.cs" />
     <Compile Include="Shell\RomRenamer.cs" />
+    <Compile Include="Shell\SaveIndex.cs" />
     <Compile Include="Shell\SystemCheck.cs" />
     <Compile Include="Shell\Text.cs" />
     <Compile Include="Shell\UserDataStore.cs" />
