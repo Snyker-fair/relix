@@ -49,6 +49,15 @@ namespace RelixShell
         /// <summary>Fires once per press (and repeatedly while a direction is held).</summary>
         public event Action<string> ActionPressed;
 
+        /// <summary>
+        /// How many controllers are connected: when it starts reading and each time it
+        /// changes (the interface suggests games to play together with two or more).
+        /// </summary>
+        public event Action<int> ControllersChanged;
+
+        /// <summary>The last count told (-1: none yet).</summary>
+        private int controllers = -1;
+
         private readonly DispatcherTimer timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
         private readonly Stopwatch clock = Stopwatch.StartNew();
 
@@ -100,6 +109,14 @@ namespace RelixShell
 
         private void Poll()
         {
+            // Read here, on the interface's thread: the Gamepad events arrive on another one
+            int count = Gamepad.Gamepads.Count;
+            if (count != controllers)
+            {
+                controllers = count;
+                ControllersChanged?.Invoke(count);
+            }
+
             TimeSpan now = clock.Elapsed;
             HashSet<string> pressed = ReadPressed();
 

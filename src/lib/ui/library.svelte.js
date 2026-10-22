@@ -16,6 +16,7 @@ import { coverUrls, listCovers, listMedia, loadLibrary, mediaFileUrl, scanRoms }
 import { coverKey } from '../core/coverMatch.js'
 import { mediaUrl, parseGamelist, romAbsolutePath } from '../core/esde.js'
 import { indexMedia, pickMedia } from '../core/media.js'
+import { addNewGames, cleanNewGames, isNewGame } from '../core/newGames.js'
 import { addSession } from '../core/playDays.js'
 import { getPlatform, PLATFORMS } from '../core/platforms.js'
 import { movedPath } from '../core/rename.js'
@@ -77,6 +78,9 @@ class Library {
   /** The time played day by day, since 1.3.0 (core/playDays.js) */
   /** @type {import('../core/playDays.js').PlayDays} */
   playDays = $state(load('playDays', {}))
+  /** The games a scan brought, with the "New" mark (core/newGames.js) */
+  /** @type {import('../core/newGames.js').NewGames} */
+  newGames = $state(load('newGames', {}))
 
   /** What's shown: everything but the hidden ones */
   /** @type {Record<string, LibraryGame[]>} */
@@ -135,6 +139,7 @@ class Library {
       this.lastPlayed = load('lastPlayed', {})
       this.playtime = load('playtime', {})
       this.playDays = load('playDays', {})
+      this.newGames = load('newGames', {})
     })
   }
 
@@ -170,6 +175,7 @@ class Library {
       this.progress = null
 
       this.#rebuild()
+      this.#cleanNewGames()
       this.status = 'ready'
     } catch (e) {
       this.error = e instanceof Error ? e.message : String(e)
@@ -200,6 +206,8 @@ class Library {
    */
   async rescan(systemIds) {
     const before = new Map(systemIds.map((id) => [id, new Set(this.gamesFor(id).map((g) => g.id))]))
+    // The first scan of a console doesn't mark its games as new: they'd all be
+    const hadList = new Set(systemIds.filter((id) => this.scans[id]))
     this.scanning = systemIds
     try {
       await this.#scan(systemIds)
@@ -207,16 +215,31 @@ class Library {
     } finally {
       this.scanning = []
     }
-    return systemIds.map((id) => {
+    const changes = systemIds.map((id) => {
       const old = before.get(id) ?? new Set()
       const now = new Set(this.gamesFor(id).map((g) => g.id))
-      return {
-        id,
-        added: [...now].filter((g) => !old.has(g)).length,
-        removed: [...old].filter((g) => !now.has(g)).length,
-        total: now.size,
-      }
+      const added = [...now].filter((g) => !old.has(g))
+      return { id, added, removed: [...old].filter((g) => !now.has(g)).length, total: now.size }
     })
+    const brought = changes.filter((c) => hadList.has(c.id)).flatMap((c) => c.added)
+    if (brought.length > 0) {
+      this.newGames = addNewGames(this.newGames, brought, Date.now())
+      save('newGames', this.newGames)
+    }
+    return changes.map((c) => ({ ...c, added: c.added.length }))
+  }
+
+  /** Whether a game has the "New" mark (core/newGames.js) @param {{ id: string }} game */
+  isNew(game) {
+    return isNewGame(this.newGames, game.id, this.lastPlayed, Date.now())
+  }
+
+  /** Drops the marks that no longer count (old, played, or games that are gone) */
+  #cleanNewGames() {
+    const clean = cleanNewGames(this.newGames, { now: Date.now(), lastPlayed: this.lastPlayed, exists: (id) => this.byId.has(id) })
+    if (Object.keys(clean).length === Object.keys(this.newGames).length) return
+    this.newGames = clean
+    save('newGames', clean)
   }
 
   /** @param {string[]} systemIds */
@@ -420,6 +443,12 @@ class Library {
     save('recent', this.recentIds)
     this.lastPlayed = { ...this.lastPlayed, [id]: at }
     save('lastPlayed', this.lastPlayed)
+    // Played: it's no longer new
+    if (id in this.newGames) {
+      const { [id]: _, ...rest } = this.newGames
+      this.newGames = rest
+      save('newGames', rest)
+    }
   }
 
   /**

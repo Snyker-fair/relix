@@ -793,4 +793,12 @@ export default {
   'información de juegos': 'game info',
   'guía': 'guide',
   'bienvenida': 'welcome tour',
+
+  // ── Playing together and new games ──
+  'Para jugar juntos': 'Play together',
+  '{n} controles conectados: en el inicio tienes juegos para jugar juntos': '{n} controllers connected: the home screen has games to play together',
+  'Un juego al azar entre tus {games} para varios jugadores': 'A random pick among your {games} for several players',
+  'Nuevo': 'New',
+  'nuevo': 'new',
+  'nuevos': 'new',
 }

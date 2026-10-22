@@ -40,6 +40,7 @@ namespace RelixShell
             Background = new SolidColorBrush(ParseColor(SavedBackground()));
 
             gamepad.ActionPressed += action => SendEvent("input", action);
+            gamepad.ControllersChanged += count => SendEvent("controllers", count.ToString());
 
             // On Xbox, B is also "back" for the system. We mark it as
             // handled so it doesn't take you out of Relix; the interface still gets the B.

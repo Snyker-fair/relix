@@ -204,7 +204,7 @@ export function planRename(game, newName, files) {
 
 /**
  * Relix's data moved from a game's old id to its new one: favorites, hidden,
- * playtime (and its days), recent, the session in progress, the cover choices and its emulator.
+ * playtime (and its days), recent, the "New" mark, the session in progress, the cover choices and its emulator.
  * Only the keys that change come back.
  * @param {Record<string, any>} values  as readSynced() returns them
  * @param {string} oldId
@@ -217,7 +217,7 @@ export function renameInUserData(values, oldId, newId) {
   /** @param {string} key @param {any} value */
   const set = (key, value) => (changed[key] = value)
 
-  for (const key of ['favorites', 'lastPlayed', 'playtime', 'gameEmulators']) {
+  for (const key of ['favorites', 'lastPlayed', 'playtime', 'gameEmulators', 'newGames']) {
     const obj = values[key]
     if (obj && typeof obj === 'object' && !Array.isArray(obj) && oldId in obj) {
       const { [oldId]: value, ...rest } = obj

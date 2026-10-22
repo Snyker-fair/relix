@@ -406,6 +406,7 @@
         >
           <CoverArt game={g} platform={p} width={COVER_W} thumb />
           {#if library.isFavorite(g)}<span class="mini-heart" aria-label={t('Favorito')}>♥</span>{/if}
+          {#if library.isNew(g)}<span class="new-tag">{t('Nuevo')}</span>{/if}
         </button>
       {/each}
     </div>
@@ -874,6 +875,21 @@
   .cell {
     position: relative;
     border-radius: 22px;
+  }
+  /* a game the last scan brought: until you play it or for 14 days (core/newGames.js) */
+  .new-tag {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    padding: 4px 12px 5px;
+    border-radius: 999px;
+    background: var(--pop);
+    color: var(--on-color);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 17px;
+    line-height: 1;
+    box-shadow: 0 4px 10px -4px rgb(0 0 0 / 0.35);
   }
   .mini-heart {
     position: absolute;
