@@ -65,8 +65,9 @@ cada botón. Logo, colores, tipografía y voz de la marca están en
   inicio, o el stick izquierdo) elige uno, casi siempre uno que no has jugado.
 - **Ficha viva.** Fanart, logo y video sin sonido cuando ES-DE los escrapeó; una
   captura de libretro como fondo cuando no. Con clic del stick derecho (o *Y › Ver
-  ficha*) se abre la ficha completa: la descripción entera, todos los datos y tus
-  semanas con ese juego.
+  ficha*) se abre la ficha completa: la descripción entera, todos los datos, tus
+  semanas con ese juego y, como una memory card, cuándo guardaste y la imagen de
+  tu último guardado rápido (RetroArch, con sus partidas en el USB).
 - **Tiempo de juego.** Tiempo y partidas por juego, salgas desde el emulador o
   vuelvas con el botón Xbox, y tus últimas 8 semanas con tu top 5 en *Opciones ›
   Acerca de*. Si la Xbox cerró Relix mientras jugabas, se abre donde estabas: la
@@ -250,6 +251,7 @@ queda sin traducir.
 | Colecciones | `E:\ES-DE\collections\custom-<Nombre>.cfg` (las ve también ES-DE) |
 | Tus datos | `E:\relix\data.json`, `data.previous.json` y `backups\` (los últimos 7 días) |
 | Registro de diagnóstico | `E:\relix\log.txt` (y `log.previous.txt`) |
+| Partidas de RetroArch | `E:\RetroArch\saves\` y `states\` (si RetroArch las guarda ahí: la guía de cada consola lo explica; Relix solo las lee) |
 | Caché | `E:\relix\cache\` (listas de libretro y miniaturas; se puede borrar) |
 
 Los juegos de varios discos van en un `.m3u`; los de Xbox 360 y Dreamcast pueden
