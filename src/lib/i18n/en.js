@@ -787,6 +787,10 @@ export default {
   'guía': 'guide',
   'bienvenida': 'welcome tour',
 
+  // ── The consoles' order ──
+  'Mover': 'Move',
+  'Ordenar': 'Reorder',
+
   // ── Continue playing ──
   'Quitar de Seguir jugando': 'Remove from Continue playing',
   '{game} ya no aparece en Seguir jugando': '{game} is no longer in Continue playing',

@@ -4,15 +4,23 @@
  *
  * By default only the ones with something: the consoles with games, Favorites
  * when there's at least one and Collections when there's any. In Options the
- * empty ones can be shown too.
+ * empty ones can be shown too. The consoles go in the order chosen in Options ›
+ * Consoles (core/consoleOrder.js).
  */
-import { CHANNELS, COLLECTION_PREFIX, COLLECTIONS, collectionChannel, isCollectionId } from './channels.js'
+import { orderConsoles } from '../core/consoleOrder.js'
+import { PLATFORMS } from '../core/platforms.js'
+import { CHANNELS, COLLECTION_PREFIX, COLLECTIONS, collectionChannel, FAVORITES, isCollectionId } from './channels.js'
 import { collections } from './collections.svelte.js'
 import { library } from './library.svelte.js'
 import { settings } from './settings.svelte.js'
 
 class Shelf {
-  channels = $derived(CHANNELS.filter((ch) => settings.showEmptyConsoles || this.gamesFor(ch.id).length > 0))
+  /** Every console, in the chosen order */
+  consoles = $derived(orderConsoles(PLATFORMS, settings.consoleOrder))
+
+  channels = $derived(
+    [FAVORITES, COLLECTIONS, ...this.consoles].filter((ch) => settings.showEmptyConsoles || this.gamesFor(ch.id).length > 0),
+  )
 
   /** Consoles that ended up hidden for having no games */
   hiddenCount = $derived(CHANNELS.length - this.channels.length)

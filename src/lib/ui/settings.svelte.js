@@ -1,7 +1,9 @@
 /**
  * The player's preferences, saved in the app's storage.
  */
+import { cleanConsoleOrder, isDefaultOrder } from '../core/consoleOrder.js'
 import { REGION_PREFERENCES } from '../core/coverMatch.js'
+import { PLATFORMS } from '../core/platforms.js'
 import { LANGUAGES } from '../core/language.js'
 import { SORT_NAMES } from '../core/sorting.js'
 import { THEMES } from '../core/theme.js'
@@ -44,6 +46,9 @@ class Settings {
   onboarded = $state(false)
   /** Minutes for the screensaver (0 = never) */
   screensaverMinutes = $state(5)
+  /** The consoles' order, as chosen in Options › Consoles (empty: Relix's; core/consoleOrder.js) */
+  /** @type {string[]} */
+  consoleOrder = $state([])
 
   constructor() {
     this.#restore()
@@ -51,7 +56,7 @@ class Settings {
   }
 
   #restore() {
-    const saved = load(KEY, {})
+    const saved = /** @type {Record<string, any>} */ (load(KEY, {}))
     this.showEmptyConsoles = saved.showEmptyConsoles ?? false
     this.sounds = saved.sounds ?? true
     this.coverRegion = REGIONS.includes(saved.coverRegion) ? saved.coverRegion : 'usa'
@@ -60,7 +65,18 @@ class Settings {
     this.theme = THEMES.includes(saved.theme) ? saved.theme : 'light'
     i18n.choice = LANGUAGES.includes(saved.language) ? saved.language : 'auto'
     this.screensaverMinutes = SCREENSAVER_CHOICES.includes(saved.screensaverMinutes) ? saved.screensaverMinutes : 5
+    this.consoleOrder = cleanConsoleOrder(saved.consoleOrder, PLATFORMS.map((p) => p.id))
     sound.setMuted(!this.sounds)
+  }
+
+  /**
+   * Saves the consoles' order. Relix's own isn't saved, so new consoles keep their place.
+   * @param {string[]} ids  every console, in the chosen order
+   */
+  setConsoleOrder(ids) {
+    const relix = PLATFORMS.map((p) => p.id)
+    this.consoleOrder = isDefaultOrder(ids, relix) ? [] : cleanConsoleOrder(ids, relix)
+    this.#save()
   }
 
   toggleEmptyConsoles() {
@@ -134,6 +150,7 @@ class Settings {
       theme: this.theme,
       language: i18n.choice,
       screensaverMinutes: this.screensaverMinutes,
+      consoleOrder: this.consoleOrder,
     })
   }
 }

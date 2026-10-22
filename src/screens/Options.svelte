@@ -1,5 +1,7 @@
 <script>
   import { untrack } from 'svelte'
+  import { flip } from 'svelte/animate'
+  import { moveConsole } from '../lib/core/consoleOrder.js'
   import { mode } from '../lib/core/bridge.js'
   import { REGION_NAMES } from '../lib/core/coverMatch.js'
   import { BUILD_DATE, VERSION } from '../lib/core/version.js'
@@ -66,10 +68,16 @@
     { id: 'about', name: t('Acerca de') },
   ])
   // Library: a row per console, "Scan everything", the file names, the games' information and the hidden games
-  const LIBRARY_ROWS = [...PLATFORMS.map((p) => p.id), 'all', 'rename', 'info', 'hidden']
+  const LIBRARY_ROWS = $derived([...shelf.consoles.map((p) => p.id), 'all', 'rename', 'info', 'hidden'])
   const PREFERENCE_ROWS = ['language', 'theme', 'empty', 'sounds', 'region', 'screensaver']
   // Consoles: which emulator each one opens with
-  const CONSOLE_ROWS = PLATFORMS.map((p) => p.id)
+  /**
+   * Moving a console (X in Consoles): which one and the order while it moves.
+   * It's saved with A; B leaves it as it was.
+   * @type {{ id: string, ids: string[] } | null}
+   */
+  let moving = $state(null)
+  const CONSOLE_ROWS = $derived(moving ? moving.ids : shelf.consoles.map((p) => p.id))
   /** How many different emulator apps the Xbox has (RetroArch counts once) */
   const installedApps = $derived(
     new Set(
@@ -81,8 +89,8 @@
 
   // Covers: the consoles with games, "Search all" and "Pick by hand"
   const coverPlatforms = $derived.by(() => {
-    const withGames = PLATFORMS.filter((p) => library.gamesFor(p.id).length > 0)
-    return withGames.length > 0 ? withGames : PLATFORMS
+    const withGames = shelf.consoles.filter((p) => library.gamesFor(p.id).length > 0)
+    return withGames.length > 0 ? withGames : shelf.consoles
   })
   const COVER_ROWS = $derived([...coverPlatforms.map((p) => p.id), 'all', 'choose'])
 
@@ -256,7 +264,7 @@
         let removed = 0
         scanningAll = true
         try {
-          for (const p of PLATFORMS) {
+          for (const p of shelf.consoles) {
             const [change] = await library.rescan([p.id])
             added += change.added
             removed += change.removed
@@ -413,15 +421,50 @@
 
   /** @param {number} next */
   function move(next) {
-    if (next < 0 || next >= ROWS.length || next === index) return
+    if (moving || next < 0 || next >= ROWS.length || next === index) return
     index = next
     sound.move()
   }
 
+  /** X in Consoles: the focused console starts moving */
+  function startMoving() {
+    moving = { id: ROWS[index], ids: [...ROWS] }
+    sound.select()
+  }
+
+  /** @param {-1 | 1} delta */
+  function moveConsoleRow(delta) {
+    if (!moving) return
+    const ids = moveConsole(moving.ids, moving.id, delta)
+    if (ids === moving.ids) return sound.error()
+    moving = { ...moving, ids }
+    index = ids.indexOf(moving.id)
+    sound.move()
+  }
+
+  /** A saves the new order (home screen, library tabs and here); B leaves it as it was @param {boolean} keep */
+  function stopMoving(keep) {
+    if (!moving) return
+    const { id, ids } = moving
+    if (keep) settings.setConsoleOrder(ids)
+    moving = null
+    index = ROWS.indexOf(id)
+    if (keep) sound.favorite()
+    else sound.back()
+  }
+
   $effect(() =>
     pushHandler((action) => {
+      if (moving) {
+        if (action === 'up') moveConsoleRow(-1)
+        else if (action === 'down') moveConsoleRow(1)
+        else if (action === 'a' || action === 'x') stopMoving(true)
+        else if (action === 'b') stopMoving(false)
+        return
+      }
       if (action === 'up') move(index - 1)
       else if (action === 'down') move(index + 1)
+      else if (action === 'x' && section === 'consoles') startMoving()
       else if (action === 'lb') switchSection(-1)
       else if (action === 'rb') switchSection(1)
       else if (action === 'y' && section === 'consoles') (sound.select(), onGuide(ROWS[index], { section, row: ROWS[index] }))
@@ -697,9 +740,11 @@
     <button
       class="row focus-ring"
       class:focused
+      class:moving={moving?.id === id}
       style:--tint={platform.color}
       onmouseenter={() => move(i)}
-      onclick={() => (i === index ? consoleRow() : move(i))}
+      onclick={() => (moving ? stopMoving(true) : i === index ? consoleRow() : move(i))}
+      animate:flip={{ duration: 180 }}
     >
       <span class="badge" style:background={platform.color}>
         <ChannelIcon {id} color={platform.ink} size={46} />
@@ -713,7 +758,9 @@
         {/if}
       </span>
       <span class="state">
-        {#if focused && platform.emulators.length > 1}
+        {#if moving?.id === id}
+          <PadButton name="up" size={30} /><PadButton name="down" size={30} /> {t('Mover')}
+        {:else if focused && platform.emulators.length > 1}
           <PadButton name="a" size={30} /> {t('Cambiar')}
           <span class="value"
             >{t('{n} de {total}', {
@@ -995,12 +1042,23 @@
         { button: 'lb', also: 'rb', label: t('Secciones') },
         { button: 'b', label: t('Volver') },
       ]
-    : [
-        ...(hintA ? [{ button: /** @type {const} */ ('a'), label: hintA }] : []),
-        ...(section === 'consoles' ? [{ button: /** @type {const} */ ('y'), label: t('Guía') }] : []),
-        { button: 'lb', also: 'rb', label: t('Secciones') },
-        { button: 'b', label: t('Volver') },
-      ]}
+    : moving
+      ? [
+          { button: 'up', also: 'down', label: t('Mover') },
+          { button: 'a', label: t('Listo') },
+          { button: 'b', label: t('Cancelar') },
+        ]
+      : [
+          ...(hintA ? [{ button: /** @type {const} */ ('a'), label: hintA }] : []),
+          ...(section === 'consoles'
+            ? [
+                { button: /** @type {const} */ ('x'), label: t('Ordenar') },
+                { button: /** @type {const} */ ('y'), label: t('Guía') },
+              ]
+            : []),
+          { button: 'lb', also: 'rb', label: t('Secciones') },
+          { button: 'b', label: t('Volver') },
+        ]}
 />
 
 {#if showLog}
@@ -1209,6 +1267,15 @@
   /* the rows are wide: they don't move or grow (they'd go past the edge), only the ring */
   .row.focus-ring.focused {
     transform: none;
+  }
+  /* a console being moved (X in Consoles): lifted off the list */
+  .row.focus-ring.focused.moving {
+    transform: scale(1.02);
+    box-shadow:
+      0 0 0 5px var(--ring-gap),
+      0 0 0 11px var(--pop),
+      0 30px 50px -20px rgb(var(--shadow) / 0.6);
+    z-index: 1;
   }
   .row.all {
     margin-top: 10px;

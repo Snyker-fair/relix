@@ -78,8 +78,8 @@ namespace RelixShell
             core.WebMessageReceived += OnWebMessage;
 
             // Near the limit, WebView2 lets go of what it keeps (see OnMemoryLevelChanged)
-            MemoryManager.AppMemoryUsageIncreased += (sender, e) => OnMemoryLevelChanged();
-            MemoryManager.AppMemoryUsageDecreased += (sender, e) => OnMemoryLevelChanged();
+            MemoryManager.AppMemoryUsageIncreased += (source, args) => OnMemoryLevelChanged();
+            MemoryManager.AppMemoryUsageDecreased += (source, args) => OnMemoryLevelChanged();
 
             // If the process that draws the web page crashes, the interface loads again.
             core.ProcessFailed += (s, failure) =>

@@ -7,6 +7,10 @@ Each version's section becomes the notes of its GitHub release.
 - **"New" games:** the games a scan brings to a console get a *New* tag on their
   cover until you play them or for 14 days, and the home screen counts them
   ("10 games · 2 new"). The first scan of a console doesn't mark anything.
+- **Your consoles in your order:** in *≡ › Consoles*, **X** on a console lets you
+  move it with ↑ ↓ (**A** saves, **B** leaves it as it was). The home screen, the
+  library's tabs and Options follow that order; Favorites and Collections stay
+  first. It's saved on the USB drive with the rest of your settings.
 - **Remove from Continue playing:** on the home screen, **Y** on a game of the
   row has *Remove from Continue playing*. Its time and the *Recent* order stay,
   and if you play it again it comes back.
