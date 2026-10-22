@@ -647,17 +647,18 @@
     top: 16px;
     box-shadow: none;
   }
-  /* the small box rises over the image, with a white border */
+  /* the small box rises over the image, with a white border; the name always
+     starts below the image (a long one grows downward, never over it) */
   .headline {
     display: flex;
     align-items: flex-end;
     gap: 22px;
-    margin-top: -64px;
     padding-left: 18px;
     position: relative;
   }
   .mini-cover {
     flex: none;
+    margin-top: -64px;
     border-radius: 20px;
     box-shadow:
       0 0 0 6px var(--cloud),
@@ -667,7 +668,7 @@
     border-radius: 18px;
   }
   .headline h1 {
-    margin: 0;
+    margin: 12px 0 0;
     padding-bottom: 2px;
     font-size: 42px;
     line-height: 1.02;

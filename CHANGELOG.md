@@ -32,6 +32,9 @@ Each version's section becomes the notes of its GitHub release.
 - **Fix:** in the library panel, a long description (like Wikipedia's) with time
   played could push "Opens with…" out of the card. The description now takes the
   lines that fit.
+- **Fix:** with a background image, a long name (*Castlevania: Symphony of the
+  Night*) climbed over the image and was hard to read. It now always starts below
+  it.
 
 ## [1.2.0] - 2026-10-21
 
