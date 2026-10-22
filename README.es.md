@@ -37,13 +37,16 @@ cada botón. Logo, colores, tipografía y voz de la marca están en
 
 ## Qué hace
 
-- **Toda tu biblioteca en una repisa.** Un canal por consola, Favoritos,
-  Colecciones y *Seguir jugando*. Doce consolas: PS1, PS2, PSP, SNES, N64, GBA,
+- **Toda tu biblioteca en una repisa.** Un canal por consola, en el orden que
+  elijas (*≡ › Consolas*, **X**), Favoritos, Colecciones y *Seguir jugando*. Doce
+  consolas: PS1, PS2, PSP, SNES, N64, GBA,
   GameCube, Wii U, 3DS, Mega Drive, Dreamcast y Xbox 360.
-- **Portadas sin cuentas.** Se bajan de
+- **Copiar y escanear, nada más.** Al escanear una consola en *≡ › Biblioteca*
+  también llegan las portadas de sus juegos desde
   [libretro-thumbnails](https://github.com/libretro-thumbnails) (las mismas de
-  RetroArch). Si el nombre de un archivo es dudoso, Relix no adivina: te deja
-  elegir entre las más parecidas.
+  RetroArch) y las descripciones de las que Wikipedia está segura. Si el nombre
+  de un archivo es dudoso, Relix no adivina: te deja elegir entre las más
+  parecidas.
 - **Información de los juegos desde Wikipedia.** Para los juegos que ES-DE no
   scrapeó: *Y › Buscar información…*, o *≡ › Biblioteca › Información de los
   juegos* para todos, agrega la descripción, el año, el género, la desarrolladora
@@ -251,11 +254,15 @@ queda sin traducir.
 | Colecciones | `E:\ES-DE\collections\custom-<Nombre>.cfg` (las ve también ES-DE) |
 | Tus datos | `E:\relix\data.json`, `data.previous.json` y `backups\` (los últimos 7 días) |
 | Registro de diagnóstico | `E:\relix\log.txt` (y `log.previous.txt`) |
+| Listas de discos | `E:\relix\discs\<consola>\` (el `.m3u` que Relix arma para los juegos de varios discos) |
 | Caché | `E:\relix\cache\` (listas de libretro y miniaturas; se puede borrar) |
 
-Los juegos de varios discos van en un `.m3u`; los de Xbox 360 y Dreamcast pueden
-ir en una carpeta por juego (`Halo 3 (USA)\default.xex`): el nombre sale de la
-carpeta.
+Los juegos de PS1 y Dreamcast de varios discos no necesitan nada más: copia cada
+disco (`Juego (USA) (Disc 1).chd`, `(Disc 2)`…) y Relix muestra un solo juego y
+arma su `.m3u` en `E:\relix\discs` al abrirlo, para cambiar de disco desde el
+menú del emulador. Si ya tienes un `.m3u`, Relix usa el tuyo. Los de Xbox 360 y
+Dreamcast pueden ir en una carpeta por juego (`Halo 3 (USA)\default.xex`): el
+nombre sale de la carpeta.
 
 **Volver a un respaldo:** en el PC, copia el `backups\data-<día>.json` que
 quieras encima de `E:\relix\data.json` y abre Relix. Cuando el archivo del USB

@@ -26,6 +26,10 @@ export const NEWS = /** @type {Record<string, string[]>} */ ({
     'Nuevo en la {version}: dentro de una consola, clic en el stick derecho para ver la ficha de un juego y en el izquierdo para que Relix te sorprenda',
     'Truco: dentro de una consola, LT y RT saltan de letra en letra',
   ],
+  '1.4.0': [
+    'Nuevo en la {version}: al escanear una consola también llegan sus portadas y su información, y los juegos de varios discos ya se pueden cambiar de disco',
+    'Truco: en ≡ › Consolas, X te deja ordenar tus consolas',
+  ],
 })
 
 /**

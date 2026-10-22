@@ -354,6 +354,32 @@ the USB drive a game ES-DE hasn't scraped (it has no description in Relix).
       The menu comes in against the right edge, and when you close it the home
       screen is where it was. The same in a console, on a game at the far right.
 
+## Discs, one-step scan, order and memory (1.4.0)
+- [ ] After installing 1.4.0, when Relix opens: "New in 1.4.0: …" shows up once.
+- [ ] Copy a PS1 game as two or more `.chd` files without an `.m3u`
+      (`Game (USA) (Disc 1).chd`, `(Disc 2)`) and scan PS1: it shows up once, and
+      the panel and the sheet say "2 discs". Open it: the launch screen says where
+      to change discs, and `E:\relix\discs\psx\Game (USA) (Disc 1).m3u` lists both.
+      In RetroArch: menu › **Disc Control** › eject, pick disc 2, insert: the game
+      goes on. A save made with disc 1 alone is still there.
+- [ ] Copy a game that has no cover and scan its console (**≡ → Library**): the
+      row says "Finding covers…" and then "Finding info…", and a notice says what
+      came ("Done: 1 cover and 1 description.") and what's left to pick by hand.
+- [ ] Same, without internet on the Xbox: the scan works and the notice says the
+      covers and info will have to wait.
+- [ ] **≡ → Consoles**, **X** on a console: it lifts; **↑ ↓** move it, **A**
+      saves. The home screen and the library's tabs follow that order (Favorites
+      and Collections first). **X** and then **B** leaves it as it was. The order
+      is still there after closing Relix.
+- [ ] On the home screen, **Y** on a game of *Continue playing* → **Remove from
+      Continue playing**: it leaves the row; play it and it comes back. From a
+      console, the menu doesn't offer it.
+- [ ] A console with many games: going down row by row and jumping by letter
+      (LT / RT) shows every cover, without gaps.
+- [ ] **≡ → Checkup → Diagnostic log**: browse consoles with backgrounds for a
+      while. If a **MEMORY** "High memory, freeing: …" line shows up, the next one
+      ("After freeing: …") should be lower. Write both down.
+
 ## New games, and no players (1.4.0)
 - [ ] Nowhere says how many players a game is for: not the library panel, not the
       sheet, not *Find info…*. **Y → Filter** only has genres (no *2 or more

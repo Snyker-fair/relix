@@ -37,13 +37,15 @@ what each button does.
 
 ## Features
 
-- **Your whole library, one shelf.** A channel per console, Favorites,
-  Collections and *Continue playing*. Twelve consoles: PS1, PS2, PSP, SNES, N64,
+- **Your whole library, one shelf.** A channel per console, in the order you
+  choose (*≡ › Consoles*, **X**), Favorites, Collections and *Continue playing*.
+  Twelve consoles: PS1, PS2, PSP, SNES, N64,
   GBA, GameCube, Wii U, 3DS, Mega Drive, Dreamcast and Xbox 360.
-- **Covers without accounts.** Downloaded from
+- **Copy and scan, that's all.** Scanning a console in *≡ › Library* also
+  brings its games' covers from
   [libretro-thumbnails](https://github.com/libretro-thumbnails) (the ones
-  RetroArch uses). When a file name is ambiguous, Relix doesn't guess: it asks
-  you to pick from the closest matches.
+  RetroArch uses) and the descriptions Wikipedia is sure about. When a file name
+  is ambiguous, Relix doesn't guess: it asks you to pick from the closest matches.
 - **Game info from Wikipedia.** For the games ES-DE didn't scrape: *Y › Find
   info…*, or *≡ › Library › Game info* for all of them, adds the description,
   year, genre, developer and publisher from
@@ -253,10 +255,15 @@ untranslated.
 | Collections | `E:\ES-DE\collections\custom-<Name>.cfg` (ES-DE sees them too) |
 | Your data | `E:\relix\data.json`, `data.previous.json` and `backups\` (last 7 days) |
 | Diagnostic log | `E:\relix\log.txt` (and `log.previous.txt`) |
+| Disc lists | `E:\relix\discs\<console>\` (the `.m3u` Relix makes for games on several discs) |
 | Cache | `E:\relix\cache\` (libretro lists and thumbnails; safe to delete) |
 
-Multi-disc games go in an `.m3u`; Xbox 360 and Dreamcast games can live in a
-folder per game (`Halo 3 (USA)\default.xex`): the name comes from the folder.
+Multi-disc PS1 and Dreamcast games need nothing extra: copy each disc
+(`Game (USA) (Disc 1).chd`, `(Disc 2)`…) and Relix shows one game and makes its
+`.m3u` in `E:\relix\discs` when you open it, so you change discs from the
+emulator's menu. If you already have an `.m3u`, Relix uses yours. Xbox 360 and
+Dreamcast games can live in a folder per game (`Halo 3 (USA)\default.xex`): the
+name comes from the folder.
 
 **Restore a backup:** on the PC, copy the `backups\data-<day>.json` you want over
 `E:\relix\data.json` and open Relix. When the file on the USB drive changes

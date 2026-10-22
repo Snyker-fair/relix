@@ -788,6 +788,11 @@ export default {
   'guía': 'guide',
   'bienvenida': 'welcome tour',
 
+  // ── What's new in 1.4.0 ──
+  'Nuevo en la {version}: al escanear una consola también llegan sus portadas y su información, y los juegos de varios discos ya se pueden cambiar de disco':
+    'New in {version}: scanning a console also brings its covers and info, and games on several discs can now change discs',
+  'Truco: en ≡ › Consolas, X te deja ordenar tus consolas': 'Tip: in ≡ › Consoles, X lets you reorder your consoles',
+
   // ── Games on several discs ──
   'Tiene {n} discos: cuando pida otro, cámbialo en el menú de RetroArch › Disc Control.':
     'It has {n} discs: when it asks for another one, change it in the RetroArch menu › Disc Control.',
