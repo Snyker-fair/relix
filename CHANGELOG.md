@@ -17,7 +17,7 @@ Each version's section becomes the notes of its GitHub release.
 - **The screensaver, with your games:** the ones you play and the ones waiting
   to be picked back up come up more often; all of them show before any repeats.
 
-## [1.4.0] - unreleased
+## [1.4.0] - 2026-10-23
 
 - **"New" games:** the games a scan brings to a console get a *New* tag on their
   cover until you play them or for 14 days, and the home screen counts them
