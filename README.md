@@ -16,7 +16,7 @@ A game launcher for emulators on Xbox Series X|S in Developer Mode.</p>
   <a href="README.es.md">Leer en español</a>
 </p>
 
-<p align="center"><img src="docs/media/tour.webp" alt="A short tour of Relix: home, a console's library, the game menu and Options" width="860"></p>
+<p align="center"><img src="docs/media/tour.webp" alt="A short tour of Relix: home, a console's library, a game's sheet, the game menu, Surprise me and Options" width="860"></p>
 
 Relix scans the `roms` folder on your USB drive, lists every game under its
 console and opens it in the right emulator — RetroArch, XBSX2, PPSSPP, Xenia
@@ -46,6 +46,8 @@ what each button does.
   [libretro-thumbnails](https://github.com/libretro-thumbnails) (the ones
   RetroArch uses) and the descriptions Wikipedia is sure about. When a file name
   is ambiguous, Relix doesn't guess: it asks you to pick from the closest matches.
+  A PS1 or Dreamcast game on several discs needs nothing extra either: copy each
+  disc and Relix shows one game and makes the list to change discs.
 - **Game info from Wikipedia.** For the games ES-DE didn't scrape: *Y › Find
   info…*, or *≡ › Library › Game info* for all of them, adds the description,
   year, genre, developer and publisher from
@@ -92,11 +94,15 @@ what each button does.
 
 <table>
   <tr>
-    <td><img src="docs/media/home.png" alt="Home: a channel per console"></td>
-    <td><img src="docs/media/library.png" alt="A console's library with its game page"></td>
+    <td><img src="docs/media/home.png" alt="Home: a channel per console, its data and Continue playing"></td>
+    <td><img src="docs/media/library.png" alt="A console's library with its game page and the New tags"></td>
   </tr>
   <tr>
-    <td><img src="docs/media/game-menu.png" alt="Game menu: play, open with, favorites, collections, cover, hide, sort, filter"></td>
+    <td><img src="docs/media/sheet.png" alt="A game's full sheet: every detail, the description and your weeks with it"></td>
+    <td><img src="docs/media/game-menu.png" alt="Game menu: play, game sheet, favorites, collections, cover, rename, hide, sort"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/media/welcome-app.png" alt="Welcome tour: Relix as App, with the steps to change it in Dev Home"></td>
     <td><img src="docs/media/checkup.png" alt="Checkup: what is missing and the guide that fixes it"></td>
   </tr>
   <tr>
@@ -154,6 +160,7 @@ flowchart LR
   end
   shell -.->|"covers"| libretro["thumbnails.libretro.com"]
   ui -.->|"new version?"| github["GitHub Releases"]
+  ui -.->|"game info"| wiki["Wikidata · Wikipedia"]
 ```
 
 - **Launching a game is opening a URI.** Each emulator registers a protocol
@@ -177,7 +184,7 @@ flowchart LR
   memory.
 - **Pure logic, tested.** Everything that decides something — matching covers,
   building URIs, choosing which copy of your data wins, the checkup rules, version
-  comparison — lives in `src/lib/core/` without any UI, covered by 150+ tests.
+  comparison — lives in `src/lib/core/` without any UI, covered by 240+ tests.
 - **ES-DE compatible on purpose.** Relix reads ES-DE's gamelists and media and
   writes covers and collections where ES-DE expects them. One USB drive works on
   the PC and on the Xbox, and nothing needs converting.
@@ -333,8 +340,8 @@ Switch will join when an emulator with a launch protocol becomes playable.
 |---|---|
 | A | Open / play |
 | B | Back |
-| X | Favorite (in search: delete a letter) |
-| Y | Game menu: play, game sheet, open with…, favorite, collections, change cover, hide, sort, filter |
+| X | Favorite (in search: delete a letter; in Options › Consoles: move a console) |
+| Y | Game menu: play, game sheet, open with…, favorite, collections, change cover, rename, find info, hide, sort, filter (on *Continue playing*: remove it from there). In Options › Consoles, or in a console without games: its guide |
 | Right stick (click) | The game's full sheet |
 | Left stick (click) | Inside a console or collection: Surprise me, among its games |
 | LB / RB | Previous / next console |
