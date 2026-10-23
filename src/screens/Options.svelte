@@ -1289,13 +1289,14 @@
   .row.focus-ring.focused {
     transform: none;
   }
-  /* a console being moved (X in Consoles): lifted off the list */
+  /* a console being moved (X in Consoles): lifted off the list with a shadow. No
+     scale: a bigger row with its ring doesn't fit in the list's side margin and
+     its edges were cut off */
   .row.focus-ring.focused.moving {
-    transform: scale(1.02);
     box-shadow:
       0 0 0 5px var(--ring-gap),
       0 0 0 11px var(--pop),
-      0 30px 50px -20px rgb(var(--shadow) / 0.6);
+      0 18px 30px -14px rgb(var(--shadow) / 0.6);
     z-index: 1;
   }
   .row.all {
