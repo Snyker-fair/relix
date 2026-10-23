@@ -2,7 +2,7 @@
 
 Each version's section becomes the notes of its GitHub release.
 
-## [Unreleased]
+## [1.4.0] - unreleased
 
 - **"New" games:** the games a scan brings to a console get a *New* tag on their
   cover until you play them or for 14 days, and the home screen counts them
