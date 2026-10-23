@@ -130,12 +130,14 @@ describe('system checkup', () => {
 
     const consoles = [console_('psx', ['Crash Bandicoot (USA).chd'])]
     const asApp = buildChecks({ ...base, shell: memory(1 * GB), consoles })
-    expect(asApp.map((c) => c.id)).toEqual(['usb', 'write', 'space', 'folders', 'emu:psx', 'bios:psx', 'apptype', 'internet', 'data'])
+    // first: everything after a game depends on it
+    expect(asApp.map((c) => c.id)).toEqual(['apptype', 'usb', 'write', 'space', 'folders', 'emu:psx', 'bios:psx', 'internet', 'data'])
     expect(asApp.find((c) => c.id === 'apptype')).toMatchObject({ state: 'ok', title: 'Relix está como App' })
     expect(asApp.find((c) => c.id === 'apptype')?.detail).toContain('hasta 1,0 GB')
     const asGame = buildChecks({ ...base, shell: memory(5 * GB), consoles }).find((c) => c.id === 'apptype')
-    expect(asGame).toMatchObject({ state: 'warn', title: 'Relix está como Game' })
-    expect(asGame?.detail).toContain('cambia el tipo a App')
+    // an error: it counts in the red number until it's App
+    expect(asGame).toMatchObject({ state: 'error', title: 'Relix está como Game' })
+    expect(asGame?.detail).toContain('App type › App')
     expect(buildChecks({ ...base, shell, consoles }).some((c) => c.id === 'apptype')).toBe(false)
   })
 

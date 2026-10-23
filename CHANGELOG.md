@@ -26,6 +26,11 @@ Each version's section becomes the notes of its GitHub release.
 - **Remove from Continue playing:** on the home screen, **Y** on a game of the
   row has *Remove from Continue playing*. Its time and the *Recent* order stay,
   and if you play it again it comes back.
+- **Relix as App, the step that matters most:** Dev Home installs Relix as Game,
+  and as Game the Xbox closes it every time a game opens. Now the welcome tour
+  checks it right after the greeting (✓, or the five steps to change it), and
+  as Game it counts as something to fix: the red number on Options and Checkup,
+  the first row of Checkup and a notice every time Relix opens, until it's App.
 - **A bigger box on the sheet:** the cover takes the room left above the time
   played: a PS1 box goes from 280 to 460 px wide, a SNES one uses the card's
   whole width, and a game you haven't played yet gets the tallest one. It's the

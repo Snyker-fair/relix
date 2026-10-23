@@ -120,11 +120,14 @@ un disco USB y un PC en la misma red.
 2. Abre el **Device Portal** (la dirección que muestra Dev Home) › **My games &
    apps** › **Add**. Elige el `.msix` y, cuando pida dependencias, agrega los
    archivos de la carpeta de dependencias.
-3. Deja Relix como **App**, el tipo con que se instala: mientras juegas, la Xbox
-   solo lo pausa, así que al salir del juego vuelves a Relix al instante. Si lo
-   cambiaste a **Game** con una versión anterior, devuélvelo en **Dev Home**: sobre
-   Relix, botón Vista ⧉ › **View details**. **Opciones › Revisión** dice qué tipo
-   tiene. (Los emuladores sí van como Game: sus guías explican cómo.)
+3. **Cambia Relix a App, el paso más importante.** Dev Home lo instala como
+   **Game**, y como Game la Xbox cierra Relix cada vez que abres un juego, así que
+   al volver carga todo otra vez. Como **App** la Xbox solo lo pausa, y al salir
+   del juego vuelves al instante. En **Dev Home**, ponte sobre Relix (sin abrirlo)
+   › botón Vista ⧉ › **View details** › **App type** › **App**, y abre Relix. El
+   recorrido de bienvenida lo revisa primero, y **Opciones › Revisión** lo cuenta
+   como algo por arreglar hasta que sea App. (Los emuladores sí van como Game: sus
+   guías explican cómo.)
 4. En el PC, crea en el USB una carpeta por consola: `E:\roms\psx`,
    `E:\roms\ps2`, `E:\roms\snes`… (los nombres de ES-DE) y copia ahí tus juegos.
 5. Conecta el USB a la Xbox y abre Relix. El recorrido de bienvenida y

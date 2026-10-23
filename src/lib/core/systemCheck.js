@@ -240,6 +240,32 @@ export function buildChecks({ shell, romRoot, consoles, knownFolders, dataStatus
   const withGames = consoles.filter((c) => c.games.length > 0)
   const drive = shell?.drive ?? romRoot.replace(/roms[\\/]*$/i, '')
 
+  // ── Relix's type: the first thing, because everything after a game depends on it ──
+  const appType = appTypeOf(shell)
+  if (shell?.memory && appType) {
+    checks.push(
+      appType === 'app'
+        ? {
+            id: 'apptype',
+            state: 'ok',
+            title: t('Relix está como App'),
+            detail: t('Mientras juegas queda en pausa y al salir vuelves al instante. Memoria: hasta {memory}.', {
+              memory: formatBytes(shell.memory.expectedLimit),
+            }),
+          }
+        : {
+            // An error, not a warning: Dev Home installs it as Game, and as Game the Xbox
+            // closes it every time a game opens. It's the step that matters most
+            id: 'apptype',
+            state: 'error',
+            title: t('Relix está como Game'),
+            detail: t(
+              'La Xbox lo cierra cada vez que abres un juego y al volver carga todo otra vez. En Dev Home, sobre Relix: botón Vista ⧉ › View details › App type › App, y vuelve a abrir Relix.',
+            ),
+          },
+    )
+  }
+
   // ── USB ──
   checks.push({
     id: 'usb',
@@ -343,29 +369,7 @@ export function buildChecks({ shell, romRoot, consoles, knownFolders, dataStatus
     }
   }
 
-  // ── The Xbox, internet and your data ──
-  const appType = appTypeOf(shell)
-  if (shell?.memory && appType) {
-    checks.push(
-      appType === 'app'
-        ? {
-            id: 'apptype',
-            state: 'ok',
-            title: t('Relix está como App'),
-            detail: t('Mientras juegas queda en pausa y al salir vuelves al instante. Memoria: hasta {memory}.', {
-              memory: formatBytes(shell.memory.expectedLimit),
-            }),
-          }
-        : {
-            id: 'apptype',
-            state: 'warn',
-            title: t('Relix está como Game'),
-            detail: t(
-              'La Xbox lo cierra mientras juegas y al volver carga todo otra vez. En Dev Home, sobre Relix: botón Vista ⧉ › View details › cambia el tipo a App.',
-            ),
-          },
-    )
-  }
+  // ── Internet and your data ──
   if (shell) {
     checks.push(
       shell.internet

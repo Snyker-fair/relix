@@ -212,8 +212,9 @@ export default {
   '{game} tras {time} (Relix estaba cerrado)': '{game} after {time} (Relix was closed)',
   'Tus datos se recuperaron de {file}': 'Your data was recovered from {file}',
   'Relix encontró {found}: ≡ › Revisión': 'Relix found {found}: ≡ › Checkup',
-  'Relix está como Game: cámbialo a App para volver al instante (≡ › Revisión)':
-    'Relix is set as Game: switch it to App to come back instantly (≡ › Checkup)',
+  'Relix está como Game: cámbialo a App en Dev Home para volver al instante (≡ › Revisión)':
+    'Relix is set as Game: switch it to App in Dev Home to come back instantly (≡ › Checkup)',
+  'Relix encontró {found}, y está como Game: ≡ › Revisión': 'Relix found {found}, and it is set as Game: ≡ › Checkup',
   'navegador': 'browser',
   '{games} en {consoles}': '{games} on {consoles}',
   'tema oscuro': 'dark theme',
@@ -301,8 +302,8 @@ export default {
   'Mientras juegas queda en pausa y al salir vuelves al instante. Memoria: hasta {memory}.':
     'While you play it stays paused, and you come back instantly. Memory: up to {memory}.',
   'Relix está como Game': 'Relix is set as Game',
-  'La Xbox lo cierra mientras juegas y al volver carga todo otra vez. En Dev Home, sobre Relix: botón Vista ⧉ › View details › cambia el tipo a App.':
-    'The Xbox closes it while you play, and it loads everything again when you come back. In Dev Home, on Relix: View button ⧉ › View details › change the type to App.',
+  'La Xbox lo cierra cada vez que abres un juego y al volver carga todo otra vez. En Dev Home, sobre Relix: botón Vista ⧉ › View details › App type › App, y vuelve a abrir Relix.':
+    'The Xbox closes it every time you open a game, and it loads everything again when you come back. In Dev Home, on Relix: View button ⧉ › View details › App type › App, then open Relix again.',
   'Conexión a internet': 'Internet connection',
   'Para bajar portadas.': 'For downloading covers.',
   'Sin conexión al servidor de portadas': "Can't reach the cover server",
@@ -566,7 +567,7 @@ export default {
   'Paso {n} de {total}': 'Step {n} of {total}',
   '¡Hola!': 'Hi!',
   'Relix es la repisa de tus juegos en la Xbox: lee tu USB, abre cada juego con su emulador y lleva la cuenta de cuánto juegas.': 'Relix is the shelf for your games on Xbox: it reads your USB drive, opens each game with its emulator and keeps track of how much you play.',
-  'Son cuatro pasos cortos. Puedes saltarlos con': 'Four short steps. You can skip them with',
+  'Son cinco pasos cortos. Puedes saltarlos con': 'Five short steps. You can skip them with',
   'y verlos de nuevo en': 'and see them again in',
   'Opciones › Revisión': 'Options › Checkup',
   'Tu USB': 'Your USB drive',
@@ -787,6 +788,24 @@ export default {
   'información de juegos': 'game info',
   'guía': 'guide',
   'bienvenida': 'welcome tour',
+
+  // ── Relix as App, in the welcome tour ──
+  'Relix como App': 'Relix as App',
+  'En la Xbox cada programa es App o Game, y Relix tiene que ser App: mientras juegas, la consola solo lo pausa, y al salir del emulador vuelves al instante, donde estabas.':
+    'On the Xbox every program is an App or a Game, and Relix has to be an App: while you play, the console only pauses it, and when you quit the emulator you are back instantly, where you were.',
+  'Dev Home lo instala como Game y Relix no puede cambiarse solo: se hace en Dev Home, en un minuto.':
+    "Dev Home installs it as Game and Relix can't change itself: it's done in Dev Home, in a minute.",
+  'Un ajuste en Dev Home para volver al instante': 'A setting in Dev Home to come back instantly',
+  'Revisando cómo está Relix…': 'Checking how Relix is set…',
+  'Listo: no hay nada que cambiar.': 'Done: nothing to change.',
+  'La Xbox lo cierra cada vez que abres un juego. Cámbialo así:': 'The Xbox closes it every time you open a game. Change it like this:',
+  'Revisa que Relix esté como App': 'Check that Relix is set as App',
+  'Esta versión del shell no dice de qué tipo es. Así se ve y se cambia:': "This version of the shell doesn't say which type it is. This is how to see it and change it:",
+  'Presiona el botón Xbox y vuelve a Dev Home.': 'Press the Xbox button and go back to Dev Home.',
+  'En la lista de juegos y apps, ponte sobre Relix, sin abrirlo.': 'In the list of games and apps, highlight Relix, without opening it.',
+  'y elige View details.': 'and choose View details.',
+  'En App type, elige App.': 'In App type, choose App.',
+  'Abre Relix otra vez: este paso quedará con ✓.': 'Open Relix again: this step will show a ✓.',
 
   // ── What's new in 1.4.0 ──
   'Nuevo en la {version}: al escanear una consola también llegan sus portadas y su información, y los juegos de varios discos ya se pueden cambiar de disco':

@@ -159,10 +159,17 @@
     const { errors } = systemStatus.summary
     if (!warnedSystem && errors > 0) {
       warnedSystem = true
-      notices.push(t('Relix encontró {found}: ≡ › Revisión', { found: plural(errors, 'cosa por arreglar', 'cosas por arreglar') }))
-    }
-    if (systemStatus.takeAppTypeNotice()) {
-      notices.push(t('Relix está como Game: cámbialo a App para volver al instante (≡ › Revisión)'))
+      // As Game, it says so by name: it's the step that matters most (Dev Home installs it like that)
+      const asGame = systemStatus.appType === 'game'
+      notices.push(
+        asGame && errors === 1
+          ? t('Relix está como Game: cámbialo a App en Dev Home para volver al instante (≡ › Revisión)')
+          : asGame
+            ? t('Relix encontró {found}, y está como Game: ≡ › Revisión', {
+                found: plural(errors, 'cosa por arreglar', 'cosas por arreglar'),
+              })
+            : t('Relix encontró {found}: ≡ › Revisión', { found: plural(errors, 'cosa por arreglar', 'cosas por arreglar') }),
+      )
     }
     for (const line of updates.takeNews(library.all.length > 0) ?? []) notices.push(t(line, { version: VERSION }))
     const version = updates.takeNotice()

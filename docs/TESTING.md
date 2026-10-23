@@ -301,11 +301,18 @@ the USB drive a game ES-DE hasn't scraped (it has no description in Relix).
 - [ ] A game opened from the home screen (*Continue playing*) comes back to the
       home screen, on the same channel.
 
-## Relix as App (1.2.0)
-- [ ] With Relix as **Game** (Dev Home › View details): when it opens, "Relix is set
-      as Game: switch it to App…" shows up once, and **≡ → Checkup** has the
-      warning "Relix is set as Game" with the steps. Close and open Relix: the
-      notice doesn't show again (the warning in Checkup stays).
+## Relix as App (1.2.0, stronger in 1.4.0)
+- [ ] Install Relix from scratch and open it: it's **Game** (Dev Home installs it
+      like that). The welcome tour's second screen, **Relix as App**, shows ✗
+      "Relix is set as Game" and the five steps.
+- [ ] Skip the tour: the Options tile and the **Checkup** tab have the red number,
+      **Checkup** shows "Relix is set as Game" first, and the opening notice says
+      "Relix is set as Game: switch it to App in Dev Home…" (with something else to
+      fix too: "Relix found N things to fix, and it is set as Game"). Close and open
+      Relix: the notice shows again, every time, until it's App.
+- [ ] Follow the steps (Dev Home › Relix › ⧉ › View details › App type › App) and
+      open Relix: the tour's step shows ✓ (≡ → Checkup → Welcome tour), the red
+      number drops by one and the notice doesn't show.
 - [ ] Switch it to **App** and open Relix: Checkup says "Relix is set as App" and
       "Memory: up to" about 1 GB. If it says Game, or a number far from 1 GB, write
       down what it says.

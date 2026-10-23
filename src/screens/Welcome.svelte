@@ -1,8 +1,9 @@
 <script>
   /**
-   * First run: a short tour of what Relix needs. Five screens
-   * (hi, your USB drive, emulators, covers, buttons). It shows once and
-   * can be seen again from Options › Checkup.
+   * First run: a short tour of what Relix needs. Six screens
+   * (hi, Relix as App, your USB drive, emulators, covers, buttons). It shows once
+   * and can be seen again from Options › Checkup. Relix as App goes first: Dev Home
+   * installs it as Game, and as Game the Xbox closes it every time a game opens.
    *
    *   A  next / the focused option    B  previous screen    ≡  skip
    *   ↑ ↓  choose (consoles in Emulators, "Search now" in Covers)
@@ -39,7 +40,7 @@
    */
   let { initialStep = 0, initialRow, onGuide, onDone, onToast } = $props()
 
-  const STEPS = ['hello', 'usb', 'emulators', 'covers', 'buttons']
+  const STEPS = ['hello', 'apptype', 'usb', 'emulators', 'covers', 'buttons']
   // svelte-ignore state_referenced_locally
   let step = $state(Math.min(Math.max(0, initialStep), STEPS.length - 1))
   const stepId = $derived(STEPS[step])
@@ -54,6 +55,11 @@
   const STATE_ORDER = { error: 0, warn: 1, info: 2, ok: 3 }
   const MARKS = { ok: '✓', warn: '!', error: '✗', info: 'i' }
   const checkById = $derived(new Map(systemStatus.checks.map((c) => [c.id, c])))
+
+  // ── Relix as App (the checkup says it from the memory the Xbox will give it) ──
+  const appCheck = $derived(checkById.get('apptype'))
+  /** Still finding out; with an older shell (or off the Xbox) there's no answer: the steps show anyway */
+  const appChecking = $derived(!appCheck && systemStatus.running)
 
   // ── Your USB drive ──
   const usbChecks = $derived(systemStatus.checks.filter((c) => ['usb', 'write', 'space', 'folders'].includes(c.id)))
@@ -224,8 +230,19 @@
         )}
       </p>
       <p class="small">
-        {t('Son cuatro pasos cortos. Puedes saltarlos con')} <PadButton name="start" size={26} />
+        {t('Son cinco pasos cortos. Puedes saltarlos con')} <PadButton name="start" size={26} />
         {t('y verlos de nuevo en')} <strong>{t('Opciones › Revisión')}</strong>.
+      </p>
+    {:else if stepId === 'apptype'}
+      <span class="intro-icon"><ChannelIcon id="swap" color="currentColor" size={72} /></span>
+      <h1>{t('Relix como App')}</h1>
+      <p>
+        {t(
+          'En la Xbox cada programa es App o Game, y Relix tiene que ser App: mientras juegas, la consola solo lo pausa, y al salir del emulador vuelves al instante, donde estabas.',
+        )}
+      </p>
+      <p class="small">
+        {t('Dev Home lo instala como Game y Relix no puede cambiarse solo: se hace en Dev Home, en un minuto.')}
       </p>
     {:else if stepId === 'usb'}
       <span class="intro-icon"><ChannelIcon id="usb" color="currentColor" size={76} /></span>
@@ -274,6 +291,7 @@
     {#if stepId === 'hello'}
       <ol class="cards">
         {#each [
+          { icon: 'swap', title: t('Relix como App'), text: t('Un ajuste en Dev Home para volver al instante') },
           { icon: 'usb', title: t('Tu USB'), text: t('Dónde van los juegos y si Relix puede guardar en él') },
           { icon: 'play', title: t('Emuladores'), text: t('Qué necesita cada consola, con su guía paso a paso') },
           { icon: 'cover', title: t('Portadas'), text: t('Bajarlas todas de una vez') },
@@ -289,6 +307,45 @@
           </li>
         {/each}
       </ol>
+    {:else if stepId === 'apptype'}
+      <ul class="list compact">
+        <li class="line">
+          {#if appChecking}
+            <span class="mark info"><span class="spinner" aria-hidden="true"></span></span>
+            <span class="text"><strong>{t('Revisando cómo está Relix…')}</strong></span>
+          {:else if appCheck?.state === 'ok'}
+            <span class="mark ok" aria-hidden="true">{MARKS.ok}</span>
+            <span class="text">
+              <strong>{appCheck.title}</strong>
+              <span>{t('Listo: no hay nada que cambiar.')}</span>
+            </span>
+          {:else if appCheck}
+            <span class="mark error" aria-hidden="true">{MARKS.error}</span>
+            <span class="text">
+              <strong>{appCheck.title}</strong>
+              <span>{t('La Xbox lo cierra cada vez que abres un juego. Cámbialo así:')}</span>
+            </span>
+          {:else}
+            <span class="mark info" aria-hidden="true">{MARKS.info}</span>
+            <span class="text">
+              <strong>{t('Revisa que Relix esté como App')}</strong>
+              <span>{t('Esta versión del shell no dice de qué tipo es. Así se ve y se cambia:')}</span>
+            </span>
+          {/if}
+        </li>
+      </ul>
+      {#if !appChecking && appCheck?.state !== 'ok'}
+        <ol class="steps">
+          <li><span class="num">1</span><span>{t('Presiona el botón Xbox y vuelve a Dev Home.')}</span></li>
+          <li><span class="num">2</span><span>{t('En la lista de juegos y apps, ponte sobre Relix, sin abrirlo.')}</span></li>
+          <li>
+            <span class="num">3</span>
+            <span>{t('Presiona')} <PadButton name="view" size={30} /> {t('y elige View details.')}</span>
+          </li>
+          <li><span class="num">4</span><span>{t('En App type, elige App.')}</span></li>
+          <li><span class="num">5</span><span>{t('Abre Relix otra vez: este paso quedará con ✓.')}</span></li>
+        </ol>
+      {/if}
     {:else if stepId === 'usb'}
       <ul class="list compact">
         {#if usbChecks.length <= 1 && systemStatus.running}
@@ -680,6 +737,29 @@
     height: 76px;
     border-radius: 24px;
     background: var(--sky);
+  }
+
+  /* Relix as App: how to change it, step by step */
+  .steps {
+    list-style: none;
+    margin: 26px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 14px;
+  }
+  .steps li {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    min-height: 82px;
+    padding: 12px 28px 12px 18px;
+    border-radius: 28px;
+    background: var(--cloud);
+    font-size: 25px;
+    line-height: 1.35;
+  }
+  .steps :global(.pad) {
+    vertical-align: -6px;
   }
 
   .list {
