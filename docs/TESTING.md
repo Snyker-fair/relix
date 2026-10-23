@@ -149,25 +149,21 @@ copy the message from the **Output** window.
 - [ ] **Welcome tour** shows it again; at the end you're back in Checkup.
 
 ## Step 7 · Live game panel, screensaver and filters
-- [ ] Prepare backgrounds, logos and videos with ES-DE on the PC (README ›
-      **Backgrounds, logos and videos with ES-DE**). It can be tested without that
+- [ ] Prepare backgrounds and logos with ES-DE on the PC (README ›
+      **Backgrounds and logos with ES-DE**). It can be tested without that
       too: **≡ → Covers → A** now also downloads a screenshot for games without a
       background ("N background screenshots").
 - [ ] In a console, the game panel shows the fan art (or the screenshot) at the top
       with the logo over it; the cover is small, next to the name. Behind it, the
       game's color, blurred.
-- [ ] Stay about 2 seconds on a game with a video: it starts muted, loops and the
-      logo fades. Moving to another game stops it. **The most important thing to
-      check on the Xbox: that the video loops without cutting.**
-- [ ] Videos always play muted (since 1.3.0 there's no *Video sound* option).
+- [ ] A game with an ES-DE video in `downloaded_media\<console>\videos\`: the
+      panel shows its fan art or screenshot, and no video plays (since 1.4.0).
 - [ ] **≡ → Preferences → Screensaver**: set it to 3 minutes and let go of the
       controller. Your games show up one after another; **A** plays the one on
       screen and any other button goes back to where you were.
 - [ ] **Y → Filter** (if your gamelists have genres): pick a genre; the
       grid shows only those and the filter shows up at the top. **Y → Filter → All
       games** removes it.
-- [ ] If a video doesn't show, write down its name and extension (`.mp4`, `.webm`…)
-      when reporting it: it may be a format the Xbox doesn't play.
 
 ## Dark theme (0.8.1)
 - [ ] **≡ → Preferences → Theme** (the first row): **A** goes from Light to Dark and
@@ -352,9 +348,8 @@ the USB drive a game ES-DE hasn't scraped (it has no description in Relix).
 - [ ] **≡ → Preferences** no longer has *Video sound*.
 - [ ] **≡ → Checkup → Diagnostic log**: **MEMORY** lines when Relix opens ("Relix
       opened: N MB of 1.0 GB"), before each game ("Opening <game>: …") and on each
-      new peak ("Peak: … · <screen> · with a video"). Browse a console with ES-DE
-      videos for a while, and one without: write down both peaks. That decides
-      whether the videos stay.
+      new peak ("Peak: … · <screen>"). Browse a console for a while and write
+      down the peak.
 - [ ] A game with a long description (from Wikipedia) and time played: in the
       library panel, "Opens with …" stays inside the card.
 - [ ] Home, on the first channel: go down to *Continue playing* and press **Y**.

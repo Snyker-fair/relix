@@ -341,7 +341,7 @@
     return () => clearTimeout(timer)
   })
 
-  // Preview videos stop while a game opens
+  // A game is opening: nothing should move underneath
   $effect(() => {
     activity.launching = launching !== null
   })

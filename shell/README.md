@@ -29,7 +29,7 @@ RelixShell/
 | File in `Shell/` | What it does |
 |---|---|
 | `GamepadInput.cs` | Reads the controller and sends it to the interface |
-| `LocalServer.cs` | Serves the interface, images, thumbnails and videos (in ranges) from `https://relix.example` |
+| `LocalServer.cs` | Serves the interface, images and thumbnails from `https://relix.example` |
 | `LibraryReader.cs` | Finds the USB drive and walks the `roms` folder |
 | `CoverService.cs` | Downloads covers and screenshots from libretro, makes the thumbnails, lists what's in `downloaded_media` |
 | `CollectionStore.cs` | Reads and saves collections in `ES-DE\collections` |
@@ -112,7 +112,6 @@ itself.
 | "… isn't installed on the console" | That emulator isn't installed, or its protocol is a different one |
 | "I couldn't connect to the cover server" | The Xbox has no internet |
 | A wrong cover | Game menu (Y) › **Change cover** |
-| A preview video doesn't show | Check that it's in `ES-DE\downloaded_media\<console>\videos\` with the same name as the game and that it's `.mp4` (H.264) or `.webm`. If everything else works, it may be a format the Xbox doesn't play |
 | `datos.json` or `registro.txt` are still on the drive | Relix 1.1.0 renames them only if the drive can be written to and the English name doesn't exist yet. Apply the permissions again; if `data.json` already exists, the old file can be deleted |
 | Two Relix apps in Dev Home | One is from before 1.0.0 (another publisher): uninstall the old one |
 

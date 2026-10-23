@@ -26,6 +26,10 @@ Each version's section becomes the notes of its GitHub release.
 - **Remove from Continue playing:** on the home screen, **Y** on a game of the
   row has *Remove from Continue playing*. Its time and the *Recent* order stay,
   and if you play it again it comes back.
+- **No more preview videos:** the library panel no longer plays ES-DE's videos,
+  even if they're on the USB drive. A video costs Relix more memory and
+  smoothness than it can spare as an App; the fan art or screenshot and the logo
+  stay. When scraping with ES-DE you can turn videos off (the README says how).
 - **Relix as App, the step that matters most:** Dev Home installs Relix as Game,
   and as Game the Xbox closes it every time a game opens. Now the welcome tour
   checks it right after the greeting (✓, or the five steps to change it), and

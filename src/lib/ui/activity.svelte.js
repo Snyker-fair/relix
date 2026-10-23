@@ -1,9 +1,8 @@
 /**
  * Screen state that several pieces share:
- *   - whether the screensaver is on or a game is opening (the preview videos
- *     stop: there's no point in them still playing underneath)
- *   - the images and videos from the USB drive that didn't load (they aren't
- *     asked for again and the panel shows the cover instead)
+ *   - whether the screensaver is on or a game is opening
+ *   - the images from the USB drive that didn't load (they aren't asked for
+ *     again and the panel shows the cover instead)
  */
 import { SvelteSet } from 'svelte/reactivity'
 
@@ -19,7 +18,7 @@ class Activity {
 
 export const activity = new Activity()
 
-/** URLs of images or videos that failed */
+/** URLs of images that failed */
 export const brokenMedia = new SvelteSet()
 
 /**

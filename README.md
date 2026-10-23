@@ -65,8 +65,9 @@ what each button does.
   filter by genre. Can't choose? *Surprise me* (the die on the home
   screen, or the left stick inside a console) picks one, almost always one you
   haven't played. Games a scan brings are tagged *New*.
-- **A living game page.** Fan art, logo and a muted video preview when ES-DE
-  scraped them; a background screenshot from libretro when it didn't. Click the
+- **A living game page.** Fan art and logo when ES-DE scraped them; a background
+  screenshot from libretro when it didn't. No video previews: they would cost
+  more memory and smoothness than Relix can spare. Click the
   right stick (or *Y › Game sheet*) for the full sheet: the whole description,
   every detail and your weeks with that game.
 - **Playtime.** Time and sessions per game, counted whether you quit from the
@@ -254,7 +255,7 @@ untranslated.
 | Games | `E:\roms\<console>\` (ES-DE names: `psx`, `ps2`, `psp`, `snes`, `n64`, `gba`, `gc`, `wiiu`, `n3ds`, `megadrive`, `dreamcast`, `xbox360`; also `ps1`, `genesis`, `3ds`, `dc`…) |
 | Gamelists | `E:\ES-DE\gamelists\<console>\gamelist.xml` (the first time Relix adds game info, the original stays as `gamelist.xml.relix-backup`) |
 | Covers | `E:\ES-DE\downloaded_media\<console>\covers\` (ES-DE's and the ones Relix downloads) |
-| Backgrounds, logos, videos | `…\fanart\`, `…\screenshots\`, `…\marquees\`, `…\videos\` (from ES-DE) |
+| Backgrounds and logos | `…\fanart\`, `…\screenshots\`, `…\marquees\` (from ES-DE) |
 | Collections | `E:\ES-DE\collections\custom-<Name>.cfg` (ES-DE sees them too) |
 | Your data | `E:\relix\data.json`, `data.previous.json` and `backups\` (last 7 days) |
 | Diagnostic log | `E:\relix\log.txt` (and `log.previous.txt`) |
@@ -276,7 +277,7 @@ Drives used with Relix 1.0.0 have Spanish names (`datos.json`, `respaldos\`,
 `registro.txt`): Relix 1.1.0 renames them the first time it opens the drive,
 without overwriting or deleting anything.
 
-### Backgrounds, logos and videos with ES-DE (on the PC)
+### Backgrounds and logos with ES-DE (on the PC)
 
 Relix doesn't scrape on its own (ScreenScraper asks for a developer key): it uses
 what ES-DE leaves on the USB drive. Once per console:
@@ -290,18 +291,16 @@ what ES-DE leaves on the USB drive. Once per console:
    - **SCRAPE FROM**: ScreenScraper.
    - **ACCOUNT SETTINGS**: turn on **USE THIS ACCOUNT FOR SCREENSCRAPER** and type
      your username and password.
-   - **CONTENT SETTINGS**: leave on videos, *fan art*, *marquee (wheel)* (the
-     logo), *screenshots*, *box covers* and *other metadata* (description and
-     genre, which the filters use).
+   - **CONTENT SETTINGS**: leave on *fan art*, *marquee (wheel)* (the logo),
+     *screenshots*, *box covers* and *other metadata* (description and genre,
+     which the filters use). Turn off *videos*: Relix doesn't play them, and
+     each one weighs 5 to 20 MB on the USB drive.
    - **SCRAPE THESE SYSTEMS**: the consoles you want → **START**.
 4. From ES-DE's data folder on the PC (with the installer,
    `C:\Users\<your user>\ES-DE`), copy the `downloaded_media` and `gamelists`
    folders into `E:\ES-DE\` on the USB drive. If Windows asks, merge the folders:
    the covers Relix downloaded are already there.
-5. Open Relix: it reads the backgrounds, logos and videos when it starts.
-
-Each video weighs between 5 and 20 MB: if the USB drive is small, scrape videos
-only for the consoles you play most.
+5. Open Relix: it reads the backgrounds and logos when it starts.
 
 ## Emulators
 

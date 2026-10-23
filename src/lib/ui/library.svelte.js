@@ -10,7 +10,7 @@
  * The covers are in ES-DE/downloaded_media/<console>/covers/, with the
  * game's name. The shell says which ones there are; that way the interface only
  * asks for the ones that exist and knows how many are missing. The same with the
- * backgrounds (fan art, screenshots), the logos and the videos, which are read after opening.
+ * backgrounds (fan art, screenshots) and the logos, which are read after opening.
  */
 import { coverUrls, listCovers, listMedia, loadLibrary, mediaFileUrl, scanRoms } from '../core/bridge.js'
 import { coverKey } from '../core/coverMatch.js'
@@ -26,11 +26,11 @@ import { load, onReplaced, save } from './storage.js'
 
 /**
  * @typedef {import('../core/esde.js').Game & {
- *   cover?: string, thumb?: string, background?: string, backgroundKind?: string, logo?: string, video?: string
+ *   cover?: string, thumb?: string, background?: string, backgroundKind?: string, logo?: string
  * }} LibraryGame
  *   cover: the original cover (detail panel); thumb: the thumbnail (grid);
  *   background: fan art or screenshot (panel and screensaver); backgroundKind: which folder it came from
- *   (fanart, screenshots, titlescreens); logo: ES-DE's; video: the preview
+ *   (fanart, screenshots, titlescreens); logo: ES-DE's
  */
 /** @typedef {{ folder: string, files: string[], scannedAt: number }} SavedScan */
 /** @typedef {{ driveId: string, systems: Record<string, SavedScan> }} ScanCache */
@@ -63,7 +63,7 @@ class Library {
   /** The covers on the USB drive, by console: ["Okami (USA).png", ...] */
   /** @type {Record<string, string[]>} */
   coverFiles = $state({})
-  /** Backgrounds, logos and videos on the USB drive, by console and type (see core/media.js) */
+  /** Backgrounds and logos on the USB drive, by console and type (see core/media.js) */
   /** @type {Record<string, import('../core/media.js').MediaFiles>} */
   mediaFiles = $state({})
   /** Games hidden from the game menu (BIOS files, demos, duplicates...) */
@@ -294,12 +294,12 @@ class Library {
   }
 
   /**
-   * A game's background, logo and video (undefined if it has none).
+   * A game's background and logo (undefined if it has none).
    * @param {import('../core/esde.js').Game} game
    * @param {import('../core/media.js').MediaIndex} index
    */
   #mediaFor(game, index) {
-    const { background, logo, video } = pickMedia(coverKey(game), index)
+    const { background, logo } = pickMedia(coverKey(game), index)
     /** @param {import('../core/media.js').MediaPick | null} pick */
     const url = (pick) => (pick ? mediaFileUrl(game.system, pick.type, pick.file, this.#mediaBase) || undefined : undefined)
     const backgroundUrl = url(background)
@@ -307,12 +307,11 @@ class Library {
       background: backgroundUrl,
       backgroundKind: backgroundUrl ? background?.type : undefined,
       logo: url(logo),
-      video: url(video),
     }
   }
 
   /**
-   * Reads which backgrounds, logos and videos are on the USB drive. It goes after opening,
+   * Reads which backgrounds and logos are on the USB drive. It goes after opening,
    * so it doesn't slow down the start; an older shell can't do it and stays without them.
    * @param {string[]} [systemIds]
    */
@@ -322,7 +321,7 @@ class Library {
       this.mediaFiles = { ...this.mediaFiles, ...files }
       this.#rebuild()
     } catch {
-      // no backgrounds or videos: the panel shows the cover, as before
+      // no backgrounds: the panel shows the cover, as before
     }
   }
 

@@ -14,10 +14,11 @@ namespace RelixShell
     ///   /index.html, /assets/...         the interface's files (the package's ui folder)
     ///   /media/psx/covers/Game.png       ES-DE images on the USB drive, by their exact name
     ///   /media/psx/covers/Game           without an extension: tries .png, .jpg, .jpeg and .webp
-    ///   /media/psx/videos/Game.mp4       ES-DE videos, in ranges (Range) so they can loop
     ///   /thumb/psx/Game.png              the JPG thumbnail of that cover (see CoverService)
     ///
     /// Everything goes through the same origin, so the interface has no CORS problems.
+    /// ES-DE's videos aren't served: Relix doesn't play them (they'd cost more memory
+    /// and smoothness than it can spare as an App).
     /// </summary>
     internal sealed class LocalServer
     {
@@ -25,13 +26,6 @@ namespace RelixShell
         private const string ThumbPrefix = "/thumb/";
 
         private static readonly string[] ImageExtensions = { ".png", ".jpg", ".jpeg", ".webp" };
-        private static readonly string[] VideoExtensions = { ".mp4", ".webm", ".m4v" };
-
-        /// <summary>
-        /// The most of a video sent per request. The player asks for the rest
-        /// as it needs it, so the whole file isn't read into memory.
-        /// </summary>
-        private const ulong MaxVideoChunk = 2 * 1024 * 1024;
 
         private static readonly Dictionary<string, string> ContentTypes =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -45,9 +39,6 @@ namespace RelixShell
                 { ".jpg", "image/jpeg" },
                 { ".jpeg", "image/jpeg" },
                 { ".webp", "image/webp" },
-                { ".mp4", "video/mp4" },
-                { ".m4v", "video/mp4" },
-                { ".webm", "video/webm" },
                 { ".woff2", "font/woff2" },
                 { ".woff", "font/woff" },
             };
@@ -83,12 +74,6 @@ namespace RelixShell
                 if (file == null)
                 {
                     args.Response = core.Environment.CreateWebResourceResponse(null, 404, "Not Found", "");
-                    return;
-                }
-
-                if (isMedia && IsVideo(file.FileType))
-                {
-                    args.Response = await VideoResponseAsync(file, args.Request.Headers);
                     return;
                 }
 
@@ -139,9 +124,9 @@ namespace RelixShell
 
             string basePath = Path.Combine(paths.MediaRoot, relative.Replace('/', '\\'));
 
-            // The interface already knows which images and videos there are (with their extension): a single lookup
+            // The interface already knows which images there are (with their extension): a single lookup
             string extension = Path.GetExtension(basePath).ToLowerInvariant();
-            if (Array.IndexOf(ImageExtensions, extension) >= 0 || Array.IndexOf(VideoExtensions, extension) >= 0)
+            if (Array.IndexOf(ImageExtensions, extension) >= 0)
             {
                 return await LibraryReader.TryGetFileAsync(basePath);
             }
@@ -167,115 +152,6 @@ namespace RelixShell
                 return null;
             }
             return await covers.GetThumbnailAsync(paths, relative.Substring(0, slash), relative.Substring(slash + 1));
-        }
-
-        private static bool IsVideo(string extension)
-        {
-            return Array.IndexOf(VideoExtensions, extension.ToLowerInvariant()) >= 0;
-        }
-
-        /// <summary>
-        /// A video: if the player asks for a piece (Range: bytes=start-end), it's
-        /// answered with a 206 and that piece (up to 2 MB); otherwise the whole file,
-        /// saying it accepts ranges. Without this, the WebView2 can't go back to
-        /// the start to loop the video.
-        /// </summary>
-        private async Task<CoreWebView2WebResourceResponse> VideoResponseAsync(
-            StorageFile file, CoreWebView2HttpRequestHeaders requestHeaders)
-        {
-            string contentType;
-            if (!ContentTypes.TryGetValue(file.FileType, out contentType))
-            {
-                contentType = "video/mp4";
-            }
-            ulong size = (await file.GetBasicPropertiesAsync()).Size;
-            string common = "Content-Type: " + contentType + "\r\nAccept-Ranges: bytes\r\nCache-Control: no-cache";
-
-            ulong start;
-            ulong end;
-            if (!TryParseRange(requestHeaders, size, out start, out end))
-            {
-                IRandomAccessStream whole = await file.OpenReadAsync();
-                return core.Environment.CreateWebResourceResponse(
-                    whole, 200, "OK", common + "\r\nContent-Length: " + size);
-            }
-            if (start >= size)
-            {
-                return core.Environment.CreateWebResourceResponse(
-                    null, 416, "Range Not Satisfiable", "Content-Range: bytes */" + size);
-            }
-
-            end = Math.Min(end, start + MaxVideoChunk - 1);
-            uint length = (uint)(end - start + 1);
-            var chunk = new InMemoryRandomAccessStream();
-            uint read;
-            using (IRandomAccessStream input = await file.OpenReadAsync())
-            {
-                input.Seek(start);
-                IBuffer buffer = await input.ReadAsync(new Windows.Storage.Streams.Buffer(length), length, InputStreamOptions.None);
-                read = buffer.Length;
-                await chunk.WriteAsync(buffer);
-            }
-            if (read == 0)
-            {
-                return core.Environment.CreateWebResourceResponse(
-                    null, 416, "Range Not Satisfiable", "Content-Range: bytes */" + size);
-            }
-            chunk.Seek(0);
-            return core.Environment.CreateWebResourceResponse(
-                chunk, 206, "Partial Content",
-                common + "\r\nContent-Range: bytes " + start + "-" + (start + read - 1) + "/" + size
-                    + "\r\nContent-Length: " + read);
-        }
-
-        /// <summary>
-        /// Reads "Range: bytes=start-end" (end optional) or "bytes=-N" (the last N).
-        /// false if the request has no Range or it can't be understood.
-        /// </summary>
-        private static bool TryParseRange(CoreWebView2HttpRequestHeaders headers, ulong size, out ulong start, out ulong end)
-        {
-            start = 0;
-            end = size == 0 ? 0 : size - 1;
-            if (size == 0 || !headers.Contains("Range"))
-            {
-                return false;
-            }
-
-            string value = headers.GetHeader("Range").Trim();
-            if (!value.StartsWith("bytes=", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-            string spec = value.Substring(6).Split(',')[0].Trim();
-            int dash = spec.IndexOf('-');
-            if (dash < 0)
-            {
-                return false;
-            }
-
-            string from = spec.Substring(0, dash).Trim();
-            string to = spec.Substring(dash + 1).Trim();
-            ulong first;
-            ulong last;
-            if (from.Length == 0)
-            {
-                if (!ulong.TryParse(to, out last) || last == 0)
-                {
-                    return false;
-                }
-                start = last >= size ? 0 : size - last;
-                return true;
-            }
-            if (!ulong.TryParse(from, out first))
-            {
-                return false;
-            }
-            start = first;
-            if (to.Length > 0 && ulong.TryParse(to, out last) && last >= first)
-            {
-                end = Math.Min(last, end);
-            }
-            return true;
         }
 
         /// <summary>

@@ -8,7 +8,6 @@
   import { jumpIndex, sectionOf, SORT_NAMES, sortGames } from '../lib/core/sorting.js'
   import { brokenMedia, usableMedia } from '../lib/ui/activity.svelte.js'
   import { activeFilters } from '../lib/ui/filters.svelte.js'
-  import PreviewVideo from '../lib/ui/PreviewVideo.svelte'
   import { isCollectionId } from '../lib/ui/channels.js'
   import ChannelIcon from '../lib/ui/ChannelIcon.svelte'
   import { emulators } from '../lib/ui/emulators.svelte.js'
@@ -108,18 +107,12 @@
   /** The focused game's time played (if you've played it) */
   const played = $derived(game ? library.playtime[game.id] : undefined)
 
-  // A panel with an image: fan art or a screenshot on top, the logo over it and, if you stay,
-  // the video. Without any of that, the big box stays, as always
+  // A panel with an image: fan art or a screenshot on top and the logo over it.
+  // Without one, the big box stays, as always. No videos: they cost more memory
+  // and smoothness than Relix can spare
   const background = $derived(usableMedia(game?.background))
   const logo = $derived(usableMedia(game?.logo))
-  const video = $derived(usableMedia(game?.video))
-  // With the video playing, the logo fades so it doesn't cover it
-  let videoPlaying = $state(false)
-  $effect(() => {
-    game?.id
-    videoPlaying = false
-  })
-  const framed = $derived(Boolean(background || video))
+  const framed = $derived(Boolean(background))
 
   // The screen's background: the game's image, heavily blurred. It waits a
   // moment before changing, so it doesn't flicker when going through the grid fast
@@ -348,14 +341,8 @@
   <section class="detail" style:--tint={platform.color} bind:this={detailEl}>
     {#key game.id}
       {#if framed}
-        <div class="media" class:video-on={videoPlaying}>
-          {#if background}
-            <img class="shot" src={background} alt="" onerror={() => brokenMedia.add(background)} />
-          {:else if game.cover}
-            <!-- Video only: while it waits, the blurred cover -->
-            <img class="shot blurred" src={game.cover} alt="" />
-          {/if}
-          {#if video}<PreviewVideo src={video} onplaying={() => (videoPlaying = true)} />{/if}
+        <div class="media">
+          <img class="shot" src={background} alt="" onerror={() => background && brokenMedia.add(background)} />
           {#if logo}
             <span class="logo-shade"></span>
             <img class="logo" src={logo} alt="" onerror={() => brokenMedia.add(logo)} />
@@ -634,10 +621,6 @@
     height: 100%;
     object-fit: cover;
   }
-  .media .shot.blurred {
-    filter: blur(14px) saturate(1.2);
-    transform: scale(1.15);
-  }
   .logo-shade {
     position: absolute;
     inset: 40% 0 0;
@@ -652,15 +635,6 @@
     object-fit: contain;
     object-position: right bottom;
     filter: drop-shadow(0 4px 10px rgb(0 0 0 / 0.45));
-  }
-  .media .logo,
-  .media .logo-shade {
-    transition: opacity 600ms ease;
-  }
-  .media.video-on .logo,
-  .media.video-on .logo-shade {
-    opacity: 0;
-    transition-delay: 2.5s;
   }
   .media .heart {
     right: 16px;

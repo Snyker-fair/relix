@@ -455,8 +455,8 @@ namespace RelixShell
 
         /// <summary>
         /// What's in downloaded_media for each console. Request:
-        /// { systems: ["psx"], types: ["screenshots", "fanart", "marquees", "videos"] }.
-        /// Answer: { media: { psx: { screenshots: ["Okami (USA).png"], videos: [...] } } }.
+        /// { systems: ["psx"], types: ["screenshots", "fanart", "marquees"] }.
+        /// Answer: { media: { psx: { screenshots: ["Okami (USA).png"], fanart: [...] } } }.
         /// </summary>
         private async Task<IJsonValue> ListMediaAsync(JsonObject payload)
         {

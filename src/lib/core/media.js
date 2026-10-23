@@ -1,15 +1,17 @@
 /**
- * Each game's images and videos, beyond the cover. They're in
+ * Each game's images, beyond the cover. They're in
  * ES-DE/downloaded_media/<console>/<type>/, with the same name as the game:
  * ES-DE leaves them when scraping on the PC, and Relix adds screenshots from libretro.
  *
  *   background: the fan art; if there's none, a screenshot; otherwise, the title screen
  *   logo:       marquees (ES-DE keeps the game's logo there, with transparency)
- *   video:      videos (the preview in the game panel)
+ *
+ * ES-DE's videos aren't used: playing them would cost Relix more memory and
+ * smoothness than it can spare as an App (about 1 GB).
  */
 
 /** Folders the shell is asked for (covers go separately: covers) */
-export const MEDIA_LISTED = ['screenshots', 'titlescreens', 'fanart', 'marquees', 'videos']
+export const MEDIA_LISTED = ['screenshots', 'titlescreens', 'fanart', 'marquees']
 
 /** For the background, in order of preference */
 export const BACKGROUND_TYPES = ['fanart', 'screenshots', 'titlescreens']
@@ -18,7 +20,7 @@ export const BACKGROUND_TYPES = ['fanart', 'screenshots', 'titlescreens']
  * @typedef {Record<string, string[]>} MediaFiles  type -> files with their extension ("Okami (USA).png")
  * @typedef {Map<string, Map<string, string>>} MediaIndex  type -> (lowercase key -> file)
  * @typedef {{ type: string, file: string }} MediaPick
- * @typedef {{ background: MediaPick | null, logo: MediaPick | null, video: MediaPick | null }} GameMedia
+ * @typedef {{ background: MediaPick | null, logo: MediaPick | null }} GameMedia
  */
 
 /** "FF7 (USA)/FF7 (USA).png" -> "ff7 (usa)/ff7 (usa)" @param {string} file */
@@ -39,7 +41,7 @@ export function indexMedia(files) {
 }
 
 /**
- * Which background, logo and video a game has.
+ * Which background and logo a game has.
  * @param {string} key  the game's coverKey (its path without the extension), in any case
  * @param {MediaIndex} index
  * @returns {GameMedia}
@@ -56,7 +58,7 @@ export function pickMedia(key, index) {
     background = find(type)
     if (background) break
   }
-  return { background, logo: find('marquees'), video: find('videos') }
+  return { background, logo: find('marquees') }
 }
 
 /**

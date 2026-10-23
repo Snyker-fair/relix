@@ -67,8 +67,9 @@ cada botón. Logo, colores, tipografía y voz de la marca están en
   filtros por género. ¿No sabes qué jugar? *Sorpréndeme* (el dado del
   inicio, o el stick izquierdo dentro de una consola) elige uno, casi siempre uno
   que no has jugado. Los juegos que trae un escaneo se marcan *Nuevo*.
-- **Ficha viva.** Fanart, logo y video sin sonido cuando ES-DE los escrapeó; una
-  captura de libretro como fondo cuando no. Con clic del stick derecho (o *Y › Ver
+- **Ficha viva.** Fanart y logo cuando ES-DE los escrapeó; una captura de
+  libretro como fondo cuando no. Sin videos: costarían más memoria y fluidez de la
+  que Relix puede gastar. Con clic del stick derecho (o *Y › Ver
   ficha*) se abre la ficha completa: la descripción entera, todos los datos y tus
   semanas con ese juego.
 - **Tiempo de juego.** Tiempo y partidas por juego, salgas desde el emulador o
@@ -253,7 +254,7 @@ queda sin traducir.
 | Juegos | `E:\roms\<consola>\` (nombres de ES-DE: `psx`, `ps2`, `psp`, `snes`, `n64`, `gba`, `gc`, `wiiu`, `n3ds`, `megadrive`, `dreamcast`, `xbox360`; también `ps1`, `genesis`, `3ds`, `dc`…) |
 | Gamelists | `E:\ES-DE\gamelists\<consola>\gamelist.xml` (la primera vez que Relix agrega información, el original queda como `gamelist.xml.relix-backup`) |
 | Portadas | `E:\ES-DE\downloaded_media\<consola>\covers\` (las de ES-DE y las que baja Relix) |
-| Fondos, logos y videos | `…\fanart\`, `…\screenshots\`, `…\marquees\`, `…\videos\` (de ES-DE) |
+| Fondos y logos | `…\fanart\`, `…\screenshots\`, `…\marquees\` (de ES-DE) |
 | Colecciones | `E:\ES-DE\collections\custom-<Nombre>.cfg` (las ve también ES-DE) |
 | Tus datos | `E:\relix\data.json`, `data.previous.json` y `backups\` (los últimos 7 días) |
 | Registro de diagnóstico | `E:\relix\log.txt` (y `log.previous.txt`) |
@@ -275,7 +276,7 @@ Los USB que usaste con Relix 1.0.0 tienen nombres en español (`datos.json`,
 `respaldos\`, `registro.txt`): Relix 1.1.0 los renombra la primera vez que abre
 el disco, sin sobrescribir ni borrar nada.
 
-### Fondos, logos y videos con ES-DE (en el PC)
+### Fondos y logos con ES-DE (en el PC)
 
 Relix no escrapea por su cuenta (ScreenScraper pide una clave de desarrollador):
 usa lo que ES-DE deja en el USB. Una vez por consola:
@@ -289,18 +290,16 @@ usa lo que ES-DE deja en el USB. Una vez por consola:
    - **SCRAPE FROM**: ScreenScraper.
    - **ACCOUNT SETTINGS**: activa **USE THIS ACCOUNT FOR SCREENSCRAPER** y escribe
      tu usuario y contraseña.
-   - **CONTENT SETTINGS**: deja activados los videos, *fan art*, *marquee (wheel)*
-     (el logo), *screenshots*, *box covers* y *other metadata* (descripción y
-     género, que usan los filtros).
+   - **CONTENT SETTINGS**: deja activados *fan art*, *marquee (wheel)* (el logo),
+     *screenshots*, *box covers* y *other metadata* (descripción y género, que
+     usan los filtros). Desactiva *videos*: Relix no los reproduce, y cada uno
+     pesa entre 5 y 20 MB en el USB.
    - **SCRAPE THESE SYSTEMS**: las consolas que quieras → **START**.
 4. Copia al USB, desde la carpeta de datos de ES-DE en el PC (con el instalador,
    `C:\Users\<tu usuario>\ES-DE`), las carpetas `downloaded_media` y `gamelists`
    dentro de `E:\ES-DE\`. Si Windows pregunta, combina las carpetas: las portadas
    que bajó Relix ya están ahí.
-5. Abre Relix: lee los fondos, logos y videos al iniciar.
-
-Cada video pesa entre 5 y 20 MB: si el USB es chico, escrapea videos solo de las
-consolas que más juegas.
+5. Abre Relix: lee los fondos y logos al iniciar.
 
 ## Emuladores
 

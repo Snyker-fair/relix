@@ -13,11 +13,9 @@ describe('memory in the log', () => {
     expect(isNewPeak(300 * MB, 0)).toBe(false)
   })
 
-  it('says how much, of how much, where and whether a video was playing', () => {
+  it('says how much, of how much and where', () => {
     expect(memoryText('start', sample(310 * MB), { where: 'inicio' })).toBe('Al abrir Relix: 310 MB de 1,0 GB · inicio')
-    expect(memoryText('peak', sample(412 * MB), { where: 'biblioteca de PS2', video: true })).toBe(
-      'Máximo: 412 MB de 1,0 GB · biblioteca de PS2 · con video',
-    )
+    expect(memoryText('peak', sample(412 * MB), { where: 'biblioteca de PS2' })).toBe('Máximo: 412 MB de 1,0 GB · biblioteca de PS2')
     expect(memoryText('game', sample(398 * MB), { game: 'Okami (PS2)' })).toBe('Al abrir Okami (PS2): 398 MB de 1,0 GB')
   })
 

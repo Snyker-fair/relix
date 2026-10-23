@@ -3,7 +3,7 @@
    * A game's full sheet (Y › Game sheet, or clicking the right stick in the
    * library): the whole description, every piece of data ES-DE or Wikipedia
    * left, the time you've played it and its last weeks.
-   * Only images: no video plays here (Relix has about 1 GB as an App).
+   * Only images: Relix doesn't play videos (it has about 1 GB as an App).
    *
    *   ↑ ↓  scroll the description     A  play       X  favorite
    *   Y    the game menu              B (or the right stick)  back

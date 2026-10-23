@@ -1,23 +1,19 @@
 /**
  * Measures Relix's memory on the Xbox and logs it (core/memory.js says what and why).
  * Asking the shell costs next to nothing: every 20 seconds while Relix is on screen,
- * and a moment after a preview video starts.
+.
  */
 import { memoryUsage } from '../core/bridge.js'
 import { isNewPeak, memoryText } from '../core/memory.js'
 import { diagnostics } from './diagnostics.svelte.js'
 
 const EVERY_MS = 20_000
-/** A video's memory shows up once it's playing for a moment */
-const AFTER_VIDEO_MS = 4000
 /** Before a game opens it waits for the shell this long at most */
 const BEFORE_GAME_MS = 800
 /** How long after asking WebView2 to let go it's measured again */
 const FREED_AFTER_MS = 5000
 
 class Memory {
-  /** Preview videos playing right now */
-  videos = $state(0)
   /** The highest one logged */
   #peak = 0
   /** What's on screen, in a few words ("PS2 library") */
@@ -43,16 +39,6 @@ class Memory {
     })
   }
 
-  /** A preview video started playing: it's measured a moment later */
-  videoStarted() {
-    this.videos++
-    if (!this.#off) setTimeout(() => this.#sample(), AFTER_VIDEO_MS)
-  }
-
-  videoStopped() {
-    this.videos = Math.max(0, this.videos - 1)
-  }
-
   /**
    * Right before a game opens (then the Xbox leaves Relix with 128 MB).
    * @param {string} game
@@ -71,7 +57,7 @@ class Memory {
     if (this.#off) return
     const before = await memoryUsage()
     if (!before) return
-    diagnostics.log('memory', memoryText('high', before, { where: this.#where(), video: this.videos > 0 }))
+    diagnostics.log('memory', memoryText('high', before, { where: this.#where() }))
     setTimeout(async () => {
       const after = await memoryUsage()
       if (!after) return
@@ -85,7 +71,7 @@ class Memory {
     const memory = await memoryUsage()
     if (!memory || !isNewPeak(this.#peak, memory.usage)) return
     this.#peak = memory.usage
-    diagnostics.log('memory', memoryText('peak', memory, { where: this.#where(), video: this.videos > 0 }))
+    diagnostics.log('memory', memoryText('peak', memory, { where: this.#where() }))
   }
 
   #stop() {

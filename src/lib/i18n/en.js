@@ -777,7 +777,6 @@ export default {
   'Al abrir Relix: {usage} de {limit}': 'Relix opened: {usage} of {limit}',
   'Al abrir {game}: {usage} de {limit}': 'Opening {game}: {usage} of {limit}',
   'Máximo: {usage} de {limit}': 'Peak: {usage} of {limit}',
-  'con video': 'with a video',
   'protector de pantalla': 'screensaver',
   'biblioteca de {channel}': '{channel} library',
   'inicio': 'home',
