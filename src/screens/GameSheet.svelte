@@ -57,6 +57,16 @@
   const thisWeek = $derived(weeks.at(-1)?.seconds ?? 0)
   const hasWeeks = $derived(weeks.some((w) => w.seconds > 0))
 
+  // The box takes the room left above the time played: taller without weeks, and as
+  // wide as the card for landscape boxes (SNES, N64). It's the same image the sheet
+  // already loads, so a bigger box costs no memory
+  let areaW = $state(0)
+  let areaH = $state(0)
+  const coverBox = $derived({
+    w: areaW > 0 ? Math.min(areaW - 24, 460) : 280,
+    h: areaH > 0 ? Math.max(240, areaH - 18) : 392,
+  })
+
   /** ES-DE's rating (0 to 1) out of 5: "4,5" in Spanish, "4.5" in English */
   const stars = $derived(new Intl.NumberFormat(i18n.dateLocale, { maximumFractionDigits: 1 }))
 
@@ -147,9 +157,11 @@
   </header>
 
   <aside class="side" style:--tint={platform.color}>
-    <div class="cover">
-      <CoverArt {game} {platform} width={280} height={392} showTitle={false} real />
-      {#if favorite}<span class="heart" aria-label={t('Favorito')}>♥</span>{/if}
+    <div class="cover-area" bind:clientWidth={areaW} bind:clientHeight={areaH}>
+      <div class="cover">
+        <CoverArt {game} {platform} width={coverBox.w} height={coverBox.h} showTitle={false} real />
+        {#if favorite}<span class="heart" aria-label={t('Favorito')}>♥</span>{/if}
+      </div>
     </div>
 
     <section class="time" aria-label={t('Tiempo jugado')}>
@@ -293,16 +305,23 @@
     top: 170px;
     width: 600px;
     height: 790px;
-    padding: 40px 44px 36px;
+    padding: 30px 44px 36px;
     display: flex;
     flex-direction: column;
     border-radius: 48px;
     background: var(--cloud);
     box-shadow: 0 30px 60px -40px rgb(var(--shadow) / 0.5);
   }
+  /* everything above the time played: the box is centered in it */
+  .cover-area {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    place-items: center;
+    padding-bottom: 18px;
+  }
   .cover {
     position: relative;
-    align-self: center;
     animation: bob 300ms var(--spring) both;
   }
   .cover :global(.cover) {

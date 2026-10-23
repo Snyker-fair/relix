@@ -26,6 +26,10 @@ Each version's section becomes the notes of its GitHub release.
 - **Remove from Continue playing:** on the home screen, **Y** on a game of the
   row has *Remove from Continue playing*. Its time and the *Recent* order stay,
   and if you play it again it comes back.
+- **A bigger box on the sheet:** the cover takes the room left above the time
+  played: a PS1 box goes from 280 to 460 px wide, a SNES one uses the card's
+  whole width, and a game you haven't played yet gets the tallest one. It's the
+  same image the sheet already loaded, so it costs no memory.
 - **Notices stay longer:** the time played after a game stays 6 seconds (it was
   3.5), and each notice when Relix opens 8 (it was 6), so there's time to read
   them from the couch.
