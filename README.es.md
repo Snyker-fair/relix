@@ -16,7 +16,7 @@ Un lanzador de juegos para emuladores en Xbox Series X|S en Modo Desarrollador.<
   <a href="README.md">Read in English</a>
 </p>
 
-<p align="center"><img src="docs/media/tour.webp" alt="Un recorrido corto por Relix: el inicio, la biblioteca de una consola, el menú del juego y Opciones" width="860"></p>
+<p align="center"><img src="docs/media/tour.webp" alt="Un recorrido corto por Relix: el inicio, la biblioteca de una consola, la ficha de un juego, el menú del juego, Sorpréndeme y Opciones" width="860"></p>
 
 Relix escanea la carpeta `roms` de tu USB, lista cada juego en su consola y lo
 abre en el emulador que corresponde: RetroArch, XBSX2, PPSSPP, Xenia y más. Baja
@@ -46,7 +46,9 @@ cada botón. Logo, colores, tipografía y voz de la marca están en
   [libretro-thumbnails](https://github.com/libretro-thumbnails) (las mismas de
   RetroArch) y las descripciones de las que Wikipedia está segura. Si el nombre
   de un archivo es dudoso, Relix no adivina: te deja elegir entre las más
-  parecidas.
+  parecidas. Un juego de PS1 o Dreamcast de varios discos tampoco pide nada más:
+  copia cada disco y Relix muestra un solo juego y arma la lista para cambiar de
+  disco.
 - **Información de los juegos desde Wikipedia.** Para los juegos que ES-DE no
   scrapeó: *Y › Buscar información…*, o *≡ › Biblioteca › Información de los
   juegos* para todos, agrega la descripción, el año, el género, la desarrolladora
@@ -97,11 +99,15 @@ cada botón. Logo, colores, tipografía y voz de la marca están en
 
 <table>
   <tr>
-    <td><img src="docs/media/home.png" alt="El inicio: un canal por consola"></td>
-    <td><img src="docs/media/library.png" alt="La biblioteca de una consola con la ficha del juego"></td>
+    <td><img src="docs/media/home.png" alt="El inicio: un canal por consola, sus datos y Seguir jugando"></td>
+    <td><img src="docs/media/library.png" alt="La biblioteca de una consola con el panel del juego y las marcas Nuevo"></td>
   </tr>
   <tr>
+    <td><img src="docs/media/sheet.png" alt="La ficha completa de un juego: todos sus datos, la descripción y tus semanas con él"></td>
     <td><img src="docs/media/game-menu.png" alt="Menú del juego"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/media/welcome-app.png" alt="Bienvenida: Relix como App, con los pasos para cambiarlo en Dev Home"></td>
     <td><img src="docs/media/checkup.png" alt="Revisión: qué falta y la guía que lo arregla"></td>
   </tr>
   <tr>
@@ -159,6 +165,7 @@ flowchart LR
   end
   shell -.->|"portadas"| libretro["thumbnails.libretro.com"]
   ui -.->|"¿versión nueva?"| github["GitHub Releases"]
+  ui -.->|"información de juegos"| wiki["Wikidata · Wikipedia"]
 ```
 
 - **Abrir un juego es abrir una URI.** Cada emulador registra un protocolo
@@ -181,7 +188,7 @@ flowchart LR
   emuladores necesitan la memoria.
 - **Lógica pura, con tests.** Todo lo que decide algo (elegir la portada, armar la
   URI, qué copia de tus datos manda, las reglas de la revisión, comparar versiones)
-  está en `src/lib/core/` sin interfaz, con más de 150 tests.
+  está en `src/lib/core/` sin interfaz, con más de 240 tests.
 - **Compatible con ES-DE a propósito.** Relix lee los gamelists y la media de ES-DE
   y guarda portadas y colecciones donde ES-DE las busca. Un mismo USB sirve en el PC
   y en la Xbox, sin convertir nada.
@@ -337,8 +344,8 @@ Switch se suma cuando haya un emulador con protocolo que sea jugable.
 |---|---|
 | A | Abrir / jugar |
 | B | Volver |
-| X | Favorito (en la búsqueda: borrar letra) |
-| Y | Menú del juego: jugar, ver ficha, abrir con…, favorito, colecciones, cambiar portada, ocultar, ordenar, filtrar. En Opciones › Consolas, o en una consola sin juegos: la guía |
+| X | Favorito (en la búsqueda: borrar letra; en Opciones › Consolas: mover una consola) |
+| Y | Menú del juego: jugar, ver ficha, abrir con…, favorito, colecciones, cambiar portada, renombrar, buscar información, ocultar, ordenar, filtrar (en *Seguir jugando*: quitarlo de ahí). En Opciones › Consolas, o en una consola sin juegos: la guía |
 | Stick derecho (clic) | La ficha completa del juego |
 | Stick izquierdo (clic) | Dentro de una consola o colección: Sorpréndeme, entre sus juegos |
 | LB / RB | Consola anterior / siguiente (o colección, dentro de Colecciones) |
