@@ -71,9 +71,13 @@ what each button does.
   right stick (or *Y › Game sheet*) for the full sheet: the whole description,
   every detail and your weeks with that game.
 - **Playtime.** Time and sessions per game, counted whether you quit from the
-  emulator or come back with the Xbox button, and your last 8 weeks with your top
-  5 in *Options › About*. If the Xbox closed Relix while you played, it opens
-  again where you were: the same library, with that game focused.
+  emulator or come back with the Xbox button, and your last 8 weeks, your months
+  and your top games in *Options › About*. Relix uses it for you: a game you left
+  a month ago shows up in *Continue playing* ("Back to it?"), each console says
+  your hours with it, a notice tells you how last month went, and the
+  screensaver shows your games more often. If the Xbox closed Relix while you
+  played, it opens again where you were: the same library, with that game
+  focused.
 - **It tells you what's wrong.** *Checkup* verifies the USB drive, free space,
   missing emulators and BIOS files (per region of your PS1 games), and whether
   Relix is set as App in Dev Home. If a game closes right after launching, Relix

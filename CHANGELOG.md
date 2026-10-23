@@ -2,6 +2,21 @@
 
 Each version's section becomes the notes of its GitHub release.
 
+## [1.5.0] - unreleased
+
+- **Back to it?:** a game you gave 2 hours or more and haven't touched in a
+  month takes the last place in *Continue playing*, as "Back to it? · 12 h". A
+  different one each day, among the five you played most. **Y › Remove from
+  Continue playing** leaves it out until you play it again.
+- **Your month:** the first time Relix opens in a new month, a notice says how
+  the last one went ("In October you played 14 h: mostly Okami (6 h), and you
+  tried 3 new games"). *≡ › About* shows this month and the last one, next to
+  your weeks.
+- **Your hours on each console:** on the home screen, a console you've played
+  says "45 h played" where its year went.
+- **The screensaver, with your games:** the ones you play and the ones waiting
+  to be picked back up come up more often; all of them show before any repeats.
+
 ## [1.4.0] - unreleased
 
 - **"New" games:** the games a scan brings to a console get a *New* tag on their

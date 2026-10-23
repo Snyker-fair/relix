@@ -392,5 +392,20 @@ the USB drive a game ES-DE hasn't scraped (it has no description in Relix).
       gone.
 - [ ] A console scanned for the first time (a new folder) doesn't mark its games.
 
+## Your time, for you (1.5.0)
+- [ ] A game with 2 h or more that you haven't played in 30 days: it shows up as
+      the third game of *Continue playing*, "Back to it? · N h". With several, it
+      changes from one day to the next. **Y → Remove from Continue playing** takes
+      it out and it doesn't come back after closing Relix; play it and it's a
+      normal recent game again.
+- [ ] The first time Relix opens in a new month: "In <month> you played …"
+      shows up once (not on the next start). **≡ → About** shows "This month" and
+      the last one with their most played game, and the top 3 below, all above
+      the hint bar.
+- [ ] Home: a console you've played says "N h played" instead of its year; one
+      you haven't, the year.
+- [ ] Screensaver (3 minutes): the games you've played lately come up more than
+      the rest, and none repeats until all have shown.
+
 If something fails, the **If something fails** table in
 [`shell/README.md`](../shell/README.md) has the most common causes.

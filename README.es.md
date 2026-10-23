@@ -73,9 +73,12 @@ cada botón. Logo, colores, tipografía y voz de la marca están en
   ficha*) se abre la ficha completa: la descripción entera, todos los datos y tus
   semanas con ese juego.
 - **Tiempo de juego.** Tiempo y partidas por juego, salgas desde el emulador o
-  vuelvas con el botón Xbox, y tus últimas 8 semanas con tu top 5 en *Opciones ›
-  Acerca de*. Si la Xbox cerró Relix mientras jugabas, se abre donde estabas: la
-  misma biblioteca, con ese juego enfocado.
+  vuelvas con el botón Xbox, y tus últimas 8 semanas, tus meses y tus más jugados
+  en *Opciones › Acerca de*. Relix lo usa para ti: un juego que dejaste hace un
+  mes aparece en *Seguir jugando* ("¿Lo retomas?"), cada consola dice tus horas
+  con ella, un aviso te cuenta cómo te fue el mes pasado y el protector de
+  pantalla muestra más tus juegos. Si la Xbox cerró Relix mientras jugabas, se
+  abre donde estabas: la misma biblioteca, con ese juego enfocado.
 - **Te dice qué falla.** La *Revisión* comprueba el USB, el espacio, los
   emuladores y las BIOS que faltan (según la región de tus juegos de PS1), y si
   Relix está como App en Dev Home. Si un juego se cierra al abrir, Relix dice qué
