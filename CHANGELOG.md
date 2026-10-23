@@ -26,6 +26,9 @@ Each version's section becomes the notes of its GitHub release.
 - **Remove from Continue playing:** on the home screen, **Y** on a game of the
   row has *Remove from Continue playing*. Its time and the *Recent* order stay,
   and if you play it again it comes back.
+- **Notices stay longer:** the time played after a game stays 6 seconds (it was
+  3.5), and each notice when Relix opens 8 (it was 6), so there's time to read
+  them from the couch.
 - **Big consoles stay light:** the grid only draws the rows you see and a couple
   more, so a console with 1,000 games opens using the same memory as one with 20
   (in the browser, 380 MB less with 1,000). And when the Xbox says Relix is near

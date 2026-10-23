@@ -168,8 +168,8 @@
     const version = updates.takeNotice()
     if (version) notices.push(t('Relix {version} ya está disponible: ≡ › Revisión', { version }))
     // If another notice is on screen (the playtime, e.g.), these go after it
-    const first = toast ? 3600 : 0
-    notices.forEach((message, i) => setTimeout(() => showToast(message, 6000), first + i * 6500))
+    const first = toast ? PLAYTIME_MS + 100 : 0
+    notices.forEach((message, i) => setTimeout(() => showToast(message, START_NOTICE_MS), first + i * (START_NOTICE_MS + 500)))
   }
 
   // If the USB drive doesn't let your data be saved, it's reported once (and each different error is logged)
@@ -308,6 +308,10 @@
     showToast(quickExitMessage(game, platform, emulator), 9000)
   }
 
+  /** How long the time played stays on screen after a game, and each notice when Relix opens */
+  const PLAYTIME_MS = 6000
+  const START_NOTICE_MS = 8000
+
   /** "Okami: 45 min played · 12 h in total" @param {{ id: string, seconds: number }} finished */
   function announcePlaytime({ id, seconds }) {
     const game = library.byId.get(id)
@@ -321,6 +325,7 @@
             total: formatPlaytime(total),
           })
         : t('{game}: {time} jugados', { game: game.name, time: formatPlaytime(seconds) }),
+      PLAYTIME_MS,
     )
   }
 
