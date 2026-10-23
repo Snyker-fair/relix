@@ -357,7 +357,8 @@ the USB drive a game ES-DE hasn't scraped (it has no description in Relix).
       screen is where it was. The same in a console, on a game at the far right.
 
 ## Discs, one-step scan, order and memory (1.4.0)
-- [ ] After installing 1.4.0, when Relix opens: "New in 1.4.0: …" shows up once.
+- [ ] After installing 1.4.0, when Relix opens: "New in 1.4.0: …", the tip about
+      ordering consoles and "ES-DE's videos no longer play…" show up once.
 - [ ] Copy a PS1 game as two or more `.chd` files without an `.m3u`
       (`Game (USA) (Disc 1).chd`, `(Disc 2)`) and scan PS1: it shows up once, and
       the panel and the sheet say "2 discs". Open it: the launch screen says where

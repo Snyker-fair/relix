@@ -810,6 +810,7 @@ export default {
   'Nuevo en la {version}: al escanear una consola también llegan sus portadas y su información, y los juegos de varios discos ya se pueden cambiar de disco':
     'New in {version}: scanning a console also brings its covers and info, and games on several discs can now change discs',
   'Truco: en ≡ › Consolas, X te deja ordenar tus consolas': 'Tip: in ≡ › Consoles, X lets you reorder your consoles',
+  'Los videos de ES-DE ya no se reproducen: así Relix va más fluido': "ES-DE's videos no longer play: that way Relix runs smoother",
 
   // ── Games on several discs ──
   'Tiene {n} discos: cuando pida otro, cámbialo en el menú de RetroArch › Disc Control.':

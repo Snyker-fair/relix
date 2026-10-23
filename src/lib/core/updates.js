@@ -29,6 +29,7 @@ export const NEWS = /** @type {Record<string, string[]>} */ ({
   '1.4.0': [
     'Nuevo en la {version}: al escanear una consola también llegan sus portadas y su información, y los juegos de varios discos ya se pueden cambiar de disco',
     'Truco: en ≡ › Consolas, X te deja ordenar tus consolas',
+    'Los videos de ES-DE ya no se reproducen: así Relix va más fluido',
   ],
 })
 
