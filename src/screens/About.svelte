@@ -6,11 +6,12 @@
    */
   import { getPlatform, PLATFORMS } from '../lib/core/platforms.js'
   import { weeklyTotals } from '../lib/core/playDays.js'
+  import { monthKey, monthName, monthSummary, previousMonth } from '../lib/core/monthly.js'
   import { mostPlayed, totalSeconds } from '../lib/core/userData.js'
   import { collections } from '../lib/ui/collections.svelte.js'
   import { emulators } from '../lib/ui/emulators.svelte.js'
   import { formatPlaytime, plural, timeAgo } from '../lib/ui/format.js'
-  import { t } from '../lib/i18n/i18n.svelte.js'
+  import { i18n, t } from '../lib/i18n/i18n.svelte.js'
   import { library } from '../lib/ui/library.svelte.js'
   import { userData } from '../lib/ui/userData.svelte.js'
   import WeekBars from '../lib/ui/WeekBars.svelte'
@@ -45,6 +46,23 @@
   const weeks = $derived(weeklyTotals(library.playDays, { now: Date.now(), weeks: 8, keep: inLibrary }))
   const thisWeek = $derived(weeks.at(-1)?.seconds ?? 0)
   const hasWeeks = $derived(weeks.some((w) => w.seconds > 0))
+
+  // This month and the last one (core/monthly.js): how much and which game the most
+  const months = $derived.by(() => {
+    const now = monthKey(Date.now())
+    return [now, previousMonth(now)].map((month, i) => {
+      const summary = monthSummary(library.playDays, month, { playtime: library.playtime, keep: inLibrary })
+      const [year, number] = month.split('-').map(Number)
+      return {
+        month,
+        short: new Intl.DateTimeFormat(i18n.dateLocale, { month: 'short' }).format(new Date(year, number - 1, 1)).replace('.', ''),
+        label: i === 0 ? t('Este mes') : monthName(month, { capital: true }),
+        game: summary.top[0] ? (library.byId.get(summary.top[0].id)?.name ?? '') : '',
+        seconds: summary.seconds,
+      }
+    })
+  })
+  const hasMonths = $derived(months.some((m) => m.seconds > 0))
 
   const stats = $derived.by(() => {
     const covers = PLATFORMS.reduce((n, p) => n + library.coverCount(p.id).withCover, 0)
@@ -136,8 +154,20 @@
         {:else}
           <p class="since">{t('Las semanas se cuentan desde la 1.3.0.')}</p>
         {/if}
+        {#if hasMonths}
+          <ul class="top months">
+            {#each months as m (m.month)}
+              <li>
+                <span class="month">{m.short}</span>
+                <span class="name">{m.game ? `${m.label} · ${m.game}` : m.label}</span>
+                <span class="time">{m.seconds > 0 ? formatPlaytime(m.seconds) : '—'}</span>
+              </li>
+            {/each}
+          </ul>
+        {/if}
         <ol class="top">
-          {#each top as entry, i (entry.id)}
+          <!-- with the months, the three most played: it all fits above the hint bar -->
+          {#each top.slice(0, hasMonths ? 3 : 5) as entry, i (entry.id)}
             <li>
               <span class="rank" style:background={entry.platform.color} style:color={entry.platform.ink}>{i + 1}</span>
               <span class="name">{entry.game.name}</span>
@@ -307,6 +337,23 @@
     grid-template-columns: 30px 1fr auto;
     align-items: center;
     gap: 12px;
+  }
+  .months {
+    margin-bottom: 12px;
+  }
+  .months li {
+    grid-template-columns: 52px 1fr auto;
+  }
+  .month {
+    display: grid;
+    place-items: center;
+    height: 30px;
+    border-radius: 10px;
+    background: var(--sky);
+    color: var(--ink-soft);
+    font-weight: 800;
+    font-size: 16px;
+    text-transform: lowercase;
   }
   .rank {
     display: grid;

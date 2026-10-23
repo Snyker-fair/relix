@@ -1,7 +1,9 @@
 <script>
   /**
    * The screensaver: after a few minutes without touching the controller
-   * (Options › Preferences), your games one after another, with a slow pan.
+   * (Options › Preferences), your games one after another, with a slow pan. The
+   * ones you play and the ones waiting to be picked back up come up more often
+   * (core/saverOrder.js), and all of them show before any repeats.
    *
    *   - fan art: full screen
    *   - a screenshot or title screen: framed, over a blurred copy of itself
@@ -13,6 +15,7 @@
   import { untrack } from 'svelte'
   import { fade } from 'svelte/transition'
   import { getPlatform } from '../lib/core/platforms.js'
+  import { saverOrder } from '../lib/core/saverOrder.js'
   import { t } from '../lib/i18n/i18n.svelte.js'
   import { usableMedia } from '../lib/ui/activity.svelte.js'
   import Clock from '../lib/ui/Clock.svelte'
@@ -28,15 +31,14 @@
   /** How long each game stays on screen */
   const SLIDE_MS = 9000
 
-  /** @template T @param {T[]} list */
-  function shuffle(list) {
-    const copy = [...list]
-    for (let i = copy.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
-      ;[copy[i], copy[j]] = [copy[j], copy[i]]
-    }
-    return copy
-  }
+  /** Your games in order: what you play and what waits for you more often @param {any[]} list */
+  const shuffle = (list) =>
+    saverOrder(list, {
+      playtime: library.playtime,
+      lastPlayed: library.lastPlayed,
+      now: Date.now(),
+      skip: library.comebackSkipped,
+    })
 
   // It's put together once, when it appears
   const pool = untrack(() => {

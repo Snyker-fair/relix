@@ -17,6 +17,7 @@ import { coverKey } from '../core/coverMatch.js'
 import { mediaUrl, parseGamelist, romAbsolutePath } from '../core/esde.js'
 import { indexMedia, pickMedia } from '../core/media.js'
 import { addNewGames, cleanNewGames, isNewGame } from '../core/newGames.js'
+import { monthKey, monthSummary, previousMonth } from '../core/monthly.js'
 import { addSession } from '../core/playDays.js'
 import { getPlatform, PLATFORMS } from '../core/platforms.js'
 import { movedPath } from '../core/rename.js'
@@ -81,6 +82,9 @@ class Library {
   /** The games a scan brought, with the "New" mark (core/newGames.js) */
   /** @type {import('../core/newGames.js').NewGames} */
   newGames = $state(load('newGames', {}))
+  /** Taken out of Continue playing while waiting to be picked back up (core/comeback.js), until played again */
+  /** @type {string[]} */
+  comebackSkipped = $state(load('comebackSkipped', []))
 
   /** What's shown: everything but the hidden ones */
   /** @type {Record<string, LibraryGame[]>} */
@@ -140,6 +144,7 @@ class Library {
       this.playtime = load('playtime', {})
       this.playDays = load('playDays', {})
       this.newGames = load('newGames', {})
+      this.comebackSkipped = load('comebackSkipped', [])
     })
   }
 
@@ -431,7 +436,19 @@ class Library {
     save('favorites', this.favoriteOverrides)
   }
 
-  /** @param {LibraryGame} game */
+  /**
+   * How last month went, the first time Relix opens in a new one (core/monthly.js);
+   * null if it was already said, or there was nothing played.
+   * @returns {import('../core/monthly.js').MonthSummary | null}
+   */
+  takeLastMonth() {
+    const month = previousMonth(monthKey(Date.now()))
+    if (load('monthSeen', '') === month) return null
+    save('monthSeen', month)
+    const summary = monthSummary(this.playDays, month, { playtime: this.playtime, keep: (id) => this.byId.has(id) })
+    return summary.seconds >= 60 ? summary : null
+  }
+
   /**
    * Takes a game out of "Continue playing" (Y on the home screen). Its time and the
    * "Recent" order stay; if you play it again, it comes back.
@@ -440,8 +457,14 @@ class Library {
   forgetRecent(game) {
     this.recentIds = this.recentIds.filter((id) => id !== game.id)
     save('recent', this.recentIds)
+    // If it was there to be picked back up, it doesn't come back until you play it
+    if (!this.comebackSkipped.includes(game.id)) {
+      this.comebackSkipped = [...this.comebackSkipped, game.id]
+      save('comebackSkipped', this.comebackSkipped)
+    }
   }
 
+  /** @param {LibraryGame} game */
   markPlayed(game) {
     this.#markPlayed(game.id, Date.now())
   }
@@ -450,6 +473,10 @@ class Library {
   #markPlayed(id, at) {
     this.recentIds = [id, ...this.recentIds.filter((other) => other !== id)].slice(0, MAX_RECENT)
     save('recent', this.recentIds)
+    if (this.comebackSkipped.includes(id)) {
+      this.comebackSkipped = this.comebackSkipped.filter((other) => other !== id)
+      save('comebackSkipped', this.comebackSkipped)
+    }
     this.lastPlayed = { ...this.lastPlayed, [id]: at }
     save('lastPlayed', this.lastPlayed)
     // Played: it's no longer new

@@ -806,6 +806,17 @@ export default {
   'En App type, elige App.': 'In App type, choose App.',
   'Abre Relix otra vez: este paso quedará con ✓.': 'Open Relix again: this step will show a ✓.',
 
+  // ── Your time, for you (1.5.0) ──
+  '¿Lo retomas?': 'Back to it?',
+  '{time} de juego': '{time} played',
+  'En {month} jugaste {time}, todo a {game}.': 'In {month} you played {time}, all of it {game}.',
+  'En {month} jugaste {time}: sobre todo {game} ({gameTime}), y probaste {fresh}.':
+    'In {month} you played {time}: mostly {game} ({gameTime}), and you tried {fresh}.',
+  'En {month} jugaste {time}: sobre todo {game} ({gameTime}).': 'In {month} you played {time}: mostly {game} ({gameTime}).',
+  'juego nuevo': 'new game',
+  'juegos nuevos': 'new games',
+  'Este mes': 'This month',
+
   // ── What's new in 1.4.0 ──
   'Nuevo en la {version}: al escanear una consola también llegan sus portadas y su información, y los juegos de varios discos ya se pueden cambiar de disco':
     'New in {version}: scanning a console also brings its covers and info, and games on several discs can now change discs',

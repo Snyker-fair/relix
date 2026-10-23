@@ -224,7 +224,7 @@ export function renameInUserData(values, oldId, newId) {
       set(key, { ...rest, [newId]: value })
     }
   }
-  for (const key of ['hidden', 'recent', 'coverSkipped', 'renameSkipped', 'infoSkipped']) {
+  for (const key of ['hidden', 'recent', 'comebackSkipped', 'coverSkipped', 'renameSkipped', 'infoSkipped']) {
     const list = values[key]
     if (Array.isArray(list) && list.includes(oldId)) set(key, list.map((id) => (id === oldId ? newId : id)))
   }

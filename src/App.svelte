@@ -6,6 +6,7 @@
   import { placeFor, returnTo } from './lib/core/place.js'
   import { pickSurprise } from './lib/core/surprise.js'
   import { discCount, discListName, discListText, discSwapHint } from './lib/core/discs.js'
+  import { monthText } from './lib/core/monthly.js'
   import { QUICK_EXIT_SECONDS, quickExitMessage } from './lib/core/quickExit.js'
   import { shortDuration } from './lib/core/diagnostics.js'
   import { VERSION } from './lib/core/version.js'
@@ -147,9 +148,10 @@
 
   /**
    * When Relix opens, after the checkup, one notice after another (not during the
-   * welcome tour, which already shows the checkup): what's left to fix, once per
-   * session; that Relix is of the Game type, the first time it's seen; what's new
-   * in this version, once; and a new version, once per version.
+   * welcome tour, which already shows the checkup): what's left to fix (by name if
+   * Relix is of the Game type), once per session; how last month went, the first
+   * time in a new one; what's new in this version, once; and a new version, once
+   * per version.
    */
   let warnedSystem = false
   function startNotices() {
@@ -171,6 +173,9 @@
             : t('Relix encontró {found}: ≡ › Revisión', { found: plural(errors, 'cosa por arreglar', 'cosas por arreglar') }),
       )
     }
+    // The first time in a new month: how the last one went
+    const lastMonth = library.takeLastMonth()
+    if (lastMonth) notices.push(monthText(lastMonth, (id) => library.byId.get(id)?.name ?? id, formatPlaytime))
     for (const line of updates.takeNews(library.all.length > 0) ?? []) notices.push(t(line, { version: VERSION }))
     const version = updates.takeNotice()
     if (version) notices.push(t('Relix {version} ya está disponible: ≡ › Revisión', { version }))

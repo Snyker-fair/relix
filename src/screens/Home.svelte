@@ -2,6 +2,7 @@
   import { untrack } from 'svelte'
   import { mode } from '../lib/core/bridge.js'
   import { getPlatform } from '../lib/core/platforms.js'
+  import { comebackGames, comebackOfTheDay } from '../lib/core/comeback.js'
   import ChannelIcon from '../lib/ui/ChannelIcon.svelte'
   import Clock from '../lib/ui/Clock.svelte'
   import CoverArt from '../lib/ui/CoverArt.svelte'
@@ -60,8 +61,23 @@
   /** The games you've never opened, for the die's chips */
   const unplayed = $derived(library.all.filter((g) => !library.playtime[g.id] && !library.lastPlayed[g.id]).length)
   const emptyLibrary = $derived(library.all.length === 0)
-  // Three games: that way "Continue playing" never reaches the hint bar
-  const recent = $derived(library.recent.slice(0, 3))
+  // Three games: that way "Continue playing" never reaches the hint bar. The last place
+  // goes to one you gave hours to and haven't touched in a month (core/comeback.js),
+  // a different one each day
+  const comeback = $derived(
+    comebackOfTheDay(
+      comebackGames(
+        library.all.filter((g) => emulators.forGame(g)),
+        { playtime: library.playtime, lastPlayed: library.lastPlayed, now: Date.now(), skip: library.comebackSkipped },
+      ),
+      Date.now(),
+    ),
+  )
+  const recent = $derived(
+    comeback
+      ? [...library.recent.filter((g) => g.id !== comeback.id).slice(0, 2), comeback]
+      : library.recent.slice(0, 3),
+  )
   // A game taken out of the row (Y): the focus stays on the row, or goes up if it's empty
   $effect(() => {
     const count = recent.length
@@ -133,9 +149,11 @@
       ]
     }
     const fresh = games.filter((g) => library.isNew(g)).length
+    // Your hours with that console, once there are some; until then, its year
+    const played = games.reduce((n, g) => n + (library.playtime[g.id]?.seconds ?? 0), 0)
     return [
       channel.maker,
-      String(channel.year),
+      played >= 60 ? t('{time} de juego', { time: formatPlaytime(played) }) : String(channel.year),
       fresh > 0
         ? `${plural(games.length, 'juego', 'juegos')} · ${plural(fresh, 'nuevo', 'nuevos')}`
         : plural(games.length, 'juego', 'juegos'),
@@ -311,9 +329,11 @@
           <span class="recent-text">
             <strong>{game.name}</strong>
             <span
-              >{played
-                ? `${platform.shortName} · ${t('Jugado {time}', { time: formatPlaytime(played.seconds) })}`
-                : platform.shortName}</span
+              >{game.id === comeback?.id
+                ? `${t('¿Lo retomas?')} · ${formatPlaytime(played?.seconds ?? 0)}`
+                : played
+                  ? `${platform.shortName} · ${t('Jugado {time}', { time: formatPlaytime(played.seconds) })}`
+                  : platform.shortName}</span
             >
           </span>
         </button>
