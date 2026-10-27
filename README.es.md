@@ -211,6 +211,7 @@ npm install
 npm run dev            # la interfaz en el navegador, con datos de prueba
 npm run check          # los tipos, desde el JSDoc (svelte-check)
 npm test               # tests de la lógica y de las traducciones (vitest)
+npm run e2e            # la interfaz en Chromium, manejada como con el control (Playwright)
 npm run build          # dist/ para el paquete UWP
 npm run build:single   # dist-single/index.html autocontenido (la demo)
 npm run build:shell    # compila y copia la interfaz al proyecto de Visual Studio
@@ -230,16 +231,17 @@ src/
   screens/      Home, Library, Search, GameMenu, Options, Guide, Welcome…
   mock/         gamelists de ES-DE y nombres de libretro para la demo y los tests
 shell/          el shell en C# (RelixShell) y su proyecto de Visual Studio
-tests/          vitest
+tests/          vitest; tests/e2e: Playwright sobre la demo
 docs/           guías para compilar y probar en la TV, imágenes del README
 brand/          logo, íconos de la app y guía de marca
 ```
 
 Los commits siguen [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
-([`docs/BUILDING.md`](docs/BUILDING.md#commits)). Cada cambio corre los tests y
-las dos compilaciones en GitHub Actions; `main` publica la demo en GitHub Pages,
-y cada etiqueta `v*` compila y firma el paquete para la Xbox como un release en
-borrador, que se publica a mano después de probarlo en la consola. Las guías, en
+([`docs/BUILDING.md`](docs/BUILDING.md#commits)). Cada cambio corre los tipos, los
+tests, la interfaz en Chromium y las dos compilaciones en GitHub Actions; `main`
+publica la demo en GitHub Pages, y cada etiqueta `v*` compila y firma el paquete
+para la Xbox como un release en borrador, que se publica a mano después de
+probarlo en la consola. Las guías, en
 inglés: cómo funciona el shell ([`shell/README.md`](shell/README.md)), compilar y
 publicar ([`docs/BUILDING.md`](docs/BUILDING.md)) y qué probar en la TV
 ([`docs/TESTING.md`](docs/TESTING.md)).

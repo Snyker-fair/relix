@@ -181,7 +181,22 @@ Certificates › Relix). If you ever create another one, use the same publisher
 
 | Workflow | When | What it does |
 |---|---|---|
-| [`ci.yml`](../.github/workflows/ci.yml) | Every change on `main` and `next`, and every pull request | Types (`npm run check`), tests, untranslated texts and both interface builds |
+| [`ci.yml`](../.github/workflows/ci.yml) | Every change on `main` and `next`, and every pull request | Types (`npm run check`), tests, translations, both interface builds and, in a second job, the smoke tests in Chromium (`npm run e2e`) |
 | [`pages.yml`](../.github/workflows/pages.yml) | Every change on `main` | Deploys the demo to `snyker-fair.github.io/relix` |
 | [`release.yml`](../.github/workflows/release.yml) | Every `vX.Y.Z` tag | Builds the shell on Windows, signs the package and creates the release as a draft |
 | [`release.yml`](../.github/workflows/release.yml) | Every change in `shell/` on `main` or `next` | The same, as a test and without releasing: the package stays in the run (**Artifacts**) for 14 days |
+
+## The README's screenshots
+
+`docs/media` (the screenshots and `tour.webp`) comes from the demo, in English,
+with a fixed clock: [`scripts/readme-media.py`](../scripts/readme-media.py). Once:
+`pip install playwright pillow` and `python -m playwright install chromium`.
+Then, with the demo served in another terminal
+(`npm run build && npx vite preview --port 5200`):
+
+```
+python scripts/readme-media.py
+```
+
+If a screen changed, the script's steps (which keys, how long to wait) may need
+a touch.

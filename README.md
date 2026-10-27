@@ -211,6 +211,7 @@ npm install
 npm run dev            # the interface in your browser, with test data
 npm run check          # types, from the JSDoc (svelte-check)
 npm test               # logic and translation tests (vitest)
+npm run e2e            # the interface in Chromium, driven like a controller (Playwright)
 npm run build          # dist/ for the UWP package
 npm run build:single   # dist-single/index.html, self-contained (the demo)
 npm run build:shell    # builds and copies the interface into the Visual Studio project
@@ -230,15 +231,16 @@ src/
   screens/      Home, Library, Search, GameMenu, Options, Guide, Welcome…
   mock/         ES-DE gamelists and libretro names for the demo and tests
 shell/          the C# shell (RelixShell) and its Visual Studio project
-tests/          vitest
+tests/          vitest; tests/e2e: Playwright on the demo
 docs/           build and on-TV test guides, README media
 brand/          logo, app icons and brand guide
 ```
 
 Commits follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
-Every push runs the tests and both builds on GitHub Actions; `main` deploys the
-demo to GitHub Pages, and every `v*` tag builds and signs the Xbox package as a
-draft release, published by hand after testing it on the console. The guides:
+Every push runs the types, the tests, the interface in Chromium and both builds
+on GitHub Actions; `main` deploys the demo to GitHub Pages, and every `v*` tag
+builds and signs the Xbox package as a draft release, published by hand after
+testing it on the console. The guides:
 how the shell works ([`shell/README.md`](shell/README.md)), building and
 releasing ([`docs/BUILDING.md`](docs/BUILDING.md)) and what to test on the TV
 ([`docs/TESTING.md`](docs/TESTING.md)).

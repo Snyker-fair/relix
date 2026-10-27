@@ -13,11 +13,13 @@
     "check": "svelte-check --fail-on-warnings",
     "test": "vitest run",
     "test:watch": "vitest",
+    "e2e": "playwright test",
     "build:shell": "vite build && node scripts/copy-to-shell.mjs",
     "preversion": "node scripts/changelog-date.mjs --check",
     "version": "node scripts/changelog-date.mjs"
   },
   "devDependencies": {
+    "@playwright/test": "1.56.0",
     "@sveltejs/vite-plugin-svelte": "^7.3.0",
     "jsdom": "^29.1.1",
     "svelte": "^5.57.0",
