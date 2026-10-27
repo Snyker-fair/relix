@@ -1,31 +1,26 @@
 <script>
   import { untrack } from 'svelte'
-  import { launch, mode, notifyReady, onShellEvent, ShellError, writeDiscList } from './lib/core/bridge.js'
-  import { buildLaunchUri } from './lib/core/launchUri.js'
+  import { mode, notifyReady, onShellEvent } from './lib/core/bridge.js'
   import { getPlatform } from './lib/core/platforms.js'
   import { placeFor, returnTo } from './lib/core/place.js'
   import { pickSurprise } from './lib/core/surprise.js'
-  import { discCount, discListName, discListText, discSwapHint } from './lib/core/discs.js'
-  import { monthText } from './lib/core/monthly.js'
-  import { QUICK_EXIT_SECONDS, quickExitMessage } from './lib/core/quickExit.js'
   import { shortDuration } from './lib/core/diagnostics.js'
-  import { VERSION } from './lib/core/version.js'
   import { diagnostics } from './lib/ui/diagnostics.svelte.js'
-  import { theme } from './lib/ui/theme.svelte.js'
   import { COLLECTIONS, COLLECTION_PREFIX, isCollectionId } from './lib/ui/channels.js'
   import { collections } from './lib/ui/collections.svelte.js'
   import { emulators } from './lib/ui/emulators.svelte.js'
   import { activity } from './lib/ui/activity.svelte.js'
   import { dispatch, idleFor, markActivity, startInput } from './lib/ui/input.js'
+  import { announcePlaytime, gameLabel, launcher } from './lib/ui/launcher.svelte.js'
   import { library } from './lib/ui/library.svelte.js'
   import { memory } from './lib/ui/memory.svelte.js'
   import { settings } from './lib/ui/settings.svelte.js'
   import { shelf } from './lib/ui/shelf.svelte.js'
   import { sound } from './lib/ui/sound.js'
+  import { showStartNotices, startSummary } from './lib/ui/startup.js'
   import { systemStatus } from './lib/ui/systemStatus.svelte.js'
+  import { toasts } from './lib/ui/toasts.svelte.js'
   import { userData } from './lib/ui/userData.svelte.js'
-  import { updates } from './lib/ui/updates.svelte.js'
-  import { formatPlaytime, plural } from './lib/ui/format.js'
   import { i18n, t } from './lib/i18n/i18n.svelte.js'
   import Stage from './lib/ui/Stage.svelte'
   import CoverPicker from './screens/CoverPicker.svelte'
@@ -68,13 +63,6 @@
   let focusedId = $state(null)
   let boot = $state(true)
 
-  /** note: how to change discs, for a game on several (core/discs.js) */
-  /** @type {{ game: any, uri: string, emulatorName: string, note?: string } | null} */
-  let launching = $state(null)
-  let toast = $state('')
-  /** @type {ReturnType<typeof setTimeout>} */
-  let toastTimer
-
   // In the browser: keyboard and controller with the Gamepad API.
   // On the Xbox: the C# shell reads the controller and it arrives as an 'input' event.
   startInput({ keyboard: mode === 'browser', gamepad: mode === 'browser' })
@@ -88,7 +76,7 @@
     // You're back in Relix: when the emulator closes (resumed) or another way, like the Xbox button (visible)
     else if (e.event === 'resumed' || e.event === 'visible') {
       markActivity() // time spent playing doesn't count toward the screensaver
-      backInRelix({ fromEmulator: true })
+      launcher.back({ fromEmulator: true })
     }
   })
 
@@ -132,7 +120,7 @@
         else goBackTo(finished)
         finishedWhileClosed = null
       }
-      if (userData.recoveredFrom) showToast(t('Tus datos se recuperaron de {file}', { file: `relix\\${userData.recoveredFrom}` }))
+      if (userData.recoveredFrom) toasts.show(t('Tus datos se recuperaron de {file}', { file: `relix\\${userData.recoveredFrom}` }))
       if (!settings.onboarded && screen.name === 'home') {
         screen = { name: 'welcome', step: 0, back: { name: 'home' }, auto: true }
       }
@@ -146,42 +134,9 @@
     }
   })
 
-  /**
-   * When Relix opens, after the checkup, one notice after another (not during the
-   * welcome tour, which already shows the checkup): what's left to fix (by name if
-   * Relix is of the Game type), once per session; how last month went, the first
-   * time in a new one; what's new in this version, once; and a new version, once
-   * per version.
-   */
-  let warnedSystem = false
+  /** The notices when Relix opens (lib/ui/startup.js): not during the welcome tour, which already shows the checkup */
   function startNotices() {
-    if (screen.name === 'welcome') return
-    /** @type {string[]} */
-    const notices = []
-    const { errors } = systemStatus.summary
-    if (!warnedSystem && errors > 0) {
-      warnedSystem = true
-      // As Game, it says so by name: it's the step that matters most (Dev Home installs it like that)
-      const asGame = systemStatus.appType === 'game'
-      notices.push(
-        asGame && errors === 1
-          ? t('Relix está como Game: cámbialo a App en Dev Home para volver al instante (≡ › Revisión)')
-          : asGame
-            ? t('Relix encontró {found}, y está como Game: ≡ › Revisión', {
-                found: plural(errors, 'cosa por arreglar', 'cosas por arreglar'),
-              })
-            : t('Relix encontró {found}: ≡ › Revisión', { found: plural(errors, 'cosa por arreglar', 'cosas por arreglar') }),
-      )
-    }
-    // The first time in a new month: how the last one went
-    const lastMonth = library.takeLastMonth()
-    if (lastMonth) notices.push(monthText(lastMonth, (id) => library.byId.get(id)?.name ?? id, formatPlaytime))
-    for (const line of updates.takeNews(library.all.length > 0) ?? []) notices.push(t(line, { version: VERSION }))
-    const version = updates.takeNotice()
-    if (version) notices.push(t('Relix {version} ya está disponible: ≡ › Revisión', { version }))
-    // If another notice is on screen (the playtime, e.g.), these go after it
-    const first = toast ? PLAYTIME_MS + 100 : 0
-    notices.forEach((message, i) => setTimeout(() => showToast(message, START_NOTICE_MS), first + i * (START_NOTICE_MS + 500)))
+    if (screen.name !== 'welcome') showStartNotices()
   }
 
   // If the USB drive doesn't let your data be saved, it's reported once (and each different error is logged)
@@ -193,7 +148,7 @@
       diagnostics.log('data', error)
       if (!warnedSave) {
         warnedSave = true
-        showToast(error)
+        toasts.show(error)
       }
     })
   })
@@ -211,29 +166,6 @@
   $effect(() => {
     if (library.status === 'error') untrack(() => diagnostics.log('usb', library.error))
   })
-
-  /** "Relix 1.0.0 · Xbox · E:\roms · 57 games on 12 consoles · light theme · Spanish" */
-  function startSummary() {
-    const consoles = new Set(library.all.map((g) => g.system)).size
-    return [
-      `Relix ${VERSION}`,
-      mode === 'xbox' ? 'Xbox' : t('navegador'),
-      library.romRoot,
-      t('{games} en {consoles}', {
-        games: plural(library.all.length, 'juego', 'juegos'),
-        consoles: plural(consoles, 'consola', 'consolas'),
-      }),
-      theme.current === 'dark' ? t('tema oscuro') : t('tema claro'),
-      t('español'),
-    ].join(' · ')
-  }
-
-  /** "Ōkami (PS2)" @param {string} id */
-  function gameLabel(id) {
-    const game = library.byId.get(id)
-    if (!game) return id
-    return `${game.name} (${getPlatform(game.system)?.shortName ?? game.system})`
-  }
 
   /** What's on screen, in a few words, for the memory log ("biblioteca de PS2") */
   function screenLabel() {
@@ -282,73 +214,9 @@
     }
   }
 
-  /**
-   * Closes the session in progress (if there was one) and counts the time played. If you
-   * came back from the emulator after a few seconds, the game didn't open: it says what
-   * to check (the emulator doesn't tell Relix anything).
-   * @param {{ fromEmulator?: boolean }} [how]  false = you closed the "Opening…" notice with B
-   */
-  function backInRelix({ fromEmulator = false } = {}) {
-    launching = null
-    const finished = library.endSession()
-    if (!finished) return
-    const quick = fromEmulator && finished.elapsed < QUICK_EXIT_SECONDS
-    const game = library.byId.get(finished.id)
-    const emulatorName = game ? (emulators.forGame(game)?.name ?? '') : ''
-    const label = gameLabel(finished.id)
-    diagnostics.log(
-      quick ? 'quickExit' : 'back',
-      quick
-        ? t('{game} con {emulator}: volvió a Relix a los {n} s', { game: label, emulator: emulatorName, n: finished.elapsed })
-        : [
-            t('{game} tras {time}', { game: label, time: shortDuration(finished.elapsed) }),
-            fromEmulator ? '' : ` ${t('(cerraste el aviso "Abriendo…")')}`,
-            finished.seconds > 0 ? '' : ` · ${t('no se cuenta (menos de 1 min)')}`,
-          ].join(''),
-    )
-    if (quick) warnQuickExit(finished.id)
-    else announcePlaytime(finished)
-  }
-
-  /** @param {string} id */
-  function warnQuickExit(id) {
-    const game = library.byId.get(id)
-    const platform = game && getPlatform(game.system)
-    const emulator = game && emulators.forGame(game)
-    if (!game || !platform || !emulator) return
-    sound.error()
-    showToast(quickExitMessage(game, platform, emulator), 9000)
-  }
-
-  /** How long the time played stays on screen after a game, and each notice when Relix opens */
-  const PLAYTIME_MS = 6000
-  const START_NOTICE_MS = 8000
-
-  /** "Okami: 45 min played · 12 h in total" @param {{ id: string, seconds: number }} finished */
-  function announcePlaytime({ id, seconds }) {
-    const game = library.byId.get(id)
-    const total = library.playtime[id]?.seconds ?? 0
-    if (!game || seconds <= 0) return
-    showToast(
-      total > seconds
-        ? t('{game}: {time} jugados · {total} en total', {
-            game: game.name,
-            time: formatPlaytime(seconds),
-            total: formatPlaytime(total),
-          })
-        : t('{game}: {time} jugados', { game: game.name, time: formatPlaytime(seconds) }),
-      PLAYTIME_MS,
-    )
-  }
-
   $effect(() => {
     const timer = setTimeout(() => (boot = false), 1400)
     return () => clearTimeout(timer)
-  })
-
-  // A game is opening: nothing should move underneath
-  $effect(() => {
-    activity.launching = launching !== null
   })
 
   // Screensaver: after the chosen minutes without touching the controller.
@@ -357,7 +225,7 @@
     const minutes = settings.screensaverMinutes
     if (!minutes || library.status !== 'ready') return
     const timer = setInterval(() => {
-      if (activity.screensaver || launching || screen.name === 'welcome' || document.hidden) return
+      if (activity.screensaver || launcher.launching || screen.name === 'welcome' || document.hidden) return
       if (idleFor() >= minutes * 60_000) activity.screensaver = true
     }, 5000)
     return () => clearInterval(timer)
@@ -366,13 +234,6 @@
   function closeScreensaver() {
     activity.screensaver = false
     markActivity()
-  }
-
-  /** @param {string} message @param {number} [duration] ms */
-  function showToast(message, duration = 3500) {
-    toast = message
-    clearTimeout(toastTimer)
-    toastTimer = setTimeout(() => (toast = ''), duration)
   }
 
   function openOptions() {
@@ -464,7 +325,7 @@
     const game = pickSurprise(games, { playtime: library.playtime, lastPlayed: library.lastPlayed, shown })
     if (!game) {
       sound.error()
-      showToast(t('Todavía no hay juegos para elegir.'))
+      toasts.show(t('Todavía no hay juegos para elegir.'))
       return
     }
     // Once every game was shown, the round starts over
@@ -472,98 +333,13 @@
     screen = { name: 'sheet', back, gameId: game.id, surprise: { pool, shown: [...round, game.id] } }
   }
 
-  /** @param {any} game */
-  async function startGame(game) {
-    const platform = getPlatform(game.system)
-    // That game's, its console's or the recommended one (see emulators.svelte.js)
-    const emulator = emulators.forGame(game)
-    if (!platform || !emulator) {
-      sound.error()
-      showToast(
-        platform?.noEmulatorNote
-          ? t(platform.noEmulatorNote)
-          : t('Esta consola todavía no tiene un emulador para abrir juegos.'),
-      )
-      return
-    }
-    // A game on several discs without an .m3u opens with the list Relix makes (core/discs.js)
-    const romPath = await launchPath(game)
-    let uri
-    try {
-      uri = buildLaunchUri(emulator.launcher, romPath)
-    } catch (e) {
-      sound.error()
-      const message = e instanceof Error ? e.message : String(e)
-      diagnostics.log(
-        'error',
-        t('No se pudo armar la URI de {game} con {emulator}: {message}', { game: gameLabel(game.id), emulator: emulator.name, message }),
-      )
-      showToast(message)
-      return
-    }
-    sound.select()
-    const discs = discCount(game)
-    launching = { game, uri, emulatorName: emulator.name, note: discs ? discSwapHint(discs, emulator) : '' }
-    // The session starts counting and is on the USB drive before the Xbox switches to the
-    // emulator, with where you were: if the Xbox closes Relix, it opens there again
-    library.startSession(game, placeFor(screen, focusedId))
-    diagnostics.log('launch', t('{game} con {emulator} · {uri}', { game: gameLabel(game.id), emulator: emulator.name, uri }))
-    await memory.beforeGame(gameLabel(game.id))
-    diagnostics.flush()
-    await userData.flush()
-    try {
-      await launch(uri, romPath)
-      library.markPlayed(game)
-    } catch (e) {
-      launching = null
-      library.endSession(false)
-      sound.error()
-      const code = e instanceof ShellError ? ` [${e.code}]` : ''
-      diagnostics.log(
-        'error',
-        t('No se pudo abrir {game} con {emulator}: {message}', {
-          game: gameLabel(game.id),
-          emulator: emulator.name,
-          message: (e instanceof Error ? e.message : String(e)) + code,
-        }),
-      )
-      diagnostics.flush()
-      showToast(launchErrorMessage(e, emulator.name, platform.emulators.length > 1))
-    }
-  }
-
   /**
-   * The file the emulator opens: the game's, or the list of its discs, written right
-   * before so it follows the discs that are there. If it can't be written, disc 1.
+   * Opens a game (lib/ui/launcher.svelte.js), remembering where you are: if the
+   * Xbox closes Relix while you play, it opens there again
    * @param {any} game
    */
-  async function launchPath(game) {
-    if (!discCount(game)) return library.romPath(game)
-    try {
-      return await writeDiscList(game.system, discListName(game.discs[0]), discListText(library.discPaths(game)))
-    } catch (e) {
-      diagnostics.log(
-        'error',
-        t('No se pudo armar la lista de discos de {game}: {message}', {
-          game: gameLabel(game.id),
-          message: e instanceof Error ? e.message : String(e),
-        }),
-      )
-      return library.romPath(game)
-    }
-  }
-
-  /** @param {unknown} e @param {string} emulatorName @param {boolean} hasOthers */
-  function launchErrorMessage(e, emulatorName, hasOthers) {
-    if (e instanceof ShellError) {
-      if (e.code === 'emulator-missing') {
-        return hasOthers
-          ? t('{emulator} no está instalado en la consola. Instálalo, o elige otro en Opciones › Consolas.', { emulator: emulatorName })
-          : t('{emulator} no está instalado en la consola. Instálalo desde el Device Portal.', { emulator: emulatorName })
-      }
-      return e.message
-    }
-    return t('No se pudo abrir {emulator}. Revisa que esté instalado en la consola.', { emulator: emulatorName })
+  function startGame(game) {
+    launcher.start(game, placeFor(screen, focusedId))
   }
 </script>
 
@@ -606,7 +382,7 @@
       initialSection={screen.section}
       initialRow={screen.row}
       onBack={() => (screen = from)}
-      onToast={showToast}
+      onToast={toasts.show}
       onPickCovers={() => (screen = { name: 'coverPicker', back: { ...options, section: 'covers' } })}
       onRenameFiles={() => (screen = { name: 'renamer', back: { ...options, section: 'library', row: 'rename' } })}
       onGameInfo={() => (screen = { name: 'info', back: { ...options, section: 'library', row: 'info' } })}
@@ -639,14 +415,14 @@
         // If something was left to fix (or you skipped the tour), it says so once
         if (to.name === 'home') startNotices()
       }}
-      onToast={showToast}
+      onToast={toasts.show}
     />
   {:else if screen.name === 'renamer'}
     {@const back = screen.back}
-    <RenamePicker gameId={screen.gameId} onBack={() => (screen = back)} onToast={showToast} />
+    <RenamePicker gameId={screen.gameId} onBack={() => (screen = back)} onToast={toasts.show} />
   {:else if screen.name === 'info'}
     {@const back = screen.back}
-    <InfoPicker gameId={screen.gameId} onBack={() => (screen = back)} onToast={showToast} />
+    <InfoPicker gameId={screen.gameId} onBack={() => (screen = back)} onToast={toasts.show} />
   {:else if screen.name === 'sheet'}
     {@const back = screen.back}
     <!-- each surprise is a new sheet: it comes in with its animation and the description from the top -->
@@ -661,7 +437,7 @@
     {/key}
   {:else}
     {@const back = screen.back}
-    <CoverPicker gameId={screen.gameId} onBack={() => (screen = back)} onToast={showToast} />
+    <CoverPicker gameId={screen.gameId} onBack={() => (screen = back)} onToast={toasts.show} />
   {/if}
 
   {#if menu}
@@ -676,22 +452,23 @@
       onRename={renameFile}
       onFindInfo={findInfo}
       onSheet={screen.name === 'sheet' ? undefined : openSheet}
-      onToast={showToast}
+      onToast={toasts.show}
     />
   {/if}
 
-  {#if launching}
+  {#if launcher.launching}
+    {@const launching = launcher.launching}
     <LaunchOverlay
       game={launching.game}
       uri={launching.uri}
       emulatorName={launching.emulatorName}
       note={launching.note}
-      onClose={() => backInRelix()}
+      onClose={() => launcher.back()}
     />
   {/if}
 
-  {#if toast}
-    <div class="toast" role="status">{toast}</div>
+  {#if toasts.message}
+    <div class="toast" role="status">{toasts.message}</div>
   {/if}
 
   {#if activity.screensaver}
