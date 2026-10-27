@@ -14,10 +14,13 @@ import { collections } from './collections.svelte.js'
 import { library } from './library.svelte.js'
 import { settings } from './settings.svelte.js'
 
+/** @typedef {import('./channels.js').Channel} Channel */
+
 class Shelf {
   /** Every console, in the chosen order */
   consoles = $derived(orderConsoles(PLATFORMS, settings.consoleOrder))
 
+  /** @type {Channel[]} */
   channels = $derived(
     [FAVORITES, COLLECTIONS, ...this.consoles].filter((ch) => settings.showEmptyConsoles || this.gamesFor(ch.id).length > 0),
   )

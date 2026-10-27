@@ -1,7 +1,7 @@
 <script>
   import { untrack } from 'svelte'
   import { mode } from '../lib/core/bridge.js'
-  import { getPlatform } from '../lib/core/platforms.js'
+  import { gamePlatform, getPlatform } from '../lib/core/platforms.js'
   import { comebackGames, comebackOfTheDay } from '../lib/core/comeback.js'
   import ChannelIcon from '../lib/ui/ChannelIcon.svelte'
   import Clock from '../lib/ui/Clock.svelte'
@@ -34,8 +34,9 @@
    */
   let { focusedId, boot, onOpen, onLaunch, onFocusChange, onOptions, onSearch, onMenu, onSurprise } = $props()
 
-  const OPTIONS = $derived({ id: 'options', name: t('Opciones'), shortName: t('Opciones') })
-  const SURPRISE = $derived({ id: 'surprise', name: t('Sorpréndeme'), shortName: t('Sorpréndeme') })
+  // The two round tools, with the tint they give the screen
+  const OPTIONS = $derived({ id: 'options', name: t('Opciones'), shortName: t('Opciones'), color: 'var(--ink-soft)' })
+  const SURPRISE = $derived({ id: 'surprise', name: t('Sorpréndeme'), shortName: t('Sorpréndeme'), color: 'var(--pop)' })
 
   /** @type {'channels'|'recent'} */
   let zone = $state('channels')
@@ -148,16 +149,18 @@
         ...collections.visible.slice(0, 2).map((c) => c.name),
       ]
     }
+    const platform = getPlatform(channel.id)
+    if (!platform) return []
     const fresh = games.filter((g) => library.isNew(g)).length
     // Your hours with that console, once there are some; until then, its year
     const played = games.reduce((n, g) => n + (library.playtime[g.id]?.seconds ?? 0), 0)
     return [
-      channel.maker,
-      played >= 60 ? t('{time} de juego', { time: formatPlaytime(played) }) : String(channel.year),
+      platform.maker,
+      played >= 60 ? t('{time} de juego', { time: formatPlaytime(played) }) : String(platform.year),
       fresh > 0
         ? `${plural(games.length, 'juego', 'juegos')} · ${plural(fresh, 'nuevo', 'nuevos')}`
         : plural(games.length, 'juego', 'juegos'),
-      emulators.forPlatform(channel)?.name ?? t('Sin emulador todavía'),
+      emulators.forPlatform(platform)?.name ?? t('Sin emulador todavía'),
     ]
   })
 
@@ -203,7 +206,7 @@
 </script>
 
 <!-- The focused channel's color, soft from the top left: only a color, so it costs next to nothing -->
-<div class="tint" aria-hidden="true" style:--c={onOptionsTile ? 'var(--ink-soft)' : onSurpriseTile ? 'var(--pop)' : channel.color}></div>
+<div class="tint" aria-hidden="true" style:--c={channel.color}></div>
 
 <header class="top">
   <Logo size={64} {boot} />
@@ -316,7 +319,7 @@
     <h2>{t('Seguir jugando')}</h2>
     <div class="recent-row">
       {#each recent as game, i (game.id)}
-        {@const platform = getPlatform(game.system)}
+        {@const platform = gamePlatform(game)}
         {@const played = library.playtime[game.id]}
         <button
           class="recent-item focus-ring"

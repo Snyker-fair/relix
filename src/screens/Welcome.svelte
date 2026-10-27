@@ -52,8 +52,11 @@
     })
   })
 
-  const STATE_ORDER = { error: 0, warn: 1, info: 2, ok: 3 }
-  const MARKS = { ok: '✓', warn: '!', error: '✗', info: 'i' }
+  /** @typedef {import('../lib/core/systemCheck.js').CheckState} CheckState */
+  /** @type {Record<CheckState, number>} the worst first; a new version is only a notice */
+  const STATE_ORDER = { error: 0, warn: 1, info: 2, update: 2, ok: 3 }
+  /** @type {Record<CheckState, string>} */
+  const MARKS = { ok: '✓', warn: '!', error: '✗', info: 'i', update: '↑' }
   const checkById = $derived(new Map(systemStatus.checks.map((c) => [c.id, c])))
 
   // ── Relix as App (the checkup says it from the memory the Xbox will give it) ──
@@ -389,14 +392,13 @@
           {t('con')} <PadButton name="y" size={26} />.
         </p>
       {:else}
-        <div class="list" role="list">
+        <div class="list">
           {#each shownConsoles as row, i (row.platform.id)}
             {@const focused = i === index}
             {@const p = row.platform}
             <button
               class="line console focus-ring"
               class:focused
-              role="listitem"
               style:--tint={p.color}
               onmouseenter={() => move(i)}
               onclick={() => (i === index ? activate() : move(i))}

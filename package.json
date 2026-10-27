@@ -10,6 +10,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "build:single": "vite build --mode single",
+    "check": "svelte-check --fail-on-warnings",
     "test": "vitest run",
     "test:watch": "vitest",
     "build:shell": "vite build && node scripts/copy-to-shell.mjs"
@@ -18,6 +19,8 @@
     "@sveltejs/vite-plugin-svelte": "^7.3.0",
     "jsdom": "^29.1.1",
     "svelte": "^5.57.0",
+    "svelte-check": "^4.7.7",
+    "typescript": "^6.0.3",
     "vite": "^8.3.0",
     "vite-plugin-singlefile": "^2.3.3",
     "vitest": "^5.0.4"

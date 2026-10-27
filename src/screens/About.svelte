@@ -4,7 +4,7 @@
    * a summary of the library and where Relix keeps things on the USB drive.
    * It's read-only: there's nothing to focus.
    */
-  import { getPlatform, PLATFORMS } from '../lib/core/platforms.js'
+  import { gamePlatform, PLATFORMS } from '../lib/core/platforms.js'
   import { weeklyTotals } from '../lib/core/playDays.js'
   import { monthKey, monthName, monthSummary, previousMonth } from '../lib/core/monthly.js'
   import { mostPlayed, totalSeconds } from '../lib/core/userData.js'
@@ -39,7 +39,7 @@
   const top = $derived(
     mostPlayed(library.playtime, inLibrary, 5).map((entry) => {
       const game = /** @type {import('../lib/ui/library.svelte.js').LibraryGame} */ (library.byId.get(entry.id))
-      return { ...entry, game, platform: getPlatform(game.system) }
+      return { ...entry, game, platform: gamePlatform(game) }
     }),
   )
   // The last 8 weeks; they're counted since 1.3.0

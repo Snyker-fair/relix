@@ -3,6 +3,7 @@
   import { t } from '../i18n/i18n.svelte.js'
 
   let { name, size = 34 } = $props()
+  /** @type {Record<string, string>} */
   const COLORS = { a: 'var(--btn-a)', b: 'var(--btn-b)', x: 'var(--btn-x)', y: 'var(--btn-y)' }
   const isBumper = $derived(name === 'lb' || name === 'rb')
   const isTrigger = $derived(name === 'lt' || name === 'rt')

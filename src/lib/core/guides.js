@@ -182,6 +182,7 @@ const CEMU = {
  * @returns {GuideStep[]}
  */
 export function guideSteps(platform, emulator, status) {
+  /** @type {EmulatorGuide | undefined} */
   const guide = emulator ? EMULATOR_GUIDES[emulator.id] : CEMU
   if (!guide) return []
   /** A text from the tables above, translated and with its paths @param {string} line */

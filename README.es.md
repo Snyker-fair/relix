@@ -209,6 +209,7 @@ flowchart LR
 ```bash
 npm install
 npm run dev            # la interfaz en el navegador, con datos de prueba
+npm run check          # los tipos, desde el JSDoc (svelte-check)
 npm test               # tests de la lógica y de las traducciones (vitest)
 npm run build          # dist/ para el paquete UWP
 npm run build:single   # dist-single/index.html autocontenido (la demo)

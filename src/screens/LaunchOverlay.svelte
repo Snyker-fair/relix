@@ -1,6 +1,6 @@
 <script>
   import { mode } from '../lib/core/bridge.js'
-  import { getPlatform } from '../lib/core/platforms.js'
+  import { gamePlatform } from '../lib/core/platforms.js'
   import { t } from '../lib/i18n/i18n.svelte.js'
   import CoverArt from '../lib/ui/CoverArt.svelte'
   import HintBar from '../lib/ui/HintBar.svelte'
@@ -13,7 +13,7 @@
    */
   let { game, uri, emulatorName, note = '', onClose } = $props()
 
-  const platform = $derived(getPlatform(game.system))
+  const platform = $derived(gamePlatform(game))
 
   $effect(() =>
     pushHandler((action) => {

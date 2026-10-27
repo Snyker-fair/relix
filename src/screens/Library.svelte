@@ -2,7 +2,7 @@
   import { untrack } from 'svelte'
   import { fade } from 'svelte/transition'
   import { applyFilter, filterLabel } from '../lib/core/filters.js'
-  import { getPlatform } from '../lib/core/platforms.js'
+  import { gamePlatform, getPlatform } from '../lib/core/platforms.js'
   import { gridWindow, jumpsTooFar } from '../lib/core/gridWindow.js'
   import { discCount } from '../lib/core/discs.js'
   import { jumpIndex, sectionOf, SORT_NAMES, sortGames } from '../lib/core/sorting.js'
@@ -100,7 +100,9 @@
   const games = $derived(sortGames(filtered, order, library.lastPlayed, library.playtime))
 
   const game = $derived(games[Math.min(index, games.length - 1)])
-  const platform = $derived(game ? getPlatform(game.system) : null)
+  const platform = $derived(game ? gamePlatform(game) : null)
+  /** The open channel's console (null for Favorites and the collections) */
+  const channelPlatform = $derived(getPlatform(channel.id))
   const favorite = $derived(game ? library.isFavorite(game) : false)
   /** What the focused game opens with (null: the console has no emulator yet) */
   const emulator = $derived(game ? emulators.forGame(game) : null)
@@ -329,7 +331,7 @@
         {t('Copia tus juegos a')} <code>{library.romFolderPath(channel.id)}</code>
         {t('y escanéala en')}
         <strong>{t('≡ › Biblioteca')}</strong>.
-        {t('Formatos: {formats}.', { formats: formatList(channel.extensions) })}
+        {t('Formatos: {formats}.', { formats: formatList(channelPlatform?.extensions ?? []) })}
       </p>
       <p class="hint">
         {t('¿Primera vez con {console}?', { console: channel.shortName })} <PadButton name="y" size={28} />
@@ -338,7 +340,7 @@
     {/if}
   </section>
 {:else}
-  <section class="detail" style:--tint={platform.color} bind:this={detailEl}>
+  <section class="detail" style:--tint={platform?.color} bind:this={detailEl}>
     {#key game.id}
       {#if framed}
         <div class="media">
@@ -388,7 +390,7 @@
           {#if emulators.isInstalled(emulator) === false}<span class="missing">{t('no instalado')}</span>{/if}
         </p>
       {:else}
-        <p class="note">{platform.noEmulatorNote ? t(platform.noEmulatorNote) : ''}</p>
+        <p class="note">{platform?.noEmulatorNote ? t(platform.noEmulatorNote) : ''}</p>
       {/if}
     {/key}
   </section>
@@ -402,7 +404,7 @@
     >
       {#each games.slice(drawn.start, drawn.end) as g, k (g.id)}
         {@const i = drawn.start + k}
-        {@const p = getPlatform(g.system)}
+        {@const p = gamePlatform(g)}
         <button
           class="cell focus-ring"
           class:focused={i === index}
@@ -445,7 +447,7 @@
         { button: 'b', label: t('Volver') },
       ]
     : [
-        ...(guideable ? [{ button: 'y', label: t('Ver guía') }] : []),
+        ...(guideable ? [{ button: /** @type {const} */ ('y'), label: t('Ver guía') }] : []),
         { button: 'view', label: t('Buscar') },
         { button: 'b', label: t('Volver') },
       ]}

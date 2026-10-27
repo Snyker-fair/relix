@@ -34,8 +34,7 @@
   let gameIndex = $state(0)
   let focus = $state(0)
   /** null while they're being looked for */
-  /** @type {InfoCandidate[] | null} */
-  let candidates = $state(null)
+  let candidates = $state(/** @type {InfoCandidate[] | null} */ (null))
   /** @type {InfoCandidate | null} */
   let sure = $state(null)
   let loadError = $state('')

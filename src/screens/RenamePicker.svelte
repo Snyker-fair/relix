@@ -41,8 +41,7 @@
   let gameIndex = $state(0)
   let focus = $state(0)
   /** null while they're being looked for */
-  /** @type {import('../lib/ui/renamer.svelte.js').NameSuggestion[] | null} */
-  let suggestions = $state(null)
+  let suggestions = $state(/** @type {import('../lib/ui/renamer.svelte.js').NameSuggestion[] | null} */ (null))
   let loadError = $state('')
   /** The keyboard is open */
   let typing = $state(false)

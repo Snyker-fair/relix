@@ -76,9 +76,8 @@
   /**
    * Moving a console (X in Consoles): which one and the order while it moves.
    * It's saved with A; B leaves it as it was.
-   * @type {{ id: string, ids: string[] } | null}
    */
-  let moving = $state(null)
+  let moving = $state(/** @type {{ id: string, ids: string[] } | null} */ (null))
   const CONSOLE_ROWS = $derived(moving ? moving.ids : shelf.consoles.map((p) => p.id))
   /** How many different emulator apps the Xbox has (RetroArch counts once) */
   const installedApps = $derived(
@@ -168,7 +167,7 @@
     if (!initialRow) return 0
     const exact = ROWS.indexOf(initialRow)
     if (exact >= 0) return exact
-    return Math.max(0, ROWS.findIndex((id) => id.endsWith(`:${initialRow}`)))
+    return Math.max(0, ROWS.findIndex((/** @type {string} */ id) => id.endsWith(`:${initialRow}`)))
   }
   let index = $state(initialIndex())
 

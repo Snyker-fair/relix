@@ -61,6 +61,7 @@
   /**
    * Each kind's color: what failed in pink, what needs a look in yellow.
    * In both languages: the log can have lines written in each.
+   * @type {Record<string, string>}
    */
   const TONES = {
     ERROR: 'bad',

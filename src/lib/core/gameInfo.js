@@ -405,7 +405,7 @@ export function candidateFrom(entity, labels, lang, onPlatform) {
     articles,
     names: [
       ...Object.values(entity?.labels ?? {}).map((/** @type {any} */ l) => l.value),
-      ...Object.values(entity?.aliases ?? {}).flatMap((/** @type {any} */ list) => list.map((a) => a.value)),
+      ...Object.values(entity?.aliases ?? {}).flatMap((/** @type {any} */ list) => list.map((/** @type {any} */ a) => a.value)),
     ],
     onPlatform,
     isGame: itemValues(entity, P.instanceOf).includes(VIDEO_GAME),

@@ -24,7 +24,12 @@ let onSyncedChange = null
 /** @type {Set<() => void>} */
 const onReplacedFns = new Set()
 
-/** @template T @param {string} key @param {T} fallback @returns {T} */
+/**
+ * A saved value, or the fallback if there's none (or it can't be read). What was
+ * saved could be anything (an older version, another Xbox), so the caller says
+ * what type it expects (a JSDoc cast) and checks it.
+ * @param {string} key @param {any} fallback @returns {any}
+ */
 export function load(key, fallback) {
   try {
     const raw = localStorage.getItem(PREFIX + key)

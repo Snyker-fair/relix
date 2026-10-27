@@ -44,18 +44,18 @@ function text(el, tag) {
   return el.getElementsByTagName(tag)[0]?.textContent?.trim() ?? ''
 }
 
-/** "./Folder/Game.chd" -> "Folder/Game.chd" (normalizes separators) */
+/** "./Folder/Game.chd" -> "Folder/Game.chd" (normalizes separators) @param {string} p */
 export function normalizeRelativePath(p) {
   return p.replace(/\\/g, '/').replace(/^\.\//, '')
 }
 
-/** "19991231T000000" -> 1999 */
+/** "19991231T000000" -> 1999 @param {string | undefined} releaseDate */
 export function parseYear(releaseDate) {
   const m = /^(\d{4})/.exec(releaseDate ?? '')
   return m ? Number(m[1]) : null
 }
 
-/** The file name without folder or extension: "Sub/Okami (USA).chd" -> "Okami (USA)" */
+/** The file name without folder or extension: "Sub/Okami (USA).chd" -> "Okami (USA)" @param {string} relPath */
 export function fileStem(relPath) {
   const name = normalizeRelativePath(relPath).split('/').pop() ?? ''
   const dot = name.lastIndexOf('.')

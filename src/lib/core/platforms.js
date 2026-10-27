@@ -291,6 +291,15 @@ export function getPlatform(id) {
   return PLATFORMS.find((p) => p.id === id) ?? null
 }
 
+/**
+ * A game's console. The scan only looks in the known consoles' folders, so a game
+ * in the library always has one.
+ * @param {{ system: string }} game
+ */
+export function gamePlatform(game) {
+  return /** @type {Platform} */ (getPlatform(game.system))
+}
+
 /** @param {Platform} platform @param {string} id */
 export function getEmulator(platform, id) {
   return platform.emulators.find((e) => e.id === id) ?? null
