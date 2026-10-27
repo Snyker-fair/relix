@@ -60,80 +60,14 @@
  *     { event: 'visible' }               Relix is visible again (by any path)
  *     { event: 'coverProgress', system, done, total }   downloadCovers progress
  *
- * In the browser (development / demo) there's no shell: test data is used and
- * a launch is only shown on screen.
+ * In the browser (development / demo) there's no shell: lib/demo/demo.js answers
+ * instead, with test data, and a launch is only shown on screen.
  */
 
-import { i18n, t } from '../i18n/i18n.svelte.js'
-import { remoteCoverUrl } from './coverMatch.js'
+import * as demo from '../demo/demo.js'
+import { t } from '../i18n/i18n.svelte.js'
 import { MEDIA_LISTED } from './media.js'
-import { dayKey } from './playDays.js'
-import { getPlatform, PLATFORMS } from './platforms.js'
-import mockCoverNames from '../../mock/libretro-names.json'
-import mockEnglish from '../../mock/en.json'
-import psx from '../../mock/gamelists/psx/gamelist.xml?raw'
-import psp from '../../mock/gamelists/psp/gamelist.xml?raw'
-import ps2 from '../../mock/gamelists/ps2/gamelist.xml?raw'
-import gc from '../../mock/gamelists/gc/gamelist.xml?raw'
-import wiiu from '../../mock/gamelists/wiiu/gamelist.xml?raw'
-import snes from '../../mock/gamelists/snes/gamelist.xml?raw'
-import n64 from '../../mock/gamelists/n64/gamelist.xml?raw'
-import gba from '../../mock/gamelists/gba/gamelist.xml?raw'
-import n3ds from '../../mock/gamelists/n3ds/gamelist.xml?raw'
-import megadrive from '../../mock/gamelists/megadrive/gamelist.xml?raw'
-import dreamcast from '../../mock/gamelists/dreamcast/gamelist.xml?raw'
-import xbox360 from '../../mock/gamelists/xbox360/gamelist.xml?raw'
-
-const MOCK_GAMELISTS = { psx, psp, ps2, gc, wiiu, snes, n64, gba, n3ds, megadrive, dreamcast, xbox360 }
-
-/**
- * The demo's test gamelists. In English, with their descriptions and genres
- * translated (src/mock/en.json): with your USB drive, Relix shows what ES-DE left.
- * @returns {Record<string, string>}
- */
-function demoGamelists() {
-  const written = demoWrittenGamelists()
-  /** @type {{ descriptions: Record<string, string>, genres: Record<string, string> }} */
-  const english = mockEnglish
-  /** @param {string} xml */
-  const swap = (xml) =>
-    i18n.current !== 'en'
-      ? xml
-      : xml
-          .replace(/<desc>([\s\S]*?)<\/desc>/g, (_, text) => `<desc>${english.descriptions[text] ?? text}</desc>`)
-          .replace(/<genre>(.*?)<\/genre>/g, (_, text) => `<genre>${english.genres[text] ?? text}</genre>`)
-  return Object.fromEntries(
-    Object.entries(MOCK_GAMELISTS).map(([id, xml]) => [
-      id,
-      swap(written[id] ?? xml).replace(
-        /<path>\.\/(.*?)<\/path>/g,
-        (_, path) => `<path>./${demoRenamed(id, path.replace(/&amp;/g, '&')).replace(/&/g, '&amp;')}</path>`,
-      ),
-    ]),
-  )
-}
-
-/**
- * Demo games ES-DE didn't scrape (they're not in its gamelists), to try
- * Y › Find info… in the browser.
- */
-const DEMO_UNSCRAPED = /** @type {Record<string, string[]>} */ ({
-  psx: ['Silent Hill (USA).chd'],
-  ps2: ['Final Fantasy X (USA).chd'],
-  gc: ['Super Smash Bros. Melee (USA).rvz'],
-})
-
-const DEMO_GAMELISTS_KEY = 'relix:demo-gamelists'
-
-/** The demo gamelists written in the browser (Y › Find info…) @returns {Record<string, string>} */
-function demoWrittenGamelists() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(DEMO_GAMELISTS_KEY) ?? '{}')
-    return saved && typeof saved === 'object' ? saved : {}
-  } catch {
-    return {}
-  }
-}
+import { PLATFORMS } from './platforms.js'
 
 /** @returns {any} */
 function webview() {
@@ -232,9 +166,6 @@ export function notifyReady() {
 
 // ── Diagnostic log (E:\relix\log.txt) ───────────────────────────────
 
-const DEMO_LOG_KEY = 'relix:demo-log'
-const DEMO_LOG_MAX = 300
-
 /**
  * Adds lines to the log. No answer: it never makes anyone wait, and an
  * older shell simply ignores them.
@@ -242,16 +173,8 @@ const DEMO_LOG_MAX = 300
  */
 export function appendLog(lines) {
   if (lines.length === 0) return
-  if (mode === 'xbox') {
-    webview().postMessage({ type: 'appendLog', payload: { lines } })
-    return
-  }
-  try {
-    const saved = JSON.parse(localStorage.getItem(DEMO_LOG_KEY) ?? '[]')
-    localStorage.setItem(DEMO_LOG_KEY, JSON.stringify([...saved, ...lines].slice(-DEMO_LOG_MAX)))
-  } catch {
-    // no storage: the demo doesn't keep the log
-  }
+  if (mode === 'xbox') webview().postMessage({ type: 'appendLog', payload: { lines } })
+  else demo.appendLog(lines)
 }
 
 /**
@@ -261,11 +184,7 @@ export function appendLog(lines) {
  */
 export async function readLog(count) {
   if (mode === 'xbox') return (await request('readLog', { count }, { timeout: 10_000 })).lines
-  try {
-    return JSON.parse(localStorage.getItem(DEMO_LOG_KEY) ?? '[]').slice(-count)
-  } catch {
-    return []
-  }
+  return demo.readLog(count)
 }
 
 /**
@@ -304,17 +223,8 @@ const systemRequest = (p) => ({ id: p.id, folders: p.folders })
 
 /** @returns {Promise<RawLibrary>} */
 export async function loadLibrary() {
-  if (mode === 'xbox') {
-    return request('loadLibrary', { systems: PLATFORMS.map(systemRequest) })
-  }
-  return {
-    romRoot: 'E:\\roms',
-    driveId: 'demo',
-    mediaBase: null,
-    thumbBase: null,
-    gamelists: demoGamelists(),
-    covers: demoCoverFiles(PLATFORMS.map((p) => p.id)),
-  }
+  if (mode === 'xbox') return request('loadLibrary', { systems: PLATFORMS.map(systemRequest) })
+  return demo.loadLibrary()
 }
 
 /**
@@ -324,22 +234,8 @@ export async function loadLibrary() {
  */
 export async function scanRoms(systemIds) {
   const platforms = PLATFORMS.filter((p) => systemIds.includes(p.id))
-  if (mode === 'xbox') {
-    const result = await request('scanRoms', { systems: platforms.map(systemRequest) })
-    return result.roms
-  }
-  // Browser: "finds" the games in the test gamelists, with a pause
-  // so the scanning state shows in the demo.
-  await new Promise((resolve) => setTimeout(resolve, 150))
-  /** @type {Record<string, RomScan>} */
-  const roms = {}
-  for (const p of platforms) {
-    const xml = /** @type {Record<string, string>} */ (MOCK_GAMELISTS)[p.id] ?? ''
-    const listed = [...xml.matchAll(/<path>\.\/(.*?)<\/path>/g)].map((m) => m[1].replace(/&amp;/g, '&'))
-    const files = [...new Set([...listed, ...(DEMO_UNSCRAPED[p.id] ?? [])])].map((path) => demoRenamed(p.id, path))
-    roms[p.id] = { folder: p.id, files }
-  }
-  return roms
+  if (mode === 'xbox') return (await request('scanRoms', { systems: platforms.map(systemRequest) })).roms
+  return demo.scanRoms(platforms)
 }
 
 /**
@@ -349,7 +245,7 @@ export async function scanRoms(systemIds) {
  */
 export async function launch(uri, romPath) {
   if (mode === 'xbox') return request('launch', { uri, romPath })
-  window.dispatchEvent(new CustomEvent('relix:launch-preview', { detail: { uri } }))
+  demo.launch(uri)
 }
 
 // ── Covers ──────────────────────────────────────────────────────────────
@@ -361,7 +257,7 @@ export async function launch(uri, romPath) {
  */
 export async function listCovers(systemIds) {
   if (mode === 'xbox') return (await request('listCovers', { systems: systemIds })).covers
-  return demoCoverFiles(systemIds)
+  return demo.coverFiles(systemIds)
 }
 
 /**
@@ -370,11 +266,8 @@ export async function listCovers(systemIds) {
  * @returns {Promise<string[]>}
  */
 export async function coverIndex(platform) {
-  if (mode === 'xbox') {
-    return (await request('coverIndex', { system: platform.id, libretro: platform.libretro })).names
-  }
-  await new Promise((resolve) => setTimeout(resolve, 400))
-  return /** @type {Record<string, string[]>} */ (mockCoverNames)[platform.id] ?? []
+  if (mode === 'xbox') return (await request('coverIndex', { system: platform.id, libretro: platform.libretro })).names
+  return demo.coverIndex(platform)
 }
 
 /**
@@ -391,35 +284,20 @@ export async function coverIndex(platform) {
  * @returns {Promise<CoverDownloadResult>}
  */
 export async function downloadCovers(platform, items, onProgress, kind = 'covers') {
-  if (mode === 'xbox') {
-    const stop = onShellEvent((e) => {
-      if (e.event === 'coverProgress' && e.system === platform.id) onProgress?.(e.done ?? 0, e.total ?? 0)
-    })
-    try {
-      // Without "kind" the shell downloads covers: that way an older shell still works for them
-      const payload = { system: platform.id, libretro: platform.libretro, items }
-      return await request('downloadCovers', kind === 'covers' ? payload : { ...payload, kind })
-    } finally {
-      stop()
-    }
+  if (mode !== 'xbox') return demo.downloadCovers(platform, items, onProgress, kind)
+  const stop = onShellEvent((e) => {
+    if (e.event === 'coverProgress' && e.system === platform.id) onProgress?.(e.done ?? 0, e.total ?? 0)
+  })
+  try {
+    // Without "kind" the shell downloads covers: that way an older shell still works for them
+    const payload = { system: platform.id, libretro: platform.libretro, items }
+    return await request('downloadCovers', kind === 'covers' ? payload : { ...payload, kind })
+  } finally {
+    stop()
   }
-  // Browser: "saves" the image by remembering its name on libretro
-  const saved = kind === 'covers' ? demoCovers() : demoMedia()
-  const prefix = kind === 'covers' ? '' : `${kind}/`
-  for (const [i, item] of items.entries()) {
-    await new Promise((resolve) => setTimeout(resolve, kind === 'covers' ? 90 : 40))
-    saved[`${prefix}${platform.id}/${item.key}`] = item.remote
-    onProgress?.(i + 1, items.length)
-  }
-  if (kind === 'covers') saveDemoCovers(saved)
-  else saveDemo(DEMO_MEDIA_KEY, saved)
-  return { saved: items.map((i) => i.key), failed: [] }
 }
 
 // ── Backgrounds, logos and videos (ES-DE/downloaded_media) ──────────────
-
-/** The libretro folder of each type that can be downloaded (for the demo) */
-const LIBRETRO_FOLDERS = /** @type {Record<string, string>} */ ({ screenshots: 'Named_Snaps', titlescreens: 'Named_Titles' })
 
 /**
  * What's in each console's downloaded_media: screenshots, fan art, logos and videos.
@@ -432,18 +310,7 @@ export async function listMedia(systemIds) {
   if (mode === 'xbox') {
     return (await request('listMedia', { systems: systemIds, types: MEDIA_LISTED }, { timeout: 30_000 })).media
   }
-  const saved = Object.keys(demoMedia())
-  return Object.fromEntries(
-    systemIds.map((id) => [
-      id,
-      Object.fromEntries(
-        MEDIA_LISTED.map((type) => [
-          type,
-          saved.filter((k) => k.startsWith(`${type}/${id}/`)).map((k) => `${k.slice(type.length + id.length + 2)}.png`),
-        ]),
-      ),
-    ]),
-  )
+  return demo.listMedia(systemIds)
 }
 
 /**
@@ -454,11 +321,7 @@ export async function listMedia(systemIds) {
  * @param {string|null} mediaBase
  */
 export function mediaFileUrl(system, type, file, mediaBase) {
-  if (mode === 'browser') {
-    const remote = demoMedia()[`${type}/${system}/${file.replace(/\.[^./]+$/, '')}`]
-    const platform = getPlatform(system)
-    return remote && platform && LIBRETRO_FOLDERS[type] ? remoteCoverUrl(platform.libretro, remote, LIBRETRO_FOLDERS[type]) : ''
-  }
+  if (mode === 'browser') return demo.mediaFileUrl(system, type, file)
   if (!mediaBase) return ''
   return `${mediaBase}/${system}/${type}/${file.split('/').map(encodeURIComponent).join('/')}`
 }
@@ -470,66 +333,10 @@ export function mediaFileUrl(system, type, file, mediaBase) {
  * @param {{ mediaBase: string|null, thumbBase?: string|null }} bases
  */
 export function coverUrls(system, file, { mediaBase, thumbBase }) {
-  if (mode === 'browser') {
-    const remote = demoCovers()[`${system}/${file.replace(/\.[^./]+$/, '')}`]
-    const platform = getPlatform(system)
-    const url = remote && platform ? remoteCoverUrl(platform.libretro, remote) : ''
-    return { cover: url, thumb: url }
-  }
+  if (mode === 'browser') return demo.coverUrls(system, file)
   const path = file.split('/').map(encodeURIComponent).join('/')
   const cover = `${mediaBase}/${system}/covers/${path}`
   return { cover, thumb: thumbBase ? `${thumbBase}/${system}/${path}` : cover }
-}
-
-// In the browser, the "downloaded" covers are remembered in the browser
-const DEMO_KEY = 'relix:demo-covers'
-const DEMO_MEDIA_KEY = 'relix:demo-media'
-
-/** @returns {Record<string, string>} "<type>/<console>/<key>" -> name on libretro */
-function demoMedia() {
-  try {
-    return JSON.parse(localStorage.getItem(DEMO_MEDIA_KEY) ?? '{}')
-  } catch {
-    return {}
-  }
-}
-
-/** @param {string} key @param {Record<string, string>} value */
-function saveDemo(key, value) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value))
-  } catch {
-    // no storage: forgotten on reload
-  }
-}
-
-/** @returns {Record<string, string>} "<console>/<key>" -> name on libretro */
-function demoCovers() {
-  try {
-    return JSON.parse(localStorage.getItem(DEMO_KEY) ?? '{}')
-  } catch {
-    return {}
-  }
-}
-
-/** @param {Record<string, string>} covers */
-function saveDemoCovers(covers) {
-  try {
-    localStorage.setItem(DEMO_KEY, JSON.stringify(covers))
-  } catch {
-    // no storage: forgotten on reload
-  }
-}
-
-/** @param {string[]} systemIds */
-function demoCoverFiles(systemIds) {
-  const saved = Object.keys(demoCovers())
-  return Object.fromEntries(
-    systemIds.map((id) => [
-      id,
-      saved.filter((k) => k.startsWith(`${id}/`)).map((k) => `${k.slice(id.length + 1)}.png`),
-    ]),
-  )
 }
 
 /**
@@ -539,10 +346,7 @@ function demoCoverFiles(systemIds) {
  */
 export async function deleteCover(system, key) {
   if (mode === 'xbox') return request('deleteCover', { system, key })
-  const saved = demoCovers()
-  delete saved[`${system}/${key}`]
-  saveDemoCovers(saved)
-  return true
+  return demo.deleteCover(system, key)
 }
 
 // ── Collections (ES-DE/collections/custom-*.cfg) ────────────────────────
@@ -552,7 +356,7 @@ export async function deleteCover(system, key) {
 /** @returns {Promise<CollectionFile[]>} */
 export async function listCollections() {
   if (mode === 'xbox') return (await request('listCollections')).collections
-  return Object.entries(demoCollections()).map(([file, text]) => ({ file, text }))
+  return demo.listCollections()
 }
 
 /**
@@ -562,20 +366,8 @@ export async function listCollections() {
  */
 export async function saveCollection(file, text) {
   if (mode === 'xbox') return request('saveCollection', { file, text })
-  const all = demoCollections()
-  if (text) all[file] = text
-  else delete all[file]
-  try {
-    localStorage.setItem(DEMO_COLLECTIONS_KEY, JSON.stringify(all))
-  } catch {
-    // no storage: forgotten on reload
-  }
-  return true
+  return demo.saveCollection(file, text)
 }
-
-const DEMO_COLLECTIONS_KEY = 'relix:demo-collections'
-
-// ── Renaming a game's file (Y › Rename file…) ───────────────────────────
 
 // ── ES-DE's gamelists ───────────────────────────────────────────────────
 
@@ -586,7 +378,7 @@ const DEMO_COLLECTIONS_KEY = 'relix:demo-collections'
  */
 export async function readGamelist(system) {
   if (mode === 'xbox') return (await request('readGamelist', { system })).text ?? null
-  return demoGamelists()[system] ?? null
+  return demo.readGamelist(system)
 }
 
 /**
@@ -609,9 +401,7 @@ export async function writeDiscList(system, name, text) {
  */
 export async function writeGamelist(system, text) {
   if (mode === 'xbox') return request('writeGamelist', { system, text })
-  await new Promise((resolve) => setTimeout(resolve, 150))
-  saveDemo(DEMO_GAMELISTS_KEY, { ...demoWrittenGamelists(), [system]: text })
-  return true
+  return demo.writeGamelist(system, text)
 }
 
 /**
@@ -634,100 +424,7 @@ export async function writeGamelist(system, text) {
 export async function renameGame(system, folder, plan, { preview = false } = {}) {
   const payload = { system, folder, files: plan.files, media: plan.media, gamelist: plan.gamelist, saves: plan.saves }
   if (mode === 'xbox') return request(preview ? 'renamePreview' : 'renameGame', payload)
-
-  // Demo: the browser remembers the new names, and the "downloaded" covers and images move along
-  await new Promise((resolve) => setTimeout(resolve, 250))
-  const covers = demoCovers()
-  const media = demoMedia()
-  let movedMedia = 0
-  /** @param {Record<string, string>} store @param {string} prefix */
-  const move = (store, prefix) => {
-    for (const key of Object.keys(store)) {
-      if (!key.startsWith(prefix)) continue
-      const renamed = renamedKey(key.slice(prefix.length), plan.media)
-      if (renamed === null) continue
-      movedMedia++
-      if (!preview) {
-        store[prefix + renamed] = store[key]
-        delete store[key]
-      }
-    }
-  }
-  move(covers, `${system}/`)
-  for (const type of new Set(Object.keys(media).map((k) => k.split('/')[0]))) move(media, `${type}/${system}/`)
-
-  const listed = [...(demoGamelists()[system] ?? '').matchAll(/<path>\.\/(.*?)<\/path>/g)].map((m) => m[1].replace(/&amp;/g, '&'))
-  const gamelist = listed.filter((path) => renamedKey(path, plan.gamelist) !== null).length
-  if (!preview) {
-    saveDemoCovers(covers)
-    saveDemo(DEMO_MEDIA_KEY, media)
-    const renames = demoRenames()
-    renames.push(...plan.files.map((f) => ({ system, from: f.from, to: f.to, folder: plan.kind === 'folder' })))
-    saveDemo(DEMO_RENAMES_KEY, /** @type {any} */ (renames))
-  }
-  return { files: plan.files.length, media: movedMedia, thumbnails: 0, gamelist, saves: 0, savesFolder: false, failed: 0, errors: [] }
-}
-
-const DEMO_RENAMES_KEY = 'relix:demo-renames'
-
-/** @returns {Array<{ system: string, from: string, to: string, folder: boolean }>} */
-function demoRenames() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(DEMO_RENAMES_KEY) ?? '[]')
-    return Array.isArray(saved) ? saved : []
-  } catch {
-    return []
-  }
-}
-
-/** A demo path with the renames done in the browser @param {string} system @param {string} path */
-function demoRenamed(system, path) {
-  let current = path
-  for (const r of demoRenames()) {
-    if (r.system !== system) continue
-    const renamed = renamedKey(current, [r])
-    if (renamed !== null) current = renamed
-  }
-  return current
-}
-
-/**
- * A path (or key) under its new name, or null if the renames don't touch it.
- * @param {string} key
- * @param {Array<{ from: string, to: string, folder?: boolean }>} renames
- */
-function renamedKey(key, renames) {
-  for (const r of renames) {
-    if (key.toLowerCase() === r.from.toLowerCase()) return r.to
-    if (r.folder && key.toLowerCase().startsWith(`${r.from.toLowerCase()}/`)) return r.to + key.slice(r.from.length)
-  }
-  return null
-}
-
-/**
- * The demo has a sample collection (with a game from a console Relix
- * doesn't handle). Its name is in the language the demo first opened in.
- * @returns {Record<string, string>}
- */
-const demoSeed = () => ({
-  [`custom-${t('Con amigos')}.cfg`]: [
-    '%ROMPATH%/ps2/Burnout 3 - Takedown (USA).chd',
-    '%ROMPATH%/gc/F-Zero GX (USA).rvz',
-    '%ROMPATH%/wiiu/Splatoon (USA).wua',
-    '%ROMPATH%/psx/Tekken 3 (USA).chd',
-    '%ROMPATH%/snes/Super Mario Kart (USA).sfc',
-    '',
-  ].join('\n'),
-})
-
-/** @returns {Record<string, string>} */
-function demoCollections() {
-  try {
-    const saved = localStorage.getItem(DEMO_COLLECTIONS_KEY)
-    return saved ? JSON.parse(saved) : demoSeed()
-  } catch {
-    return demoSeed()
-  }
+  return demo.renameGame(system, plan, preview)
 }
 
 // ── Installed emulators ─────────────────────────────────────────────────
@@ -739,9 +436,7 @@ function demoCollections() {
  */
 export async function emulatorStatus(protocols) {
   if (mode === 'xbox') return (await request('emulatorStatus', { protocols })).status
-  // Demo: an Xbox with RetroArch, PPSSPP, XBSX2 and Xenia Canary
-  const demo = new Set(['retroarch', 'ppsspp', 'xbsx2', 'xeniacanary'])
-  return Object.fromEntries(protocols.map((p) => [p, demo.has(p)]))
+  return demo.emulatorStatus(protocols)
 }
 
 // ── System checkup ──────────────────────────────────────────────────────
@@ -754,21 +449,7 @@ export async function emulatorStatus(protocols) {
 export async function systemCheck(folders) {
   // The internet test waits up to 6 s; a shell from before step 6 doesn't answer
   if (mode === 'xbox') return request('systemCheck', { folders }, { timeout: 15_000 })
-  // Demo: a 465 GB USB drive with the US PS1 BIOS (the European one is missing) and a
-  // NES folder, on an Xbox where Relix is of the App type (?apptype=game: of the Game type)
-  await new Promise((resolve) => setTimeout(resolve, 300))
-  const game = new URLSearchParams(globalThis.location?.search ?? '').get('apptype') === 'game'
-  return {
-    drive: 'E:\\',
-    writable: true,
-    space: { free: 182 * 1024 ** 3, total: 465 * 1024 ** 3 },
-    romFolders: [...PLATFORMS.map((p) => p.id), 'nes'],
-    folders: Object.fromEntries(
-      folders.map((f) => [f, f === 'RetroArch\\system' ? ['scph5501.bin'] : f === 'XBSX2\\BIOS' ? ['SCPH-70012_BIOS_V12_USA_200.BIN'] : null]),
-    ),
-    internet: true,
-    memory: { xbox: true, expectedLimit: (game ? 5 : 1) * 1024 ** 3, limit: 512 * 1024 ** 2, usage: 310 * 1024 ** 2 },
-  }
+  return demo.systemCheck(folders)
 }
 
 /**
@@ -788,69 +469,11 @@ export async function memoryUsage() {
 /** @returns {Promise<UserDataFile>} */
 export async function loadUserData() {
   if (mode === 'xbox') return request('loadUserData')
-  let text = null
-  try {
-    text = localStorage.getItem(DEMO_USERDATA_KEY)
-  } catch {
-    // no storage: the demo starts with the sample data
-  }
-  return { driveId: 'demo', text: text ?? DEMO_USERDATA, source: 'data.json' }
+  return demo.loadUserData()
 }
 
 /** @param {string} text  the whole content of data.json */
 export async function saveUserData(text) {
   if (mode === 'xbox') return request('saveUserData', { text })
-  try {
-    localStorage.setItem(DEMO_USERDATA_KEY, text)
-  } catch {
-    // no storage: forgotten on reload
-  }
-  return true
+  return demo.saveUserData(text)
 }
-
-/** The demo's days played, counted back from today so the charts always have weeks */
-function demoPlayDays() {
-  /** @type {Array<[number, string, number]>} days ago, game, seconds */
-  const sessions = [
-    [1, 'ps2/Okami (USA).chd', 3_900],
-    [2, 'gc/F-Zero GX (USA).rvz', 1_500],
-    [4, 'ps2/Okami (USA).chd', 5_400],
-    [9, 'psx/Tekken 3 (USA).chd', 2_700],
-    [11, 'ps2/Okami (USA).chd', 7_200],
-    [12, 'gc/F-Zero GX (USA).rvz', 2_400],
-    [17, 'ps2/Burnout 3 - Takedown (USA).chd', 3_000],
-    [23, 'ps2/Okami (USA).chd', 4_500],
-    [30, 'gc/F-Zero GX (USA).rvz', 3_600],
-    [38, 'ps2/Okami (USA).chd', 2_100],
-    [45, 'psx/Tekken 3 (USA).chd', 4_800],
-  ]
-  /** @type {Record<string, Record<string, number>>} */
-  const days = {}
-  for (const [ago, id, seconds] of sessions) {
-    const key = dayKey(Date.now() - ago * 86_400_000)
-    days[key] = { ...days[key], [id]: (days[key]?.[id] ?? 0) + seconds }
-  }
-  return days
-}
-
-// In the demo, the "USB drive" is the browser. It comes with some sample playtime.
-const DEMO_USERDATA_KEY = 'relix:demo-userdata'
-const DEMO_USERDATA = JSON.stringify({
-  app: 'relix',
-  version: 1,
-  savedAt: '2026-10-01T12:00:00.000Z',
-  playtime: {
-    'ps2/Okami (USA).chd': { seconds: 151_200, plays: 23 },
-    'gc/F-Zero GX (USA).rvz': { seconds: 46_800, plays: 31 },
-    'psx/Tekken 3 (USA).chd': { seconds: 27_000, plays: 18 },
-    'ps2/Burnout 3 - Takedown (USA).chd': { seconds: 12_600, plays: 9 },
-    'wiiu/Splatoon (USA).wua': { seconds: 2_700, plays: 2 },
-  },
-  lastPlayed: {
-    'ps2/Okami (USA).chd': Date.parse('2026-09-30T23:10:00Z'),
-    'gc/F-Zero GX (USA).rvz': Date.parse('2026-09-28T21:00:00Z'),
-    'psx/Tekken 3 (USA).chd': Date.parse('2026-09-20T19:30:00Z'),
-  },
-  recent: ['ps2/Okami (USA).chd', 'gc/F-Zero GX (USA).rvz', 'psx/Tekken 3 (USA).chd'],
-  playDays: demoPlayDays(),
-})

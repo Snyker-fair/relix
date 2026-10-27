@@ -226,9 +226,11 @@ V (View) and M (Menu). An Xbox controller plugged into the PC works too.
 src/
   lib/core/     pure logic with tests: platforms, launch URIs, ES-DE, covers,
                 search, sorting, your data, checkup, guides, updates…
+  lib/demo/     the shell's side in the browser: the demo's games, "USB drive" and Xbox
   lib/i18n/     t(), tn(), plural() and the English catalog
   lib/ui/       stores and shared components (controller input, sounds, covers…)
   screens/      Home, Library, Search, GameMenu, Options, Guide, Welcome…
+                (screens/options: each section of Options)
   mock/         ES-DE gamelists and libretro names for the demo and tests
 shell/          the C# shell (RelixShell) and its Visual Studio project
 tests/          vitest; tests/e2e: Playwright on the demo

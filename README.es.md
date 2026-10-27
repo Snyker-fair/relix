@@ -226,9 +226,11 @@ En el navegador: flechas, Enter (A), Esc (B), X, Y, Q/E (LB/RB), Z/C (LT/RT), V
 src/
   lib/core/     lógica pura con tests: consolas, URIs, ES-DE, portadas, búsqueda,
                 orden, tus datos, revisión, guías, versiones…
+  lib/demo/     el lado del shell en el navegador: los juegos, el "USB" y la Xbox de la demo
   lib/i18n/     t(), tn(), plural() y el catálogo en inglés
   lib/ui/       estados y piezas compartidas (control, sonidos, portadas…)
   screens/      Home, Library, Search, GameMenu, Options, Guide, Welcome…
+                (screens/options: cada sección de Opciones)
   mock/         gamelists de ES-DE y nombres de libretro para la demo y los tests
 shell/          el shell en C# (RelixShell) y su proyecto de Visual Studio
 tests/          vitest; tests/e2e: Playwright sobre la demo
