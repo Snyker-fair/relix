@@ -97,8 +97,9 @@ branch, so the tag doesn't take anything that isn't finished. GitHub runs the
 tests on it too and, when the shell changes, builds a test package (**Actions ›
 Release**, artifact `Relix_<version>.<run>_test`). Its fourth number goes up
 with every build, so it installs over what the Xbox has, without uninstalling.
-Once the version is published, `next` is merged into `main` and the new version
-starts from there.
+If only the interface changed, **Actions › Release › Run workflow** (choose the
+branch) builds that package too. Once the version is published, `next` is merged
+into `main` and the new version starts from there.
 
 ## Release a version
 
