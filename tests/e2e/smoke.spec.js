@@ -176,3 +176,28 @@ test('as Game, the welcome says how to change it to App, step by step', async ({
   await expect(page.locator('.steps')).toContainText('App')
   expect(errors).toEqual([])
 })
+
+test('Checkup › Report a problem shows the QR of the form, already filled in', async ({ page }) => {
+  const errors = await open(page)
+  await home(page)
+  await press(page, 'm')
+  await press(page, 'e', 2)
+  await expect(page.locator('.tab.active')).toHaveText(/Revisión/)
+  await expect(page.locator('.row', { hasText: 'Reportar un problema' })).toBeVisible()
+  // The last rows: the report, then the welcome tour
+  await press(page, 'ArrowDown', 40)
+  await press(page, 'ArrowUp')
+  await expect(page.locator('.row.focused')).toContainText('Reportar un problema')
+  await press(page, 'Enter')
+  const qr = page.locator('.panel .qr svg')
+  await expect(qr).toBeVisible()
+  const label = (await qr.getAttribute('aria-label')) ?? ''
+  const url = new URL(label.slice(label.indexOf('https://')))
+  expect(url.pathname).toBe('/Snyker-fair/relix/issues/new')
+  expect(url.searchParams.get('template')).toBe('bug_es.yml')
+  expect(url.searchParams.get('log')).toContain('Revisión:')
+  await expect(page.locator('.panel pre')).toContainText('Relix ')
+  await press(page, 'Escape')
+  await expect(qr).toHaveCount(0)
+  expect(errors).toEqual([])
+})

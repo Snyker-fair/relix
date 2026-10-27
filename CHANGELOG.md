@@ -16,6 +16,10 @@ Each version's section becomes the notes of its GitHub release.
   says "45 h played" where its year went.
 - **The screensaver, with your games:** the ones you play and the ones waiting
   to be picked back up come up more often; all of them show before any repeats.
+- **Report a problem from the Xbox:** *≡ › Checkup › Report a problem* shows a
+  QR code. Scan it with your phone and the GitHub form opens with your version,
+  what Checkup found and the last lines of the log already in it; you see it all
+  before sending it.
 
 ## [1.4.0] - 2026-10-23
 

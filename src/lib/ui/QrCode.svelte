@@ -7,10 +7,14 @@
   import { encode } from 'uqr'
   import { t } from '../i18n/i18n.svelte.js'
 
-  /** @type {{ text: string, size?: number }} */
-  let { text, size = 180 } = $props()
+  /**
+   * @type {{ text: string, size?: number, ecc?: 'L' | 'M' }}
+   *   ecc: how much of the code can be damaged and still read. L makes a long
+   *   address less dense (a TV screen doesn't get scratched)
+   */
+  let { text, size = 180, ecc = 'M' } = $props()
 
-  const qr = $derived(encode(text, { ecc: 'M', border: 2 }))
+  const qr = $derived(encode(text, { ecc, border: 2 }))
   // A single path with every dark module: lighter than hundreds of <rect>
   const path = $derived(
     qr.data.map((row, y) => row.map((on, x) => (on ? `M${x} ${y}h1v1h-1z` : '')).join('')).join(''),

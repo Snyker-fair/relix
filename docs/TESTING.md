@@ -408,5 +408,13 @@ the USB drive a game ES-DE hasn't scraped (it has no description in Relix).
 - [ ] Screensaver (3 minutes): the games you've played lately come up more than
       the rest, and none repeats until all have shown.
 
+## Report a problem (1.5.0)
+- [ ] **≡ → Checkup → Report a problem** (above the welcome tour): the QR code
+      and, next to it, what the form gets: the summary line, the App type with
+      its memory, what Checkup found and the last lines of the log.
+- [ ] Scan it with a phone from where you usually sit: GitHub opens *Something
+      isn't working* (*Algo no funciona* in Spanish) with the version and the log
+      filled in. B closes the QR.
+
 If something fails, the **If something fails** table in
 [`shell/README.md`](../shell/README.md) has the most common causes.

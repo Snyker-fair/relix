@@ -200,6 +200,11 @@
     <!-- page with lines: log -->
     <rect x="22" y="12" width="52" height="72" rx="10" />
     <path d="M34 34h28M34 48h28M34 62h16" />
+  {:else if id === 'report'}
+    <!-- speech bubble with a "!": report a problem -->
+    <path d="M22 14h52a12 12 0 0 1 12 12v32a12 12 0 0 1-12 12H46L28 84V70h-6a12 12 0 0 1-12-12V26a12 12 0 0 1 12-12Z" />
+    <path d="M48 28v18" stroke-width="7" />
+    <circle cx="48" cy="57" r="4.5" fill={color} stroke="none" />
   {:else if id === 'language'}
     <!-- speech bubble with an A: language -->
     <path d="M24 14h48a12 12 0 0 1 12 12v32a12 12 0 0 1-12 12H44L28 82V70h-4a12 12 0 0 1-12-12V26a12 12 0 0 1 12-12Z" />

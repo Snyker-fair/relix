@@ -23,9 +23,10 @@
    *   onGuide: (systemId: string, from: { section: string, row: string }) => void,
    *   onWelcome: () => void,
    *   onLog: () => void,
+   *   onReport: () => void,
    * }}
    */
-  let { index = $bindable(), onMove, onToast, onGuide, onWelcome, onLog } = $props()
+  let { index = $bindable(), onMove, onToast, onGuide, onWelcome, onLog, onReport } = $props()
 
   /** @type {Record<CheckState, number>} a new version first */
   const STATE_ORDER = { update: -1, error: 0, warn: 1, info: 2, ok: 3 }
@@ -36,7 +37,7 @@
 
   const sortedChecks = $derived([...systemStatus.checks].sort((a, b) => STATE_ORDER[a.state] - STATE_ORDER[b.state]))
   const checkById = $derived(new Map(sortedChecks.map((c) => [c.id, c])))
-  const ROWS = $derived([...sortedChecks.map((c) => c.id), 'recheck', 'log', 'welcome'])
+  const ROWS = $derived([...sortedChecks.map((c) => c.id), 'recheck', 'log', 'report', 'welcome'])
   const logDrive = $derived(library.romRoot.replace(/roms[\\/]*$/i, '') || 'E:\\')
   const clock = ticking()
 
@@ -71,13 +72,24 @@
   export function hints(common) {
     const id = ROWS[index]
     const a =
-      id === 'recheck' ? t('Revisar') : id === 'welcome' || id === 'log' ? t('Ver') : checkById.get(id)?.action ? t('Ver guía') : ''
+      id === 'recheck'
+        ? t('Revisar')
+        : id === 'welcome' || id === 'log' || id === 'report'
+          ? t('Ver')
+          : checkById.get(id)?.action
+            ? t('Ver guía')
+            : ''
     return [...(a ? [{ button: /** @type {const} */ ('a'), label: a }] : []), ...common]
   }
 
-  /** A opens the check's guide, checks again, the log or the tour */
+  /** A opens the check's guide, checks again, the log, the report or the tour */
   export async function activate() {
     const id = ROWS[index]
+    if (id === 'report') {
+      sound.select()
+      onReport()
+      return
+    }
     if (id === 'welcome') {
       sound.select()
       onWelcome()
@@ -165,6 +177,17 @@
             ? t('última entrada {when}', { when: timeAgo(diagnostics.lastAt, clock.now) })
             : t('cada juego que abres y cada error')}
         </span>
+      </span>
+      <span class="state">
+        {#if focused}<PadButton name="a" size={30} /> {t('Ver')}{/if}
+      </span>
+    {:else if id === 'report'}
+      <span class="badge neutral">
+        <ChannelIcon id="report" color="currentColor" size={46} />
+      </span>
+      <span class="text">
+        <strong>{t('Reportar un problema')}</strong>
+        <span>{t('Un QR con el formulario de GitHub, ya con tu versión, la revisión y el registro')}</span>
       </span>
       <span class="state">
         {#if focused}<PadButton name="a" size={30} /> {t('Ver')}{/if}
