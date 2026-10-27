@@ -13,7 +13,9 @@
     "check": "svelte-check --fail-on-warnings",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build:shell": "vite build && node scripts/copy-to-shell.mjs"
+    "build:shell": "vite build && node scripts/copy-to-shell.mjs",
+    "preversion": "node scripts/changelog-date.mjs --check",
+    "version": "node scripts/changelog-date.mjs"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.3.0",

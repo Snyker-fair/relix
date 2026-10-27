@@ -95,24 +95,30 @@ chore(release): 1.0.1
 While a version is being tested on the Xbox, the next one is built on the `next`
 branch, so the tag doesn't take anything that isn't finished. GitHub runs the
 tests on it too and, when the shell changes, builds a test package (**Actions ›
-Release**, artifact `Relix_<version>_test`). Once the version is published,
-`next` is merged into `main` and the new version starts from there.
+Release**, artifact `Relix_<version>.<run>_test`). Its fourth number goes up
+with every build, so it installs over what the Xbox has, without uninstalling.
+Once the version is published, `next` is merged into `main` and the new version
+starts from there.
 
 ## Release a version
 
 GitHub builds and signs the package by itself from a tag, and leaves it as a
 draft so you can try it before releasing it:
 
-1. Add the changes to [`CHANGELOG.md`](../CHANGELOG.md), at the top, with the new
-   number (`## [1.0.1] - 2026-11-02`). That section becomes the release notes.
-   Commit it: `docs(changelog): add the changes in 1.0.1`.
+1. The changes go in [`CHANGELOG.md`](../CHANGELOG.md) while they're made, at
+   the top, in the new number's section: `## [1.0.1] - unreleased`. That section
+   becomes the release notes.
 2. Bump the version number and create the tag:
    ```
    npm version 1.0.1
    git push --follow-tags
    ```
-   `npm version` changes `package.json` and `package-lock.json`, makes the commit
-   (`chore(release): 1.0.1`) and creates the `v1.0.1` tag.
+   `npm version` first checks that `CHANGELOG.md` has the `1.0.1` section with
+   something in it (if not, it stops without changing anything). Then it changes
+   `package.json` and `package-lock.json`, writes today's date in the section
+   (`## [1.0.1] - 2026-11-02`, with
+   [`scripts/changelog-date.mjs`](../scripts/changelog-date.mjs)), makes the
+   commit (`chore(release): 1.0.1`) and creates the `v1.0.1` tag.
 3. On GitHub, **Actions** tab › **Release**: in 3 to 5 minutes a **draft** shows
    up in **Releases** with the `.msix` and the dependencies `.zip`. Only you can
    see it.
@@ -122,11 +128,32 @@ draft so you can try it before releasing it:
 5. If it works: on the draft, **Edit** (the pencil) › **Publish release**. From
    then on it's public, and Xboxes with Relix announce it when they open (a day
    later at most; right away with **Checkup › Check again**). If it doesn't work,
-   delete it (**Delete**), fix it and release the next version.
+   fix it and make the draft again with the same number (below).
 
 If the workflow fails, the log of the failed step says why. The tag has to match
-`package.json` (the workflow checks it), and the UWP package number is built by
-itself: `1.0.1` → `1.0.1.0`.
+`package.json` and the CHANGELOG section has to be dated (the workflow checks
+both). The UWP package number is built by itself, with the run number last:
+`1.0.1` → `1.0.1.142`. That's why a test package, or the draft of a tag made
+again, installs over the one before.
+
+### Make a draft again, with the same number
+
+While the draft isn't published, the fix can go in the same version:
+
+1. In **Releases**, delete the draft (**Delete**).
+2. Commit the fix (and its line in `CHANGELOG.md`, inside the same section) and
+   push it: `git push`.
+3. Move the tag to that commit:
+   ```
+   git tag -d v1.0.1
+   git push origin --delete v1.0.1
+   git tag -a v1.0.1 -m "chore(release): 1.0.1"
+   git push origin v1.0.1
+   ```
+   GitHub builds the new draft. Its package has a higher fourth number, so it
+   installs over the one you were testing.
+
+Once published, a version isn't changed anymore: the fix goes in the next one.
 
 ### Once: the signing certificate
 
@@ -154,7 +181,7 @@ Certificates › Relix). If you ever create another one, use the same publisher
 
 | Workflow | When | What it does |
 |---|---|---|
-| [`ci.yml`](../.github/workflows/ci.yml) | Every change on `main` and every pull request | Tests, untranslated texts and both interface builds |
+| [`ci.yml`](../.github/workflows/ci.yml) | Every change on `main` and `next`, and every pull request | Types (`npm run check`), tests, untranslated texts and both interface builds |
 | [`pages.yml`](../.github/workflows/pages.yml) | Every change on `main` | Deploys the demo to `snyker-fair.github.io/relix` |
 | [`release.yml`](../.github/workflows/release.yml) | Every `vX.Y.Z` tag | Builds the shell on Windows, signs the package and creates the release as a draft |
-| [`release.yml`](../.github/workflows/release.yml) | Every change in `shell/` on `main` | The same, as a test and without releasing: the package stays in the run (**Artifacts**) for 14 days |
+| [`release.yml`](../.github/workflows/release.yml) | Every change in `shell/` on `main` or `next` | The same, as a test and without releasing: the package stays in the run (**Artifacts**) for 14 days |

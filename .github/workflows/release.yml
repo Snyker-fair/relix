@@ -13,6 +13,10 @@
 # Every shell change on main or next (and Actions › Release › Run workflow) builds the
 # same package as a test, without releasing it: it stays as a workflow artifact.
 # Without the secrets, that test package comes out unsigned.
+#
+# The package's fourth number is this workflow's run number (1.5.0 -> 1.5.0.142):
+# every package is newer than the one before, so a test, or a release redone with
+# the same tag, installs over what the Xbox has without uninstalling it.
 name: Release
 
 on:
@@ -43,10 +47,15 @@ jobs:
             "PUBLISH=true" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
           }
           "VERSION=$version" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
-          # The UWP package uses four numbers: 1.0.0 -> 1.0.0.0
+          # The UWP package uses four numbers (each up to 65535): 1.0.0 -> 1.0.0.<run>
+          $run = [int]$env:GITHUB_RUN_NUMBER
+          if ($run -gt 65535) { throw "Run $run doesn't fit in the package's fourth number" }
+          $package = "$version.$run"
+          "PACKAGE_VERSION=$package" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+          Write-Host "::notice title=Package::$package"
           $manifest = (Resolve-Path shell/RelixShell/Package.appxmanifest).Path
           [xml]$xml = Get-Content $manifest -Raw
-          $xml.Package.Identity.Version = "$version.0"
+          $xml.Package.Identity.Version = $package
           $xml.Save($manifest)
 
       - uses: actions/setup-node@v5
@@ -133,9 +142,14 @@ jobs:
 
           # The notes: this version's section in CHANGELOG.md and how to install
           $changelog = Get-Content CHANGELOG.md -Raw
-          $pattern = "(?ms)^## \[$([regex]::Escape($env:VERSION))\][^\n]*\n(.*?)(?=^## \[|\z)"
+          $pattern = "(?ms)^## \[$([regex]::Escape($env:VERSION))\]([^\n]*)\n(.*?)(?=^## \[|\z)"
           $match = [regex]::Match($changelog, $pattern)
-          $notes = if ($match.Success) { $match.Groups[1].Value.Trim() -replace '\r', '' } else { '' }
+          $notes = if ($match.Success) { $match.Groups[2].Value.Trim() -replace '\r', '' } else { '' }
+          # A release needs its notes, dated (npm version writes the date: scripts/changelog-date.mjs)
+          if ($env:PUBLISH -eq 'true') {
+            if (-not $notes) { throw "CHANGELOG.md has no notes for $($env:VERSION)" }
+            if ($match.Groups[1].Value -match 'unreleased') { throw "CHANGELOG.md still says $($env:VERSION) is unreleased" }
+          }
           # GitHub shows every line break: the lines of a paragraph are joined
           # (the ones that don't start a bullet, a heading, a table or a quote)
           $notes = $notes -replace '\n[ \t]*(?=\S)(?![-*+] |#|\||>|\d+\. )', ' '
@@ -151,7 +165,8 @@ jobs:
         if: env.PUBLISH != 'true'
         uses: actions/upload-artifact@v6
         with:
-          name: Relix_${{ env.VERSION }}_test
+          # With the fourth number: the highest is the newest
+          name: Relix_${{ env.PACKAGE_VERSION }}_test
           path: ${{ runner.temp }}/release/
           retention-days: 14
 
