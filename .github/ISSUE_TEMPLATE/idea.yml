@@ -1,0 +1,28 @@
+name: Idea
+description: Something Relix could do, or do better.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea. Relix aims for one thing: outside it, you only install the emulators and copy your games to the USB drive ([what guides it](https://github.com/Snyker-fair/relix/blob/main/CONTRIBUTING.md#what-guides-relix)).
+        ¿Prefieres escribir en español? Usa la plantilla "Idea (en español)".
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What you'd like Relix to do.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: What it would help with
+      description: What you do today instead, or what gets in the way.
+      placeholder: "I have 300 PS2 games and I can't find…"
+  - type: input
+    id: version
+    attributes:
+      label: Relix version
+      description: It's in Options › About.
+      placeholder: "1.5.0"

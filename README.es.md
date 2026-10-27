@@ -383,5 +383,8 @@ y emuladores son marcas de sus dueños y se usan solo para decir con qué funcio
 Relix. Los íconos de las consolas están dibujados a mano y no usan logos.
 
 Creado por **[snyker-fair](https://github.com/Snyker-fair)**. ¿Encontraste un
-error? Abre un [issue](https://github.com/Snyker-fair/relix/issues/new/choose):
-pide los pocos datos que hacen falta para arreglarlo rápido.
+error? En la Xbox, *Opciones › Revisión › Reportar un problema* muestra un QR que
+abre el formulario en tu celular con los datos ya puestos; desde el PC, abre un
+[issue](https://github.com/Snyker-fair/relix/issues/new/choose). Las ideas y el
+código también son bienvenidos: [`CONTRIBUTING.md`](CONTRIBUTING.md) (en inglés)
+dice qué guía a Relix.

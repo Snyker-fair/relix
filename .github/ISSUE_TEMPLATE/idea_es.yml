@@ -1,0 +1,28 @@
+name: Idea (en español)
+description: Algo que Relix podría hacer, o hacer mejor.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por la idea. Relix apunta a una cosa: fuera de él solo instalas los emuladores y copias tus juegos al USB ([lo que lo guía](https://github.com/Snyker-fair/relix/blob/main/CONTRIBUTING.md#what-guides-relix), en inglés).
+        Prefer English? Use the "Idea" template.
+  - type: textarea
+    id: idea
+    attributes:
+      label: La idea
+      description: Qué te gustaría que hiciera Relix.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: En qué te ayudaría
+      description: Qué haces hoy en su lugar, o qué te estorba.
+      placeholder: "Tengo 300 juegos de PS2 y no encuentro…"
+  - type: input
+    id: version
+    attributes:
+      label: Versión de Relix
+      description: Está en Opciones › Acerca de.
+      placeholder: "1.5.0"

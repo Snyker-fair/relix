@@ -6,6 +6,7 @@ body:
     attributes:
       value: |
         Gracias por avisar. Con estos datos casi siempre se puede saber qué pasó sin ir y venir.
+        Desde la Xbox, **Opciones › Revisión › Reportar un problema** muestra un QR que abre este formulario con la versión y el registro ya puestos.
         Prefer English? Use the "Something isn't working" template.
   - type: input
     id: version
@@ -43,6 +44,6 @@ body:
     attributes:
       label: Registro de diagnóstico
       description: |
-        Las últimas líneas de `E:\relix\log.txt` (en el PC), o una foto de Opciones › Revisión › Registro de diagnóstico.
-        Revísalo antes de pegarlo: trae los nombres de tus juegos y las rutas de tu USB.
+        Las últimas líneas de `E:\relix\log.txt` (en el PC), o una foto de Opciones › Revisión › Registro de diagnóstico. El QR de Opciones › Revisión › Reportar un problema lo llena solo.
+        Revísalo antes de enviarlo: trae los nombres de tus juegos y las rutas de tu USB.
       render: text

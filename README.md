@@ -382,6 +382,8 @@ credit at the end.
 Console and emulator names are trademarks of their owners and are only used to
 say what Relix works with. Console icons are hand-drawn and don't use logos.
 
-Made by **[snyker-fair](https://github.com/Snyker-fair)**. Found a bug? Open an
-[issue](https://github.com/Snyker-fair/relix/issues/new/choose) — it asks for
-the few details that make it quick to fix.
+Made by **[snyker-fair](https://github.com/Snyker-fair)**. Found a bug? On the
+Xbox, *Options › Checkup › Report a problem* shows a QR code that opens the form
+on your phone with the details already filled in; from the PC, open an
+[issue](https://github.com/Snyker-fair/relix/issues/new/choose). Ideas and code
+are welcome too: [`CONTRIBUTING.md`](CONTRIBUTING.md) says what guides Relix.
