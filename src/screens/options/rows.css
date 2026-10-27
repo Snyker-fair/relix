@@ -1,0 +1,241 @@
+/*
+ * Options' rows (src/screens/options/*Section.svelte): the list on the right that
+ * slides, and what goes in each row. Shared by every section, so it's a plain
+ * stylesheet and not each component's: everything hangs from .rows-window.
+ */
+/* ── Rows ────────────────────────────── */
+/* The focus ring (11 px) leaves at least 16 px free up to the next row */
+/* The rows' window goes from 142 to 970 px; the first row sits at 170
+   like the left panel. The rows have room around them for the focus
+   ring and slide when they don't fit; at the top and bottom they fade, so
+   a row halfway out doesn't look like a cut edge. */
+.rows-window {
+  position: absolute;
+  left: 760px;
+  right: 108px;
+  top: 142px;
+  bottom: 110px;
+  overflow: hidden;
+  mask-image: linear-gradient(transparent, #000 12px, #000 calc(100% - 12px), transparent);
+}
+.rows-window .rows {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  padding: 28px 16px;
+  transition: transform 260ms var(--spring);
+}
+.rows-window .row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  height: 108px;
+  padding: 0 30px 0 18px;
+  border-radius: 34px;
+  background: var(--cloud);
+  text-align: left;
+}
+/* the rows are wide: they don't move or grow (they'd go past the edge), only the ring */
+.rows-window .row.focus-ring.focused {
+  transform: none;
+}
+/* a console being moved (X in Consoles): lifted off the list with a shadow. No
+   scale: a bigger row with its ring doesn't fit in the list's side margin and
+   its edges were cut off */
+.rows-window .row.focus-ring.focused.moving {
+  box-shadow:
+    0 0 0 5px var(--ring-gap),
+    0 0 0 11px var(--pop),
+    0 18px 30px -14px rgb(var(--shadow) / 0.6);
+  z-index: 1;
+}
+.rows-window .row.all {
+  margin-top: 10px;
+}
+/* Library and Covers have seven rows: a bit shorter so they fit */
+.rows-window .rows.compact {
+  gap: 30px;
+}
+.rows-window .rows.compact .row {
+  height: 82px;
+}
+.rows-window .rows.compact .badge {
+  width: 68px;
+  height: 68px;
+  border-radius: 22px;
+}
+.rows-window .rows.compact .badge.refresh {
+  border-radius: 50%;
+}
+.rows-window .badge.pick {
+  background: var(--sun);
+}
+/* Checkup: the detail can take two lines, so the row grows */
+.rows-window .rows.review {
+  gap: 30px;
+}
+.rows-window .rows.review .row {
+  height: auto;
+  min-height: 96px;
+  padding: 14px 30px 14px 18px;
+}
+.rows-window .rows.review .badge {
+  width: 68px;
+  height: 68px;
+  border-radius: 22px;
+}
+.rows-window .rows.review .badge.refresh {
+  border-radius: 50%;
+}
+.rows-window .rows.review .text strong {
+  font-size: 29px;
+}
+.rows-window .rows.review .text .explain {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.35;
+  font-size: 21px;
+}
+.rows-window .badge.mark {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 40px;
+  line-height: 1;
+  padding-top: 4px;
+}
+.rows-window .badge.mark.ok {
+  background: var(--ok-bg);
+  color: var(--ok-ink);
+}
+.rows-window .badge.mark.warn {
+  background: var(--sun);
+  color: var(--ink);
+}
+.rows-window .badge.mark.error {
+  background: var(--pop);
+  color: var(--on-color);
+}
+.rows-window .badge.mark.update {
+  background: var(--btn-x);
+  color: #ffffff;
+}
+.rows-window .badge.mark.info {
+  background: var(--sky);
+  color: var(--ink-soft);
+  font-family: Georgia, serif;
+  font-style: italic;
+}
+.rows-window .text .count {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.rows-window .meter {
+  display: block;
+  flex: none;
+  width: 120px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--sky);
+  overflow: hidden;
+}
+.rows-window .meter i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+.rows-window .badge {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 80px;
+  height: 80px;
+  border-radius: 26px;
+}
+.rows-window .badge.neutral {
+  background: var(--sky);
+}
+.rows-window .value {
+  padding: 6px 18px 8px;
+  border-radius: 999px;
+  background: var(--sky);
+  color: var(--ink-soft);
+}
+.rows-window .value.on {
+  background: var(--pop);
+  color: var(--on-color);
+}
+.rows-window .value.missing {
+  background: var(--pop-soft);
+  color: var(--ink);
+}
+.rows-window .value.ok {
+  background: var(--ok-bg);
+  color: var(--ok-ink);
+}
+/* "PlayStation  12 games" in the Consoles row */
+.rows-window .text strong small {
+  margin-left: 12px;
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.rows-window .badge.refresh {
+  background: var(--pop);
+  border-radius: 50%;
+}
+.rows-window .text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.rows-window .text strong {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 1.1;
+}
+.rows-window .text span {
+  font-size: 22px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rows-window .text code {
+  font-family: var(--font-body);
+  font-weight: 700;
+  color: var(--ink);
+}
+.rows-window .state {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+  font-weight: 700;
+  font-size: 24px;
+  color: var(--ink-soft);
+}
+.rows-window .row.focused .state {
+  color: var(--ink);
+}
+.rows-window .spinner {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 5px solid var(--pop-soft);
+  border-top-color: var(--pop);
+  animation: options-spin 700ms linear infinite;
+}
+@keyframes options-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
