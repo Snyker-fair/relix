@@ -33,8 +33,9 @@ jobs:
 
   ui:
     # The smoke tests (tests/e2e): the demo in Chromium, at the TV's size, driven
-    # with the keyboard like a controller
-    runs-on: ubuntu-latest
+    # with the keyboard like a controller. A fixed Ubuntu: Playwright installs
+    # Chromium's system libraries with the names of the versions it knows
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
