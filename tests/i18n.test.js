@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { collectKeys, placeholders } from '../scripts/i18n.mjs'
+import { collectKeys, placeholders, unusedKeys } from '../scripts/i18n.mjs'
 import { REGION_NAMES, regionLabel } from '../src/lib/core/coverMatch.js'
 import { LOG_KINDS, logLine, parseLogLine } from '../src/lib/core/diagnostics.js'
 import { DEVSTORE_LABEL, guideSteps } from '../src/lib/core/guides.js'
@@ -43,6 +43,13 @@ describe('the English catalog', () => {
     expect(problems).toEqual([])
     const missing = [...keys].filter(([key]) => !(key in EN)).map(([key, where]) => `${where[0]}  ${key}`)
     expect(missing).toEqual([])
+  })
+
+  it('has no entries the code no longer writes', () => {
+    expect(unusedKeys(EN)).toEqual([])
+    // Written anywhere counts, with any quote; a text that's gone doesn't
+    const source = `const A = { x: 'Volver' }\nconst B = "Dice \\"hola\\""\n`
+    expect(unusedKeys({ Volver: 'Back', 'Dice "hola"': 'Says "hi"', Borrado: 'Deleted' }, source)).toEqual(['Borrado'])
   })
 
   it('each translation has the same {names} as its Spanish text', () => {

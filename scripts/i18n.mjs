@@ -2,8 +2,10 @@
  * Checks the translations: finds in src/ every text that goes through t(), tn()
  * or plural() and says which ones have no English version in src/lib/i18n/en.js.
  *
- *   node scripts/i18n.mjs            untranslated texts (ready to copy into en.js)
- *   node scripts/i18n.mjs --unused   entries in en.js that no literal t() uses anymore
+ *   node scripts/i18n.mjs            untranslated texts (ready to copy into en.js) and
+ *                                    entries in en.js the code no longer has; it fails
+ *                                    (exit 1) if there's any, so CI stops
+ *   node scripts/i18n.mjs --unused   only the entries the code no longer has
  *
  * tests/i18n.test.js uses the same functions.
  */
@@ -136,6 +138,37 @@ export function collectKeys() {
   return { keys, problems }
 }
 
+/** Every .js and .svelte in src/ but en.js, together: the demo and the i18n code included */
+export function allSourceText(dir = join(ROOT, 'src')) {
+  /** @type {string[]} */
+  const texts = []
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name)
+    if (entry.isDirectory()) texts.push(allSourceText(path))
+    else if (/\.(js|svelte)$/.test(entry.name) && !(entry.name === 'en.js' && dir.endsWith('i18n'))) {
+      texts.push(readFileSync(path, 'utf8'))
+    }
+  }
+  return texts.join('\n')
+}
+
+/** A text written as a JS literal, with each kind of quote @param {string} text */
+function literals(text) {
+  const escape = (/** @type {string} */ quote) => text.replace(/\\/g, '\\\\').replaceAll(quote, `\\${quote}`)
+  return [`'${escape("'")}'`, `"${escape('"')}"`, `\`${escape('`')}\``]
+}
+
+/**
+ * The entries in en.js that nothing in src/ writes anymore. A text counts as used
+ * if it's written anywhere as a literal, not only inside t(): many go through t()
+ * later, from a table (the regions, the log's kinds, the news).
+ * @param {Record<string, string>} en
+ * @param {string} [source]  allSourceText()
+ */
+export function unusedKeys(en, source = allSourceText()) {
+  return Object.keys(en).filter((key) => !literals(key).some((literal) => source.includes(literal)))
+}
+
 /** The {name}s of a text, sorted */
 export const placeholders = (/** @type {string} */ text) => [...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort()
 
@@ -143,8 +176,9 @@ if (IS_FILE && process.argv[1] && fileURLToPath(import.meta.url) === process.arg
   const { default: EN } = await import('../src/lib/i18n/en.js')
   const { keys, problems } = collectKeys()
   for (const p of problems) console.log('PROBLEM', p)
+  const unused = unusedKeys(EN)
   if (process.argv.includes('--unused')) {
-    for (const key of Object.keys(EN)) if (!keys.has(key)) console.log(JSON.stringify(key))
+    for (const key of unused) console.log(JSON.stringify(key))
   } else {
     let n = 0
     for (const [key, where] of keys) {
@@ -153,5 +187,10 @@ if (IS_FILE && process.argv[1] && fileURLToPath(import.meta.url) === process.arg
       console.log(`  // ${where[0]}\n  ${JSON.stringify(key)}: '',`)
     }
     console.log(`// ${n} untranslated out of ${keys.size}`)
+    if (unused.length > 0) {
+      console.log(`// ${unused.length} in en.js that the code no longer has (delete them):`)
+      for (const key of unused) console.log(`  ${JSON.stringify(key)}`)
+    }
+    if (n > 0 || unused.length > 0 || problems.length > 0) process.exitCode = 1
   }
 }

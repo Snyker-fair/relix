@@ -1,6 +1,7 @@
 # Tests and interface builds on every change: the types (svelte-check, from the
-# JSDoc), the logic tests (vitest), that en.js has every text in English, and
-# that both builds (the app's and the self-contained demo) come out without errors.
+# JSDoc), the logic tests (vitest), that en.js has every text in English (and
+# nothing the code no longer has), and that both builds (the app's and the
+# self-contained demo) come out without errors.
 name: Tests
 
 on:
@@ -25,7 +26,7 @@ jobs:
       - name: Types
         run: npm run check
       - run: npm test
-      - name: Untranslated texts
+      - name: Translations (missing or left over in en.js)
         run: node scripts/i18n.mjs
       - run: npm run build
       - run: npm run build:single

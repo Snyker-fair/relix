@@ -214,7 +214,7 @@ npm test               # logic and translation tests (vitest)
 npm run build          # dist/ for the UWP package
 npm run build:single   # dist-single/index.html, self-contained (the demo)
 npm run build:shell    # builds and copies the interface into the Visual Studio project
-node scripts/i18n.mjs  # strings still missing their English translation
+node scripts/i18n.mjs  # strings missing their English translation, and leftovers in en.js
 RELIX_LIVE=1 npx vitest run tests/gameInfo.live.test.js  # game info against the real Wikidata (needs internet)
 ```
 
@@ -256,9 +256,9 @@ plural(n, 'juego', 'juegos')               // "3 games"
 ```
 
 `node scripts/i18n.mjs` lists the strings still missing their English version,
-ready to copy into `en.js`. `tests/i18n.test.js` fails if one is missing, if the
-`{names}` don't match, or if a guide, a checkup item or a notice is left
-untranslated.
+ready to copy into `en.js`, and the entries in `en.js` the code no longer has.
+`tests/i18n.test.js` fails if one is missing or left over, if the `{names}` don't
+match, or if a guide, a checkup item or a notice is left untranslated.
 
 ## Folders on the USB drive
 

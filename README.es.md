@@ -214,7 +214,7 @@ npm test               # tests de la lógica y de las traducciones (vitest)
 npm run build          # dist/ para el paquete UWP
 npm run build:single   # dist-single/index.html autocontenido (la demo)
 npm run build:shell    # compila y copia la interfaz al proyecto de Visual Studio
-node scripts/i18n.mjs  # textos que todavía no tienen su versión en inglés
+node scripts/i18n.mjs  # textos sin su versión en inglés, y los que sobran en en.js
 RELIX_LIVE=1 npx vitest run tests/gameInfo.live.test.js  # la información de los juegos contra Wikidata real (pide internet)
 ```
 
@@ -254,9 +254,9 @@ plural(n, 'juego', 'juegos')               // "3 games"
 ```
 
 `node scripts/i18n.mjs` lista los textos que todavía no tienen su versión en
-inglés, listos para copiar a `en.js`. `tests/i18n.test.js` falla si falta alguno,
-si los `{nombres}` no coinciden o si una guía, un chequeo de la revisión o un aviso
-queda sin traducir.
+inglés, listos para copiar a `en.js`, y las entradas de `en.js` que el código ya no
+tiene. `tests/i18n.test.js` falla si falta alguno o sobra, si los `{nombres}` no
+coinciden o si una guía, un chequeo de la revisión o un aviso queda sin traducir.
 
 ## Carpetas en el USB
 
