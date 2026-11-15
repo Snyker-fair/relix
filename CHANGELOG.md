@@ -2,7 +2,7 @@
 
 Each version's section becomes the notes of its GitHub release.
 
-## [1.5.0] - unreleased
+## [1.5.0] - 2026-11-15
 
 - **Back to it?:** a game you gave 2 hours or more and haven't touched in a
   month takes the last place in *Continue playing*, as "Back to it? · 12 h". A
