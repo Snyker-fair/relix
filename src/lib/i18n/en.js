@@ -320,7 +320,6 @@ export default {
   'Botón Menú': 'Menu button',
   'Botón Vista': 'View button',
   'Botón {name}': '{name} button',
-  'Código QR: {text}': 'QR code: {text}',
   'Escribir': 'Type',
   'Cancelar': 'Cancel',
   'Escribe un nombre para la colección.': 'Type a name for the collection.',
@@ -545,7 +544,6 @@ export default {
   'Se revisa en la Xbox': 'Checked on the Xbox',
   '{games} en el USB': '{games} on the USB drive',
   'Descárgalo en el PC desde': 'Download it on the PC from',
-  'Escanea para abrirlo en el celular': 'Scan to open it on your phone',
   'Falta': 'Missing',
   'Otra consola': 'Another console',
 
@@ -866,15 +864,6 @@ export default {
 
   // ── Report a problem (Options › Checkup) ──
   'Reportar un problema': 'Report a problem',
-  'Un QR con el formulario de GitHub, ya con tu versión, la revisión y el registro':
-    'A QR code with the GitHub form, already with your version, the checkup and the log',
-  'Escanéalo con el celular: se abre el formulario de Relix en GitHub, ya con estos datos.':
-    "Scan it with your phone: Relix's form on GitHub opens with these details already in it.",
-  'Lo que lleva': 'What it includes',
-  'Lo ves antes de enviarlo y puedes cambiarlo: trae los nombres de tus juegos y las rutas de tu USB. Cuenta qué pasó y, si puedes, agrega una foto de la pantalla.':
-    "You see it before sending it and can change it: it has your game names and USB drive paths. Say what happened and, if you can, add a photo of the screen.",
-  'Necesitas una cuenta de GitHub (gratis). Sin QR:': 'You need a GitHub account (free). Without the QR code:',
-  'Tipo {type} · memoria: {usage} de {limit}': '{type} type · memory: {usage} of {limit}',
-  'Revisión: {problems}': 'Checkup: {problems}',
-  'Revisión: todo en orden': 'Checkup: all good',
+  'En el PC, en': 'On the PC, at',
+  'con tu archivo': 'with your file',
 }

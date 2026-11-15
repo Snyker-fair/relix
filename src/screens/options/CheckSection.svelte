@@ -23,10 +23,9 @@
    *   onGuide: (systemId: string, from: { section: string, row: string }) => void,
    *   onWelcome: () => void,
    *   onLog: () => void,
-   *   onReport: () => void,
    * }}
    */
-  let { index = $bindable(), onMove, onToast, onGuide, onWelcome, onLog, onReport } = $props()
+  let { index = $bindable(), onMove, onToast, onGuide, onWelcome, onLog } = $props()
 
   /** @type {Record<CheckState, number>} a new version first */
   const STATE_ORDER = { update: -1, error: 0, warn: 1, info: 2, ok: 3 }
@@ -74,7 +73,7 @@
     const a =
       id === 'recheck'
         ? t('Revisar')
-        : id === 'welcome' || id === 'log' || id === 'report'
+        : id === 'welcome' || id === 'log'
           ? t('Ver')
           : checkById.get(id)?.action
             ? t('Ver guía')
@@ -82,14 +81,10 @@
     return [...(a ? [{ button: /** @type {const} */ ('a'), label: a }] : []), ...common]
   }
 
-  /** A opens the check's guide, checks again, the log, the report or the tour */
+  /** A opens the check's guide, checks again, the log or the tour (the report row only says where) */
   export async function activate() {
     const id = ROWS[index]
-    if (id === 'report') {
-      sound.select()
-      onReport()
-      return
-    }
+    if (id === 'report') return
     if (id === 'welcome') {
       sound.select()
       onWelcome()
@@ -187,11 +182,12 @@
       </span>
       <span class="text">
         <strong>{t('Reportar un problema')}</strong>
-        <span>{t('Un QR con el formulario de GitHub, ya con tu versión, la revisión y el registro')}</span>
+        <span>
+          {t('En el PC, en')} <code>github.com/Snyker-fair/relix/issues</code>
+          {t('con tu archivo')} <code>{logDrive}relix\log.txt</code>
+        </span>
       </span>
-      <span class="state">
-        {#if focused}<PadButton name="a" size={30} /> {t('Ver')}{/if}
-      </span>
+      <span class="state"></span>
     {:else}
       <span class="badge neutral">
         <ChannelIcon id="flag" color="currentColor" size={46} />

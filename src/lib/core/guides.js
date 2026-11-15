@@ -14,8 +14,7 @@
  */
 import { t } from '../i18n/i18n.svelte.js'
 
-/** DevStore's list of emulators: that's where they're downloaded from (each guide's QR code) */
-export const DEVSTORE_URL = 'https://xbdev.store/category/4/'
+/** DevStore's list of emulators: that's where they're downloaded from, on the PC */
 export const DEVSTORE_LABEL = 'xbdev.store › Emuladores'
 /** The tool that gives the USB drive its permissions (on DevStore, Windows only) */
 export const USB_TOOL = 'Xbox USB Permissions Tool'

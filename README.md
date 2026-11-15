@@ -84,8 +84,7 @@ what each button does.
   missing emulators and BIOS files (per region of your PS1 games), and whether
   Relix is set as App in Dev Home. If a game closes right after launching, Relix
   tells you which BIOS or core to check. Every console has a guide: what to
-  install from DevStore, which files it needs and where they go, with a QR code
-  for your phone.
+  install from DevStore, which files it needs and where they go.
 - **Your data travels with the USB drive.** Favorites, collections, playtime and
   settings are saved to `relix\data.json`, with the previous copy and a daily
   backup for a week. Reinstall Relix or move to another Xbox and it's all there.
@@ -371,8 +370,7 @@ later version): you can use, study, modify and share it. If you distribute a
 modified version, it must carry the same license and its source code. It comes
 with no warranty.
 
-It uses [uqr](https://github.com/unjs/uqr) for QR codes (MIT) and the
-[Baloo 2](https://fonts.google.com/specimen/Baloo+2) and
+It uses the [Baloo 2](https://fonts.google.com/specimen/Baloo+2) and
 [Nunito](https://fonts.google.com/specimen/Nunito) typefaces (SIL Open Font
 License). Covers come from [libretro-thumbnails](https://github.com/libretro-thumbnails)
 and are downloaded on the console; none are included in this repository. Game
@@ -383,7 +381,6 @@ Console and emulator names are trademarks of their owners and are only used to
 say what Relix works with. Console icons are hand-drawn and don't use logos.
 
 Made by **[snyker-fair](https://github.com/Snyker-fair)**. Found a bug? On the
-Xbox, *Options › Checkup › Report a problem* shows a QR code that opens the form
-on your phone with the details already filled in; from the PC, open an
-[issue](https://github.com/Snyker-fair/relix/issues/new/choose). Ideas and code
+PC, open an [issue](https://github.com/Snyker-fair/relix/issues/new/choose) and
+attach `relix\log.txt` from your USB drive. Ideas and code
 are welcome too: [`CONTRIBUTING.md`](CONTRIBUTING.md) says what guides Relix.

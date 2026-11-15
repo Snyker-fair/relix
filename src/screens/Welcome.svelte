@@ -10,7 +10,7 @@
    *   Y  (on the greeting) switches between Spanish and English
    */
   import { untrack } from 'svelte'
-  import { DEVSTORE_LABEL, DEVSTORE_URL } from '../lib/core/guides.js'
+  import { DEVSTORE_LABEL } from '../lib/core/guides.js'
   import { getPlatform, PLATFORMS } from '../lib/core/platforms.js'
   import ChannelIcon from '../lib/ui/ChannelIcon.svelte'
   import Clock from '../lib/ui/Clock.svelte'
@@ -21,7 +21,6 @@
   import { library } from '../lib/ui/library.svelte.js'
   import Logo from '../lib/ui/Logo.svelte'
   import PadButton from '../lib/ui/PadButton.svelte'
-  import QrCode from '../lib/ui/QrCode.svelte'
   import { sound } from '../lib/ui/sound.js'
   import { systemStatus } from '../lib/ui/systemStatus.svelte.js'
   import { settings } from '../lib/ui/settings.svelte.js'
@@ -264,8 +263,7 @@
         {t('Cada consola se abre con su emulador. Si algo falta, elige la consola y abre su guía con')}
         <PadButton name="a" size={26} />{t(': explica qué instalar y dónde va cada archivo.')}
       </p>
-      <div class="qr">
-        <QrCode text={DEVSTORE_URL} size={130} />
+      <div class="store">
         <p>
           {t('Los emuladores se bajan en el PC desde')}
           <strong>{t(DEVSTORE_LABEL)}</strong>
@@ -643,23 +641,17 @@
   .tree b {
     color: var(--ink);
   }
-  .qr {
+  /* Where the emulators come from: the address to type on the PC */
+  .store {
     margin-top: auto;
-    display: flex;
-    align-items: center;
-    gap: 20px;
     padding-top: 20px;
     border-top: 3px dashed var(--sky);
   }
-  .qr :global(svg) {
-    flex: none;
-    border-radius: 14px;
-  }
-  .intro .qr p {
+  .intro .store p {
     margin: 0;
     font-size: 20px;
   }
-  .qr strong {
+  .store strong {
     display: block;
     font-size: 22px;
   }

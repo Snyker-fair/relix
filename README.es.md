@@ -85,7 +85,7 @@ cada botón. Logo, colores, tipografía y voz de la marca están en
   emuladores y las BIOS que faltan (según la región de tus juegos de PS1), y si
   Relix está como App en Dev Home. Si un juego se cierra al abrir, Relix dice qué
   BIOS o núcleo revisar. Cada consola tiene su guía: qué instalar desde DevStore,
-  qué archivos pide y dónde van, con un QR para el celular.
+  qué archivos pide y dónde van.
 - **Tus datos viajan con el USB.** Favoritos, colecciones, tiempo de juego y
   preferencias se guardan en `relix\data.json`, con la copia anterior y un
   respaldo por día de la última semana. Reinstala Relix o cambia de Xbox y todo
@@ -371,7 +371,7 @@ versión posterior): puedes usarlo, estudiarlo, modificarlo y compartirlo. Si
 distribuyes una versión modificada, debe llevar la misma licencia y su código.
 Se entrega sin garantía.
 
-Usa [uqr](https://github.com/unjs/uqr) para los códigos QR (MIT) y las letras
+Usa las letras
 [Baloo 2](https://fonts.google.com/specimen/Baloo+2) y
 [Nunito](https://fonts.google.com/specimen/Nunito) (SIL Open Font License). Las
 portadas son de [libretro-thumbnails](https://github.com/libretro-thumbnails) y se
@@ -383,8 +383,7 @@ y emuladores son marcas de sus dueños y se usan solo para decir con qué funcio
 Relix. Los íconos de las consolas están dibujados a mano y no usan logos.
 
 Creado por **[snyker-fair](https://github.com/Snyker-fair)**. ¿Encontraste un
-error? En la Xbox, *Opciones › Revisión › Reportar un problema* muestra un QR que
-abre el formulario en tu celular con los datos ya puestos; desde el PC, abre un
-[issue](https://github.com/Snyker-fair/relix/issues/new/choose). Las ideas y el
+error? Desde el PC, abre un [issue](https://github.com/Snyker-fair/relix/issues/new/choose)
+y adjunta `relix\log.txt` de tu USB. Las ideas y el
 código también son bienvenidos: [`CONTRIBUTING.md`](CONTRIBUTING.md) (en inglés)
 dice qué guía a Relix.

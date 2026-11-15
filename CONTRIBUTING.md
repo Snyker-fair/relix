@@ -9,14 +9,11 @@ plantillas en los dos idiomas.
 
 ## Report a problem or share an idea
 
-- **From the Xbox:** *Options › Checkup › Report a problem* shows a QR code.
-  Scan it with your phone and GitHub's form opens already filled in with your
-  version, what Checkup found and the last lines of the log. You see it all
-  before sending it.
-- **From the PC:** [open an issue](https://github.com/Snyker-fair/relix/issues/new/choose)
+- [Open an issue](https://github.com/Snyker-fair/relix/issues/new/choose)
   with the *Something isn't working* or *Idea* template (or their Spanish
-  versions). The log is in `E:\relix\log.txt`; check it before pasting it, since
-  it has your game names and USB drive paths.
+  versions) and attach `E:\relix\log.txt`. Check it before sending it: it has
+  your game names and USB drive paths. *Options › Checkup* on the Xbox shows the
+  same address.
 
 ## What guides Relix
 

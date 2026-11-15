@@ -14,7 +14,6 @@
   import { systemStatus } from '../lib/ui/systemStatus.svelte.js'
   import About from './About.svelte'
   import LogViewer from './LogViewer.svelte'
-  import ReportProblem from './ReportProblem.svelte'
   import CheckSection from './options/CheckSection.svelte'
   import ConsolesSection from './options/ConsolesSection.svelte'
   import CoversSection from './options/CoversSection.svelte'
@@ -79,9 +78,8 @@
   /** The section on screen (none in About: it's read-only) */
   let current = $state(/** @type {Section | undefined} */ (undefined))
   const ROWS = $derived(section === 'about' ? [] : (current?.rows() ?? []))
-  /** On top of Checkup: the diagnostic log, or the QR to report a problem */
+  /** The diagnostic log viewer, on top of Checkup */
   let showLog = $state(false)
-  let showReport = $state(false)
 
   // The row to focus on opening, once its section has its rows: exact or, in
   // Checkup, that console's first check
@@ -213,7 +211,6 @@
           {onGuide}
           {onWelcome}
           onLog={() => (showLog = true)}
-          onReport={() => (showReport = true)}
         />
       {:else if section === 'covers'}
         <CoversSection bind:this={current} {index} onMove={move} {onToast} {onPickCovers} />
@@ -228,9 +225,6 @@
 
 {#if showLog}
   <LogViewer onClose={() => (showLog = false)} />
-{/if}
-{#if showReport}
-  <ReportProblem onClose={() => (showReport = false)} />
 {/if}
 
 <style>

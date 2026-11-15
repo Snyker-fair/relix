@@ -2,13 +2,12 @@
   /**
    * A console's guide: how to install its emulator, which files it needs, where
    * the games go and how to test. At the top left, what Relix already knows
-   * (emulator installed, games found); at the bottom, a QR code to DevStore to
-   * open it on the phone.
+   * (emulator installed, games found); at the bottom, where to download it on the PC.
    *
    *   ↑ ↓  go through the steps    LB / RB  another console    B  back
    */
   import { untrack } from 'svelte'
-  import { DEVSTORE_LABEL, DEVSTORE_URL, guideSteps, richText } from '../lib/core/guides.js'
+  import { DEVSTORE_LABEL, guideSteps, richText } from '../lib/core/guides.js'
   import { getPlatform, PLATFORMS } from '../lib/core/platforms.js'
   import ChannelIcon from '../lib/ui/ChannelIcon.svelte'
   import Clock from '../lib/ui/Clock.svelte'
@@ -19,7 +18,6 @@
   import { library } from '../lib/ui/library.svelte.js'
   import Logo from '../lib/ui/Logo.svelte'
   import PadButton from '../lib/ui/PadButton.svelte'
-  import QrCode from '../lib/ui/QrCode.svelte'
   import { sound } from '../lib/ui/sound.js'
   import { t } from '../lib/i18n/i18n.svelte.js'
 
@@ -157,12 +155,10 @@
       </li>
     </ul>
 
-    <div class="qr">
-      <QrCode text={DEVSTORE_URL} size={150} />
+    <div class="store">
       <p>
         {t('Descárgalo en el PC desde')}
         <strong>{t(DEVSTORE_LABEL)}</strong>
-        <span>{t('Escanea para abrirlo en el celular')}</span>
       </p>
     </div>
   </section>
@@ -342,33 +338,22 @@
     background: var(--sky);
     color: var(--ink-soft);
   }
-  .qr {
+  /* Where the emulator comes from: the address to type on the PC */
+  .store {
     margin-top: auto;
-    display: flex;
-    align-items: center;
-    gap: 20px;
     padding-top: 20px;
     border-top: 3px dashed var(--sky);
   }
-  .qr :global(svg) {
-    flex: none;
-    border-radius: 14px;
-  }
-  .qr p {
+  .store p {
     margin: 0;
     font-size: 19px;
     line-height: 1.4;
     color: var(--ink-soft);
   }
-  .qr strong {
+  .store strong {
     display: block;
     font-size: 22px;
     color: var(--ink);
-  }
-  .qr span {
-    display: block;
-    margin-top: 6px;
-    font-size: 17px;
   }
 
   /* ── Steps ───────────────────────────── */
