@@ -271,7 +271,7 @@
   .when {
     padding-top: 3px;
     font-weight: 700;
-    font-size: 21px;
+    font-size: 22px;
     color: var(--ink-soft);
     white-space: nowrap;
   }
@@ -280,7 +280,7 @@
     padding: 3px 14px 5px;
     border-radius: 999px;
     font-weight: 800;
-    font-size: 17px;
+    font-size: 20px;
     letter-spacing: 0.02em;
     white-space: nowrap;
     background: var(--sky);

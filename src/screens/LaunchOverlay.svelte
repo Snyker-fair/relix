@@ -123,7 +123,7 @@
     border-radius: 20px;
     background: var(--sky);
     font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
-    font-size: 21px;
+    font-size: 22px;
     line-height: 1.45;
     word-break: break-all;
   }

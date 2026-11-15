@@ -95,11 +95,20 @@
     ...(gameInfo.canFill(game) ? [{ id: 'info', icon: 'info', label: t('Buscar información…') }] : []),
     ...(fromRecent ? [{ id: 'recent', icon: 'time', label: t('Quitar de Seguir jugando') }] : []),
     { id: 'hide', icon: 'hide', label: t('Ocultar juego') },
+    // What's about the whole library and not this game goes last, set apart by a line
     ...(sortOptions
-      ? [{ id: 'sort', icon: 'sort', label: t('Ordenar biblioteca'), value: t(SORT_NAMES[settings.sortOrder]) }]
+      ? [{ id: 'sort', icon: 'sort', label: t('Ordenar biblioteca'), value: t(SORT_NAMES[settings.sortOrder]), apart: true }]
       : []),
     ...(canFilter
-      ? [{ id: 'filter', icon: 'filter', label: t('Filtrar'), value: currentFilter ? filterLabel(currentFilter) : t('Todos') }]
+      ? [
+          {
+            id: 'filter',
+            icon: 'filter',
+            label: t('Filtrar'),
+            value: currentFilter ? filterLabel(currentFilter) : t('Todos'),
+            apart: !sortOptions,
+          },
+        ]
       : []),
   ])
 
@@ -336,7 +345,7 @@
 
   <ul class="items" bind:this={list}>
     {#each items as item, i (item.id)}
-      <li>
+      <li class:apart={'apart' in item && item.apart}>
         <button
           class="item"
           class:focused={i === index}
@@ -440,7 +449,7 @@
     padding: 4px 16px 6px;
     border-radius: 999px;
     font-weight: 700;
-    font-size: 20px;
+    font-size: 22px;
   }
   h3 {
     margin: 24px 0 0;
@@ -454,11 +463,16 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     overflow-y: auto;
     scrollbar-width: none;
     padding: 4px 0 4px 10px;
     margin-left: -10px;
+  }
+  li.apart {
+    margin-top: 2px;
+    padding-top: 8px;
+    border-top: 3px dashed var(--sky);
   }
   .item {
     width: 100%;
@@ -515,20 +529,20 @@
   .label small {
     display: block;
     font-family: var(--font-body);
-    font-size: 18px;
+    font-size: 20px;
     opacity: 0.7;
   }
   /* filters: how many games, next to the name */
   .label.count small {
     display: inline;
     margin-left: 10px;
-    font-size: 21px;
+    font-size: 22px;
     font-weight: 700;
   }
   .value {
     max-width: 210px;
     font-weight: 700;
-    font-size: 21px;
+    font-size: 22px;
     opacity: 0.75;
     white-space: nowrap;
     overflow: hidden;

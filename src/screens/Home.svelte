@@ -328,14 +328,15 @@
           onmouseenter={() => ((zone = 'recent'), (recentIndex = i))}
           onclick={() => onLaunch(game)}
         >
-          <CoverArt {game} {platform} width={56} showTitle={false} thumb />
+          <CoverArt {game} {platform} width={84} showTitle={false} thumb />
           <span class="recent-text">
             <strong>{game.name}</strong>
             <span
               >{game.id === comeback?.id
-                ? `${t('¿Lo retomas?')} · ${formatPlaytime(played?.seconds ?? 0)}`
+                ? // whole hours (it has 2 or more): the line stays short
+                  `${t('¿Lo retomas?')} · ${formatPlaytime(Math.floor((played?.seconds ?? 0) / 3600) * 3600)}`
                 : played
-                  ? `${platform.shortName} · ${t('Jugado {time}', { time: formatPlaytime(played.seconds) })}`
+                  ? `${platform.shortName} · ${formatPlaytime(played.seconds)}`
                   : platform.shortName}</span
             >
           </span>
@@ -391,7 +392,7 @@
     padding: 12px 24px;
     border-radius: 24px;
     background: rgb(var(--glass) / 0.7);
-    font-size: 20px;
+    font-size: 22px;
     line-height: 1.4;
     color: var(--ink-soft);
     text-align: center;
@@ -627,28 +628,28 @@
   .recent {
     position: absolute;
     left: 112px;
-    top: 830px;
+    top: 812px;
     right: 600px;
   }
   .recent h2 {
-    margin: 0 0 32px;
+    margin: 0 0 22px;
     font-family: var(--font-display);
     font-weight: 700;
     font-size: 28px;
     color: var(--ink-soft);
   }
-  /* the focused one's ring (11 px + 2.5 %) leaves 20 px free up to the neighbor */
+  /* the focused one's ring (11 px, and it grows 4 %) fits in the gap to its neighbor */
   .recent-row {
     display: flex;
-    gap: 40px;
+    gap: 28px;
   }
   .recent-item {
     display: flex;
     align-items: center;
-    gap: 16px;
-    width: 330px;
-    padding: 8px 20px 8px 8px;
-    border-radius: 28px;
+    gap: 20px;
+    width: 384px;
+    padding: 10px 22px 10px 10px;
+    border-radius: 30px;
     background: var(--cloud);
     text-align: left;
   }
@@ -665,15 +666,19 @@
     flex-direction: column;
     min-width: 0;
   }
+  /* the name on up to two lines: the card is tall enough for its cover */
   .recent-text strong {
     font-weight: 700;
-    font-size: 24px;
-    white-space: nowrap;
+    font-size: 26px;
+    line-height: 1.15;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
   }
   .recent-text span {
-    font-size: 20px;
+    font-size: 22px;
     color: var(--ink-soft);
     white-space: nowrap;
     overflow: hidden;

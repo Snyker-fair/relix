@@ -426,7 +426,7 @@
     border-radius: 999px;
     background: color-mix(in oklab, var(--tint, var(--pop)) 18%, var(--cloud));
     font-weight: 700;
-    font-size: 20px;
+    font-size: 22px;
   }
   .missing {
     margin-top: 8px;
@@ -438,7 +438,7 @@
   .label {
     margin: 18px 0 0;
     font-weight: 700;
-    font-size: 19px;
+    font-size: 22px;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--ink-soft);
@@ -448,7 +448,7 @@
     padding: 10px 16px;
     border-radius: 16px;
     background: var(--sky);
-    font-size: 21px;
+    font-size: 22px;
     line-height: 1.3;
     color: var(--ink-soft);
     overflow-wrap: anywhere;
@@ -496,7 +496,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 20px;
+    font-size: 22px;
     color: var(--ink-soft);
     white-space: nowrap;
     overflow: hidden;
@@ -509,7 +509,7 @@
     background: var(--pop);
     color: var(--on-color);
     font-weight: 700;
-    font-size: 17px;
+    font-size: 20px;
   }
   .row .spinner {
     position: absolute;
@@ -577,11 +577,11 @@
     line-height: 1.1;
   }
   .facts li {
-    font-size: 18px;
+    font-size: 20px;
   }
   .desc {
     margin: 18px 0 0;
-    font-size: 20px;
+    font-size: 22px;
     line-height: 1.5;
     white-space: pre-line;
     display: -webkit-box;

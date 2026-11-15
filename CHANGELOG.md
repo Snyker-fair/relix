@@ -20,6 +20,10 @@ Each version's section becomes the notes of its GitHub release.
   report one from the PC, with the log file to attach.
 - **Two notices at most when Relix opens:** what doesn't fit comes the next
   time, so the home screen isn't covered for half a minute.
+- **Easier to read from the sofa:** the small texts are bigger, *Continue
+  playing* has larger cards with their covers, the console tabs fade at the
+  edge instead of looking cut, the game sheet's details close evenly, and the
+  game menu sets apart what's about the whole library (sorting, filtering).
 - **No QR codes:** the guides and the welcome tour show DevStore's address to
   type on the PC instead.
 

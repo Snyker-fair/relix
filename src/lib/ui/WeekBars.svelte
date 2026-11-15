@@ -80,7 +80,7 @@
     background: var(--pop);
   }
   .value {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 700;
     color: var(--ink-soft);
     white-space: nowrap;
@@ -89,7 +89,7 @@
     display: flex;
     justify-content: space-between;
     margin-top: 8px;
-    font-size: 18px;
+    font-size: 20px;
     color: var(--ink-soft);
   }
 </style>

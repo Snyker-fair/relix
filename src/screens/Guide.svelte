@@ -296,7 +296,7 @@
   }
   .others {
     margin: 6px 0 0;
-    font-size: 19px;
+    font-size: 22px;
     line-height: 1.4;
     color: var(--ink-soft);
   }
@@ -315,7 +315,7 @@
     padding: 8px 18px 8px 8px;
     border-radius: 999px;
     font-weight: 700;
-    font-size: 21px;
+    font-size: 22px;
   }
   .checks .mark {
     display: grid;
@@ -346,7 +346,7 @@
   }
   .store p {
     margin: 0;
-    font-size: 19px;
+    font-size: 22px;
     line-height: 1.4;
     color: var(--ink-soft);
   }
@@ -425,7 +425,7 @@
     padding: 2px 14px 4px;
     border-radius: 999px;
     font-family: var(--font-body);
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 700;
   }
   .chip.ok {

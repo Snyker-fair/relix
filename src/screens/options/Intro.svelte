@@ -212,7 +212,7 @@
     margin-top: 26px;
     padding-top: 18px;
     border-top: 3px dashed var(--sky);
-    font-size: 20px;
+    font-size: 22px;
     line-height: 1.4;
   }
   /* credits, at the foot of the About panel */
@@ -228,7 +228,7 @@
   }
   .intro .credits p {
     margin: 4px 0 0;
-    font-size: 19px;
+    font-size: 20px;
     line-height: 1.4;
   }
   .intro .credits p.legal {

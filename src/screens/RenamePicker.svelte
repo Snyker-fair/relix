@@ -541,12 +541,12 @@
     border-radius: 999px;
     background: color-mix(in oklab, var(--tint) 18%, var(--cloud));
     font-weight: 700;
-    font-size: 20px;
+    font-size: 22px;
   }
   .label {
     margin: 18px 0 0;
     font-weight: 700;
-    font-size: 19px;
+    font-size: 22px;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--ink-soft);
@@ -556,7 +556,7 @@
     padding: 10px 16px;
     border-radius: 16px;
     background: var(--sky);
-    font-size: 21px;
+    font-size: 22px;
     line-height: 1.3;
     color: var(--ink-soft);
     overflow-wrap: anywhere;
@@ -625,7 +625,7 @@
     display: grid;
     place-items: center;
     font-weight: 700;
-    font-size: 20px;
+    font-size: 22px;
     color: var(--ink-soft);
   }
   .region {
@@ -637,7 +637,7 @@
     background: var(--ink);
     color: var(--cloud);
     font-weight: 700;
-    font-size: 18px;
+    font-size: 20px;
   }
   .saving {
     position: absolute;
@@ -651,7 +651,7 @@
     width: 100%;
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: 20px;
+    font-size: 22px;
     line-height: 1.15;
     text-align: center;
     overflow-wrap: anywhere;
@@ -768,14 +768,14 @@
     border-radius: 999px;
     background: var(--sky);
     font-weight: 700;
-    font-size: 20px;
+    font-size: 22px;
   }
   .warn {
     margin: 22px 0 0;
     padding: 14px 20px;
     border-radius: 20px;
     background: color-mix(in oklab, var(--sun) 35%, var(--cloud));
-    font-size: 21px;
+    font-size: 22px;
     line-height: 1.4;
   }
   .working {

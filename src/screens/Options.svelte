@@ -274,7 +274,7 @@
     background: var(--pop);
     color: var(--on-color);
     font-weight: 800;
-    font-size: 19px;
+    font-size: 22px;
     line-height: 1;
   }
   .tab.active {

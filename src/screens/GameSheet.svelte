@@ -368,7 +368,7 @@
   }
   .note {
     margin: 12px 0 0;
-    font-size: 20px;
+    font-size: 22px;
     color: var(--ink-soft);
   }
 
@@ -416,6 +416,13 @@
     gap: 14px;
     margin: 30px 0 0;
   }
+  /* The last one (the file, the longest) takes what's left of its row: no gap */
+  .facts div:last-child:nth-child(3n + 1) {
+    grid-column: 1 / -1;
+  }
+  .facts div:last-child:nth-child(3n + 2) {
+    grid-column: span 2;
+  }
   .facts div {
     min-width: 0;
     padding: 12px 18px 14px;
@@ -423,7 +430,7 @@
     background: rgb(var(--glass) / 0.75);
   }
   .facts dt {
-    font-size: 18px;
+    font-size: 20px;
     color: var(--ink-soft);
   }
   .facts dd {

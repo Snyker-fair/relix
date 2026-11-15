@@ -430,7 +430,6 @@ export default {
   ', y escanéalos desde Opciones.': ', and scan them from Options.',
   'Todavía no hay juegos aquí.': 'No games here yet.',
   'Seguir jugando': 'Continue playing',
-  'Jugado {time}': 'Played {time}',
   'Abrir': 'Open',
   'Jugar': 'Play',
   'Menú': 'Menu',

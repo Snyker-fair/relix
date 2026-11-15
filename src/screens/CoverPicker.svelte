@@ -355,14 +355,14 @@
     border-radius: 999px;
     background: color-mix(in oklab, var(--tint) 18%, var(--cloud));
     font-weight: 700;
-    font-size: 21px;
+    font-size: 22px;
   }
   .file {
     margin: 16px 0 0;
     padding: 10px 16px;
     border-radius: 16px;
     background: var(--sky);
-    font-size: 21px;
+    font-size: 22px;
     color: var(--ink-soft);
     overflow-wrap: anywhere;
   }
@@ -412,7 +412,7 @@
     display: grid;
     place-items: center;
     font-weight: 700;
-    font-size: 20px;
+    font-size: 22px;
     color: var(--ink-soft);
   }
   .region {
@@ -424,7 +424,7 @@
     background: var(--ink);
     color: var(--cloud);
     font-weight: 700;
-    font-size: 18px;
+    font-size: 20px;
   }
   .saving {
     position: absolute;

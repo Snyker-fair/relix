@@ -649,7 +649,7 @@
   }
   .intro .store p {
     margin: 0;
-    font-size: 20px;
+    font-size: 22px;
   }
   .store strong {
     display: block;
@@ -688,7 +688,7 @@
     line-height: 1.1;
   }
   .text span {
-    font-size: 21px;
+    font-size: 22px;
     line-height: 1.35;
     color: var(--ink-soft);
   }
@@ -846,7 +846,7 @@
     padding: 4px 16px 6px;
     border-radius: 999px;
     font-weight: 700;
-    font-size: 20px;
+    font-size: 22px;
     background: var(--sky);
     color: var(--ink-soft);
   }
@@ -898,7 +898,7 @@
     padding: 0 10px;
     border-radius: 999px;
     background: rgb(255 255 255 / 0.4);
-    font-size: 19px;
+    font-size: 22px;
   }
   .empty,
   .more {
@@ -970,7 +970,7 @@
   }
   .status small {
     flex-basis: 100%;
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 600;
     color: var(--ink-soft);
   }
@@ -979,7 +979,7 @@
     padding: 10px 20px;
     border-radius: 20px;
     background: var(--sun);
-    font-size: 21px;
+    font-size: 22px;
     font-weight: 700;
   }
   .secondary {
@@ -1023,7 +1023,7 @@
     font-size: 27px;
   }
   .buttons .text span {
-    font-size: 19px;
+    font-size: 22px;
   }
 
   .primary {

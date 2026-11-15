@@ -64,6 +64,8 @@
   let tabStrip = $state()
   let tabOffset = $state(0)
   let tabsOverflow = $state(false)
+  /** How much is hidden past the right edge (0: the last tab is in view) */
+  let tabsAfter = $state(0)
   $effect(() => {
     systemId
     tabs
@@ -74,6 +76,7 @@
     tabsOverflow = full > view + 1
     const center = active.offsetLeft + active.offsetWidth / 2
     tabOffset = tabsOverflow ? Math.round(Math.max(0, Math.min(center - view / 2, full - view))) : 0
+    tabsAfter = Math.max(0, full - view - tabOffset)
   })
   const channelIndex = $derived(tabs.findIndex((c) => c.id === systemId))
   const channel = $derived(shelf.channelFor(systemId))
@@ -287,7 +290,7 @@
       <PadButton name="lb" size={30} />
     </button>
     <!-- With many consoles, the tabs slide to show the active one -->
-    <div class="tab-window" class:sliding={tabsOverflow} bind:this={tabWindow}>
+    <div class="tab-window" class:before={tabOffset > 0} class:after={tabsAfter > 0} bind:this={tabWindow}>
       <div class="tab-strip" bind:this={tabStrip} style:transform="translateX({-tabOffset}px)">
         {#each tabs as ch (ch.id)}
           <button
@@ -493,8 +496,16 @@
     overflow: hidden;
     border-radius: 999px;
   }
-  .tab-window.sliding {
-    mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
+  /* Only on the side with more tabs, and wide enough that a name cut by the edge
+     fades out instead of looking chopped */
+  .tab-window.before {
+    mask-image: linear-gradient(to right, transparent, #000 90px);
+  }
+  .tab-window.after {
+    mask-image: linear-gradient(to left, transparent, #000 90px);
+  }
+  .tab-window.before.after {
+    mask-image: linear-gradient(to right, transparent, #000 90px, #000 calc(100% - 90px), transparent);
   }
   .tab-strip {
     display: flex;
@@ -690,7 +701,7 @@
     border-radius: 999px;
     background: color-mix(in oklab, var(--tint) 18%, var(--cloud));
     font-weight: 700;
-    font-size: 21px;
+    font-size: 22px;
   }
   .played {
     display: flex;
@@ -701,7 +712,7 @@
     padding: 6px 16px 6px 12px;
     border-radius: 999px;
     background: var(--sky);
-    font-size: 21px;
+    font-size: 22px;
     color: var(--ink-soft);
     white-space: nowrap;
   }
@@ -765,7 +776,7 @@
     padding: 4px 14px 6px;
     border-radius: 999px;
     background: var(--cloud);
-    font-size: 21px;
+    font-size: 22px;
   }
   .order.filter {
     background: var(--ink);
@@ -812,7 +823,7 @@
     padding: 10px 16px;
     border-radius: 16px;
     background: var(--sky);
-    font-size: 21px;
+    font-size: 22px;
     color: var(--ink-soft);
     overflow-wrap: anywhere;
   }
@@ -820,7 +831,7 @@
     margin: auto 0 0;
     padding-top: 16px;
     font-weight: 700;
-    font-size: 21px;
+    font-size: 22px;
     color: var(--ink-soft);
   }
   .via .own,
@@ -828,7 +839,7 @@
     margin-left: 10px;
     padding: 2px 12px 4px;
     border-radius: 999px;
-    font-size: 18px;
+    font-size: 20px;
     white-space: nowrap;
   }
   .via .own {
@@ -885,7 +896,7 @@
     color: var(--on-color);
     font-family: var(--font-display);
     font-weight: 800;
-    font-size: 17px;
+    font-size: 20px;
     line-height: 1;
     box-shadow: 0 4px 10px -4px rgb(0 0 0 / 0.35);
   }
@@ -900,7 +911,7 @@
     border-radius: 50%;
     background: var(--cloud);
     color: var(--pop);
-    font-size: 20px;
+    font-size: 22px;
   }
 
   /* ── Empty ───────────────────────────── */

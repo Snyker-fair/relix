@@ -330,11 +330,11 @@
     padding: 2px 12px 4px;
     border-radius: 999px;
     font-weight: 800;
-    font-size: 17px;
+    font-size: 20px;
   }
   .name {
     font-weight: 700;
-    font-size: 20px;
+    font-size: 22px;
     line-height: 1.3;
     white-space: nowrap;
     overflow: hidden;
