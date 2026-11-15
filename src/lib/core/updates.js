@@ -31,6 +31,10 @@ export const NEWS = /** @type {Record<string, string[]>} */ ({
     'Truco: en ≡ › Consolas, X te deja ordenar tus consolas',
     'Los videos de ES-DE ya no se reproducen: así Relix va más fluido',
   ],
+  '1.5.0': [
+    'Nuevo en la {version}: Relix te propone retomar los juegos que dejaste, y cada consola del inicio muestra tus horas de juego',
+    'Truco: en ≡ › Acerca de están tu mes y tus semanas de juego',
+  ],
 })
 
 /**

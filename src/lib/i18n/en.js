@@ -821,6 +821,11 @@ export default {
   'Truco: en ≡ › Consolas, X te deja ordenar tus consolas': 'Tip: in ≡ › Consoles, X lets you reorder your consoles',
   'Los videos de ES-DE ya no se reproducen: así Relix va más fluido': "ES-DE's videos no longer play: that way Relix runs smoother",
 
+  // ── What's new in 1.5.0 ──
+  'Nuevo en la {version}: Relix te propone retomar los juegos que dejaste, y cada consola del inicio muestra tus horas de juego':
+    'New in {version}: Relix suggests picking back up the games you left, and each console on the home screen shows your hours played',
+  'Truco: en ≡ › Acerca de están tu mes y tus semanas de juego': 'Tip: ≡ › About has your month and your weeks of play',
+
   // ── Games on several discs ──
   'Tiene {n} discos: cuando pida otro, cámbialo en el menú de RetroArch › Disc Control.':
     'It has {n} discs: when it asks for another one, change it in the RetroArch menu › Disc Control.',
