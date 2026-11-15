@@ -16,8 +16,10 @@ Each version's section becomes the notes of its GitHub release.
   says "45 h played" where its year went.
 - **The screensaver, with your games:** the ones you play and the ones waiting
   to be picked back up come up more often; all of them show before any repeats.
-- **Report a problem:** *≡ › Checkup* ends with where to report one, on the
-  PC, and the log file to attach.
+- **Report a problem:** the *Diagnostic log* (*≡ › Checkup*) says where to
+  report one from the PC, with the log file to attach.
+- **Two notices at most when Relix opens:** what doesn't fit comes the next
+  time, so the home screen isn't covered for half a minute.
 - **No QR codes:** the guides and the welcome tour show DevStore's address to
   type on the PC instead.
 

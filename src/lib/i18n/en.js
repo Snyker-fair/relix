@@ -734,8 +734,6 @@ export default {
   'Relix {version} está disponible': 'Relix {version} is available',
   'Tienes la {current}. Bájala en el PC desde {url} e instálala con el Device Portal: tus datos quedan en el USB.': 'You have {current}. Download it on the PC from {url} and install it with the Device Portal: your data stays on the USB drive.',
   'Relix {version} ya está disponible: ≡ › Revisión': 'Relix {version} is out: ≡ › Checkup',
-  'Nuevo en la {version}: dentro de una consola, clic en el stick derecho para ver la ficha de un juego y en el izquierdo para que Relix te sorprenda': 'New in {version}: inside a console, click the right stick for a game\'s sheet and the left one to let Relix surprise you',
-  'Truco: dentro de una consola, LT y RT saltan de letra en letra': 'Tip: inside a console, LT and RT jump from letter to letter',
   'Hay una versión nueva: {version}': 'New version available: {version}',
 
   // ── Game sheet ──
@@ -815,12 +813,6 @@ export default {
   'juegos nuevos': 'new games',
   'Este mes': 'This month',
 
-  // ── What's new in 1.4.0 ──
-  'Nuevo en la {version}: al escanear una consola también llegan sus portadas y su información, y los juegos de varios discos ya se pueden cambiar de disco':
-    'New in {version}: scanning a console also brings its covers and info, and games on several discs can now change discs',
-  'Truco: en ≡ › Consolas, X te deja ordenar tus consolas': 'Tip: in ≡ › Consoles, X lets you reorder your consoles',
-  'Los videos de ES-DE ya no se reproducen: así Relix va más fluido': "ES-DE's videos no longer play: that way Relix runs smoother",
-
   // ── What's new in 1.5.0 ──
   'Nuevo en la {version}: Relix te propone retomar los juegos que dejaste, y cada consola del inicio muestra tus horas de juego':
     'New in {version}: Relix suggests picking back up the games you left, and each console on the home screen shows your hours played',
@@ -867,8 +859,7 @@ export default {
   'nuevo': 'new',
   'nuevos': 'new',
 
-  // ── Report a problem (Options › Checkup) ──
-  'Reportar un problema': 'Report a problem',
-  'En el PC, en': 'On the PC, at',
-  'con tu archivo': 'with your file',
+  // ── Report a problem (the log viewer) ──
+  '¿Algo no funciona? Repórtalo desde el PC en': "Something isn't working? Report it from the PC at",
+  'y adjunta ese archivo.': 'and attach that file.',
 }

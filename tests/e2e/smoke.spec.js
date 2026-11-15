@@ -177,15 +177,20 @@ test('as Game, the welcome says how to change it to App, step by step', async ({
   expect(errors).toEqual([])
 })
 
-test('Checkup › Report a problem says where, without codes to scan', async ({ page }) => {
+test('the diagnostic log says where to report a problem, without codes to scan', async ({ page }) => {
   const errors = await open(page)
   await home(page)
   await press(page, 'm')
   await press(page, 'e', 2)
   await expect(page.locator('.tab.active')).toHaveText(/Revisión/)
-  const row = page.locator('.row', { hasText: 'Reportar un problema' })
-  await expect(row).toContainText('github.com/Snyker-fair/relix/issues')
-  await expect(row).toContainText('relix\\log.txt')
+  // The last rows: the log, then the welcome tour
+  await press(page, 'ArrowDown', 40)
+  await press(page, 'ArrowUp')
+  await expect(page.locator('.row.focused')).toContainText('Registro de diagnóstico')
+  await press(page, 'Enter')
+  await expect(page.locator('.panel header')).toContainText('github.com/Snyker-fair/relix/issues')
   await expect(page.locator('svg[aria-label^="Código QR"]')).toHaveCount(0)
+  await press(page, 'Escape')
+  await expect(page.locator('.panel')).toHaveCount(0)
   expect(errors).toEqual([])
 })

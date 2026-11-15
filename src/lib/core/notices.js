@@ -20,6 +20,25 @@ export function systemNotice(errors, appType) {
     : t('Relix encontró {found}, y está como Game: ≡ › Revisión', { found })
 }
 
+/** How many notices at most when Relix opens: more than this covers the home screen for too long */
+export const START_NOTICES_MAX = 2
+
+/**
+ * The notices for this start, in order of importance. Each source says how many
+ * it may bring and is only asked (which marks it as said) if they all fit: the
+ * ones left out come the next time Relix opens.
+ * @param {Array<{ size: number, take: () => string[] }>} sources
+ * @param {number} [max]
+ */
+export function startNoticesFor(sources, max = START_NOTICES_MAX) {
+  /** @type {string[]} */
+  const notices = []
+  for (const { size, take } of sources) {
+    if (size > 0 && notices.length + size <= max) notices.push(...take())
+  }
+  return notices
+}
+
 /**
  * "Okami: 45 min played · 12 h in total" (without the total the first time).
  * @param {string} name

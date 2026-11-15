@@ -408,8 +408,10 @@ the USB drive a game ES-DE hasn't scraped (it has no description in Relix).
       the rest, and none repeats until all have shown.
 
 ## Report a problem, without QR codes (1.5.0)
-- [ ] **≡ → Checkup** ends with *Report a problem*: the GitHub address and the
-      log file, `E:\relix\log.txt`. A does nothing on it.
+- [ ] **≡ → Checkup → Diagnostic log**: under the title, where to report a
+      problem from the PC (the GitHub address) with the log file.
+- [ ] Opening 1.5.0 for the first time: two notices at most; the rest (what's
+      new, e.g.) show the next time Relix opens.
 - [ ] A console's guide and the welcome tour's *Emulators* step show
       `xbdev.store › Emulators` as text, with no QR code anywhere.
 

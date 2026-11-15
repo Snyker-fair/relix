@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { playtimeNotice, systemNotice } from '../src/lib/core/notices.js'
+import { playtimeNotice, startNoticesFor, systemNotice } from '../src/lib/core/notices.js'
 import { PLAYTIME_MS, START_NOTICE_MS, toasts } from '../src/lib/ui/toasts.svelte.js'
 
 describe('what Relix says by itself', () => {
@@ -17,6 +17,29 @@ describe('what Relix says by itself', () => {
     const time = (/** @type {number} */ s) => `${s / 60} min`
     expect(playtimeNotice('Ōkami', 600, 600, time)).toBe('Ōkami: 10 min jugados')
     expect(playtimeNotice('Ōkami', 600, 1800, time)).toBe('Ōkami: 10 min jugados · 30 min en total')
+  })
+})
+
+describe('the notices when Relix opens', () => {
+  it('two at most: what does not fit is not asked, and waits for the next start', () => {
+    const taken = /** @type {string[]} */ ([])
+    const source = (/** @type {string} */ name, /** @type {string[]} */ lines, size = lines.length) => ({
+      size,
+      take: () => (taken.push(name), lines),
+    })
+    const notices = startNoticesFor([
+      source('system', ['1 cosa por arreglar']),
+      source('month', ['En octubre jugaste 5 h']),
+      source('news', ['Nuevo en la 1.5.0', 'Truco']),
+      source('version', ['Relix 1.6.0 ya está disponible']),
+    ])
+    expect(notices).toEqual(['1 cosa por arreglar', 'En octubre jugaste 5 h'])
+    expect(taken).toEqual(['system', 'month'])
+  })
+
+  it('a source with nothing to say leaves its place to the next one', () => {
+    const news = { size: 2, take: () => ['Nuevo en la 1.5.0', 'Truco'] }
+    expect(startNoticesFor([{ size: 0, take: () => [] }, { size: 1, take: () => [] }, news])).toEqual(['Nuevo en la 1.5.0', 'Truco'])
   })
 })
 

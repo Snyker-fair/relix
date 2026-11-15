@@ -132,6 +132,10 @@
         {t('En el PC:')} <code>{drive}relix\log.txt</code>
         {#if status === 'ready' && entries.length > 0}· {t('las últimas {entries}', { entries: plural(entries.length, 'entrada', 'entradas') })}{/if}
       </p>
+      <p>
+        {t('¿Algo no funciona? Repórtalo desde el PC en')} <code>github.com/Snyker-fair/relix/issues</code>
+        {t('y adjunta ese archivo.')}
+      </p>
     </div>
   </header>
 

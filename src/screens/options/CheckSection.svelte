@@ -36,7 +36,7 @@
 
   const sortedChecks = $derived([...systemStatus.checks].sort((a, b) => STATE_ORDER[a.state] - STATE_ORDER[b.state]))
   const checkById = $derived(new Map(sortedChecks.map((c) => [c.id, c])))
-  const ROWS = $derived([...sortedChecks.map((c) => c.id), 'recheck', 'log', 'report', 'welcome'])
+  const ROWS = $derived([...sortedChecks.map((c) => c.id), 'recheck', 'log', 'welcome'])
   const logDrive = $derived(library.romRoot.replace(/roms[\\/]*$/i, '') || 'E:\\')
   const clock = ticking()
 
@@ -81,10 +81,9 @@
     return [...(a ? [{ button: /** @type {const} */ ('a'), label: a }] : []), ...common]
   }
 
-  /** A opens the check's guide, checks again, the log or the tour (the report row only says where) */
+  /** A opens the check's guide, checks again, the log or the tour */
   export async function activate() {
     const id = ROWS[index]
-    if (id === 'report') return
     if (id === 'welcome') {
       sound.select()
       onWelcome()
@@ -176,18 +175,6 @@
       <span class="state">
         {#if focused}<PadButton name="a" size={30} /> {t('Ver')}{/if}
       </span>
-    {:else if id === 'report'}
-      <span class="badge neutral">
-        <ChannelIcon id="report" color="currentColor" size={46} />
-      </span>
-      <span class="text">
-        <strong>{t('Reportar un problema')}</strong>
-        <span>
-          {t('En el PC, en')} <code>github.com/Snyker-fair/relix/issues</code>
-          {t('con tu archivo')} <code>{logDrive}relix\log.txt</code>
-        </span>
-      </span>
-      <span class="state"></span>
     {:else}
       <span class="badge neutral">
         <ChannelIcon id="flag" color="currentColor" size={46} />

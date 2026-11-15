@@ -12,8 +12,8 @@ plantillas en los dos idiomas.
 - [Open an issue](https://github.com/Snyker-fair/relix/issues/new/choose)
   with the *Something isn't working* or *Idea* template (or their Spanish
   versions) and attach `E:\relix\log.txt`. Check it before sending it: it has
-  your game names and USB drive paths. *Options › Checkup* on the Xbox shows the
-  same address.
+  your game names and USB drive paths. The *Diagnostic log* in *Options › Checkup* shows
+  the same address.
 
 ## What guides Relix
 

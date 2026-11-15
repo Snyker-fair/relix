@@ -19,18 +19,10 @@ export const CHECK_EVERY_MS = 24 * 60 * 60 * 1000
  * What's new in a version that's worth saying when it opens: once, after the
  * update (or the first time, with games), one notice per line. In Spanish,
  * translated with t(). Also the shortcuts the screen doesn't show, so they're
- * discovered without crowding the button bar.
+ * discovered without crowding the button bar. Only the version in use is ever
+ * shown, so each release keeps just its own.
  */
 export const NEWS = /** @type {Record<string, string[]>} */ ({
-  '1.3.0': [
-    'Nuevo en la {version}: dentro de una consola, clic en el stick derecho para ver la ficha de un juego y en el izquierdo para que Relix te sorprenda',
-    'Truco: dentro de una consola, LT y RT saltan de letra en letra',
-  ],
-  '1.4.0': [
-    'Nuevo en la {version}: al escanear una consola también llegan sus portadas y su información, y los juegos de varios discos ya se pueden cambiar de disco',
-    'Truco: en ≡ › Consolas, X te deja ordenar tus consolas',
-    'Los videos de ES-DE ya no se reproducen: así Relix va más fluido',
-  ],
   '1.5.0': [
     'Nuevo en la {version}: Relix te propone retomar los juegos que dejaste, y cada consola del inicio muestra tus horas de juego',
     'Truco: en ≡ › Acerca de están tu mes y tus semanas de juego',
